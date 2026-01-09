@@ -1,9 +1,9 @@
-import './FeaturedEvents.css'
-import { useScrollAnimation } from '../hooks/useScrollAnimation'
-import EventCard from './EventCard'
-import event1Img from '../assets/event1.jpg'
-import event2Img from '../assets/event2.jpeg'
-import event3Img from '../assets/event3.jpeg'
+import '../../assets/css/FeaturedEvents.css'
+import { useScrollAnimation } from '../../hooks/useScrollAnimation'
+import EventCard from '../cards/EventCard'
+import event1Img from '../../assets/images/event1.jpg'
+import event2Img from '../../assets/images/event2.jpeg'
+import event3Img from '../../assets/images/event3.jpeg'
 
 interface Event {
   image: string

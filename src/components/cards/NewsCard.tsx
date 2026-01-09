@@ -1,4 +1,4 @@
-import './NewsCard.css'
+import '../../assets/css/NewsCard.css'
 
 interface NewsCardProps {
   image: string

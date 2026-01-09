@@ -1,6 +1,6 @@
-import './ConnectingProfessionals.css'
-import { useScrollAnimation } from '../hooks/useScrollAnimation'
-import connectingImg from '../assets/connecting.jpeg'
+import '../../assets/css/ConnectingProfessionals.css'
+import { useScrollAnimation } from '../../hooks/useScrollAnimation'
+import connectingImg from '../../assets/images/connecting.jpeg'
 
 function ConnectingProfessionals() {
   const { elementRef, isVisible } = useScrollAnimation()

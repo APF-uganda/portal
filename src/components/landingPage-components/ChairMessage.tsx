@@ -1,6 +1,6 @@
-import './ChairMessage.css'
-import { useScrollAnimation } from '../hooks/useScrollAnimation'
-import chairmanImg from '../assets/chairman.jpg'
+import '../../assets/css/ChairMessage.css'
+import { useScrollAnimation } from '../../hooks/useScrollAnimation'
+import chairmanImg from '../../assets/images/chairman.jpg'
 
 function ChairMessage() {
   const { elementRef, isVisible } = useScrollAnimation()
@@ -26,7 +26,7 @@ function ChairMessage() {
             Message from the Chair
           </h2>
           <p>It is with immense pleasure that I welcome you to the Accountancy Practitioners Forum (APF Uganda). Our mission is clear: to champion advocacy, integrity, and innovation within the accounting profession across Uganda. We are committed to fostering a culture of excellence where continuous learning is paramount, and where the collective voice of our members drives meaningful change. Together, we build a stronger, more credible profession for a prosperous future.</p>
-          <p className="chair-name"><strong>CPA Ronald Mukumba</strong></p>
+          <p className="chair-name"><strong>CPA Ronald Mutumba</strong></p>
           <p className="chair-title">Chairperson - APF Uganda</p>
           <button className="read-full" onClick={() => console.log('Navigate to full message')}>Read Full Message →</button>
         </div>

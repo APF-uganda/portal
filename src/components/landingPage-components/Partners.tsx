@@ -1,5 +1,5 @@
-import './Partners.css'
-import { useScrollAnimation } from '../hooks/useScrollAnimation'
+import '../../assets/css/Partners.css'
+import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 
 function Partners() {
   const { elementRef, isVisible } = useScrollAnimation()

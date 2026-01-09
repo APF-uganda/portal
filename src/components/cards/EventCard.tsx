@@ -1,4 +1,4 @@
-import './EventCard.css'
+import '../../assets/css/EventCard.css'
 
 interface EventCardProps {
   image: string

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import './Stats.css'
+import '../../assets/css/Stats.css'
 
 interface StatItemProps {
   icon: string
