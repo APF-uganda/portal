@@ -1,20 +1,24 @@
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import '../assets/css/UnderDevelopment.css'
+import Hero from '../components/aboutPage-components/Hero'
+import OurHistory from '../components/aboutPage-components/OurHistory'
+import Timeline from '../components/aboutPage-components/Timeline'
+import OurWork from '../components/aboutPage-components/OurWork'
+import VisionMission from '../components/aboutPage-components/VisionMission'
+import OurGovernance from '../components/aboutPage-components/OurGovernance'
+import JoinCTA from '../components/aboutPage-components/JoinCTA'
 
 function AboutPage() {
   return (
-    <div className="page-container">
+    <div>
       <Navbar />
-      <main className="under-development">
-        <div className="development-content">
-          <div className="construction-icon">🚧</div>
-          <h1>About APF</h1>
-          <p className="development-message">This page is currently under development</p>
-          <p className="development-subtitle">We're working hard to bring you this content soon!</p>
-          <a href="/" className="back-home-btn">Back to Home</a>
-        </div>
-      </main>
+      <Hero />
+      <OurHistory />
+      <Timeline />
+      <OurWork />
+      <VisionMission />
+      <OurGovernance />
+      <JoinCTA />
       <Footer />
     </div>
   )
