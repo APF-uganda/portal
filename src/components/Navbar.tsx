@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import '../assets/css/Navbar.css'
 
 function Navbar() {
@@ -11,16 +12,16 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <div className="logo">APF</div>
+        <Link to="/" className="logo">APF</Link>
         <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
-          <li><a href="#home" onClick={() => setIsMenuOpen(false)}>Home</a></li>
-          <li><a href="#about" onClick={() => setIsMenuOpen(false)}>About APF</a></li>
-          <li><a href="#membership" onClick={() => setIsMenuOpen(false)}>Membership</a></li>
-          <li><a href="#events" onClick={() => setIsMenuOpen(false)}>Events</a></li>
-          <li><a href="#news" onClick={() => setIsMenuOpen(false)}>News & Insights</a></li>
-          <li><a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact & Enquiries</a></li>
+          <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
+          <li><Link to="/about" onClick={() => setIsMenuOpen(false)}>About APF</Link></li>
+          <li><Link to="/membership" onClick={() => setIsMenuOpen(false)}>Membership</Link></li>
+          <li><Link to="/events" onClick={() => setIsMenuOpen(false)}>Events</Link></li>
+          <li><Link to="/news" onClick={() => setIsMenuOpen(false)}>News & Insights</Link></li>
+          <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact & Enquiries</Link></li>
           <li className="mobile-only">
-            <button className="btn-outline-mobile">Quick Links</button>
+            <button className="btn-outline-mobile">Join APF</button>
           </li>
           <li className="mobile-only">
             <button className="btn-primary-mobile">Members Login</button>
