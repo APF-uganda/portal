@@ -1,70 +1,122 @@
-# Getting Started with Create React App
+# APF Service Portal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern web portal for the Accountancy Practitioners Forum (APF Uganda) built with React, TypeScript, and Vite.
 
-## Available Scripts
+## Tech Stack
 
-In the project directory, you can run:
+- **React 19** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Next-generation frontend tooling
+- **Material-UI** - Component library
+- **React Router** - Client-side routing
+- **Axios** - HTTP client
 
-### `npm start`
+## Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Prerequisites
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Node.js (v16 or higher)
+- npm or yarn
 
-### `npm test`
+### Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Clone the repository
+2. Navigate to the portal directory:
+   ```bash
+   cd portal
+   ```
 
-### `npm run build`
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Development
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Start the development server:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm run dev
+```
 
-### `npm run eject`
+The app will open at [http://localhost:3000](http://localhost:3000)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Features:
+- ⚡ Lightning-fast Hot Module Replacement (HMR)
+- 🔥 Instant server start
+- 💪 Full TypeScript support
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Building for Production
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Build the app for production:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npm run build
+```
+
+The optimized build will be output to the `dist/` folder.
+
+### Preview Production Build
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+### Testing
+
+Run tests:
+
+```bash
+npm test
+```
+
+## Project Structure
+
+```
+portal/
+├── public/           # Static assets
+├── src/
+│   ├── assets/      # Images and media files
+│   ├── components/  # React components
+│   ├── pages/       # Page components
+│   ├── App.tsx      # Main app component
+│   ├── main.tsx     # Application entry point
+│   └── index.css    # Global styles
+├── index.html       # HTML template
+├── vite.config.ts   # Vite configuration
+└── tsconfig.json    # TypeScript configuration
+```
+
+## Environment Variables
+
+Create a `.env` file in the portal root for environment-specific variables:
+
+```env
+VITE_API_URL=your_api_url_here
+```
+
+Access them in your code:
+```typescript
+const apiUrl = import.meta.env.VITE_API_URL
+```
+
+## Key Features
+
+- Responsive design
+- Modern UI with Material-UI components
+- Type-safe codebase with TypeScript
+- Fast development experience with Vite
+- Optimized production builds
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- [Vite Documentation](https://vitejs.dev/)
+- [React Documentation](https://react.dev/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
+- [Material-UI Documentation](https://mui.com/)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Migration Notes
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project was migrated from Create React App to Vite + TypeScript. See [MIGRATION.md](./MIGRATION.md) for details about the migration process.

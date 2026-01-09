@@ -16,7 +16,7 @@ function Navbar() {
           <li><a href="#home" onClick={() => setIsMenuOpen(false)}>Home</a></li>
           <li><a href="#about" onClick={() => setIsMenuOpen(false)}>About APF</a></li>
           <li><a href="#membership" onClick={() => setIsMenuOpen(false)}>Membership</a></li>
-          <li><a href="#events" onClick={() => setIsMenuOpen(false)}>Events & CPD</a></li>
+          <li><a href="#events" onClick={() => setIsMenuOpen(false)}>Events</a></li>
           <li><a href="#news" onClick={() => setIsMenuOpen(false)}>News & Insights</a></li>
           <li><a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact & Enquiries</a></li>
           <li className="mobile-only">

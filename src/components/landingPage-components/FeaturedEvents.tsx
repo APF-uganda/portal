@@ -55,7 +55,7 @@ function FeaturedEvents() {
         ref={elementRef}
         className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
       >
-        Featured Events & CPD
+        Featured Events
       </h2>
       <div className="events-grid">
         {events.map((event, index) => (
