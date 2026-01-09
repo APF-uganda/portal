@@ -26,7 +26,47 @@
   overflow: hidden;
   position: relative;
   user-select: none;
-  touch-action: pan-y;
+  -webkit-user-select: none;
+  touch-action: pan-y pinch-zoom;
+  -webkit-touch-callout: none;
+}
+
+/* Navigation Arrows */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(107, 33, 168, 0.9);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.nav-arrow:hover {
+  background: rgba(107, 33, 168, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-arrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.nav-arrow-left {
+  left: -20px;
+}
+
+.nav-arrow-right {
+  right: -20px;
 }
 
 .events-grid {
@@ -34,11 +74,13 @@
   gap: 2rem;
   transition: transform 0.5s ease-in-out;
   padding-bottom: 1rem;
+  will-change: transform;
 }
 
 .events-grid > * {
   flex: 0 0 calc(33.333% - 1.35rem);
   min-width: 0;
+  touch-action: pan-y;
 }
 
 /* Pagination Dots */
@@ -78,6 +120,18 @@
   .events-grid > * {
     flex: 0 0 calc(50% - 1rem);
   }
+  
+  .nav-arrow {
+    display: flex;
+  }
+  
+  .nav-arrow-left {
+    left: 10px;
+  }
+  
+  .nav-arrow-right {
+    right: 10px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -96,6 +150,21 @@
   .events h2 {
     font-size: 1.8rem;
     margin-bottom: 2rem;
+  }
+  
+  .nav-arrow {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+  
+  .nav-arrow-left {
+    left: 5px;
+  }
+  
+  .nav-arrow-right {
+    right: 5px;
   }
   
   .pagination-dots .dot {
@@ -123,6 +192,12 @@
   
   .events-grid > * {
     flex: 0 0 calc(100% - 1rem);
+  }
+  
+  .nav-arrow {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
   }
   
   .pagination-dots {

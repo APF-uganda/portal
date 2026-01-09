@@ -23,7 +23,6 @@ function FeaturedEvents() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
-  const [scrollLeft, setScrollLeft] = useState(0)
   const [eventsPerPage, setEventsPerPage] = useState(3)
 
   // Update events per page based on screen size
@@ -146,7 +145,6 @@ function FeaturedEvents() {
     
     const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
     setStartX(pageX)
-    setScrollLeft(currentPage)
     
     if (autoScrollTimerRef.current) {
       clearTimeout(autoScrollTimerRef.current)
@@ -156,20 +154,21 @@ function FeaturedEvents() {
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging) return
     
-    e.preventDefault()
     const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
     const walk = startX - pageX
     const containerWidth = containerRef.current?.offsetWidth || 1200
     
-    // Calculate how many pages we've moved
-    const pageMoved = walk / containerWidth
-    const newPage = Math.round(scrollLeft + pageMoved)
+    // Calculate threshold for page change (30% of container width)
+    const threshold = containerWidth * 0.3
     
-    // Clamp between 0 and totalPages - 1
-    const clampedPage = Math.max(0, Math.min(totalPages - 1, newPage))
-    
-    if (Math.abs(pageMoved) > 0.2 && clampedPage !== currentPage) {
-      setCurrentPage(clampedPage)
+    if (walk > threshold && currentPage < totalPages - 1) {
+      // Swipe left - go to next page
+      setCurrentPage(currentPage + 1)
+      setStartX(pageX) // Reset start position
+    } else if (walk < -threshold && currentPage > 0) {
+      // Swipe right - go to previous page
+      setCurrentPage(currentPage - 1)
+      setStartX(pageX) // Reset start position
     }
   }
 
@@ -252,6 +251,17 @@ function FeaturedEvents() {
         onWheel={handleWheel}
         style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
       >
+        {/* Navigation Arrows for Mobile */}
+        {currentPage > 0 && (
+          <button 
+            className="nav-arrow nav-arrow-left"
+            onClick={() => scrollToPage(currentPage - 1)}
+            aria-label="Previous events"
+          >
+            ‹
+          </button>
+        )}
+        
         <div 
           className="events-grid"
           style={{
@@ -272,18 +282,60 @@ function FeaturedEvents() {
             />
           ))}
         </div>
+        
+        {currentPage < totalPages - 1 && (
+          <button 
+            className="nav-arrow nav-arrow-right"
+            onClick={() => scrollToPage(currentPage + 1)}
+            aria-label="Next events"
+          >
+            ›
+          </button>
+        )}
       </div>
       
       {/* Pagination Dots */}
       <div className="pagination-dots">
-        {Array.from({ length: totalPages }).map((_, index) => (
-          <button
-            key={index}
-            className={`dot ${currentPage === index ? 'active' : ''}`}
-            onClick={() => scrollToPage(index)}
-            aria-label={`Go to page ${index + 1}`}
-          />
-        ))}
+        {(() => {
+          const dots = [];
+          const maxVisibleDots = 3;
+          
+          if (totalPages <= maxVisibleDots) {
+            // Show all dots if total is 3 or less
+            for (let i = 0; i < totalPages; i++) {
+              dots.push(
+                <button
+                  key={i}
+                  className={`dot ${currentPage === i ? 'active' : ''}`}
+                  onClick={() => scrollToPage(i)}
+                  aria-label={`Go to page ${i + 1}`}
+                />
+              );
+            }
+          } else {
+            // Show 3 dots with smart positioning
+            let startIndex = Math.max(0, currentPage - 1);
+            let endIndex = Math.min(totalPages - 1, startIndex + 2);
+            
+            // Adjust if we're near the end
+            if (endIndex === totalPages - 1) {
+              startIndex = Math.max(0, endIndex - 2);
+            }
+            
+            for (let i = startIndex; i <= endIndex; i++) {
+              dots.push(
+                <button
+                  key={i}
+                  className={`dot ${currentPage === i ? 'active' : ''}`}
+                  onClick={() => scrollToPage(i)}
+                  aria-label={`Go to page ${i + 1}`}
+                />
+              );
+            }
+          }
+          
+          return dots;
+        })()}
       </div>
     </section>
   )
