@@ -125,3 +125,54 @@
 .connecting-right:hover img {
   transform: scale(1.02);
 }
+
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .connecting-right img {
+    width: 400px;
+    height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .connecting {
+    padding: 3rem 1.5rem;
+  }
+  
+  .connecting-container {
+    flex-direction: column;
+  }
+  
+  .connecting-right {
+    width: 100%;
+  }
+  
+  .connecting-right img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
+  
+  .connecting-left h2 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .connecting {
+    padding: 2rem 1rem;
+  }
+  
+  .connecting-left h2 {
+    font-size: 1.5rem;
+  }
+  
+  .accordion-item h3 {
+    font-size: 1rem;
+  }
+  
+  .accordion-item p {
+    font-size: 0.9rem;
+  }
+}

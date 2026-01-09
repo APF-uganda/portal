@@ -1,6 +1,7 @@
 .partners {
   padding: 4rem 2rem;
   background: white;
+  overflow: hidden;
 }
 
 .partners h2 {
@@ -20,13 +21,54 @@
   }
 }
 
-.partners-grid {
-  max-width: 1000px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 3rem;
-  align-items: center;
+.partners-scroll-container {
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 2rem 0;
+}
+
+/* Gradient fade edges */
+.partners-scroll-container::before,
+.partners-scroll-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.partners-scroll-container::before {
+  left: 0;
+  background: linear-gradient(to right, white, transparent);
+}
+
+.partners-scroll-container::after {
+  right: 0;
+  background: linear-gradient(to left, white, transparent);
+}
+
+.partners-scroll {
+  display: flex;
+  gap: 4rem;
+  animation: scroll 30s linear infinite;
+  width: fit-content;
+}
+
+/* Pause animation on hover */
+.partners-scroll:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .partner-logo {
@@ -35,38 +77,67 @@
   font-weight: bold;
   color: #3b82f6;
   transition: all 0.3s ease;
-  animation: fadeInUp 0.8s ease-out;
   cursor: pointer;
-}
-
-.partner-logo:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.partner-logo:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.partner-logo:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.partner-logo:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  white-space: nowrap;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .partner-logo:hover {
-  transform: scale(1.2) rotate(5deg);
+  transform: scale(1.2);
   color: #7c3aed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .partners {
+    padding: 3rem 1.5rem;
+  }
+  
+  .partners h2 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+  
+  .partners-scroll {
+    gap: 3rem;
+    animation: scroll 25s linear infinite;
+  }
+  
+  .partner-logo {
+    font-size: 2rem;
+    min-width: 120px;
+  }
+  
+  .partners-scroll-container::before,
+  .partners-scroll-container::after {
+    width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .partners {
+    padding: 2rem 1rem;
+  }
+  
+  .partners h2 {
+    font-size: 1.5rem;
+  }
+  
+  .partners-scroll {
+    gap: 2rem;
+    animation: scroll 20s linear infinite;
+  }
+  
+  .partner-logo {
+    font-size: 1.8rem;
+    min-width: 100px;
+  }
+  
+  .partners-scroll-container::before,
+  .partners-scroll-container::after {
+    width: 50px;
+  }
 }

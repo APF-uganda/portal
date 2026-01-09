@@ -1,22 +1,41 @@
+import { useState } from 'react'
 import './Navbar.css'
 
 function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
+  }
+
   return (
     <nav className="navbar">
       <div className="nav-container">
         <div className="logo">APF</div>
-        <ul className="nav-menu">
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About APF</a></li>
-          <li><a href="#membership">Membership</a></li>
-          <li><a href="#events">Events & CPD</a></li>
-          <li><a href="#news">News & Insights</a></li>
-          <li><a href="#contact">Contact & Enquiries</a></li>
+        <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
+          <li><a href="#home" onClick={() => setIsMenuOpen(false)}>Home</a></li>
+          <li><a href="#about" onClick={() => setIsMenuOpen(false)}>About APF</a></li>
+          <li><a href="#membership" onClick={() => setIsMenuOpen(false)}>Membership</a></li>
+          <li><a href="#events" onClick={() => setIsMenuOpen(false)}>Events & CPD</a></li>
+          <li><a href="#news" onClick={() => setIsMenuOpen(false)}>News & Insights</a></li>
+          <li><a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact & Enquiries</a></li>
+          <li className="mobile-only">
+            <button className="btn-outline-mobile">Quick Links</button>
+          </li>
+          <li className="mobile-only">
+            <button className="btn-primary-mobile">Members Login</button>
+          </li>
         </ul>
-        <div className="nav-buttons">
-          <button className="btn-outline">Quick Links</button>
-          <button className="btn-primary">Members Login</button>
-        </div>
+        
+        <button 
+          className={`hamburger ${isMenuOpen ? 'active' : ''}`}
+          onClick={toggleMenu}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </nav>
   )

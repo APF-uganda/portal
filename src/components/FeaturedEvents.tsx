@@ -1,4 +1,6 @@
 import './FeaturedEvents.css'
+import { useScrollAnimation } from '../hooks/useScrollAnimation'
+import EventCard from './EventCard'
 import event1Img from '../assets/event1.jpg'
 import event2Img from '../assets/event2.jpeg'
 import event3Img from '../assets/event3.jpeg'
@@ -13,6 +15,8 @@ interface Event {
 }
 
 function FeaturedEvents() {
+  const { elementRef, isVisible } = useScrollAnimation()
+
   const events: Event[] = [
     {
       image: event1Img,
@@ -40,20 +44,31 @@ function FeaturedEvents() {
     }
   ]
 
+  const handleRegister = (eventTitle: string) => {
+    console.log('Register for:', eventTitle)
+    // Add registration logic here
+  }
+
   return (
     <section className="events">
-      <h2>Featured Events & CPD</h2>
+      <h2 
+        ref={elementRef}
+        className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
+      >
+        Featured Events & CPD
+      </h2>
       <div className="events-grid">
         {events.map((event, index) => (
-          <div key={index} className="event-card">
-            <img src={event.image} alt={event.title} />
-            <h3>{event.title}</h3>
-            <p className="event-date">📅 {event.date}</p>
-            <p className="event-time">🕐 {event.time}</p>
-            <p className="event-location">📍 {event.location}</p>
-            <p className="event-desc">{event.description}</p>
-            <button className="btn-register">Register</button>
-          </div>
+          <EventCard
+            key={index}
+            image={event.image}
+            title={event.title}
+            date={event.date}
+            time={event.time}
+            location={event.location}
+            description={event.description}
+            onRegister={() => handleRegister(event.title)}
+          />
         ))}
       </div>
     </section>

@@ -126,9 +126,72 @@
   padding: 0;
   font-family: inherit;
   transition: all 0.3s ease;
+  border-radius: 20px;
 }
 
 .read-full:hover {
   text-decoration: underline;
   transform: translateX(5px);
+}
+
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .chair-container {
+    gap: 2rem;
+  }
+  
+  .chair-image img {
+    width: 250px;
+    height: 300px;
+  }
+  
+  .chair-image {
+    min-width: 250px;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chair-message {
+    padding: 3rem 1.5rem;
+  }
+  
+  .chair-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .chair-image {
+    margin: 0 auto;
+  }
+  
+  .chair-text h2::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .chair-message {
+    padding: 2rem 1rem;
+  }
+  
+  .chair-image img {
+    width: 200px;
+    height: 250px;
+  }
+  
+  .chair-image {
+    min-width: 200px;
+    min-height: 250px;
+  }
+  
+  .chair-text h2 {
+    font-size: 1.5rem;
+  }
+  
+  .chair-text p {
+    font-size: 0.9rem;
+  }
 }

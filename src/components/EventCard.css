@@ -1,0 +1,81 @@
+.event-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.event-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.2);
+}
+
+.event-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.event-card:hover img {
+  transform: scale(1.1);
+}
+
+.event-card h3 {
+  padding: 1rem 1.5rem 0.5rem;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.event-card p {
+  padding: 0.3rem 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.event-desc {
+  padding-bottom: 1rem;
+}
+
+.btn-register {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  padding: 0.7rem 2rem;
+  margin: 1rem 1.5rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  width: calc(100% - 3rem);
+  transition: all 0.3s ease;
+}
+
+.btn-register:hover {
+  background: #6d28d9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .event-card h3 {
+    font-size: 1rem;
+  }
+  
+  .event-card p {
+    font-size: 0.85rem;
+  }
+}
