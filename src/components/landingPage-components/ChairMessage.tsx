@@ -1,6 +1,6 @@
 import '../../assets/css/ChairMessage.css'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import chairmanImg from '../../assets/images/chairman.jpg'
+import chairmanImg from '../../assets/images/landingPage-image/chairman.jpg'
 
 function ChairMessage() {
   const { elementRef, isVisible } = useScrollAnimation()

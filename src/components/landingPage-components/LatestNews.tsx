@@ -2,9 +2,9 @@ import { useState, useRef } from 'react'
 import '../../assets/css/LatestNews.css'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import NewsCard from '../cards/NewsCard'
-import news1Img from '../../assets/images/news1.webp'
-import news2Img from '../../assets/images/news2.webp'
-import news3Img from '../../assets/images/news3.png'
+import news1Img from '../../assets/images/landingPage-image/news1.webp'
+import news2Img from '../../assets/images/landingPage-image/news2.webp'
+import news3Img from '../../assets/images/landingPage-image/news3.png'
 
 interface NewsItem {
   image: string

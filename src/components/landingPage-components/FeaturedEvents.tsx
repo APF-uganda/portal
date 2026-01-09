@@ -2,9 +2,9 @@ import '../../assets/css/FeaturedEvents.css'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import { useState, useEffect, useRef } from 'react'
 import EventCard from '../cards/EventCard'
-import event1Img from '../../assets/images/event1.jpg'
-import event2Img from '../../assets/images/event2.jpeg'
-import event3Img from '../../assets/images/event3.jpeg'
+import event1Img from '../../assets/images/landingPage-image/event1.jpg'
+import event2Img from '../../assets/images/landingPage-image/event2.jpeg'
+import event3Img from '../../assets/images/landingPage-image/event3.jpeg'
 
 interface Event {
   image: string
