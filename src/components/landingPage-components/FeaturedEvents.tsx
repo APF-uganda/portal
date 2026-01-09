@@ -24,6 +24,25 @@ function FeaturedEvents() {
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
+  const [eventsPerPage, setEventsPerPage] = useState(3)
+
+  // Update events per page based on screen size
+  useEffect(() => {
+    const updateEventsPerPage = () => {
+      if (window.innerWidth <= 768) {
+        setEventsPerPage(1) // Mobile: 1 event
+      } else if (window.innerWidth <= 1024) {
+        setEventsPerPage(2) // Tablet: 2 events
+      } else {
+        setEventsPerPage(3) // Desktop: 3 events
+      }
+    }
+
+    updateEventsPerPage()
+    window.addEventListener('resize', updateEventsPerPage)
+    
+    return () => window.removeEventListener('resize', updateEventsPerPage)
+  }, [])
 
   const events: Event[] = [
     {
@@ -100,7 +119,6 @@ function FeaturedEvents() {
     }
   ]
 
-  const eventsPerPage = 3
   const totalPages = Math.ceil(events.length / eventsPerPage)
 
   const handleRegister = (eventTitle: string) => {
@@ -237,7 +255,7 @@ function FeaturedEvents() {
         <div 
           className="events-grid"
           style={{
-            transform: `translateX(-${currentPage * 100}%)`,
+            transform: `translateX(-${currentPage * (100 / eventsPerPage)}%)`,
             pointerEvents: isDragging ? 'none' : 'auto'
           }}
         >

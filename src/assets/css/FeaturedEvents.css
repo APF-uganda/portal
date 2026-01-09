@@ -90,7 +90,7 @@
   }
   
   .events-grid > * {
-    flex: 0 0 100%;
+    flex: 0 0 calc(100% - 1.5rem);
   }
   
   .events h2 {
@@ -119,6 +119,10 @@
   
   .events-grid {
     gap: 1rem;
+  }
+  
+  .events-grid > * {
+    flex: 0 0 calc(100% - 1rem);
   }
   
   .pagination-dots {
