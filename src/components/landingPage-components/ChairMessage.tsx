@@ -101,15 +101,6 @@ function ChairMessage() {
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? 'translateX(0)' : 'translateX(50px)',
               transition: 'all 0.8s ease-out',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: '-10px',
-                left: 0,
-                width: '60px',
-                height: '3px',
-                backgroundColor: '#7c3aed',
-              },
             }}
           >
             Message from the Director

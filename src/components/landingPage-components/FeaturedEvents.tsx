@@ -1,9 +1,7 @@
-import { Box, Container, Typography, IconButton } from '@mui/material'
+import { Box, Container, Typography } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import { useState, useEffect, useRef } from 'react'
 import EventCard from '../common/EventCard'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import event1Img from '../../assets/images/landingPage-image/event1.jpg'
 import event2Img from '../../assets/images/landingPage-image/event2.jpeg'
 import event3Img from '../../assets/images/landingPage-image/event3.jpeg'
@@ -205,31 +203,6 @@ function FeaturedEvents() {
           userSelect: 'none',
         }}
       >
-        {currentPage > 0 && (
-          <IconButton
-            onClick={() => scrollToPage(currentPage - 1)}
-            sx={{
-              position: 'absolute',
-              left: '-20px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              backgroundColor: 'rgba(107, 33, 168, 0.9)',
-              color: 'white',
-              width: 40,
-              height: 40,
-              display: { xs: 'none', md: 'flex' },
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(107, 33, 168, 1)',
-                transform: 'translateY(-50%) scale(1.1)',
-              },
-            }}
-          >
-            <ArrowBackIosNewIcon fontSize="small" />
-          </IconButton>
-        )}
-        
         <Box 
           ref={containerRef}
           onMouseDown={handleDragStart}
@@ -275,31 +248,6 @@ function FeaturedEvents() {
             ))}
           </Box>
         </Box>
-        
-        {currentPage < totalPages - 1 && (
-          <IconButton
-            onClick={() => scrollToPage(currentPage + 1)}
-            sx={{
-              position: 'absolute',
-              right: '-20px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              backgroundColor: 'rgba(107, 33, 168, 0.9)',
-              color: 'white',
-              width: 40,
-              height: 40,
-              display: { xs: 'none', md: 'flex' },
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(107, 33, 168, 1)',
-                transform: 'translateY(-50%) scale(1.1)',
-              },
-            }}
-          >
-            <ArrowForwardIosIcon fontSize="small" />
-          </IconButton>
-        )}
       </Container>
       
       <Box 

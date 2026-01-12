@@ -1,9 +1,30 @@
-import { Box, Container, Typography } from '@mui/material'
+import { Box, Container, Typography, Collapse } from '@mui/material'
+import { useState } from 'react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import connectingImg from '../../assets/images/landingPage-image/connecting.jpeg'
 
 function ConnectingProfessionals() {
   const { elementRef, isVisible } = useScrollAnimation()
+  const [openSection, setOpenSection] = useState<string>('empowerment')
+
+  const toggleSection = (section: string) => {
+    setOpenSection(openSection === section ? '' : section)
+  }
+
+  const sections = {
+    empowerment: {
+      title: 'Empowerment',
+      content: 'Access shared resources, insights and opportunities that support continuous learning and professional growth.'
+    },
+    engagement: {
+      title: 'Engagement',
+      content: 'Participate in meaningful discussions, collaborative projects, and initiatives that drive the accounting profession forward.'
+    },
+    networking: {
+      title: 'Networking',
+      content: 'Build valuable connections with fellow professionals, mentors, and industry leaders to expand your professional network.'
+    }
+  }
 
   return (
     <Box 
@@ -51,121 +72,61 @@ function ConnectingProfessionals() {
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? 'translateX(0)' : 'translateX(-50px)',
               transition: 'all 0.8s ease-out',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: '-10px',
-                left: 0,
-                width: '60px',
-                height: '3px',
-                backgroundColor: '#7c3aed',
-              },
             }}
           >
             Connecting Accounting Professionals
           </Typography>
           
-          <Box 
-            sx={{
-              borderBottom: '1px solid #ddd',
-              py: 3,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                paddingLeft: '10px',
-                borderLeft: '3px solid #7c3aed',
-              },
-            }}
-          >
-            <Typography 
-              variant="h6" 
+          {Object.entries(sections).map(([key, section]) => (
+            <Box 
+              key={key}
               sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: '#2c3e50',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                transition: 'color 0.3s ease',
+                borderBottom: '1px solid #ddd',
+                py: 3,
+                transition: 'all 0.3s ease',
                 '&:hover': {
-                  color: '#7c3aed',
+                  paddingLeft: '10px',
+                  borderLeft: '3px solid #7c3aed',
                 },
               }}
             >
-              Empowerment <span>▲</span>
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{
-                mt: 2,
-                color: '#666',
-                lineHeight: 1.6,
-                animation: 'fadeIn 0.5s ease-out',
-                '@keyframes fadeIn': {
-                  '0%': { opacity: 0 },
-                  '100%': { opacity: 1 },
-                },
-              }}
-            >
-              Access shared resources, insights and opportunities that support continuous learning and professional growth.
-            </Typography>
-          </Box>
-          
-          <Box 
-            sx={{
-              borderBottom: '1px solid #ddd',
-              py: 3,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                paddingLeft: '10px',
-                borderLeft: '3px solid #7c3aed',
-              },
-            }}
-          >
-            <Typography 
-              variant="h6" 
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: '#2c3e50',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                transition: 'color 0.3s ease',
-                '&:hover': {
-                  color: '#7c3aed',
-                },
-              }}
-            >
-              Engagement <span>▼</span>
-            </Typography>
-          </Box>
-          
-          <Box 
-            sx={{
-              borderBottom: '1px solid #ddd',
-              py: 3,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                paddingLeft: '10px',
-                borderLeft: '3px solid #7c3aed',
-              },
-            }}
-          >
-            <Typography 
-              variant="h6" 
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: '#2c3e50',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                transition: 'color 0.3s ease',
-                '&:hover': {
-                  color: '#7c3aed',
-                },
-              }}
-            >
-              Networking <span>▼</span>
-            </Typography>
-          </Box>
+              <Typography 
+                variant="h6" 
+                onClick={() => toggleSection(key)}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  color: openSection === key ? '#7c3aed' : '#2c3e50',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  transition: 'color 0.3s ease',
+                  '&:hover': {
+                    color: '#7c3aed',
+                  },
+                }}
+              >
+                {section.title} 
+                <span style={{ 
+                  transition: 'transform 0.3s ease',
+                  display: 'inline-block'
+                }}>
+                  {openSection === key ? '▲' : '▼'}
+                </span>
+              </Typography>
+              <Collapse in={openSection === key}>
+                <Typography 
+                  variant="body1" 
+                  sx={{
+                    mt: 2,
+                    color: '#666',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {section.content}
+                </Typography>
+              </Collapse>
+            </Box>
+          ))}
         </Box>
         
         <Box 

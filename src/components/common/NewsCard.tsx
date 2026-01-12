@@ -20,6 +20,9 @@ function NewsCard({ image, tag, title, description, date, readTime, onReadMore }
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         transition: 'all 0.3s ease',
         animation: 'fadeInUp 0.8s ease-out',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         '&:hover': {
           transform: 'translateY(-10px)',
           boxShadow: '0 8px 25px rgba(124, 58, 237, 0.2)',
@@ -42,9 +45,10 @@ function NewsCard({ image, tag, title, description, date, readTime, onReadMore }
           height: '200px',
           objectFit: 'cover',
           transition: 'transform 0.3s ease',
+          flexShrink: 0,
         }}
       />
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <Chip 
           label={tag}
           size="small"
@@ -54,6 +58,7 @@ function NewsCard({ image, tag, title, description, date, readTime, onReadMore }
             fontWeight: 600,
             fontSize: '0.75rem',
             mb: 1,
+            alignSelf: 'flex-start',
           }}
         />
         <Typography 
@@ -62,6 +67,12 @@ function NewsCard({ image, tag, title, description, date, readTime, onReadMore }
             color: '#2c3e50',
             fontSize: '1.1rem',
             my: 1,
+            minHeight: '2.6em',
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
           }}
         >
           {title}
@@ -73,6 +84,12 @@ function NewsCard({ image, tag, title, description, date, readTime, onReadMore }
             fontSize: '0.9rem',
             lineHeight: 1.6,
             my: 1,
+            minHeight: '4.8em',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            flexGrow: 1,
           }}
         >
           {description}
@@ -97,6 +114,7 @@ function NewsCard({ image, tag, title, description, date, readTime, onReadMore }
             p: 0,
             textTransform: 'none',
             transition: 'all 0.3s ease',
+            alignSelf: 'flex-start',
             '&:hover': {
               textDecoration: 'underline',
               transform: 'translateX(5px)',

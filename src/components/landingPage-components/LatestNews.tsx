@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Box, Container, Typography, IconButton } from '@mui/material'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
@@ -19,8 +19,30 @@ interface NewsItem {
 
 function LatestNews() {
   const { elementRef, isVisible } = useScrollAnimation()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [isUserScrolling, setIsUserScrolling] = useState(false)
+  const autoScrollTimerRef = useRef<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [newsPerPage, setNewsPerPage] = useState(3)
+
+  useEffect(() => {
+    const updateNewsPerPage = () => {
+      if (window.innerWidth <= 768) {
+        setNewsPerPage(1)
+      } else if (window.innerWidth <= 1024) {
+        setNewsPerPage(2)
+      } else {
+        setNewsPerPage(3)
+      }
+    }
+
+    updateNewsPerPage()
+    window.addEventListener('resize', updateNewsPerPage)
+    
+    return () => window.removeEventListener('resize', updateNewsPerPage)
+  }, [])
 
   const news: NewsItem[] = [
     {
@@ -73,33 +95,78 @@ function LatestNews() {
     },
   ]
 
+  const totalPages = Math.ceil(news.length / newsPerPage)
+
   const handleReadMore = (newsTitle: string) => {
     console.log('Read more:', newsTitle)
   }
 
-  const scrollToNext = () => {
-    if (currentIndex < news.length - 3) {
-      setCurrentIndex(currentIndex + 1)
-      scrollToIndex(currentIndex + 1)
+  const scrollToPage = (pageIndex: number) => {
+    setCurrentPage(pageIndex)
+    setIsUserScrolling(true)
+    
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current)
+    }
+    autoScrollTimerRef.current = window.setTimeout(() => {
+      setIsUserScrolling(false)
+    }, 1000)
+  }
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true)
+    setIsUserScrolling(true)
+    
+    const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
+    setStartX(pageX)
+    
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current)
     }
   }
 
-  const scrollToPrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1)
-      scrollToIndex(currentIndex - 1)
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return
+    
+    const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
+    const walk = startX - pageX
+    const containerWidth = containerRef.current?.offsetWidth || 1200
+    const threshold = containerWidth * 0.3
+    
+    if (walk > threshold && currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+      setStartX(pageX)
+    } else if (walk < -threshold && currentPage > 0) {
+      setCurrentPage(currentPage - 1)
+      setStartX(pageX)
     }
   }
 
-  const scrollToIndex = (index: number) => {
-    if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.scrollWidth / news.length
-      scrollContainerRef.current.scrollTo({
-        left: cardWidth * index,
-        behavior: 'smooth'
-      })
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current)
     }
+    autoScrollTimerRef.current = window.setTimeout(() => {
+      setIsUserScrolling(false)
+    }, 3000)
   }
+
+  useEffect(() => {
+    let intervalId: number
+
+    if (!isUserScrolling && newsPerPage === 1) {
+      intervalId = window.setInterval(() => {
+        setCurrentPage((prevPage) => (prevPage + 1) % totalPages)
+      }, 10000)
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+      if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current)
+    }
+  }, [isUserScrolling, totalPages, newsPerPage])
 
   return (
     <Box 
@@ -134,104 +201,157 @@ function LatestNews() {
         maxWidth="lg" 
         sx={{
           position: 'relative',
-          px: { xs: 6, md: 8 },
+          overflow: 'hidden',
+          userSelect: 'none',
+          px: { xs: 2, md: 3 },
         }}
       >
-        <IconButton
-          onClick={scrollToPrev}
-          disabled={currentIndex === 0}
-          sx={{
-            position: 'absolute',
-            left: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 10,
-            backgroundColor: 'white',
-            width: 40,
-            height: 40,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-            opacity: currentIndex === 0 ? 0.3 : 1,
-            cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
-            '&:hover:not(:disabled)': {
-              backgroundColor: '#7c3aed',
-              color: 'white',
-              transform: 'translateY(-50%) scale(1.1)',
-              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-            },
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <ArrowBackIosNewIcon />
-        </IconButton>
+        {currentPage > 0 && (
+          <IconButton
+            onClick={() => scrollToPage(currentPage - 1)}
+            sx={{
+              position: 'absolute',
+              left: { xs: '2%', md: '-20px' },
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              backgroundColor: 'white',
+              color: '#7c3aed',
+              width: { xs: 40, md: 50 },
+              height: { xs: 40, md: 50 },
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: '#7c3aed',
+                color: 'white',
+                transform: 'translateY(-50%) scale(1.1)',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+              },
+            }}
+          >
+            <ArrowBackIosNewIcon fontSize="medium" />
+          </IconButton>
+        )}
         
         <Box 
-          ref={scrollContainerRef}
+          ref={containerRef}
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDragMove}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
           sx={{
-            display: 'flex',
-            gap: 4,
-            overflowX: 'hidden',
-            scrollBehavior: 'smooth',
-            p: 2,
+            overflow: 'hidden',
+            cursor: isDragging ? 'grabbing' : 'grab',
           }}
         >
-          {news.map((item, index) => (
-            <Box 
-              key={index}
-              sx={{
-                flexShrink: 0,
-                flexGrow: 0,
-                flexBasis: {
-                  xs: '100%',
-                  md: 'calc(50% - 16px)',
-                  lg: 'calc(33.333% - 21.33px)',
-                },
-                minWidth: {
-                  xs: '100%',
-                  md: 'calc(50% - 16px)',
-                  lg: 'calc(33.333% - 21.33px)',
-                },
-              }}
-            >
-              <NewsCard
-                image={item.image}
-                tag={item.tag}
-                title={item.title}
-                description={item.description}
-                date={item.date}
-                readTime={item.readTime}
-                onReadMore={() => handleReadMore(item.title)}
-              />
-            </Box>
-          ))}
+          <Box 
+            sx={{
+              display: 'flex',
+              gap: { xs: 2, md: 4 },
+              transition: 'transform 0.5s ease-in-out',
+              pb: 2,
+              transform: { xs: `translateX(-${currentPage * 100}%)`, md: 'translateX(0)' },
+              pointerEvents: isDragging ? 'none' : 'auto',
+            }}
+          >
+            {news.map((item, index) => (
+              <Box 
+                key={index}
+                sx={{
+                  flex: { xs: '0 0 100%', md: `0 0 calc(${100 / newsPerPage}% - ${(newsPerPage - 1) * 32 / newsPerPage}px)` },
+                  minWidth: 0,
+                }}
+              >
+                <NewsCard
+                  image={item.image}
+                  tag={item.tag}
+                  title={item.title}
+                  description={item.description}
+                  date={item.date}
+                  readTime={item.readTime}
+                  onReadMore={() => handleReadMore(item.title)}
+                />
+              </Box>
+            ))}
+          </Box>
         </Box>
         
-        <IconButton
-          onClick={scrollToNext}
-          disabled={currentIndex >= news.length - 3}
-          sx={{
-            position: 'absolute',
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 10,
-            backgroundColor: 'white',
-            width: 40,
-            height: 40,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-            opacity: currentIndex >= news.length - 3 ? 0.3 : 1,
-            cursor: currentIndex >= news.length - 3 ? 'not-allowed' : 'pointer',
-            '&:hover:not(:disabled)': {
-              backgroundColor: '#7c3aed',
-              color: 'white',
-              transform: 'translateY(-50%) scale(1.1)',
-              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-            },
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <ArrowForwardIosIcon />
-        </IconButton>
+        {currentPage < totalPages - 1 && (
+          <IconButton
+            onClick={() => scrollToPage(currentPage + 1)}
+            sx={{
+              position: 'absolute',
+              right: { xs: '2%', md: '-20px' },
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              backgroundColor: 'white',
+              color: '#7c3aed',
+              width: { xs: 40, md: 50 },
+              height: { xs: 40, md: 50 },
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: '#7c3aed',
+                color: 'white',
+                transform: 'translateY(-50%) scale(1.1)',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+              },
+            }}
+          >
+            <ArrowForwardIosIcon fontSize="medium" />
+          </IconButton>
+        )}
       </Container>
+      
+      <Box 
+        sx={{
+          display: { xs: 'flex', md: 'none' },
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 1.5,
+          mt: 4,
+          p: 2,
+        }}
+      >
+        {Array.from({ length: Math.min(totalPages, 3) }).map((_, i) => {
+          let dotIndex = i
+          if (totalPages > 3) {
+            let startIndex = Math.max(0, currentPage - 1)
+            let endIndex = Math.min(totalPages - 1, startIndex + 2)
+            if (endIndex === totalPages - 1) {
+              startIndex = Math.max(0, endIndex - 2)
+            }
+            dotIndex = startIndex + i
+          }
+          
+          return (
+            <Box
+              key={dotIndex}
+              component="button"
+              onClick={() => scrollToPage(dotIndex)}
+              sx={{
+                height: 12,
+                width: currentPage === dotIndex ? 32 : 12,
+                borderRadius: currentPage === dotIndex ? '6px' : '50%',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                p: 0,
+                backgroundColor: currentPage === dotIndex ? '#6b21a8' : '#cbd5e1',
+                '&:hover': {
+                  backgroundColor: '#94a3b8',
+                  transform: 'scale(1.2)',
+                },
+              }}
+              aria-label={`Go to page ${dotIndex + 1}`}
+            />
+          )
+        })}
+      </Box>
     </Box>
   )
 }

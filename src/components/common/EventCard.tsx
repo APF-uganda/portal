@@ -20,6 +20,9 @@ function EventCard({ image, title, date, time, location, description, onRegister
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         transition: 'all 0.3s ease',
         animation: 'fadeInUp 0.8s ease-out',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         '&:hover': {
           transform: 'translateY(-10px)',
           boxShadow: '0 8px 25px rgba(124, 58, 237, 0.2)',
@@ -42,15 +45,22 @@ function EventCard({ image, title, date, time, location, description, onRegister
           height: '200px',
           objectFit: 'cover',
           transition: 'transform 0.3s ease',
+          flexShrink: 0,
         }}
       />
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
         <Typography 
           variant="h6" 
           sx={{
             color: '#2c3e50',
             fontSize: '1.1rem',
             mb: 1,
+            minHeight: '2.6em',
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
           }}
         >
           {title}
@@ -92,6 +102,12 @@ function EventCard({ image, title, date, time, location, description, onRegister
             fontSize: '0.9rem',
             py: 0.5,
             pb: 2,
+            minHeight: '3em',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            flexGrow: 1,
           }}
         >
           {description}
@@ -108,6 +124,7 @@ function EventCard({ image, title, date, time, location, description, onRegister
             fontWeight: 600,
             textTransform: 'none',
             transition: 'all 0.3s ease',
+            mt: 'auto',
             '&:hover': {
               backgroundColor: '#6d28d9',
               transform: 'translateY(-2px)',

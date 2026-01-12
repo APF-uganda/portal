@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { AppBar, Toolbar, Box, Button, IconButton, Drawer, List, ListItem } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'
-import logoBlue from '../../assets/logo_blue.png'
+import logoPurple from '../../assets/logo_purple.png'
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -12,12 +12,28 @@ function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      const scrollPosition = window.scrollY
+      const shouldBeScrolled = scrollPosition > 500
+      
+      // Only update if the state actually changes
+      setIsScrolled(shouldBeScrolled)
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    // Set initial state
+    handleScroll()
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
+
+  // Reset scroll state when page changes
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    setIsScrolled(false)
+  }, [location.pathname])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -75,12 +91,14 @@ function Navbar() {
         >
           <Box
             component="img"
-            src={logoBlue}
+            src={logoPurple}
             alt="APF Logo"
             sx={{
               height: { xs: 35, sm: 40, md: 50 },
               width: 'auto',
               transition: 'all 0.3s ease',
+              border: 'none',
+              outline: 'none',
             }}
           />
         </Link>
@@ -92,22 +110,26 @@ function Navbar() {
               key={link.path}
               to={link.path}
               style={{
-                color: isActive(link.path) ? '#7c3aed' : '#2c3e50',
+                color: isActive(link.path) 
+                  ? (isScrolled ? '#7c3aed' : '#ffffff')
+                  : (isScrolled ? '#2c3e50' : '#ffffff'),
                 textDecoration: 'none',
                 fontSize: '0.9rem',
                 fontWeight: isActive(link.path) ? 600 : 500,
                 position: 'relative',
                 transition: 'color 0.3s ease',
                 paddingBottom: '5px',
-                borderBottom: isActive(link.path) ? '2px solid #7c3aed' : 'none',
+                borderBottom: isActive(link.path) 
+                  ? (isScrolled ? '2px solid #7c3aed' : '2px solid #ffffff')
+                  : 'none',
                 whiteSpace: 'nowrap',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#7c3aed'
+                e.currentTarget.style.color = isScrolled ? '#7c3aed' : '#ffffff'
               }}
               onMouseLeave={(e) => {
                 if (!isActive(link.path)) {
-                  e.currentTarget.style.color = '#2c3e50'
+                  e.currentTarget.style.color = isScrolled ? '#2c3e50' : '#ffffff'
                 }
               }}
             >
@@ -121,8 +143,8 @@ function Navbar() {
           <Button 
             variant="outlined"
             sx={{ 
-              borderColor: '#2c3e50',
-              color: '#2c3e50',
+              borderColor: isScrolled ? '#2c3e50' : '#ffffff',
+              color: isScrolled ? '#2c3e50' : '#ffffff',
               borderRadius: '25px',
               px: { md: 2, lg: 3 },
               py: 1,
@@ -132,8 +154,8 @@ function Navbar() {
               transition: 'all 0.3s ease',
               whiteSpace: 'nowrap',
               '&:hover': {
-                backgroundColor: '#2c3e50',
-                color: 'white',
+                backgroundColor: isScrolled ? '#2c3e50' : '#ffffff',
+                color: isScrolled ? 'white' : '#2c3e50',
                 transform: 'translateY(-2px)',
               },
             }}
@@ -168,11 +190,13 @@ function Navbar() {
         <IconButton
           sx={{ 
             display: { xs: 'block', lg: 'none' },
-            color: '#2c3e50',
+            color: isScrolled ? '#2c3e50' : '#ffffff',
             p: 1,
             transition: 'color 0.3s ease',
             '&:hover': {
-              backgroundColor: 'rgba(124, 58, 237, 0.08)',
+              backgroundColor: isScrolled 
+                ? 'rgba(124, 58, 237, 0.08)'
+                : 'rgba(255, 255, 255, 0.1)',
             },
           }}
           onClick={toggleMenu}
@@ -215,11 +239,13 @@ function Navbar() {
               >
                 <Box
                   component="img"
-                  src={logoBlue}
+                  src={logoPurple}
                   alt="APF Logo"
                   sx={{
                     height: { xs: 35, sm: 40 },
                     width: 'auto',
+                    border: 'none',
+                    outline: 'none',
                   }}
                 />
               </Link>

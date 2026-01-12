@@ -5,7 +5,7 @@ function Hero() {
   return (
     <Box 
       sx={{
-        height: '500px',
+        height: '700px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
