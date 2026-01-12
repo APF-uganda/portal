@@ -1,4 +1,4 @@
-import '../../assets/css/Timeline.css'
+import { Box, Container, Typography } from '@mui/material'
 
 function Timeline() {
   const timelineData = [
@@ -20,22 +20,33 @@ function Timeline() {
   ]
 
   return (
-    <section className="timeline">
-      <div className="timeline-container">
-        {timelineData.map((item, index) => (
-          <div key={index} className="timeline-item">
-            <div className="timeline-marker">
-              <div className="timeline-circle"></div>
-            </div>
-            <div className="timeline-content">
-              <h3 className="timeline-year">{item.year}</h3>
-              <h4 className="timeline-title">{item.title}</h4>
-              <p className="timeline-description">{item.description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+    <Box component="section" className="bg-white py-12 px-8">
+      <Container maxWidth="lg">
+        <Box className="flex flex-col md:flex-row justify-between gap-8 relative">
+          <Box 
+            className="hidden md:block absolute top-10 left-0 right-0 h-1 bg-primary z-0"
+          />
+          {timelineData.map((item, index) => (
+            <Box key={index} className="flex-1 relative z-10">
+              <Box className="flex justify-center mb-6">
+                <Box className="w-20 h-20 rounded-full bg-primary border-4 border-white shadow-lg" />
+              </Box>
+              <Box className="text-center">
+                <Typography variant="h5" className="text-primary text-2xl font-bold mb-2">
+                  {item.year}
+                </Typography>
+                <Typography variant="h6" className="text-secondary text-base font-semibold mb-3">
+                  {item.title}
+                </Typography>
+                <Typography variant="body2" className="text-gray-600 text-sm leading-relaxed">
+                  {item.description}
+                </Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Container>
+    </Box>
   )
 }
 

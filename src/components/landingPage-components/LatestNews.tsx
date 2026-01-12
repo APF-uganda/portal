@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react'
-import '../../assets/css/LatestNews.css'
+import { Box, Container, Typography, IconButton } from '@mui/material'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import NewsCard from '../cards/NewsCard'
 import news1Img from '../../assets/images/landingPage-image/news1.webp'
@@ -69,27 +71,10 @@ function LatestNews() {
       date: 'August 20, 2024',
       readTime: '6 min read'
     },
-    {
-      image: news1Img,
-      tag: 'Sustainability',
-      title: 'ESG Reporting: The New Frontier for Accountants',
-      description: 'Learn about environmental, social, and governance reporting standards and how they impact the accounting profession.',
-      date: 'August 5, 2024',
-      readTime: '5 min read'
-    },
-    {
-      image: news2Img,
-      tag: 'Career Development',
-      title: 'Building a Successful Career in Public Practice',
-      description: 'Expert advice on career progression, skill development, and networking strategies for accounting professionals.',
-      date: 'July 25, 2024',
-      readTime: '6 min read'
-    }
   ]
 
   const handleReadMore = (newsTitle: string) => {
     console.log('Read more:', newsTitle)
-    // Add navigation logic here
   }
 
   const scrollToNext = () => {
@@ -117,46 +102,80 @@ function LatestNews() {
   }
 
   return (
-    <section className="news">
-      <h2 
+    <Box component="section" className="bg-purple-100 py-16 px-8">
+      <Typography 
         ref={elementRef}
-        className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
+        variant="h4" 
+        className={`text-center text-secondary text-3xl mb-12 font-bold animate-fade-in transition-opacity duration-800 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       >
         Latest News & Insights
-      </h2>
-      <div className="news-slider">
-        <button 
-          className={`slider-btn prev ${currentIndex === 0 ? 'disabled' : ''}`}
+      </Typography>
+      <Container maxWidth="lg" className="relative px-16">
+        <IconButton
           onClick={scrollToPrev}
           disabled={currentIndex === 0}
-          aria-label="Previous news"
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 shadow-md transition-all ${currentIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-primary hover:text-white hover:scale-110'}`}
+          sx={{
+            '&:hover:not(:disabled)': {
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+            }
+          }}
         >
-          ‹
-        </button>
-        <div className="news-grid" ref={scrollContainerRef}>
+          <ArrowBackIosNewIcon />
+        </IconButton>
+        
+        <Box 
+          ref={scrollContainerRef}
+          className="flex gap-8 overflow-x-hidden scroll-smooth p-4"
+        >
           {news.map((item, index) => (
-            <NewsCard
+            <Box 
               key={index}
-              image={item.image}
-              tag={item.tag}
-              title={item.title}
-              description={item.description}
-              date={item.date}
-              readTime={item.readTime}
-              onReadMore={() => handleReadMore(item.title)}
-            />
+              className="flex-shrink-0 flex-grow-0"
+              sx={{
+                flexBasis: {
+                  xs: '100%',
+                  md: 'calc(50% - 16px)',
+                  lg: 'calc(33.333% - 21.33px)',
+                },
+                minWidth: {
+                  xs: '100%',
+                  md: 'calc(50% - 16px)',
+                  lg: 'calc(33.333% - 21.33px)',
+                },
+              }}
+            >
+              <NewsCard
+                image={item.image}
+                tag={item.tag}
+                title={item.title}
+                description={item.description}
+                date={item.date}
+                readTime={item.readTime}
+                onReadMore={() => handleReadMore(item.title)}
+              />
+            </Box>
           ))}
-        </div>
-        <button 
-          className={`slider-btn next ${currentIndex >= news.length - 3 ? 'disabled' : ''}`}
+        </Box>
+        
+        <IconButton
           onClick={scrollToNext}
           disabled={currentIndex >= news.length - 3}
-          aria-label="Next news"
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 shadow-md transition-all ${currentIndex >= news.length - 3 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-primary hover:text-white hover:scale-110'}`}
+          sx={{
+            '&:hover:not(:disabled)': {
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+            }
+          }}
         >
-          ›
-        </button>
-      </div>
-    </section>
+          <ArrowForwardIosIcon />
+        </IconButton>
+      </Container>
+    </Box>
   )
 }
 

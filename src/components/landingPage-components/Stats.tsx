@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import '../../assets/css/Stats.css'
+import { Box, Container, Typography } from '@mui/material'
 
 interface StatItemProps {
   icon: string
@@ -38,8 +38,8 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
 
   useEffect(() => {
     if (isVisible) {
-      setCount(0) // Reset count when becoming visible
-      const duration = 2000 // 2 seconds
+      setCount(0)
+      const duration = 2000
       const steps = 60
       const increment = value / steps
       const stepDuration = duration / steps
@@ -57,26 +57,87 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
 
       return () => clearInterval(timer)
     } else {
-      setCount(0) // Reset when not visible
+      setCount(0)
     }
   }, [isVisible, value])
 
   return (
-    <div ref={elementRef} className="stat-item">
-      <div className="stat-icon">{icon}</div>
-      <h3>{count}{suffix}</h3>
-      <p>{label}</p>
-    </div>
+    <Box 
+      ref={elementRef} 
+      sx={{
+        textAlign: 'center',
+        animation: 'fadeInUp 0.8s ease-out',
+        transition: 'transform 0.3s ease',
+        '&:hover': {
+          transform: 'translateY(-10px)',
+        },
+        '@keyframes fadeInUp': {
+          '0%': { opacity: 0, transform: 'translateY(30px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        },
+      }}
+    >
+      <Typography 
+        variant="h2" 
+        sx={{
+          fontSize: '2.5rem',
+          mb: 2,
+          animation: 'bounce 2s ease-in-out infinite',
+          '@keyframes bounce': {
+            '0%, 100%': { transform: 'translateY(0)' },
+            '50%': { transform: 'translateY(-10px)' },
+          },
+        }}
+      >
+        {icon}
+      </Typography>
+      <Typography 
+        variant="h3" 
+        sx={{
+          fontSize: '2.5rem',
+          color: '#2c3e50',
+          mb: 1,
+          fontWeight: 'bold',
+        }}
+      >
+        {count}{suffix}
+      </Typography>
+      <Typography 
+        variant="body1" 
+        sx={{
+          color: '#666',
+        }}
+      >
+        {label}
+      </Typography>
+    </Box>
   )
 }
 
 function Stats() {
   return (
-    <section className="stats">
-      <StatItem icon="👥" value={1000} suffix="+" label="Active Members" />
-      <StatItem icon="📅" value={10} suffix="+" label="Annual Events" />
-      <StatItem icon="📢" value={100} suffix="+" label="Resources Shared" />
-    </section>
+    <Box 
+      component="section" 
+      sx={{
+        backgroundColor: 'white',
+        py: 6,
+        px: 4,
+      }}
+    >
+      <Container 
+        maxWidth="lg" 
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          justifyContent: 'space-around',
+          gap: 4,
+        }}
+      >
+        <StatItem icon="👥" value={1000} suffix="+" label="Active Members" />
+        <StatItem icon="📅" value={10} suffix="+" label="Annual Events" />
+        <StatItem icon="📢" value={100} suffix="+" label="Resources Shared" />
+      </Container>
+    </Box>
   )
 }
 

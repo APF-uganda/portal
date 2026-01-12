@@ -1,6 +1,6 @@
+import { Box, Container, Typography, Card, CardContent, CardMedia, TextField, Button, Chip } from '@mui/material'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import '../assets/css/NewsPage.css'
 
 function NewsPage() {
   const newsArticles = [
@@ -11,7 +11,7 @@ function NewsPage() {
       category: "Technology",
       date: "Dec 15, 2023",
       author: "Sarah Johnson",
-      image: "/public/news1.webp",
+      image: "/news1.webp",
       featured: false
     },
     {
@@ -21,7 +21,7 @@ function NewsPage() {
       category: "Ethics",
       date: "Dec 12, 2023", 
       author: "Michael Chen",
-      image: "/public/news2.webp",
+      image: "/news2.webp",
       featured: false
     },
     {
@@ -31,7 +31,7 @@ function NewsPage() {
       category: "Events",
       date: "Dec 10, 2023",
       author: "Emma Wilson",
-      image: "/public/news3.png",
+      image: "/news3.png",
       featured: false
     },
     {
@@ -41,7 +41,7 @@ function NewsPage() {
       category: "Business",
       date: "Dec 8, 2023",
       author: "David Rodriguez",
-      image: "/public/event1.jpg",
+      image: "/event1.jpg",
       featured: false
     },
     {
@@ -51,7 +51,7 @@ function NewsPage() {
       category: "Standards",
       date: "Dec 5, 2023",
       author: "Lisa Thompson",
-      image: "/public/event2.jpeg",
+      image: "/event2.jpeg",
       featured: false
     },
     {
@@ -61,7 +61,7 @@ function NewsPage() {
       category: "Members",
       date: "Dec 3, 2023",
       author: "James Parker",
-      image: "/public/event3.jpeg",
+      image: "/event3.jpeg",
       featured: false
     }
   ];
@@ -73,86 +73,150 @@ function NewsPage() {
     category: "Tax Updates",
     date: "Dec 18, 2023",
     author: "Robert Anderson",
-    image: "/public/news1.webp",
+    image: "/news1.webp",
     featured: true
   };
 
   return (
-    <div className="news-page">
+    <Box>
       <Navbar />
       
       {/* Hero Section */}
-      <section className="news-hero">
-        <h1>News & Insights</h1>
-      </section>
+      <Box className="bg-gradient-to-r from-purple-600 to-purple-800 py-20 px-8 text-center">
+        <Typography variant="h2" className="text-white text-5xl font-bold">
+          News & Insights
+        </Typography>
+      </Box>
 
       {/* Main Content */}
-      <main className="news-content">
-        <div className="container">
-          {/* Top Pick Section */}
-          <section className="top-pick-section">
-            <h2 className="section-title">Our Latest News: Top Pick</h2>
-            <div className="top-pick-card">
-              <div className="top-pick-content">
-                <span className="category-tag">{featuredArticle.category}</span>
-                <h2>{featuredArticle.title}</h2>
-                <div className="article-meta">
-                  By {featuredArticle.author} • {featuredArticle.date}
-                </div>
-                <p className="article-excerpt">{featuredArticle.excerpt}</p>
-                <a href="#" className="read-more-btn">Read More</a>
-              </div>
-              <div className="top-pick-image"></div>
-            </div>
-          </section>
-
-          {/* Other News Section */}
-          <section className="other-news-section">
-            <h2 className="section-title">Our Other News</h2>
-            <div className="news-grid">
-              {newsArticles.map((article) => (
-                <article key={article.id} className="news-card">
-                  <div 
-                    className="news-card-image"
-                    style={{ backgroundImage: `url(${article.image})` }}
-                  ></div>
-                  <div className="news-card-content">
-                    <span className="category-tag">{article.category}</span>
-                    <h3>{article.title}</h3>
-                    <div className="article-meta">
-                      By {article.author} • {article.date}
-                    </div>
-                    <p className="article-excerpt">{article.excerpt}</p>
-                    <a href="#" className="read-more-btn">Read More</a>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          {/* Newsletter Section */}
-          <section className="newsletter-section">
-            <div className="newsletter-content">
-              <h2>Never Miss an Update</h2>
-              <p>Subscribe to our newsletter for the latest news, insights, and professional development opportunities.</p>
-              <form className="newsletter-form">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email address"
-                  className="newsletter-input"
-                  required
+      <Container maxWidth="lg" className="py-16">
+        {/* Top Pick Section */}
+        <Box className="mb-16">
+          <Typography variant="h4" className="text-secondary text-3xl font-bold mb-8">
+            Our Latest News: Top Pick
+          </Typography>
+          <Card className="overflow-hidden shadow-lg">
+            <Box className="grid grid-cols-1 md:grid-cols-12">
+              <Box className="md:col-span-7">
+                <CardContent className="p-8">
+                  <Chip 
+                    label={featuredArticle.category}
+                    className="bg-purple-100 text-primary font-semibold mb-4"
+                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed' }}
+                  />
+                  <Typography variant="h4" className="text-secondary text-2xl font-bold mb-3">
+                    {featuredArticle.title}
+                  </Typography>
+                  <Typography variant="body2" className="text-gray-600 mb-4">
+                    By {featuredArticle.author} • {featuredArticle.date}
+                  </Typography>
+                  <Typography variant="body1" className="text-gray-700 leading-relaxed mb-6">
+                    {featuredArticle.excerpt}
+                  </Typography>
+                  <Button 
+                    variant="contained"
+                    className="bg-primary text-white px-6 py-2 rounded-full font-semibold transition-all hover:bg-primary-dark normal-case"
+                    sx={{ 
+                      backgroundColor: '#7c3aed',
+                      '&:hover': { backgroundColor: '#6d28d9' }
+                    }}
+                  >
+                    Read More
+                  </Button>
+                </CardContent>
+              </Box>
+              <Box className="md:col-span-5">
+                <Box 
+                  className="h-full min-h-[300px] bg-cover bg-center"
+                  sx={{ backgroundImage: `url(${featuredArticle.image})` }}
                 />
-                <button type="submit" className="newsletter-btn">
-                  Subscribe to Newsletter
-                </button>
-              </form>
-            </div>
-          </section>
-        </div>
-      </main>
+              </Box>
+            </Box>
+          </Card>
+        </Box>
+
+        {/* Other News Section */}
+        <Box className="mb-16">
+          <Typography variant="h4" className="text-secondary text-3xl font-bold mb-8">
+            Our Other News
+          </Typography>
+          <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {newsArticles.map((article) => (
+              <Card key={article.id} className="h-full shadow-md transition-all hover:-translate-y-2 hover:shadow-xl">
+                <CardMedia
+                  component="div"
+                  className="h-48 bg-cover bg-center"
+                  sx={{ backgroundImage: `url(${article.image})` }}
+                />
+                <CardContent className="p-6">
+                  <Chip 
+                    label={article.category}
+                    size="small"
+                    className="bg-purple-100 text-primary font-semibold mb-3"
+                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed' }}
+                  />
+                  <Typography variant="h6" className="text-secondary text-lg font-semibold mb-2">
+                    {article.title}
+                  </Typography>
+                  <Typography variant="caption" className="text-gray-500 block mb-3">
+                    By {article.author} • {article.date}
+                  </Typography>
+                  <Typography variant="body2" className="text-gray-700 mb-4">
+                    {article.excerpt}
+                  </Typography>
+                  <Button 
+                    variant="text"
+                    className="text-primary font-semibold p-0 normal-case hover:underline"
+                  >
+                    Read More
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Newsletter Section */}
+        <Box 
+          className="py-12 px-8 rounded-xl text-center"
+          sx={{ background: 'linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%)' }}
+        >
+          <Typography variant="h4" className="text-secondary text-3xl font-bold mb-4">
+            Never Miss an Update
+          </Typography>
+          <Typography variant="body1" className="text-gray-700 mb-6 max-w-2xl mx-auto">
+            Subscribe to our newsletter for the latest news, insights, and professional development opportunities.
+          </Typography>
+          <Box className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+            <TextField
+              type="email"
+              placeholder="Enter your email address"
+              variant="outlined"
+              fullWidth
+              className="bg-white rounded-full"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '25px',
+                  backgroundColor: 'white',
+                }
+              }}
+            />
+            <Button 
+              variant="contained"
+              className="bg-primary text-white px-8 py-3 rounded-full font-semibold whitespace-nowrap transition-all hover:bg-primary-dark normal-case"
+              sx={{ 
+                backgroundColor: '#7c3aed',
+                '&:hover': { backgroundColor: '#6d28d9' }
+              }}
+            >
+              Subscribe to Newsletter
+            </Button>
+          </Box>
+        </Box>
+      </Container>
 
       <Footer />
-    </div>
+    </Box>
   )
 }
 

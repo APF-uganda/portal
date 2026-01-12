@@ -1,4 +1,6 @@
-import '../../assets/css/VisionMission.css'
+import { Box, Container, Typography, Card, CardContent } from '@mui/material'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import EventIcon from '@mui/icons-material/Event'
 
 function VisionMission() {
   const objectives = [
@@ -13,48 +15,73 @@ function VisionMission() {
   ]
 
   return (
-    <section className="vision-mission">
-      <div className="vm-container">
-        <div className="vm-card vision-card">
-          <div className="vm-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="white"/>
-            </svg>
-          </div>
-          <h3>Our Vision</h3>
-          <p>
-            To be the leading voice in uplifting standards advancing a strong, 
-            ethical and globally competitive accountancy profession in Uganda and beyond.
-          </p>
-        </div>
+    <Box component="section" className="bg-gray-50 py-16 px-8">
+      <Container maxWidth="lg">
+        <Box className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card 
+            className="h-full p-10 rounded-xl transition-all hover:-translate-y-1 hover:shadow-xl"
+            sx={{
+              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+              color: 'white',
+            }}
+          >
+            <CardContent>
+              <Box className="mb-6">
+                <VisibilityIcon sx={{ fontSize: 40 }} />
+              </Box>
+              <Typography variant="h4" className="text-3xl mb-4 font-bold">
+                Our Vision
+              </Typography>
+              <Typography variant="body1" className="leading-relaxed text-white opacity-95">
+                To be the leading voice in uplifting standards advancing a strong, 
+                ethical and globally competitive accountancy profession in Uganda and beyond.
+              </Typography>
+            </CardContent>
+          </Card>
 
-        <div className="vm-card mission-card">
-          <div className="vm-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" fill="#7c3aed"/>
-            </svg>
-          </div>
-          <h3>Our Mission</h3>
-          <p>
-            To empower accounting professionals through collaborative, continuous 
-            learning, ethical engagement, and advocacy, strengthening the 
-            accountancy profession in Uganda.
-          </p>
-        </div>
+          <Card 
+            className="h-full p-10 rounded-xl border-2 border-gray-200 transition-all hover:-translate-y-1 hover:shadow-xl"
+            sx={{ background: 'white' }}
+          >
+            <CardContent>
+              <Box className="mb-6">
+                <EventIcon sx={{ fontSize: 40, color: '#7c3aed' }} />
+              </Box>
+              <Typography variant="h4" className="text-secondary text-3xl mb-4 font-bold">
+                Our Mission
+              </Typography>
+              <Typography variant="body1" className="text-gray-700 leading-relaxed">
+                To empower accounting professionals through collaborative, continuous 
+                learning, ethical engagement, and advocacy, strengthening the 
+                accountancy profession in Uganda.
+              </Typography>
+            </CardContent>
+          </Card>
 
-        <div className="objectives-card">
-          <h3>Our Objectives</h3>
-          <div className="objectives-grid">
-            {objectives.map((obj, index) => (
-              <div key={index} className="objective-item">
-                <span className="objective-icon">{obj.icon}</span>
-                <span className="objective-text">{obj.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
+          <Box className="col-span-1 md:col-span-2">
+            <Card className="p-10 rounded-xl shadow-md">
+              <CardContent>
+                <Typography variant="h4" className="text-secondary text-3xl mb-8 font-bold text-center">
+                  Our Objectives
+                </Typography>
+                <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                  {objectives.map((obj, index) => (
+                    <Box key={index} className="flex items-center gap-3 p-3 transition-all hover:bg-gray-100 rounded-lg">
+                      <Typography variant="h5" className="text-2xl">
+                        {obj.icon}
+                      </Typography>
+                      <Typography variant="body2" className="text-gray-800 text-sm">
+                        {obj.text}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   )
 }
 

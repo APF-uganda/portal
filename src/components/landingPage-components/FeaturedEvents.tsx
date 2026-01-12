@@ -1,7 +1,9 @@
-import '../../assets/css/FeaturedEvents.css'
+import { Box, Container, Typography, IconButton } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import { useState, useEffect, useRef } from 'react'
 import EventCard from '../cards/EventCard'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import event1Img from '../../assets/images/landingPage-image/event1.jpg'
 import event2Img from '../../assets/images/landingPage-image/event2.jpeg'
 import event3Img from '../../assets/images/landingPage-image/event3.jpeg'
@@ -25,15 +27,14 @@ function FeaturedEvents() {
   const [startX, setStartX] = useState(0)
   const [eventsPerPage, setEventsPerPage] = useState(3)
 
-  // Update events per page based on screen size
   useEffect(() => {
     const updateEventsPerPage = () => {
       if (window.innerWidth <= 768) {
-        setEventsPerPage(1) // Mobile: 1 event
+        setEventsPerPage(1)
       } else if (window.innerWidth <= 1024) {
-        setEventsPerPage(2) // Tablet: 2 events
+        setEventsPerPage(2)
       } else {
-        setEventsPerPage(3) // Desktop: 3 events
+        setEventsPerPage(3)
       }
     }
 
@@ -92,44 +93,18 @@ function FeaturedEvents() {
       location: 'Sheraton Hotel, Kampala',
       description: 'Enhance your audit skills with best practices in quality control and risk assessment.'
     },
-    {
-      image: event1Img,
-      title: 'Young Professionals Networking Event',
-      date: 'July 10, 2026',
-      time: '6:00 PM - 9:00 PM',
-      location: 'Kampala Serena Hotel, Kampala',
-      description: 'Connect with fellow young professionals and build lasting relationships in the accounting community.'
-    },
-    {
-      image: event2Img,
-      title: 'Cybersecurity for Accountants',
-      date: 'August 14, 2026',
-      time: '9:00 AM - 4:00 PM',
-      location: 'Sheraton Hotel, Kampala',
-      description: 'Protect your clients and firm from cyber threats with essential security practices.'
-    },
-    {
-      image: event3Img,
-      title: 'Leadership Development Workshop',
-      date: 'September 25, 2026',
-      time: '8:00 AM - 5:00 PM',
-      location: 'Kampala Serena Hotel, Kampala',
-      description: 'Develop leadership skills to advance your career and lead successful teams.'
-    }
   ]
 
   const totalPages = Math.ceil(events.length / eventsPerPage)
 
   const handleRegister = (eventTitle: string) => {
     console.log('Register for:', eventTitle)
-    // Add registration logic here
   }
 
   const scrollToPage = (pageIndex: number) => {
     setCurrentPage(pageIndex)
     setIsUserScrolling(true)
     
-    // Reset user scrolling flag after interaction
     if (autoScrollTimerRef.current) {
       clearTimeout(autoScrollTimerRef.current)
     }
@@ -138,7 +113,6 @@ function FeaturedEvents() {
     }, 1000)
   }
 
-  // Mouse/Touch drag handlers
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     setIsDragging(true)
     setIsUserScrolling(true)
@@ -157,25 +131,20 @@ function FeaturedEvents() {
     const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
     const walk = startX - pageX
     const containerWidth = containerRef.current?.offsetWidth || 1200
-    
-    // Calculate threshold for page change (30% of container width)
     const threshold = containerWidth * 0.3
     
     if (walk > threshold && currentPage < totalPages - 1) {
-      // Swipe left - go to next page
       setCurrentPage(currentPage + 1)
-      setStartX(pageX) // Reset start position
+      setStartX(pageX)
     } else if (walk < -threshold && currentPage > 0) {
-      // Swipe right - go to previous page
       setCurrentPage(currentPage - 1)
-      setStartX(pageX) // Reset start position
+      setStartX(pageX)
     }
   }
 
   const handleDragEnd = () => {
     setIsDragging(false)
     
-    // Reset user scrolling flag after interaction
     if (autoScrollTimerRef.current) {
       clearTimeout(autoScrollTimerRef.current)
     }
@@ -184,44 +153,13 @@ function FeaturedEvents() {
     }, 3000)
   }
 
-  // Wheel scroll handler
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault()
-    setIsUserScrolling(true)
-    
-    if (autoScrollTimerRef.current) {
-      clearTimeout(autoScrollTimerRef.current)
-    }
-    
-    // Determine scroll direction
-    if (e.deltaX > 30 || e.deltaY > 30) {
-      // Scroll right/down
-      if (currentPage < totalPages - 1) {
-        setCurrentPage(prev => prev + 1)
-      }
-    } else if (e.deltaX < -30 || e.deltaY < -30) {
-      // Scroll left/up
-      if (currentPage > 0) {
-        setCurrentPage(prev => prev - 1)
-      }
-    }
-    
-    autoScrollTimerRef.current = window.setTimeout(() => {
-      setIsUserScrolling(false)
-    }, 3000)
-  }
-
-  // Auto-scroll functionality
   useEffect(() => {
     let intervalId: number
 
     if (!isUserScrolling) {
       intervalId = window.setInterval(() => {
-        setCurrentPage((prevPage) => {
-          const nextPage = (prevPage + 1) % totalPages
-          return nextPage
-        })
-      }, 10000) // Auto-scroll every 10 seconds
+        setCurrentPage((prevPage) => (prevPage + 1) % totalPages)
+      }, 10000)
     }
 
     return () => {
@@ -231,113 +169,107 @@ function FeaturedEvents() {
   }, [isUserScrolling, totalPages])
 
   return (
-    <section className="events">
-      <h2 
+    <Box component="section" className="bg-gray-50 py-16 px-8">
+      <Typography 
         ref={elementRef}
-        className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
+        variant="h4" 
+        className={`text-center text-secondary text-3xl mb-12 font-bold animate-fade-in transition-opacity duration-800 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       >
         Featured Events
-      </h2>
-      <div 
-        className="events-scroll-container"
-        ref={containerRef}
-        onMouseDown={handleDragStart}
-        onMouseMove={handleDragMove}
-        onMouseUp={handleDragEnd}
-        onMouseLeave={handleDragEnd}
-        onTouchStart={handleDragStart}
-        onTouchMove={handleDragMove}
-        onTouchEnd={handleDragEnd}
-        onWheel={handleWheel}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-      >
-        {/* Navigation Arrows for Mobile */}
+      </Typography>
+      <Container maxWidth="lg" className="relative overflow-hidden select-none">
         {currentPage > 0 && (
-          <button 
-            className="nav-arrow nav-arrow-left"
+          <IconButton
             onClick={() => scrollToPage(currentPage - 1)}
-            aria-label="Previous events"
+            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-purple-900 text-white w-10 h-10 transition-all hover:bg-purple-800 hover:scale-110 hidden md:flex"
+            sx={{ 
+              backgroundColor: 'rgba(107, 33, 168, 0.9)',
+              '&:hover': { backgroundColor: 'rgba(107, 33, 168, 1)' }
+            }}
           >
-            ‹
-          </button>
+            <ArrowBackIosNewIcon fontSize="small" />
+          </IconButton>
         )}
         
-        <div 
-          className="events-grid"
-          style={{
-            transform: `translateX(-${currentPage * (100 / eventsPerPage)}%)`,
-            pointerEvents: isDragging ? 'none' : 'auto'
-          }}
+        <Box 
+          ref={containerRef}
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDragMove}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+          className="overflow-hidden"
+          sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
-          {events.map((event, index) => (
-            <EventCard
-              key={index}
-              image={event.image}
-              title={event.title}
-              date={event.date}
-              time={event.time}
-              location={event.location}
-              description={event.description}
-              onRegister={() => handleRegister(event.title)}
-            />
-          ))}
-        </div>
+          <Box 
+            className="flex gap-8 transition-transform duration-500 pb-4"
+            sx={{
+              transform: `translateX(-${currentPage * (100 / eventsPerPage)}%)`,
+              pointerEvents: isDragging ? 'none' : 'auto',
+            }}
+          >
+            {events.map((event, index) => (
+              <Box 
+                key={index}
+                sx={{
+                  flex: `0 0 calc(${100 / eventsPerPage}% - ${(eventsPerPage - 1) * 32 / eventsPerPage}px)`,
+                  minWidth: 0,
+                }}
+              >
+                <EventCard
+                  image={event.image}
+                  title={event.title}
+                  date={event.date}
+                  time={event.time}
+                  location={event.location}
+                  description={event.description}
+                  onRegister={() => handleRegister(event.title)}
+                />
+              </Box>
+            ))}
+          </Box>
+        </Box>
         
         {currentPage < totalPages - 1 && (
-          <button 
-            className="nav-arrow nav-arrow-right"
+          <IconButton
             onClick={() => scrollToPage(currentPage + 1)}
-            aria-label="Next events"
+            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-purple-900 text-white w-10 h-10 transition-all hover:bg-purple-800 hover:scale-110 hidden md:flex"
+            sx={{ 
+              backgroundColor: 'rgba(107, 33, 168, 0.9)',
+              '&:hover': { backgroundColor: 'rgba(107, 33, 168, 1)' }
+            }}
           >
-            ›
-          </button>
+            <ArrowForwardIosIcon fontSize="small" />
+          </IconButton>
         )}
-      </div>
+      </Container>
       
-      {/* Pagination Dots */}
-      <div className="pagination-dots">
-        {(() => {
-          const dots = [];
-          const maxVisibleDots = 3;
-          
-          if (totalPages <= maxVisibleDots) {
-            // Show all dots if total is 3 or less
-            for (let i = 0; i < totalPages; i++) {
-              dots.push(
-                <button
-                  key={i}
-                  className={`dot ${currentPage === i ? 'active' : ''}`}
-                  onClick={() => scrollToPage(i)}
-                  aria-label={`Go to page ${i + 1}`}
-                />
-              );
-            }
-          } else {
-            // Show 3 dots with smart positioning
-            let startIndex = Math.max(0, currentPage - 1);
-            let endIndex = Math.min(totalPages - 1, startIndex + 2);
-            
-            // Adjust if we're near the end
+      <Box className="flex justify-center items-center gap-3 mt-8 p-4">
+        {Array.from({ length: Math.min(totalPages, 3) }).map((_, i) => {
+          let dotIndex = i
+          if (totalPages > 3) {
+            let startIndex = Math.max(0, currentPage - 1)
+            let endIndex = Math.min(totalPages - 1, startIndex + 2)
             if (endIndex === totalPages - 1) {
-              startIndex = Math.max(0, endIndex - 2);
+              startIndex = Math.max(0, endIndex - 2)
             }
-            
-            for (let i = startIndex; i <= endIndex; i++) {
-              dots.push(
-                <button
-                  key={i}
-                  className={`dot ${currentPage === i ? 'active' : ''}`}
-                  onClick={() => scrollToPage(i)}
-                  aria-label={`Go to page ${i + 1}`}
-                />
-              );
-            }
+            dotIndex = startIndex + i
           }
           
-          return dots;
-        })()}
-      </div>
-    </section>
+          return (
+            <button
+              key={dotIndex}
+              onClick={() => scrollToPage(dotIndex)}
+              className={`h-3 rounded-full border-none cursor-pointer transition-all hover:bg-gray-400 hover:scale-125 p-0
+                ${currentPage === dotIndex ? 'w-8 bg-purple-900' : 'w-3 bg-gray-300'}`}
+              aria-label={`Go to page ${dotIndex + 1}`}
+            />
+          )
+        })}
+      </Box>
+    </Box>
   )
 }
 

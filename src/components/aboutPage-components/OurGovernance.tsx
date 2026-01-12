@@ -1,4 +1,4 @@
-import '../../assets/css/OurGovernance.css'
+import { Box, Container, Typography, Card, CardContent, Avatar } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import ronaldImg from '../../assets/images/aboutPage-images/CPA Ronald Katumba.jpg'
 import sarahImg from '../../assets/images/aboutPage-images/CPA Sarah Nejesa.webp'
@@ -20,32 +20,46 @@ function OurGovernance() {
   ]
 
   return (
-    <section className="our-governance">
-      <div className="governance-container">
-        <h2 
+    <Box component="section" className="bg-gray-50 py-16 px-8">
+      <Container maxWidth="lg">
+        <Typography 
           ref={elementRef}
-          className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
+          variant="h3" 
+          className={`text-center text-secondary text-4xl mb-4 font-bold transition-opacity duration-800 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
           Our Governance
-        </h2>
-        <p className="governance-subtitle">
+        </Typography>
+        <Typography variant="body1" className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
           Meet the dedicated leaders who steer APF Uganda towards its vision of 
           professional excellence and integrity.
-        </p>
+        </Typography>
         
-        <div className="leaders-grid">
+        <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {leaders.map((leader, index) => (
-            <div key={index} className="leader-card">
-              <div className="leader-image">
-                <img src={leader.image} alt={leader.name} />
-              </div>
-              <h3 className="leader-name">{leader.name}</h3>
-              <p className="leader-role">{leader.role}</p>
-            </div>
+            <Card key={index} className="text-center p-8 rounded-xl shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
+              <CardContent>
+                <Avatar
+                  src={leader.image}
+                  alt={leader.name}
+                  className="mx-auto mb-6"
+                  sx={{ 
+                    width: 150, 
+                    height: 150,
+                    border: '4px solid #7c3aed',
+                  }}
+                />
+                <Typography variant="h6" className="text-secondary text-lg font-semibold mb-2">
+                  {leader.name}
+                </Typography>
+                <Typography variant="body2" className="text-gray-600 text-sm">
+                  {leader.role}
+                </Typography>
+              </CardContent>
+            </Card>
           ))}
-        </div>
-      </div>
-    </section>
+        </Box>
+      </Container>
+    </Box>
   )
 }
 

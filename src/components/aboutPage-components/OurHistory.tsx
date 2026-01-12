@@ -1,53 +1,52 @@
-import '../../assets/css/OurHistory.css'
+import { Box, Container, Typography } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
 
 function OurHistory() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   return (
-    <section className="our-history">
-      <div className="history-container">
-        <div className="history-content">
-          <div className="history-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="#7c3aed" strokeWidth="2"/>
-              <path d="M12 6V12L16 14" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <h2 
-            ref={elementRef}
-            className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
-          >
-            Our History
-          </h2>
-          <p>
-            The Accountancy Practitioners Forum (APF Uganda) is the leading professional 
-            body dedicated to advancing the accountancy profession in Uganda. We uphold 
-            ethical standards, foster professional development, and advocate for policies 
-            that benefit our members and the nation's economic growth.
-          </p>
-        </div>
-        
-        <div className="history-sidebar">
-          <div className="sidebar-link">
-            <span className="link-icon">👤</span>
-            <span>Become a Member</span>
-          </div>
-          <div className="sidebar-link">
-            <span className="link-icon">📅</span>
-            <span>Our Events</span>
-          </div>
-          <div className="sidebar-link">
-            <span className="link-icon">📰</span>
-            <span>News & Insights</span>
-          </div>
-          <div className="sidebar-link">
-            <span className="link-icon">💬</span>
-            <span>Chairman's message</span>
-          </div>
-        </div>
-      </div>
-    </section>
+    <Box component="section" className="bg-white py-16 px-8">
+      <Container maxWidth="lg">
+        <Box className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <Box className="md:col-span-2 animate-fade-in">
+            <Box className="mb-4">
+              <AccessTimeIcon sx={{ fontSize: 48, color: '#7c3aed' }} />
+            </Box>
+            <Typography 
+              ref={elementRef}
+              variant="h4" 
+              className={`text-secondary text-3xl mb-6 font-bold transition-opacity duration-800 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            >
+              Our History
+            </Typography>
+            <Typography variant="body1" className="leading-relaxed text-gray-700">
+              The Accountancy Practitioners Forum (APF Uganda) is the leading professional 
+              body dedicated to advancing the accountancy profession in Uganda. We uphold 
+              ethical standards, foster professional development, and advocate for policies 
+              that benefit our members and the nation's economic growth.
+            </Typography>
+          </Box>
+          
+          <Box className="border-l-4 border-primary pl-8">
+            {[
+              { icon: '👤', text: 'Become a Member' },
+              { icon: '📅', text: 'Our Events' },
+              { icon: '📰', text: 'News & Insights' },
+              { icon: '💬', text: "Chairman's message" },
+            ].map((link, index) => (
+              <Box 
+                key={index}
+                className="flex items-center gap-3 py-4 cursor-pointer transition-all hover:text-primary hover:translate-x-2"
+              >
+                <Typography variant="h6" className="text-xl">{link.icon}</Typography>
+                <Typography variant="body1" className="text-gray-800">{link.text}</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   )
 }
 
