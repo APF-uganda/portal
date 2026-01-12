@@ -82,42 +82,52 @@ function NewsPage() {
       <Navbar />
       
       {/* Hero Section */}
-      <Box className="bg-gradient-to-r from-purple-600 to-purple-800 py-20 px-8 text-center">
-        <Typography variant="h2" className="text-white text-5xl font-bold">
+      <Box sx={{ 
+        background: 'linear-gradient(90deg, #7c3aed 0%, #6b21a8 100%)', 
+        py: 10, 
+        px: 4, 
+        textAlign: 'center' 
+      }}>
+        <Typography variant="h2" sx={{ color: 'white', fontSize: '3rem', fontWeight: 'bold' }}>
           News & Insights
         </Typography>
       </Box>
 
       {/* Main Content */}
-      <Container maxWidth="lg" className="py-16">
+      <Container maxWidth="lg" sx={{ py: 8 }}>
         {/* Top Pick Section */}
-        <Box className="mb-16">
-          <Typography variant="h4" className="text-secondary text-3xl font-bold mb-8">
+        <Box sx={{ mb: 8 }}>
+          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 4 }}>
             Our Latest News: Top Pick
           </Typography>
-          <Card className="overflow-hidden shadow-lg">
-            <Box className="grid grid-cols-1 md:grid-cols-12">
-              <Box className="md:col-span-7">
-                <CardContent className="p-8">
+          <Card sx={{ overflow: 'hidden', boxShadow: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' } }}>
+              <Box>
+                <CardContent sx={{ p: 4 }}>
                   <Chip 
                     label={featuredArticle.category}
-                    className="bg-purple-100 text-primary font-semibold mb-4"
-                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed' }}
+                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed', fontWeight: 600, mb: 2 }}
                   />
-                  <Typography variant="h4" className="text-secondary text-2xl font-bold mb-3">
+                  <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.5rem', fontWeight: 'bold', mb: 1.5 }}>
                     {featuredArticle.title}
                   </Typography>
-                  <Typography variant="body2" className="text-gray-600 mb-4">
+                  <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
                     By {featuredArticle.author} • {featuredArticle.date}
                   </Typography>
-                  <Typography variant="body1" className="text-gray-700 leading-relaxed mb-6">
+                  <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.7, mb: 3 }}>
                     {featuredArticle.excerpt}
                   </Typography>
                   <Button 
                     variant="contained"
-                    className="bg-primary text-white px-6 py-2 rounded-full font-semibold transition-all hover:bg-primary-dark normal-case"
                     sx={{ 
                       backgroundColor: '#7c3aed',
+                      color: 'white',
+                      px: 3,
+                      py: 1,
+                      borderRadius: '25px',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      transition: 'all 0.3s',
                       '&:hover': { backgroundColor: '#6d28d9' }
                     }}
                   >
@@ -125,48 +135,73 @@ function NewsPage() {
                   </Button>
                 </CardContent>
               </Box>
-              <Box className="md:col-span-5">
-                <Box 
-                  className="h-full min-h-[300px] bg-cover bg-center"
-                  sx={{ backgroundImage: `url(${featuredArticle.image})` }}
-                />
-              </Box>
+              <Box sx={{ 
+                height: '100%', 
+                minHeight: '300px', 
+                backgroundImage: `url(${featuredArticle.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }} />
             </Box>
           </Card>
         </Box>
 
         {/* Other News Section */}
-        <Box className="mb-16">
-          <Typography variant="h4" className="text-secondary text-3xl font-bold mb-8">
+        <Box sx={{ mb: 8 }}>
+          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 4 }}>
             Our Other News
           </Typography>
-          <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, 
+            gap: 4 
+          }}>
             {newsArticles.map((article) => (
-              <Card key={article.id} className="h-full shadow-md transition-all hover:-translate-y-2 hover:shadow-xl">
+              <Card 
+                key={article.id} 
+                sx={{ 
+                  height: '100%', 
+                  boxShadow: 2,
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: 6
+                  }
+                }}
+              >
                 <CardMedia
                   component="div"
-                  className="h-48 bg-cover bg-center"
-                  sx={{ backgroundImage: `url(${article.image})` }}
+                  sx={{ 
+                    height: 192, 
+                    backgroundImage: `url(${article.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
                 />
-                <CardContent className="p-6">
+                <CardContent sx={{ p: 3 }}>
                   <Chip 
                     label={article.category}
                     size="small"
-                    className="bg-purple-100 text-primary font-semibold mb-3"
-                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed' }}
+                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed', fontWeight: 600, mb: 1.5 }}
                   />
-                  <Typography variant="h6" className="text-secondary text-lg font-semibold mb-2">
+                  <Typography variant="h6" sx={{ color: '#1e293b', fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
                     {article.title}
                   </Typography>
-                  <Typography variant="caption" className="text-gray-500 block mb-3">
+                  <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mb: 1.5 }}>
                     By {article.author} • {article.date}
                   </Typography>
-                  <Typography variant="body2" className="text-gray-700 mb-4">
+                  <Typography variant="body2" sx={{ color: '#374151', mb: 2 }}>
                     {article.excerpt}
                   </Typography>
                   <Button 
                     variant="text"
-                    className="text-primary font-semibold p-0 normal-case hover:underline"
+                    sx={{ 
+                      color: '#7c3aed', 
+                      fontWeight: 600, 
+                      p: 0, 
+                      textTransform: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
                   >
                     Read More
                   </Button>
@@ -177,23 +212,31 @@ function NewsPage() {
         </Box>
 
         {/* Newsletter Section */}
-        <Box 
-          className="py-12 px-8 rounded-xl text-center"
-          sx={{ background: 'linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%)' }}
-        >
-          <Typography variant="h4" className="text-secondary text-3xl font-bold mb-4">
+        <Box sx={{ 
+          py: 6, 
+          px: 4, 
+          borderRadius: '12px', 
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%)'
+        }}>
+          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 2 }}>
             Never Miss an Update
           </Typography>
-          <Typography variant="body1" className="text-gray-700 mb-6 max-w-2xl mx-auto">
+          <Typography variant="body1" sx={{ color: '#374151', mb: 3, maxWidth: '672px', mx: 'auto' }}>
             Subscribe to our newsletter for the latest news, insights, and professional development opportunities.
           </Typography>
-          <Box className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: 2, 
+            maxWidth: '576px', 
+            mx: 'auto' 
+          }}>
             <TextField
               type="email"
               placeholder="Enter your email address"
               variant="outlined"
               fullWidth
-              className="bg-white rounded-full"
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '25px',
@@ -203,9 +246,16 @@ function NewsPage() {
             />
             <Button 
               variant="contained"
-              className="bg-primary text-white px-8 py-3 rounded-full font-semibold whitespace-nowrap transition-all hover:bg-primary-dark normal-case"
               sx={{ 
                 backgroundColor: '#7c3aed',
+                color: 'white',
+                px: 4,
+                py: 1.5,
+                borderRadius: '25px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                textTransform: 'none',
+                transition: 'all 0.3s',
                 '&:hover': { backgroundColor: '#6d28d9' }
               }}
             >

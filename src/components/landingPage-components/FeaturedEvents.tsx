@@ -169,22 +169,61 @@ function FeaturedEvents() {
   }, [isUserScrolling, totalPages])
 
   return (
-    <Box component="section" className="bg-gray-50 py-16 px-8">
+    <Box 
+      component="section" 
+      sx={{
+        backgroundColor: '#f9fafb',
+        py: 8,
+        px: 4,
+      }}
+    >
       <Typography 
         ref={elementRef}
         variant="h4" 
-        className={`text-center text-secondary text-3xl mb-12 font-bold animate-fade-in transition-opacity duration-800 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        sx={{
+          textAlign: 'center',
+          color: '#2c3e50',
+          fontSize: '2rem',
+          mb: 6,
+          fontWeight: 'bold',
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.8s ease-out',
+          animation: isVisible ? 'fadeIn 0.8s ease-out' : 'none',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0 },
+            '100%': { opacity: 1 },
+          },
+        }}
       >
         Featured Events
       </Typography>
-      <Container maxWidth="lg" className="relative overflow-hidden select-none">
+      <Container 
+        maxWidth="lg" 
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          userSelect: 'none',
+        }}
+      >
         {currentPage > 0 && (
           <IconButton
             onClick={() => scrollToPage(currentPage - 1)}
-            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-purple-900 text-white w-10 h-10 transition-all hover:bg-purple-800 hover:scale-110 hidden md:flex"
-            sx={{ 
+            sx={{
+              position: 'absolute',
+              left: '-20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
               backgroundColor: 'rgba(107, 33, 168, 0.9)',
-              '&:hover': { backgroundColor: 'rgba(107, 33, 168, 1)' }
+              color: 'white',
+              width: 40,
+              height: 40,
+              display: { xs: 'none', md: 'flex' },
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: 'rgba(107, 33, 168, 1)',
+                transform: 'translateY(-50%) scale(1.1)',
+              },
             }}
           >
             <ArrowBackIosNewIcon fontSize="small" />
@@ -200,12 +239,17 @@ function FeaturedEvents() {
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
-          className="overflow-hidden"
-          sx={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          sx={{
+            overflow: 'hidden',
+            cursor: isDragging ? 'grabbing' : 'grab',
+          }}
         >
           <Box 
-            className="flex gap-8 transition-transform duration-500 pb-4"
             sx={{
+              display: 'flex',
+              gap: 4,
+              transition: 'transform 0.5s ease-in-out',
+              pb: 2,
               transform: `translateX(-${currentPage * (100 / eventsPerPage)}%)`,
               pointerEvents: isDragging ? 'none' : 'auto',
             }}
@@ -235,10 +279,22 @@ function FeaturedEvents() {
         {currentPage < totalPages - 1 && (
           <IconButton
             onClick={() => scrollToPage(currentPage + 1)}
-            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-purple-900 text-white w-10 h-10 transition-all hover:bg-purple-800 hover:scale-110 hidden md:flex"
-            sx={{ 
+            sx={{
+              position: 'absolute',
+              right: '-20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
               backgroundColor: 'rgba(107, 33, 168, 0.9)',
-              '&:hover': { backgroundColor: 'rgba(107, 33, 168, 1)' }
+              color: 'white',
+              width: 40,
+              height: 40,
+              display: { xs: 'none', md: 'flex' },
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: 'rgba(107, 33, 168, 1)',
+                transform: 'translateY(-50%) scale(1.1)',
+              },
             }}
           >
             <ArrowForwardIosIcon fontSize="small" />
@@ -246,7 +302,16 @@ function FeaturedEvents() {
         )}
       </Container>
       
-      <Box className="flex justify-center items-center gap-3 mt-8 p-4">
+      <Box 
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 1.5,
+          mt: 4,
+          p: 2,
+        }}
+      >
         {Array.from({ length: Math.min(totalPages, 3) }).map((_, i) => {
           let dotIndex = i
           if (totalPages > 3) {
@@ -259,11 +324,24 @@ function FeaturedEvents() {
           }
           
           return (
-            <button
+            <Box
               key={dotIndex}
+              component="button"
               onClick={() => scrollToPage(dotIndex)}
-              className={`h-3 rounded-full border-none cursor-pointer transition-all hover:bg-gray-400 hover:scale-125 p-0
-                ${currentPage === dotIndex ? 'w-8 bg-purple-900' : 'w-3 bg-gray-300'}`}
+              sx={{
+                height: 12,
+                width: currentPage === dotIndex ? 32 : 12,
+                borderRadius: currentPage === dotIndex ? '6px' : '50%',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                p: 0,
+                backgroundColor: currentPage === dotIndex ? '#6b21a8' : '#cbd5e1',
+                '&:hover': {
+                  backgroundColor: '#94a3b8',
+                  transform: 'scale(1.2)',
+                },
+              }}
               aria-label={`Go to page ${dotIndex + 1}`}
             />
           )

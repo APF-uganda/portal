@@ -15,24 +15,31 @@ function VisionMission() {
   ]
 
   return (
-    <Box component="section" className="bg-gray-50 py-16 px-8">
+    <Box component="section" sx={{ backgroundColor: '#f9fafb', py: 8, px: 4 }}>
       <Container maxWidth="lg">
-        <Box className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 4 }}>
           <Card 
-            className="h-full p-10 rounded-xl transition-all hover:-translate-y-1 hover:shadow-xl"
             sx={{
+              height: '100%',
+              p: 5,
+              borderRadius: '12px',
               background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
               color: 'white',
+              transition: 'all 0.3s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 6
+              }
             }}
           >
             <CardContent>
-              <Box className="mb-6">
+              <Box sx={{ mb: 3 }}>
                 <VisibilityIcon sx={{ fontSize: 40 }} />
               </Box>
-              <Typography variant="h4" className="text-3xl mb-4 font-bold">
+              <Typography variant="h4" sx={{ fontSize: '1.875rem', mb: 2, fontWeight: 'bold' }}>
                 Our Vision
               </Typography>
-              <Typography variant="body1" className="leading-relaxed text-white opacity-95">
+              <Typography variant="body1" sx={{ lineHeight: 1.7, opacity: 0.95 }}>
                 To be the leading voice in uplifting standards advancing a strong, 
                 ethical and globally competitive accountancy profession in Uganda and beyond.
               </Typography>
@@ -40,17 +47,27 @@ function VisionMission() {
           </Card>
 
           <Card 
-            className="h-full p-10 rounded-xl border-2 border-gray-200 transition-all hover:-translate-y-1 hover:shadow-xl"
-            sx={{ background: 'white' }}
+            sx={{ 
+              height: '100%',
+              p: 5,
+              borderRadius: '12px',
+              background: 'white',
+              border: '2px solid #e5e7eb',
+              transition: 'all 0.3s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 6
+              }
+            }}
           >
             <CardContent>
-              <Box className="mb-6">
+              <Box sx={{ mb: 3 }}>
                 <EventIcon sx={{ fontSize: 40, color: '#7c3aed' }} />
               </Box>
-              <Typography variant="h4" className="text-secondary text-3xl mb-4 font-bold">
+              <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', mb: 2, fontWeight: 'bold' }}>
                 Our Mission
               </Typography>
-              <Typography variant="body1" className="text-gray-700 leading-relaxed">
+              <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.7 }}>
                 To empower accounting professionals through collaborative, continuous 
                 learning, ethical engagement, and advocacy, strengthening the 
                 accountancy profession in Uganda.
@@ -58,19 +75,36 @@ function VisionMission() {
             </CardContent>
           </Card>
 
-          <Box className="col-span-1 md:col-span-2">
-            <Card className="p-10 rounded-xl shadow-md">
+          <Box sx={{ gridColumn: { xs: '1', md: 'span 2' } }}>
+            <Card sx={{ p: 5, borderRadius: '12px', boxShadow: 2 }}>
               <CardContent>
-                <Typography variant="h4" className="text-secondary text-3xl mb-8 font-bold text-center">
+                <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
                   Our Objectives
                 </Typography>
-                <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <Box sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
+                  gap: 3 
+                }}>
                   {objectives.map((obj, index) => (
-                    <Box key={index} className="flex items-center gap-3 p-3 transition-all hover:bg-gray-100 rounded-lg">
-                      <Typography variant="h5" className="text-2xl">
+                    <Box 
+                      key={index} 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1.5, 
+                        p: 1.5,
+                        transition: 'all 0.3s',
+                        borderRadius: '8px',
+                        '&:hover': {
+                          backgroundColor: '#f3f4f6'
+                        }
+                      }}
+                    >
+                      <Typography variant="h5" sx={{ fontSize: '1.5rem' }}>
                         {obj.icon}
                       </Typography>
-                      <Typography variant="body2" className="text-gray-800 text-sm">
+                      <Typography variant="body2" sx={{ color: '#1f2937', fontSize: '0.875rem' }}>
                         {obj.text}
                       </Typography>
                     </Box>

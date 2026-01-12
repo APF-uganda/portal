@@ -20,25 +20,45 @@ function Timeline() {
   ]
 
   return (
-    <Box component="section" className="bg-white py-12 px-8">
+    <Box component="section" sx={{ backgroundColor: 'white', py: 6, px: 4 }}>
       <Container maxWidth="lg">
-        <Box className="flex flex-col md:flex-row justify-between gap-8 relative">
-          <Box 
-            className="hidden md:block absolute top-10 left-0 right-0 h-1 bg-primary z-0"
-          />
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          justifyContent: 'space-between', 
+          gap: 4, 
+          position: 'relative' 
+        }}>
+          <Box sx={{ 
+            display: { xs: 'none', md: 'block' },
+            position: 'absolute',
+            top: '40px',
+            left: 0,
+            right: 0,
+            height: '4px',
+            backgroundColor: '#7c3aed',
+            zIndex: 0
+          }} />
           {timelineData.map((item, index) => (
-            <Box key={index} className="flex-1 relative z-10">
-              <Box className="flex justify-center mb-6">
-                <Box className="w-20 h-20 rounded-full bg-primary border-4 border-white shadow-lg" />
+            <Box key={index} sx={{ flex: 1, position: 'relative', zIndex: 10 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                <Box sx={{ 
+                  width: 80, 
+                  height: 80, 
+                  borderRadius: '50%', 
+                  backgroundColor: '#7c3aed', 
+                  border: '4px solid white', 
+                  boxShadow: 3 
+                }} />
               </Box>
-              <Box className="text-center">
-                <Typography variant="h5" className="text-primary text-2xl font-bold mb-2">
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h5" sx={{ color: '#7c3aed', fontSize: '1.5rem', fontWeight: 'bold', mb: 1 }}>
                   {item.year}
                 </Typography>
-                <Typography variant="h6" className="text-secondary text-base font-semibold mb-3">
+                <Typography variant="h6" sx={{ color: '#1e293b', fontSize: '1rem', fontWeight: 600, mb: 1.5 }}>
                   {item.title}
                 </Typography>
-                <Typography variant="body2" className="text-gray-600 text-sm leading-relaxed">
+                <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem', lineHeight: 1.7 }}>
                   {item.description}
                 </Typography>
               </Box>

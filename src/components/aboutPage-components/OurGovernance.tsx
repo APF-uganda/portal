@@ -20,38 +20,101 @@ function OurGovernance() {
   ]
 
   return (
-    <Box component="section" className="bg-gray-50 py-16 px-8">
+    <Box 
+      component="section" 
+      sx={{
+        backgroundColor: '#f8f9fa',
+        py: 8,
+        px: 4,
+      }}
+    >
       <Container maxWidth="lg">
         <Typography 
           ref={elementRef}
           variant="h3" 
-          className={`text-center text-secondary text-4xl mb-4 font-bold transition-opacity duration-800 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          sx={{
+            textAlign: 'center',
+            color: '#2c3e50',
+            fontSize: '2.5rem',
+            mb: 2,
+            fontWeight: 'bold',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'all 0.8s ease-out',
+          }}
         >
           Our Governance
         </Typography>
-        <Typography variant="body1" className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+        <Typography 
+          variant="body1" 
+          sx={{
+            textAlign: 'center',
+            color: '#666',
+            mb: 6,
+            maxWidth: '700px',
+            mx: 'auto',
+          }}
+        >
           Meet the dedicated leaders who steer APF Uganda towards its vision of 
           professional excellence and integrity.
         </Typography>
         
-        <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <Box 
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(3, 1fr)',
+            },
+            gap: 4,
+          }}
+        >
           {leaders.map((leader, index) => (
-            <Card key={index} className="text-center p-8 rounded-xl shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
+            <Card 
+              key={index} 
+              sx={{
+                textAlign: 'center',
+                p: 4,
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 8px 12px rgba(0, 0, 0, 0.15)',
+                },
+              }}
+            >
               <CardContent>
                 <Avatar
                   src={leader.image}
                   alt={leader.name}
-                  className="mx-auto mb-6"
                   sx={{ 
                     width: 150, 
                     height: 150,
                     border: '4px solid #7c3aed',
+                    mx: 'auto',
+                    mb: 3,
                   }}
                 />
-                <Typography variant="h6" className="text-secondary text-lg font-semibold mb-2">
+                <Typography 
+                  variant="h6" 
+                  sx={{
+                    color: '#2c3e50',
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    mb: 1,
+                  }}
+                >
                   {leader.name}
                 </Typography>
-                <Typography variant="body2" className="text-gray-600 text-sm">
+                <Typography 
+                  variant="body2" 
+                  sx={{
+                    color: '#666',
+                    fontSize: '0.9rem',
+                  }}
+                >
                   {leader.role}
                 </Typography>
               </CardContent>

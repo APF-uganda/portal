@@ -102,25 +102,63 @@ function LatestNews() {
   }
 
   return (
-    <Box component="section" className="bg-purple-100 py-16 px-8">
+    <Box 
+      component="section" 
+      sx={{
+        backgroundColor: '#e9d5ff',
+        py: 8,
+        px: 4,
+      }}
+    >
       <Typography 
         ref={elementRef}
         variant="h4" 
-        className={`text-center text-secondary text-3xl mb-12 font-bold animate-fade-in transition-opacity duration-800 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        sx={{
+          textAlign: 'center',
+          color: '#2c3e50',
+          fontSize: '2rem',
+          mb: 6,
+          fontWeight: 'bold',
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.8s ease-out',
+          animation: isVisible ? 'fadeIn 0.8s ease-out' : 'none',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0 },
+            '100%': { opacity: 1 },
+          },
+        }}
       >
         Latest News & Insights
       </Typography>
-      <Container maxWidth="lg" className="relative px-16">
+      <Container 
+        maxWidth="lg" 
+        sx={{
+          position: 'relative',
+          px: { xs: 6, md: 8 },
+        }}
+      >
         <IconButton
           onClick={scrollToPrev}
           disabled={currentIndex === 0}
-          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 shadow-md transition-all ${currentIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-primary hover:text-white hover:scale-110'}`}
           sx={{
+            position: 'absolute',
+            left: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+            backgroundColor: 'white',
+            width: 40,
+            height: 40,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            opacity: currentIndex === 0 ? 0.3 : 1,
+            cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
             '&:hover:not(:disabled)': {
               backgroundColor: '#7c3aed',
               color: 'white',
+              transform: 'translateY(-50%) scale(1.1)',
               boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-            }
+            },
+            transition: 'all 0.3s ease',
           }}
         >
           <ArrowBackIosNewIcon />
@@ -128,13 +166,20 @@ function LatestNews() {
         
         <Box 
           ref={scrollContainerRef}
-          className="flex gap-8 overflow-x-hidden scroll-smooth p-4"
+          sx={{
+            display: 'flex',
+            gap: 4,
+            overflowX: 'hidden',
+            scrollBehavior: 'smooth',
+            p: 2,
+          }}
         >
           {news.map((item, index) => (
             <Box 
               key={index}
-              className="flex-shrink-0 flex-grow-0"
               sx={{
+                flexShrink: 0,
+                flexGrow: 0,
                 flexBasis: {
                   xs: '100%',
                   md: 'calc(50% - 16px)',
@@ -163,13 +208,25 @@ function LatestNews() {
         <IconButton
           onClick={scrollToNext}
           disabled={currentIndex >= news.length - 3}
-          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white w-10 h-10 shadow-md transition-all ${currentIndex >= news.length - 3 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-primary hover:text-white hover:scale-110'}`}
           sx={{
+            position: 'absolute',
+            right: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+            backgroundColor: 'white',
+            width: 40,
+            height: 40,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            opacity: currentIndex >= news.length - 3 ? 0.3 : 1,
+            cursor: currentIndex >= news.length - 3 ? 'not-allowed' : 'pointer',
             '&:hover:not(:disabled)': {
               backgroundColor: '#7c3aed',
               color: 'white',
+              transform: 'translateY(-50%) scale(1.1)',
               boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-            }
+            },
+            transition: 'all 0.3s ease',
           }}
         >
           <ArrowForwardIosIcon />

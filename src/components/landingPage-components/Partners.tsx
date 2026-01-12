@@ -16,17 +16,41 @@ function Partners() {
   ]
 
   return (
-    <Box component="section" className="bg-white py-16 px-8 overflow-hidden">
+    <Box 
+      component="section" 
+      sx={{
+        backgroundColor: 'white',
+        py: 8,
+        px: 4,
+        overflow: 'hidden',
+      }}
+    >
       <Typography 
         ref={elementRef}
         variant="h4" 
-        className={`text-center text-secondary text-3xl mb-12 font-bold animate-fade-in transition-opacity duration-800 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        sx={{
+          textAlign: 'center',
+          color: '#2c3e50',
+          fontSize: '2rem',
+          mb: 6,
+          fontWeight: 'bold',
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.8s ease-out',
+          animation: isVisible ? 'fadeIn 0.8s ease-out' : 'none',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0 },
+            '100%': { opacity: 1 },
+          },
+        }}
       >
         Our Partners
       </Typography>
       <Box 
-        className="max-w-full overflow-hidden relative py-8"
         sx={{
+          maxWidth: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+          py: 4,
           '&::before, &::after': {
             content: '""',
             position: 'absolute',
@@ -47,10 +71,21 @@ function Partners() {
         }}
       >
         <Box 
-          className="flex gap-16 animate-scroll w-fit"
           sx={{
+            display: 'flex',
+            gap: 8,
+            animation: 'scroll 30s linear infinite',
+            width: 'fit-content',
             '&:hover': {
               animationPlayState: 'paused',
+            },
+            '@keyframes scroll': {
+              '0%': {
+                transform: 'translateX(0)',
+              },
+              '100%': {
+                transform: 'translateX(-50%)',
+              },
             },
           }}
         >
@@ -58,7 +93,22 @@ function Partners() {
             <Typography
               key={index}
               variant="h3"
-              className="text-blue-500 font-bold text-4xl whitespace-nowrap min-w-[150px] flex items-center justify-center cursor-pointer transition-all hover:scale-125 hover:text-primary"
+              sx={{
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: '#3b82f6',
+                whiteSpace: 'nowrap',
+                minWidth: '150px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.2)',
+                  color: '#7c3aed',
+                },
+              }}
             >
               {partner}
             </Typography>

@@ -6,21 +6,29 @@ function OurHistory() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   return (
-    <Box component="section" className="bg-white py-16 px-8">
+    <Box component="section" sx={{ backgroundColor: 'white', py: 8, px: 4 }}>
       <Container maxWidth="lg">
-        <Box className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <Box className="md:col-span-2 animate-fade-in">
-            <Box className="mb-4">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 6 }}>
+          <Box>
+            <Box sx={{ mb: 2 }}>
               <AccessTimeIcon sx={{ fontSize: 48, color: '#7c3aed' }} />
             </Box>
             <Typography 
               ref={elementRef}
               variant="h4" 
-              className={`text-secondary text-3xl mb-6 font-bold transition-opacity duration-800 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              sx={{ 
+                color: '#1e293b', 
+                fontSize: '1.875rem', 
+                mb: 3, 
+                fontWeight: 'bold',
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateY(0)' : 'translateY(32px)',
+                transition: 'opacity 0.8s, transform 0.8s'
+              }}
             >
               Our History
             </Typography>
-            <Typography variant="body1" className="leading-relaxed text-gray-700">
+            <Typography variant="body1" sx={{ lineHeight: 1.7, color: '#374151' }}>
               The Accountancy Practitioners Forum (APF Uganda) is the leading professional 
               body dedicated to advancing the accountancy profession in Uganda. We uphold 
               ethical standards, foster professional development, and advocate for policies 
@@ -28,7 +36,7 @@ function OurHistory() {
             </Typography>
           </Box>
           
-          <Box className="border-l-4 border-primary pl-8">
+          <Box sx={{ borderLeft: '4px solid #7c3aed', pl: 4 }}>
             {[
               { icon: '👤', text: 'Become a Member' },
               { icon: '📅', text: 'Our Events' },
@@ -37,10 +45,21 @@ function OurHistory() {
             ].map((link, index) => (
               <Box 
                 key={index}
-                className="flex items-center gap-3 py-4 cursor-pointer transition-all hover:text-primary hover:translate-x-2"
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1.5, 
+                  py: 2, 
+                  cursor: 'pointer',
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    color: '#7c3aed',
+                    transform: 'translateX(8px)'
+                  }
+                }}
               >
-                <Typography variant="h6" className="text-xl">{link.icon}</Typography>
-                <Typography variant="body1" className="text-gray-800">{link.text}</Typography>
+                <Typography variant="h6" sx={{ fontSize: '1.25rem' }}>{link.icon}</Typography>
+                <Typography variant="body1" sx={{ color: '#1f2937' }}>{link.text}</Typography>
               </Box>
             ))}
           </Box>

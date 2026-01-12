@@ -13,13 +13,23 @@ interface NewsCardProps {
 function NewsCard({ image, tag, title, description, date, readTime, onReadMore }: NewsCardProps) {
   return (
     <Card 
-      className="bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl animate-fade-in-up"
       sx={{
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease',
+        animation: 'fadeInUp 0.8s ease-out',
         '&:hover': {
+          transform: 'translateY(-10px)',
           boxShadow: '0 8px 25px rgba(124, 58, 237, 0.2)',
         },
         '&:hover img': {
           transform: 'scale(1.05)',
+        },
+        '@keyframes fadeInUp': {
+          '0%': { opacity: 0, transform: 'translateY(30px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
         },
       }}
     >
@@ -28,26 +38,71 @@ function NewsCard({ image, tag, title, description, date, readTime, onReadMore }
         height="200"
         image={image}
         alt={title}
-        className="h-[200px] object-cover transition-transform duration-300"
+        sx={{
+          height: '200px',
+          objectFit: 'cover',
+          transition: 'transform 0.3s ease',
+        }}
       />
-      <CardContent className="p-6">
+      <CardContent sx={{ p: 3 }}>
         <Chip 
           label={tag}
-          className="bg-purple-100 text-primary font-semibold text-xs mb-2"
-          sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed' }}
+          size="small"
+          sx={{ 
+            backgroundColor: '#e9d5ff',
+            color: '#7c3aed',
+            fontWeight: 600,
+            fontSize: '0.75rem',
+            mb: 1,
+          }}
         />
-        <Typography variant="h6" className="text-secondary text-lg my-2">
+        <Typography 
+          variant="h6" 
+          sx={{
+            color: '#2c3e50',
+            fontSize: '1.1rem',
+            my: 1,
+          }}
+        >
           {title}
         </Typography>
-        <Typography variant="body2" className="text-gray-600 text-sm leading-relaxed my-2">
+        <Typography 
+          variant="body2" 
+          sx={{
+            color: '#666',
+            fontSize: '0.9rem',
+            lineHeight: 1.6,
+            my: 1,
+          }}
+        >
           {description}
         </Typography>
-        <Typography variant="caption" className="text-gray-400 text-xs">
+        <Typography 
+          variant="caption" 
+          sx={{
+            color: '#999',
+            fontSize: '0.8rem',
+            display: 'block',
+            mt: 1,
+          }}
+        >
           {date} • {readTime}
         </Typography>
         <Button 
           onClick={onReadMore}
-          className="text-primary font-semibold mt-2 transition-all hover:underline hover:translate-x-2 normal-case p-0"
+          sx={{
+            color: '#7c3aed',
+            fontWeight: 600,
+            mt: 1,
+            p: 0,
+            textTransform: 'none',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              textDecoration: 'underline',
+              transform: 'translateX(5px)',
+              backgroundColor: 'transparent',
+            },
+          }}
         >
           Read More
         </Button>

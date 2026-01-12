@@ -6,11 +6,37 @@ function ChairMessage() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   return (
-    <Box className="bg-purple-100 py-16 px-8">
-      <Container maxWidth="lg" className="flex flex-col md:flex-row gap-12 items-center animate-fade-in">
+    <Box 
+      sx={{
+        backgroundColor: '#e9d5ff',
+        py: 8,
+        px: 4,
+      }}
+    >
+      <Container 
+        maxWidth="lg" 
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 6,
+          alignItems: 'center',
+          animation: 'fadeIn 1s ease-out',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0 },
+            '100%': { opacity: 1 },
+          },
+        }}
+      >
         <Box 
-          className="relative overflow-hidden rounded-lg min-w-[300px] min-h-[350px] flex items-center justify-center"
           sx={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '8px',
+            minWidth: '300px',
+            minHeight: '350px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             '&::before': {
               content: '""',
@@ -32,10 +58,20 @@ function ChairMessage() {
             },
           }}
         >
-          <img 
-            src={chairmanImg} 
+          <Box
+            component="img"
+            src={chairmanImg}
             alt="CPA Ronald Mukumba - Chairperson APF Uganda"
-            className="w-[300px] h-[350px] object-cover rounded-lg transition-transform duration-300"
+            sx={{
+              width: '300px',
+              height: '350px',
+              objectFit: 'cover',
+              borderRadius: '8px',
+              transition: 'transform 0.3s ease',
+              display: 'block',
+              position: 'relative',
+              zIndex: 0,
+            }}
             onError={(e) => {
               console.error('Image failed to load:', chairmanImg)
               e.currentTarget.style.display = 'none'
@@ -43,27 +79,84 @@ function ChairMessage() {
           />
         </Box>
         
-        <Box className="animate-slide-in-right">
+        <Box 
+          sx={{
+            animation: 'slideInRight 1s ease-out',
+            '@keyframes slideInRight': {
+              '0%': { opacity: 0, transform: 'translateX(50px)' },
+              '100%': { opacity: 1, transform: 'translateX(0)' },
+            },
+          }}
+        >
           <Typography 
             ref={elementRef}
             variant="h4" 
-            className={`text-secondary text-3xl mb-6 font-bold relative inline-block transition-opacity duration-800 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'}
-              after:content-[''] after:absolute after:bottom-[-10px] after:left-0 after:w-[60px] after:h-[3px] after:bg-primary`}
+            sx={{
+              color: '#2c3e50',
+              fontSize: '2rem',
+              mb: 3,
+              fontWeight: 'bold',
+              position: 'relative',
+              display: 'inline-block',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'translateX(0)' : 'translateX(50px)',
+              transition: 'all 0.8s ease-out',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: '-10px',
+                left: 0,
+                width: '60px',
+                height: '3px',
+                backgroundColor: '#7c3aed',
+              },
+            }}
           >
             Message from the Director
           </Typography>
-          <Typography variant="body1" className="leading-relaxed text-gray-800 mb-4">
+          <Typography 
+            variant="body1" 
+            sx={{
+              lineHeight: 1.8,
+              color: '#333',
+              mb: 2,
+            }}
+          >
             It is with immense pleasure that I welcome you to the Accountancy Practitioners Forum (APF Uganda). Our mission is clear: to champion advocacy, integrity, and innovation within the accounting profession across Uganda. We are committed to fostering a culture of excellence where continuous learning is paramount, and where the collective voice of our members drives meaningful change. Together, we build a stronger, more credible profession for a prosperous future.
           </Typography>
-          <Typography variant="body1" className="font-bold mt-6">
-            <strong>CPA Ronald Mutumba</strong>
+          <Typography 
+            variant="body1" 
+            sx={{
+              fontWeight: 'bold',
+              mt: 3,
+            }}
+          >
+            CPA Ronald Mutumba
           </Typography>
-          <Typography variant="body2" className="text-gray-600 text-sm">
+          <Typography 
+            variant="body2" 
+            sx={{
+              color: '#666',
+              fontSize: '0.9rem',
+            }}
+          >
             Director - APF Uganda
           </Typography>
           <Button 
-            className="text-primary font-semibold mt-4 transition-all hover:underline hover:translate-x-2 normal-case p-0"
             onClick={() => console.log('Navigate to full message')}
+            sx={{
+              color: '#7c3aed',
+              fontWeight: 600,
+              mt: 2,
+              p: 0,
+              textTransform: 'none',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                textDecoration: 'underline',
+                transform: 'translateX(5px)',
+                backgroundColor: 'transparent',
+              },
+            }}
           >
             Read Full Message →
           </Button>
