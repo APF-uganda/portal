@@ -1,0 +1,143 @@
+.membership-hero {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../images/membershipPage-images/meb.png');
+  background-size: cover;
+  background-position: center;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.membership-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.2));
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.membership-hero-content {
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.membership-hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.membership-hero-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+.membership-btn-hero {
+  background: transparent;
+  color: #fcfcfd;
+  border: 2px solid #f8f8f9;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  animation: fadeInUp 1s ease-out 0.6s both;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-hero:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  background: #7c3aed;
+  color: white;
+}
+
+.section-intro{
+padding: 4rem 1.5rem;
+max-width: 1200px;
+margin: 0 auto;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .membership-hero {
+    height: 400px;
+  }
+
+  .membership-hero-content {
+    padding: 1.5rem;
+  }
+
+  .membership-hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .membership-hero-content p {
+    font-size: 1rem;
+  }
+
+  .membership-btn-hero {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .membership-hero {
+    height: 350px;  
+  }
+
+  .membership-hero-content {
+    padding: 1rem;
+  }
+
+  .membership-hero-content h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .membership-hero-content p {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .membership-btn-hero {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+  }
+}
