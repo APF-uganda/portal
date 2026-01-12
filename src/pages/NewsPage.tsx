@@ -1,6 +1,6 @@
 import { Box, Container, Typography, Card, CardContent, CardMedia, TextField, Button, Chip } from '@mui/material'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 
 function NewsPage() {
   const newsArticles = [

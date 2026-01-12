@@ -1,7 +1,7 @@
 import { Box, Container, Typography, IconButton } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import { useState, useEffect, useRef } from 'react'
-import EventCard from '../cards/EventCard'
+import EventCard from '../common/EventCard'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import event1Img from '../../assets/images/landingPage-image/event1.jpg'

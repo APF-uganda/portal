@@ -1,5 +1,5 @@
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import Hero from '../components/aboutPage-components/Hero'
 import OurHistory from '../components/aboutPage-components/OurHistory'
 import Timeline from '../components/aboutPage-components/Timeline'

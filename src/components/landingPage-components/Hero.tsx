@@ -1,4 +1,5 @@
 import { Box, Container, Typography, Button } from '@mui/material'
+import heroImg from '../../assets/images/landingPage-image/landing_halo-section.jpg'
 
 function Hero() {
   return (
@@ -10,7 +11,9 @@ function Hero() {
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(/landing_halo-section.jpg)',
+        paddingTop: '64px', // Account for navbar height
+        marginTop: '-64px', // Pull up to extend behind navbar
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${heroImg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         '&::before': {

@@ -1,8 +1,8 @@
 import { Box, Container, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 import ConstructionIcon from '@mui/icons-material/Construction'
+import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 
 function ContactPage() {
   return (
