@@ -1,8 +1,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { Box, Container, Typography } from '@mui/material'
+import GroupsIcon from '@mui/icons-material/Groups'
+import EventIcon from '@mui/icons-material/Event'
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks'
 
 interface StatItemProps {
-  icon: string
+  icon: React.ReactNode
   value: number
   suffix: string
   label: string
@@ -77,10 +80,15 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
         },
       }}
     >
-      <Typography 
-        variant="h2" 
+      <Box 
         sx={{
-          fontSize: '2.5rem',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          backgroundColor: '#ede9fe',
           mb: 2,
           animation: 'bounce 2s ease-in-out infinite',
           '@keyframes bounce': {
@@ -90,7 +98,7 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
         }}
       >
         {icon}
-      </Typography>
+      </Box>
       <Typography 
         variant="h3" 
         sx={{
@@ -133,9 +141,24 @@ function Stats() {
           gap: 4,
         }}
       >
-        <StatItem icon="👥" value={1000} suffix="+" label="Active Members" />
-        <StatItem icon="📅" value={10} suffix="+" label="Annual Events" />
-        <StatItem icon="📢" value={100} suffix="+" label="Resources Shared" />
+        <StatItem 
+          icon={<GroupsIcon sx={{ fontSize: 40, color: '#7c3aed' }} />} 
+          value={1000} 
+          suffix="+" 
+          label="Active Members" 
+        />
+        <StatItem 
+          icon={<EventIcon sx={{ fontSize: 40, color: '#7c3aed' }} />} 
+          value={10} 
+          suffix="+" 
+          label="Annual Events" 
+        />
+        <StatItem 
+          icon={<LibraryBooksIcon sx={{ fontSize: 40, color: '#7c3aed' }} />} 
+          value={100} 
+          suffix="+" 
+          label="Resources Shared" 
+        />
       </Container>
     </Box>
   )
