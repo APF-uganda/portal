@@ -1,5 +1,4 @@
 import { Box, Container } from '@mui/material';
-import { Link } from 'react-router-dom';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import HeroSection from '../components/EventComponents/HeroSection';
