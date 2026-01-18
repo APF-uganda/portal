@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { AppBar, Toolbar, Box, Button, IconButton, Drawer, List, ListItem } from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
-import CloseIcon from '@mui/icons-material/Close'
+import { Menu, X } from 'lucide-react'
 import logoPurple from '../../assets/logo_purple.png'
 
 function Navbar() {
@@ -53,307 +51,168 @@ function Navbar() {
   ]
 
   return (
-    <AppBar 
-      position="fixed" 
-      elevation={isScrolled ? 1 : 0}
-      sx={{ 
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: isScrolled ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
-        transition: 'all 0.3s ease',
-      }}
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-white/20' 
+          : 'bg-white/15 backdrop-blur-md'
+      }`}
     >
-      <Toolbar 
-        sx={{ 
-          maxWidth: '1400px', 
-          width: '100%', 
-          mx: 'auto', 
-          px: { xs: 2, sm: 3, md: 4 },
-          minHeight: { xs: '56px', sm: '64px' },
-          justifyContent: 'space-between',
-        }}
-      >
+      <nav className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 md:px-8 min-h-[56px] sm:min-h-[64px] flex items-center justify-between">
         {/* Logo */}
         <Link 
           to="/" 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            textDecoration: 'none',
-            transition: 'all 0.3s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-          }}
+          className="flex items-center no-underline transition-transform duration-300 hover:scale-105"
         >
-          <Box
-            component="img"
+          <img
             src={logoPurple}
             alt="APF Logo"
-            sx={{
-              height: { xs: 35, sm: 40, md: 50 },
-              width: 'auto',
-              transition: 'all 0.3s ease',
-              border: 'none',
-              outline: 'none',
-            }}
+            className="h-[35px] sm:h-[40px] md:h-[50px] w-auto transition-all duration-300"
           />
         </Link>
         
         {/* Desktop Menu */}
-        <Box sx={{ display: { xs: 'none', lg: 'flex' }, gap: { md: 3, lg: 4 } }}>
+        <div className="hidden lg:flex gap-8 lg:gap-10">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              style={{
-                color: isActive(link.path) 
-                  ? (isScrolled ? '#7c3aed' : '#ffffff')
-                  : (isScrolled ? '#2c3e50' : '#ffffff'),
-                textDecoration: 'none',
-                fontSize: '0.9rem',
-                fontWeight: isActive(link.path) ? 600 : 500,
-                position: 'relative',
-                transition: 'color 0.3s ease',
-                paddingBottom: '5px',
-                borderBottom: isActive(link.path) 
-                  ? (isScrolled ? '2px solid #7c3aed' : '2px solid #ffffff')
-                  : 'none',
-                whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = isScrolled ? '#7c3aed' : '#ffffff'
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive(link.path)) {
-                  e.currentTarget.style.color = isScrolled ? '#2c3e50' : '#ffffff'
-                }
-              }}
+              className={`relative pb-1 text-[0.9rem] font-medium transition-colors duration-300 whitespace-nowrap hover:text-primary ${
+                isActive(link.path)
+                  ? isScrolled 
+                    ? 'text-primary font-semibold border-b-2 border-primary' 
+                    : 'text-white font-semibold border-b-2 border-white'
+                  : isScrolled 
+                    ? 'text-secondary' 
+                    : 'text-white'
+              }`}
             >
               {link.label}
             </Link>
           ))}
-        </Box>
+        </div>
 
         {/* Desktop Buttons */}
-        <Box sx={{ display: { xs: 'none', lg: 'flex' }, gap: 2 }}>
-          <Button 
-            variant="outlined"
-            sx={{ 
-              borderColor: isScrolled ? '#2c3e50' : '#ffffff',
-              color: isScrolled ? '#2c3e50' : '#ffffff',
-              borderRadius: '25px',
-              px: { md: 2, lg: 3 },
-              py: 1,
-              textTransform: 'none',
-              fontWeight: 500,
-              fontSize: { md: '0.85rem', lg: '0.9rem' },
-              transition: 'all 0.3s ease',
-              whiteSpace: 'nowrap',
-              '&:hover': {
-                backgroundColor: isScrolled ? '#2c3e50' : '#ffffff',
-                color: isScrolled ? 'white' : '#2c3e50',
-                transform: 'translateY(-2px)',
-              },
-            }}
+        <div className="hidden lg:flex gap-4">
+          <button 
+            className={`rounded-full px-6 lg:px-8 py-2 text-[0.85rem] lg:text-[0.9rem] font-medium transition-all duration-300 whitespace-nowrap hover:-translate-y-0.5 ${
+              isScrolled
+                ? 'border-2 border-secondary text-secondary hover:bg-secondary hover:text-white'
+                : 'border-2 border-white text-white hover:bg-white hover:text-secondary'
+            }`}
           >
             Join APF
-          </Button>
-          <Button 
-            variant="contained"
-            sx={{ 
-              backgroundColor: '#7c3aed',
-              borderRadius: '25px',
-              px: { md: 2, lg: 3 },
-              py: 1,
-              textTransform: 'none',
-              fontWeight: 500,
-              fontSize: { md: '0.85rem', lg: '0.9rem' },
-              boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
-              transition: 'all 0.3s ease',
-              whiteSpace: 'nowrap',
-              '&:hover': {
-                backgroundColor: '#6d28d9',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.5)',
-              },
-            }}
+          </button>
+          <button 
+            className="bg-primary rounded-full px-6 lg:px-8 py-2 text-[0.85rem] lg:text-[0.9rem] font-medium text-white shadow-[0_2px_8px_rgba(124,58,237,0.3)] transition-all duration-300 whitespace-nowrap hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(124,58,237,0.5)]"
           >
             Members Login
-          </Button>
-        </Box>
+          </button>
+        </div>
 
         {/* Mobile Menu Button */}
-        <IconButton
-          sx={{ 
-            display: { xs: 'block', lg: 'none' },
-            color: isScrolled ? '#2c3e50' : '#ffffff',
-            p: 1,
-            transition: 'color 0.3s ease',
-            '&:hover': {
-              backgroundColor: isScrolled 
-                ? 'rgba(124, 58, 237, 0.08)'
-                : 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
+        <button
+          className={`lg:hidden p-2 transition-colors duration-300 rounded-lg ${
+            isScrolled 
+              ? 'text-secondary hover:bg-primary/8' 
+              : 'text-white hover:bg-white/10'
+          }`}
           onClick={toggleMenu}
           aria-label="Toggle menu"
         >
-          <MenuIcon sx={{ fontSize: { xs: 26, sm: 28 } }} />
-        </IconButton>
+          <Menu className="w-6 h-6 sm:w-7 sm:h-7" />
+        </button>
 
         {/* Mobile Drawer */}
-        <Drawer
-          anchor="right"
-          open={isMenuOpen}
-          onClose={toggleMenu}
-          sx={{
-            '& .MuiDrawer-paper': {
-              width: { xs: '85%', sm: '320px', md: '350px' },
-              maxWidth: '400px',
-              backgroundColor: 'white',
-              boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.1)',
-            },
-          }}
-        >
-          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            {/* Mobile Menu Header */}
-            <Box sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <Link 
-                to="/" 
-                onClick={() => setIsMenuOpen(false)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                }}
-              >
-                <Box
-                  component="img"
-                  src={logoPurple}
-                  alt="APF Logo"
-                  sx={{
-                    height: { xs: 35, sm: 40 },
-                    width: 'auto',
-                    border: 'none',
-                    outline: 'none',
-                  }}
-                />
-              </Link>
-              <IconButton 
-                onClick={toggleMenu}
-                sx={{ color: '#2c3e50' }}
-                aria-label="Close menu"
-              >
-                <CloseIcon />
-              </IconButton>
-            </Box>
-
-            {/* Mobile Menu Links */}
-            <List sx={{ flex: 1, pt: 2, px: 2 }}>
-              {navLinks.map((link, index) => (
-                <ListItem 
-                  key={link.path} 
-                  sx={{ 
-                    py: 0,
-                    mb: 1,
-                    animation: `slideIn 0.3s ease-out ${index * 0.05}s both`,
-                    '@keyframes slideIn': {
-                      '0%': { opacity: 0, transform: 'translateX(20px)' },
-                      '100%': { opacity: 1, transform: 'translateX(0)' },
-                    },
-                  }}
+        {isMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              onClick={toggleMenu}
+            />
+            
+            {/* Drawer */}
+            <div className="fixed top-0 right-0 bottom-0 w-[85%] sm:w-[320px] md:w-[350px] max-w-[400px] bg-white shadow-[-4px_0_20px_rgba(0,0,0,0.1)] z-50 flex flex-col">
+              {/* Mobile Menu Header */}
+              <div className="p-4 sm:p-6 border-b border-black/8 flex justify-between items-center">
+                <Link 
+                  to="/" 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center no-underline"
                 >
-                  <Link
-                    to={link.path}
-                    onClick={() => setIsMenuOpen(false)}
+                  <img
+                    src={logoPurple}
+                    alt="APF Logo"
+                    className="h-[35px] sm:h-[40px] w-auto"
+                  />
+                </Link>
+                <button 
+                  onClick={toggleMenu}
+                  className="text-secondary p-2 hover:bg-black/5 rounded-lg transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Mobile Menu Links */}
+              <ul className="flex-1 pt-4 px-4 list-none">
+                {navLinks.map((link, index) => (
+                  <li 
+                    key={link.path} 
+                    className="mb-2"
                     style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      textDecoration: 'none',
-                      fontSize: '1rem',
-                      color: isActive(link.path) ? '#7c3aed' : '#2c3e50',
-                      fontWeight: isActive(link.path) ? 600 : 500,
-                      backgroundColor: isActive(link.path) ? 'rgba(124, 58, 237, 0.08)' : 'transparent',
-                      borderRadius: '8px',
-                      display: 'block',
-                      transition: 'all 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive(link.path)) {
-                        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.04)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive(link.path)) {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                      }
+                      animation: `slideIn 0.3s ease-out ${index * 0.05}s both`,
                     }}
                   >
-                    {link.label}
-                  </Link>
-                </ListItem>
-              ))}
-            </List>
+                    <Link
+                      to={link.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`block w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 no-underline ${
+                        isActive(link.path)
+                          ? 'text-primary font-semibold bg-primary/8'
+                          : 'text-secondary hover:bg-black/4'
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
 
-            {/* Mobile Menu Buttons */}
-            <Box sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              borderTop: '1px solid rgba(0, 0, 0, 0.08)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2
-            }}>
-              <Button 
-                variant="outlined"
-                fullWidth
-                sx={{ 
-                  borderColor: '#2c3e50',
-                  color: '#2c3e50',
-                  borderRadius: '25px',
-                  py: 1.5,
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  '&:hover': {
-                    backgroundColor: '#2c3e50',
-                    color: 'white',
-                  },
-                }}
-              >
-                Join APF
-              </Button>
-              <Button 
-                variant="contained"
-                fullWidth
-                sx={{ 
-                  backgroundColor: '#7c3aed',
-                  borderRadius: '25px',
-                  py: 1.5,
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
-                  '&:hover': {
-                    backgroundColor: '#6d28d9',
-                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.5)',
-                  },
-                }}
-              >
-                Members Login
-              </Button>
-            </Box>
-          </Box>
-        </Drawer>
-      </Toolbar>
-    </AppBar>
+              {/* Mobile Menu Buttons */}
+              <div className="p-4 sm:p-6 border-t border-black/8 flex flex-col gap-4">
+                <button 
+                  className="w-full border-2 border-secondary text-secondary rounded-full py-3 font-medium transition-all duration-300 hover:bg-secondary hover:text-white"
+                >
+                  Join APF
+                </button>
+                <button 
+                  className="w-full bg-primary text-white rounded-full py-3 font-medium shadow-[0_2px_8px_rgba(124,58,237,0.3)] transition-all duration-300 hover:bg-primary-dark hover:shadow-[0_4px_12px_rgba(124,58,237,0.5)]"
+                >
+                  Members Login
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </nav>
+
+      {/* Keyframes for mobile menu animation */}
+      <style>{`
+        @keyframes slideIn {
+          0% {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
+    </header>
   )
 }
 

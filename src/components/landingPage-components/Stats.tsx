@@ -1,8 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Box, Container, Typography } from '@mui/material'
-import GroupsIcon from '@mui/icons-material/Groups'
-import EventIcon from '@mui/icons-material/Event'
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks'
+import { Users, Calendar, BookOpen } from 'lucide-react'
 
 interface StatItemProps {
   icon: React.ReactNode
@@ -65,102 +62,61 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
   }, [isVisible, value])
 
   return (
-    <Box 
+    <div 
       ref={elementRef} 
-      sx={{
-        textAlign: 'center',
-        animation: 'fadeInUp 0.8s ease-out',
-        transition: 'transform 0.3s ease',
-        '&:hover': {
-          transform: 'translateY(-10px)',
-        },
-        '@keyframes fadeInUp': {
-          '0%': { opacity: 0, transform: 'translateY(30px)' },
-          '100%': { opacity: 1, transform: 'translateY(0)' },
-        },
-      }}
+      className="text-center animate-fade-in-up transition-transform duration-300 hover:-translate-y-2.5"
     >
-      <Box 
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          backgroundColor: '#ede9fe',
-          mb: 2,
-          animation: 'bounce 2s ease-in-out infinite',
-          '@keyframes bounce': {
-            '0%, 100%': { transform: 'translateY(0)' },
-            '50%': { transform: 'translateY(-10px)' },
-          },
-        }}
-      >
+      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#ede9fe] mb-4 animate-bounce-slow">
         {icon}
-      </Box>
-      <Typography 
-        variant="h3" 
-        sx={{
-          fontSize: '2.5rem',
-          color: '#2c3e50',
-          mb: 1,
-          fontWeight: 'bold',
-        }}
-      >
+      </div>
+      <h3 className="text-[2.5rem] text-secondary mb-2 font-bold">
         {count}{suffix}
-      </Typography>
-      <Typography 
-        variant="body1" 
-        sx={{
-          color: '#666',
-        }}
-      >
+      </h3>
+      <p className="text-[#666]">
         {label}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   )
 }
 
 function Stats() {
   return (
-    <Box 
-      component="section" 
-      sx={{
-        backgroundColor: 'white',
-        py: 6,
-        px: 4,
-      }}
-    >
-      <Container 
-        maxWidth="lg" 
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          justifyContent: 'space-around',
-          gap: 4,
-        }}
-      >
+    <section className="bg-white py-12 px-4">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-around gap-8">
         <StatItem 
-          icon={<GroupsIcon sx={{ fontSize: 40, color: '#7c3aed' }} />} 
+          icon={<Users className="w-10 h-10 text-primary" />} 
           value={1000} 
           suffix="+" 
           label="Active Members" 
         />
         <StatItem 
-          icon={<EventIcon sx={{ fontSize: 40, color: '#7c3aed' }} />} 
+          icon={<Calendar className="w-10 h-10 text-primary" />} 
           value={10} 
           suffix="+" 
           label="Annual Events" 
         />
         <StatItem 
-          icon={<LibraryBooksIcon sx={{ fontSize: 40, color: '#7c3aed' }} />} 
+          icon={<BookOpen className="w-10 h-10 text-primary" />} 
           value={100} 
           suffix="+" 
           label="Resources Shared" 
         />
-      </Container>
-    </Box>
+      </div>
+
+      <style>{`
+        @keyframes bounce-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+      `}</style>
+    </section>
   )
 }
 

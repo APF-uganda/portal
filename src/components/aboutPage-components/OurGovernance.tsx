@@ -1,4 +1,3 @@
-import { Box, Container, Typography, Card, CardContent, Avatar } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import ronaldImg from '../../assets/images/aboutPage-images/CPA Ronald Katumba.jpg'
 import sarahImg from '../../assets/images/aboutPage-images/CPA Sarah Nejesa.webp'
@@ -20,109 +19,43 @@ function OurGovernance() {
   ]
 
   return (
-    <Box 
-      component="section" 
-      sx={{
-        backgroundColor: '#f8f9fa',
-        py: 8,
-        px: 4,
-      }}
-    >
-      <Container maxWidth="lg">
-        <Typography 
+    <section className="bg-[#f8f9fa] py-16 px-4">
+      <div className="max-w-7xl mx-auto">
+        <h3 
           ref={elementRef}
-          variant="h3" 
-          sx={{
-            textAlign: 'center',
-            color: '#2c3e50',
-            fontSize: '2.5rem',
-            mb: 2,
-            fontWeight: 'bold',
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-            transition: 'all 0.8s ease-out',
-          }}
+          className={`text-center text-secondary text-[2.5rem] mb-4 font-bold transition-all duration-800 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
         >
           Our Governance
-        </Typography>
-        <Typography 
-          variant="body1" 
-          sx={{
-            textAlign: 'center',
-            color: '#666',
-            mb: 6,
-            maxWidth: '700px',
-            mx: 'auto',
-          }}
-        >
+        </h3>
+        <p className="text-center text-[#666] mb-12 max-w-[700px] mx-auto">
           Meet the dedicated leaders who steer APF Uganda towards its vision of 
           professional excellence and integrity.
-        </Typography>
+        </p>
         
-        <Box 
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-            },
-            gap: 4,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {leaders.map((leader, index) => (
-            <Card 
+            <div 
               key={index} 
-              sx={{
-                textAlign: 'center',
-                p: 4,
-                borderRadius: '12px',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 8px 12px rgba(0, 0, 0, 0.15)',
-                },
-              }}
+              className="text-center p-8 rounded-xl shadow-[0_4px_6px_rgba(0,0,0,0.1)] bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_12px_rgba(0,0,0,0.15)]"
             >
-              <CardContent>
-                <Avatar
-                  src={leader.image}
-                  alt={leader.name}
-                  sx={{ 
-                    width: 150, 
-                    height: 150,
-                    border: '4px solid #7c3aed',
-                    mx: 'auto',
-                    mb: 3,
-                  }}
-                />
-                <Typography 
-                  variant="h6" 
-                  sx={{
-                    color: '#2c3e50',
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    mb: 1,
-                  }}
-                >
-                  {leader.name}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{
-                    color: '#666',
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  {leader.role}
-                </Typography>
-              </CardContent>
-            </Card>
+              <img
+                src={leader.image}
+                alt={leader.name}
+                className="w-[150px] h-[150px] rounded-full border-4 border-primary mx-auto mb-6 object-cover"
+              />
+              <h6 className="text-secondary text-[1.1rem] font-semibold mb-2">
+                {leader.name}
+              </h6>
+              <p className="text-[#666] text-[0.9rem]">
+                {leader.role}
+              </p>
+            </div>
           ))}
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </section>
   )
 }
 

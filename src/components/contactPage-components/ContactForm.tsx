@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { Box, Container, Typography, TextField, Button } from '@mui/material'
-import PhoneIcon from '@mui/icons-material/Phone'
-import EmailIcon from '@mui/icons-material/Email'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
+import { Phone, Mail, MapPin } from 'lucide-react'
 
 function ContactForm() {
   const [formData, setFormData] = useState({
@@ -26,282 +23,144 @@ function ContactForm() {
   }
 
   return (
-    <Box sx={{ backgroundColor: '#e5e7eb', py: { xs: 6, md: 10 } }}>
-      <Container maxWidth="xl">
-        <Box
-          sx={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            p: { xs: 3, md: 5 },
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1.5fr' },
-              gap: { xs: 4, md: 6 },
-            }}
-          >
+    <div className="bg-[#e5e7eb] py-12 md:py-20">
+      <div className="max-w-[1400px] mx-auto px-4">
+        <div className="bg-white rounded-2xl p-6 md:p-10 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-8 md:gap-12">
             {/* Left Column - Contact Info */}
-            <Box>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  mb: 2,
-                  color: '#1f2937',
-                }}
-              >
+            <div>
+              <h5 className="text-xl font-bold mb-4 text-[#1f2937]">
                 Get in touch with us
-              </Typography>
+              </h5>
               
-              <Typography
-                variant="body2"
-                sx={{
-                  color: '#9ca3af',
-                  mb: 4,
-                  lineHeight: 1.7,
-                }}
-              >
+              <p className="text-sm text-[#9ca3af] mb-8 leading-[1.7]">
                 Have a question about membership, professional development, or upcoming events? Reach out to the Accountancy Practitioners Forum (APF) and our team will be glad to assist. We're here to support members and advance professionalism in accountancy.
-              </Typography>
+              </p>
 
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  mb: 3,
-                  color: '#1f2937',
-                }}
-              >
+              <h6 className="text-lg font-bold mb-6 text-[#1f2937]">
                 Our Contact Information
-              </Typography>
+              </h6>
 
               {/* Contact Info */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              <div className="flex flex-col gap-5">
                 {/* Phone */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                  <PhoneIcon sx={{ color: '#7c3aed', fontSize: 22, mt: 0.3 }} />
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 600, color: '#1f2937', fontSize: '0.9rem', mb: 0.3 }}
-                    >
+                <div className="flex items-start gap-3">
+                  <Phone className="text-primary w-[22px] h-[22px] mt-1" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#1f2937] mb-1">
                       Phone
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                    </p>
+                    <p className="text-sm text-[#9ca3af]">
                       +256-XXXX-XXXXX
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
 
                 {/* Email */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                  <EmailIcon sx={{ color: '#7c3aed', fontSize: 22, mt: 0.3 }} />
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 600, color: '#1f2937', fontSize: '0.9rem', mb: 0.3 }}
-                    >
+                <div className="flex items-start gap-3">
+                  <Mail className="text-primary w-[22px] h-[22px] mt-1" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#1f2937] mb-1">
                       Email
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                    </p>
+                    <p className="text-sm text-[#9ca3af]">
                       info@apfuganda.com
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
 
                 {/* Office Address */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                  <LocationOnIcon sx={{ color: '#7c3aed', fontSize: 22, mt: 0.3 }} />
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 600, color: '#1f2937', fontSize: '0.9rem', mb: 0.3 }}
-                    >
+                <div className="flex items-start gap-3">
+                  <MapPin className="text-primary w-[22px] h-[22px] mt-1" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#1f2937] mb-1">
                       Office Address
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                    </p>
+                    <p className="text-sm text-[#9ca3af]">
                       Spring Road, Bugolobi, Kampala
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-            </Box>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Right Column - Contact Form */}
-            <Box component="form" onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
               {/* Form Fields Stacked Vertically */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+              <div className="flex flex-col gap-4 mb-4">
                 {/* Name */}
-                <Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ mb: 1, color: '#6b7280', fontWeight: 500, fontSize: '0.875rem' }}
-                  >
+                <div>
+                  <label className="block mb-2 text-[#6b7280] font-medium text-sm">
                     Name
-                  </Typography>
-                  <TextField
-                    fullWidth
+                  </label>
+                  <input
+                    type="text"
                     name="name"
                     placeholder="John Doe"
                     value={formData.name}
                     onChange={handleChange}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#f9fafb',
-                        borderRadius: '8px',
-                        '& fieldset': {
-                          borderColor: '#e5e7eb',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#7c3aed',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#7c3aed',
-                        },
-                      },
-                    }}
+                    className="w-full bg-[#f9fafb] rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:border-primary transition-colors"
                   />
-                </Box>
+                </div>
 
                 {/* Email */}
-                <Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ mb: 1, color: '#6b7280', fontWeight: 500, fontSize: '0.875rem' }}
-                  >
+                <div>
+                  <label className="block mb-2 text-[#6b7280] font-medium text-sm">
                     Email
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    name="email"
+                  </label>
+                  <input
                     type="email"
+                    name="email"
                     placeholder="name@company.com"
                     value={formData.email}
                     onChange={handleChange}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#f9fafb',
-                        borderRadius: '8px',
-                        '& fieldset': {
-                          borderColor: '#e5e7eb',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#7c3aed',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#7c3aed',
-                        },
-                      },
-                    }}
+                    className="w-full bg-[#f9fafb] rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:border-primary transition-colors"
                   />
-                </Box>
+                </div>
 
                 {/* Subject */}
-                <Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ mb: 1, color: '#6b7280', fontWeight: 500, fontSize: '0.875rem' }}
-                  >
+                <div>
+                  <label className="block mb-2 text-[#6b7280] font-medium text-sm">
                     Subject
-                  </Typography>
-                  <TextField
-                    fullWidth
+                  </label>
+                  <input
+                    type="text"
                     name="subject"
                     placeholder="Inquiry about services"
                     value={formData.subject}
                     onChange={handleChange}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: '#f9fafb',
-                        borderRadius: '8px',
-                        '& fieldset': {
-                          borderColor: '#e5e7eb',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#7c3aed',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#7c3aed',
-                        },
-                      },
-                    }}
+                    className="w-full bg-[#f9fafb] rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:border-primary transition-colors"
                   />
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               {/* Message Field */}
-              <Box sx={{ mb: 3 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ mb: 1, color: '#6b7280', fontWeight: 500, fontSize: '0.875rem' }}
-                >
+              <div className="mb-6">
+                <label className="block mb-2 text-[#6b7280] font-medium text-sm">
                   Your Message
-                </Typography>
-                <TextField
-                  fullWidth
+                </label>
+                <textarea
                   name="message"
-                  multiline
                   rows={6}
                   placeholder="Type your message here..."
                   value={formData.message}
                   onChange={handleChange}
-                  variant="outlined"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#f9fafb',
-                      borderRadius: '8px',
-                      '& fieldset': {
-                        borderColor: '#e5e7eb',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: '#7c3aed',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#7c3aed',
-                      },
-                    },
-                  }}
+                  className="w-full bg-[#f9fafb] rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:border-primary transition-colors resize-none"
                 />
-              </Box>
+              </div>
 
               {/* Submit Button */}
-              <Button
+              <button
                 type="submit"
-                fullWidth
-                variant="contained"
-                sx={{
-                  backgroundColor: '#7c3aed',
-                  color: 'white',
-                  py: 1.5,
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: '#6d28d9',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.5)',
-                  },
-                }}
+                className="w-full bg-primary text-white py-3 rounded-lg text-base font-semibold shadow-[0_2px_8px_rgba(124,58,237,0.3)] transition-all duration-300 hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(124,58,237,0.5)]"
               >
                 Submit Message
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

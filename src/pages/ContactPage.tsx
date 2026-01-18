@@ -1,4 +1,3 @@
-import { Box } from '@mui/material'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
 import ContactHero from '../components/contactPage-components/ContactHero'
@@ -7,13 +6,13 @@ import ContactMap from '../components/contactPage-components/ContactMap'
 
 function ContactPage() {
   return (
-    <Box>
+    <div>
       <Navbar />
       <ContactHero />
       <ContactForm />
       <ContactMap />
       <Footer />
-    </Box>
+    </div>
   )
 }
 

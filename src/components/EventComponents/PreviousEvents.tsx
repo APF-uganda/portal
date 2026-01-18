@@ -1,17 +1,5 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  IconButton,
-} from "@mui/material";
 import Slider from "react-slick";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -61,37 +49,21 @@ const previousEvents = [
 
 // Custom arrow components
 const ArrowLeft = ({ onClick }: { onClick?: () => void }) => (
-  <IconButton
+  <button
     onClick={onClick}
-    sx={{
-      position: "absolute",
-      top: "40%",
-      left: -50,
-      zIndex: 1,
-      bgcolor: "#7c3aed",
-      color: "#fff",
-      "&:hover": { bgcolor: "#6d28d9" },
-    }}
+    className="absolute top-[40%] left-[-50px] z-10 bg-primary text-white p-3 rounded-full hover:bg-primary-dark transition-colors"
   >
-    <ArrowBackIosNewIcon />
-  </IconButton>
+    <ChevronLeft className="w-6 h-6" />
+  </button>
 );
 
 const ArrowRight = ({ onClick }: { onClick?: () => void }) => (
-  <IconButton
+  <button
     onClick={onClick}
-    sx={{
-      position: "absolute",
-      top: "40%",
-      right: -50,
-      zIndex: 1,
-      bgcolor: "#7c3aed",
-      color: "#fff",
-      "&:hover": { bgcolor: "#6d28d9" },
-    }}
+    className="absolute top-[40%] right-[-50px] z-10 bg-primary text-white p-3 rounded-full hover:bg-primary-dark transition-colors"
   >
-    <ArrowForwardIosIcon />
-  </IconButton>
+    <ChevronRight className="w-6 h-6" />
+  </button>
 );
 
 const PreviousEvents = () => {
@@ -114,75 +86,52 @@ const PreviousEvents = () => {
   };
 
   return (
-    <Box
-      sx={{
-        py: 6,
-        bgcolor: "#f5f5f5",
-        mx: "calc(50% - 50vw)",
-        px: "calc(50vw - 50%)",
-      }}
-    >
-      <Box sx={{ maxWidth: 1000, mx: "auto" }}>
-        <Typography variant="h4" textAlign="center" mb={4}>
+    <div className="py-12 bg-[#f5f5f5] -mx-[50vw] ml-[50%] px-[50vw] pl-[50%]">
+      <div className="max-w-[1000px] mx-auto">
+        <h4 className="text-center text-2xl font-semibold mb-8">
           Previous Events
-        </Typography>
-        <Box sx={{ position: "relative" }}>
+        </h4>
+        <div className="relative">
           <Slider {...settings}>
             {previousEvents.map((event, index) => (
-              <Box key={index} sx={{ px: 2, py: 2 }}>
-                <Card
-                  sx={{
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    boxShadow: 4,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    minHeight: 500,
-                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                    "&:hover": {
-                      transform: "scale(1.02)",
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    height="180"
-                    image={event.image}
+              <div key={index} className="px-4 py-4">
+                <div className="rounded-3xl overflow-hidden shadow-lg flex flex-col justify-between min-h-[500px] bg-white transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+                  <img
+                    src={event.image}
                     alt={event.title}
+                    className="h-[180px] w-full object-cover"
                   />
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6" color="text.primary" gutterBottom>
+                  <div className="p-6 flex-grow">
+                    <h6 className="text-lg text-gray-900 mb-4 font-semibold">
                       {event.title}
-                    </Typography>
+                    </h6>
 
-                    <Box display="flex" alignItems="center" mb={1}>
-                      <CalendarTodayIcon sx={{ mr: 1, color: "#7c3aed" }} />
-                      <Typography>{event.date}</Typography>
-                    </Box>
+                    <div className="flex items-center mb-2">
+                      <Calendar className="w-5 h-5 mr-2 text-primary" />
+                      <p>{event.date}</p>
+                    </div>
 
-                    <Box display="flex" alignItems="center" mb={1}>
-                      <AccessTimeIcon sx={{ mr: 1, color: "#7c3aed" }} />
-                      <Typography>{event.time}</Typography>
-                    </Box>
+                    <div className="flex items-center mb-2">
+                      <Clock className="w-5 h-5 mr-2 text-primary" />
+                      <p>{event.time}</p>
+                    </div>
 
-                    <Box display="flex" alignItems="center" mb={2}>
-                      <LocationOnIcon sx={{ mr: 1, color: "#7c3aed" }} />
-                      <Typography>{event.location}</Typography>
-                    </Box>
+                    <div className="flex items-center mb-4">
+                      <MapPin className="w-5 h-5 mr-2 text-primary" />
+                      <p>{event.location}</p>
+                    </div>
 
-                    <Typography variant="body2" mb={3}>
+                    <p className="text-sm mb-6">
                       {event.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Box>
+                    </p>
+                  </div>
+                </div>
+              </div>
             ))}
           </Slider>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,61 +1,34 @@
-import { Box, Container, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom'
-import ConstructionIcon from '@mui/icons-material/Construction'
+import { Construction } from 'lucide-react'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
 
 function MembershipPage() {
   return (
-    <Box>
+    <div>
       <Navbar />
-      <Box 
-        component="main" 
-        sx={{ 
-          minHeight: '100vh', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          backgroundColor: '#f9fafb', 
-          py: 8, 
-          px: 4 
-        }}
-      >
-        <Container maxWidth="md" sx={{ textAlign: 'center' }}>
-          <ConstructionIcon sx={{ fontSize: 100, color: '#7c3aed', mb: 4 }} />
-          <Typography variant="h2" sx={{ color: '#1e293b', fontSize: '2.25rem', fontWeight: 'bold', mb: 2 }}>
+      <main className="min-h-screen flex items-center justify-center bg-[#f9fafb] py-16 px-4">
+        <div className="max-w-3xl text-center">
+          <Construction className="w-24 h-24 text-primary mx-auto mb-8" />
+          <h2 className="text-[#1e293b] text-4xl font-bold mb-4">
             Membership
-          </Typography>
-          <Typography variant="h5" sx={{ color: '#374151', mb: 1 }}>
+          </h2>
+          <h5 className="text-[#374151] text-xl mb-2">
             This page is currently under development
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#6b7280', mb: 4 }}>
+          </h5>
+          <p className="text-[#6b7280] mb-8">
             We're working hard to bring you this content soon!
-          </Typography>
-          <Button 
-            component={Link}
+          </p>
+          <Link 
             to="/"
-            variant="contained"
-            sx={{ 
-              backgroundColor: '#7c3aed',
-              color: 'white',
-              px: 4,
-              py: 1.5,
-              borderRadius: '25px',
-              fontWeight: 600,
-              textTransform: 'none',
-              transition: 'all 0.3s',
-              '&:hover': { 
-                backgroundColor: '#6d28d9',
-                transform: 'translateY(-2px)'
-              }
-            }}
+            className="inline-block bg-primary text-white px-8 py-3 rounded-[25px] font-semibold transition-all duration-300 hover:bg-primary-dark hover:-translate-y-0.5 no-underline"
           >
             Back to Home
-          </Button>
-        </Container>
-      </Box>
+          </Link>
+        </div>
+      </main>
       <Footer />
-    </Box>
+    </div>
   )
 }
 

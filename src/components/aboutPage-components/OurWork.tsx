@@ -1,4 +1,3 @@
-import { Box, Container, Typography } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import workImg from '../../assets/images/aboutPage-images/our_work1.png'
 
@@ -6,61 +5,35 @@ function OurWork() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   return (
-    <Box component="section" sx={{ backgroundColor: 'white', py: 8, px: 4 }}>
-      <Container maxWidth="lg">
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, 
-          gap: 6, 
-          alignItems: 'center' 
-        }}>
-          <Box>
-            <Typography 
+    <section className="bg-white py-16 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h4 
               ref={elementRef}
-              variant="h4" 
-              sx={{ 
-                color: '#1e293b', 
-                fontSize: '1.875rem', 
-                mb: 3, 
-                fontWeight: 'bold',
-                opacity: isVisible ? 1 : 0,
-                transform: isVisible ? 'translateY(0)' : 'translateY(32px)',
-                transition: 'opacity 0.8s, transform 0.8s'
-              }}
+              className={`text-[#1e293b] text-[1.875rem] mb-6 font-bold transition-all duration-800 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
             >
               Our Work
-            </Typography>
-            <Typography variant="body1" sx={{ lineHeight: 1.7, color: '#374151' }}>
+            </h4>
+            <p className="leading-[1.7] text-[#374151]">
               APF supports its accounting professionals through advocacy, consultation, 
               and professional development. We promote ethical practice, influence policy, 
               shape standards and provide platforms that help practitioners thrive, 
               innovate and lead within the profession.
-            </Typography>
-          </Box>
-          <Box 
-            sx={{
-              position: 'relative',
-              overflow: 'hidden',
-              borderRadius: '12px',
-              '&:hover img': {
-                transform: 'scale(1.05)',
-              },
-            }}
-          >
+            </p>
+          </div>
+          <div className="relative overflow-hidden rounded-xl group">
             <img 
               src={workImg} 
               alt="APF Team Collaboration"
-              style={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '12px',
-                transition: 'transform 0.3s'
-              }}
+              className="w-full h-auto rounded-xl transition-transform duration-300 group-hover:scale-105"
             />
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 

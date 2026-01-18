@@ -1,5 +1,3 @@
-import { Card, CardMedia, CardContent, Typography, Button } from '@mui/material'
-
 interface EventCardProps {
   image: string
   title: string
@@ -12,113 +10,38 @@ interface EventCardProps {
 
 function EventCard({ image, title, date, time, location, description, onRegister }: EventCardProps) {
   return (
-    <Card 
-      sx={{
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.3s ease',
-        animation: 'fadeInUp 0.8s ease-out',
-        '&:hover': {
-          transform: 'translateY(-10px)',
-          boxShadow: '0 8px 25px rgba(124, 58, 237, 0.2)',
-        },
-        '&:hover img': {
-          transform: 'scale(1.1)',
-        },
-        '@keyframes fadeInUp': {
-          '0%': { opacity: 0, transform: 'translateY(30px)' },
-          '100%': { opacity: 1, transform: 'translateY(0)' },
-        },
-      }}
-    >
-      <CardMedia
-        component="img"
-        height="200"
-        image={image}
-        alt={title}
-        sx={{
-          height: '200px',
-          objectFit: 'cover',
-          transition: 'transform 0.3s ease',
-        }}
-      />
-      <CardContent sx={{ p: 3 }}>
-        <Typography 
-          variant="h6" 
-          sx={{
-            color: '#2c3e50',
-            fontSize: '1.1rem',
-            mb: 1,
-          }}
-        >
+    <div className="bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out animate-fade-in-up hover:-translate-y-2.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.2)] group">
+      <div className="h-[200px] overflow-hidden">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
+        />
+      </div>
+      <div className="p-6">
+        <h6 className="text-secondary text-[1.1rem] mb-2 font-semibold">
           {title}
-        </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{
-            color: '#666',
-            fontSize: '0.9rem',
-            py: 0.5,
-          }}
-        >
+        </h6>
+        <p className="text-[#666] text-[0.9rem] py-1">
           📅 {date}
-        </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{
-            color: '#666',
-            fontSize: '0.9rem',
-            py: 0.5,
-          }}
-        >
+        </p>
+        <p className="text-[#666] text-[0.9rem] py-1">
           🕐 {time}
-        </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{
-            color: '#666',
-            fontSize: '0.9rem',
-            py: 0.5,
-          }}
-        >
+        </p>
+        <p className="text-[#666] text-[0.9rem] py-1">
           📍 {location}
-        </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{
-            color: '#666',
-            fontSize: '0.9rem',
-            py: 0.5,
-            pb: 2,
-          }}
-        >
+        </p>
+        <p className="text-[#666] text-[0.9rem] py-1 pb-4">
           {description}
-        </Typography>
-        <Button 
-          variant="contained"
-          fullWidth
+        </p>
+        <button
           onClick={onRegister}
-          sx={{ 
-            backgroundColor: '#7c3aed',
-            color: 'white',
-            borderRadius: '25px',
-            py: 1.5,
-            fontWeight: 600,
-            textTransform: 'none',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              backgroundColor: '#6d28d9',
-              transform: 'translateY(-2px)',
-              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-            }
-          }}
+          className="w-full bg-primary text-white rounded-[25px] py-3 font-semibold transition-all duration-300 ease-in-out hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
         >
           Register
-        </Button>
-      </CardContent>
-    </Card>
+        </button>
+      </div>
+    </div>
   )
 }
 

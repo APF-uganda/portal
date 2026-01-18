@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Box, Container, Typography, IconButton } from '@mui/material'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import NewsCard from '../common/NewsCard'
 import news1Img from '../../assets/images/landingPage-image/news1.webp'
@@ -169,71 +167,27 @@ function LatestNews() {
   }, [isUserScrolling, totalPages, newsPerPage])
 
   return (
-    <Box 
-      component="section" 
-      sx={{
-        backgroundColor: '#e9d5ff',
-        py: 8,
-        px: 4,
-      }}
-    >
-      <Typography 
+    <section className="bg-[#e9d5ff] py-16 px-4">
+      <h4 
         ref={elementRef}
-        variant="h4" 
-        sx={{
-          textAlign: 'center',
-          color: '#2c3e50',
-          fontSize: '2rem',
-          mb: 6,
-          fontWeight: 'bold',
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.8s ease-out',
-          animation: isVisible ? 'fadeIn 0.8s ease-out' : 'none',
-          '@keyframes fadeIn': {
-            '0%': { opacity: 0 },
-            '100%': { opacity: 1 },
-          },
-        }}
+        className={`text-center text-secondary text-[2rem] mb-12 font-bold transition-opacity duration-800 ${
+          isVisible ? 'opacity-100 animate-fade-in' : 'opacity-0'
+        }`}
       >
         Latest News & Insights
-      </Typography>
-      <Container 
-        maxWidth="lg" 
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          userSelect: 'none',
-          px: { xs: 2, md: 3 },
-        }}
-      >
+      </h4>
+      <div className="max-w-7xl mx-auto relative overflow-hidden select-none px-2 md:px-6">
         {currentPage > 0 && (
-          <IconButton
+          <button
             onClick={() => scrollToPage(currentPage - 1)}
-            sx={{
-              position: 'absolute',
-              left: { xs: '2%', md: '-20px' },
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              backgroundColor: 'white',
-              color: '#7c3aed',
-              width: { xs: 40, md: 50 },
-              height: { xs: 40, md: 50 },
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: '#7c3aed',
-                color: 'white',
-                transform: 'translateY(-50%) scale(1.1)',
-                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-              },
-            }}
+            className="absolute left-[2%] md:left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white text-primary w-10 h-10 md:w-[50px] md:h-[50px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center hover:bg-primary hover:text-white hover:scale-110 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
+            aria-label="Previous page"
           >
-            <ArrowBackIosNewIcon fontSize="medium" />
-          </IconButton>
+            <ChevronLeft className="w-6 h-6" />
+          </button>
         )}
         
-        <Box 
+        <div 
           ref={containerRef}
           onMouseDown={handleDragStart}
           onMouseMove={handleDragMove}
@@ -242,27 +196,23 @@ function LatestNews() {
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
-          sx={{
-            overflow: 'hidden',
-            cursor: isDragging ? 'grabbing' : 'grab',
-          }}
+          className={`overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
-          <Box 
-            sx={{
-              display: 'flex',
-              gap: { xs: 2, md: 4 },
-              transition: 'transform 0.5s ease-in-out',
-              pb: 2,
-              transform: { xs: `translateX(-${currentPage * 100}%)`, md: 'translateX(0)' },
+          <div 
+            className="flex gap-4 md:gap-8 transition-transform duration-500 ease-in-out pb-4"
+            style={{
+              transform: newsPerPage === 1 ? `translateX(-${currentPage * 100}%)` : 'translateX(0)',
               pointerEvents: isDragging ? 'none' : 'auto',
             }}
           >
             {news.map((item, index) => (
-              <Box 
+              <div 
                 key={index}
-                sx={{
-                  flex: { xs: '0 0 100%', md: `0 0 calc(${100 / newsPerPage}% - ${(newsPerPage - 1) * 32 / newsPerPage}px)` },
-                  minWidth: 0,
+                className="flex-shrink-0 min-w-0"
+                style={{
+                  flexBasis: newsPerPage === 1 
+                    ? '100%' 
+                    : `calc(${100 / newsPerPage}% - ${(newsPerPage - 1) * 32 / newsPerPage}px)`
                 }}
               >
                 <NewsCard
@@ -274,49 +224,23 @@ function LatestNews() {
                   readTime={item.readTime}
                   onReadMore={() => handleReadMore(item.title)}
                 />
-              </Box>
+              </div>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
         
         {currentPage < totalPages - 1 && (
-          <IconButton
+          <button
             onClick={() => scrollToPage(currentPage + 1)}
-            sx={{
-              position: 'absolute',
-              right: { xs: '2%', md: '-20px' },
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              backgroundColor: 'white',
-              color: '#7c3aed',
-              width: { xs: 40, md: 50 },
-              height: { xs: 40, md: 50 },
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: '#7c3aed',
-                color: 'white',
-                transform: 'translateY(-50%) scale(1.1)',
-                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-              },
-            }}
+            className="absolute right-[2%] md:right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white text-primary w-10 h-10 md:w-[50px] md:h-[50px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center hover:bg-primary hover:text-white hover:scale-110 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
+            aria-label="Next page"
           >
-            <ArrowForwardIosIcon fontSize="medium" />
-          </IconButton>
+            <ChevronRight className="w-6 h-6" />
+          </button>
         )}
-      </Container>
+      </div>
       
-      <Box 
-        sx={{
-          display: { xs: 'flex', md: 'none' },
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 1.5,
-          mt: 4,
-          p: 2,
-        }}
-      >
+      <div className="flex md:hidden justify-center items-center gap-3 mt-8 p-4">
         {Array.from({ length: Math.min(totalPages, 3) }).map((_, i) => {
           let dotIndex = i
           if (totalPages > 3) {
@@ -329,30 +253,30 @@ function LatestNews() {
           }
           
           return (
-            <Box
+            <button
               key={dotIndex}
-              component="button"
               onClick={() => scrollToPage(dotIndex)}
-              sx={{
-                height: 12,
-                width: currentPage === dotIndex ? 32 : 12,
-                borderRadius: currentPage === dotIndex ? '6px' : '50%',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                p: 0,
-                backgroundColor: currentPage === dotIndex ? '#6b21a8' : '#cbd5e1',
-                '&:hover': {
-                  backgroundColor: '#94a3b8',
-                  transform: 'scale(1.2)',
-                },
-              }}
+              className={`h-3 border-none cursor-pointer transition-all duration-300 p-0 rounded-full hover:bg-[#94a3b8] hover:scale-120 ${
+                currentPage === dotIndex 
+                  ? 'w-8 bg-[#6b21a8] rounded-md' 
+                  : 'w-3 bg-[#cbd5e1]'
+              }`}
               aria-label={`Go to page ${dotIndex + 1}`}
             />
           )
         })}
-      </Box>
-    </Box>
+      </div>
+
+      <style>{`
+        @keyframes fade-in {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out;
+        }
+      `}</style>
+    </section>
   )
 }
 
