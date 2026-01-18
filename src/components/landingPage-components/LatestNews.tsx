@@ -167,10 +167,10 @@ function LatestNews() {
   }, [isUserScrolling, totalPages, newsPerPage])
 
   return (
-    <section className="bg-[#e9d5ff] py-16 px-4">
+    <section className="bg-[#e9d5ff] py-12 sm:py-16 px-4">
       <h4 
         ref={elementRef}
-        className={`text-center text-secondary text-[2rem] mb-12 font-bold transition-opacity duration-800 ${
+        className={`text-center text-secondary text-[1.75rem] sm:text-[2rem] mb-8 sm:mb-12 font-bold transition-opacity duration-800 ${
           isVisible ? 'opacity-100 animate-fade-in' : 'opacity-0'
         }`}
       >

@@ -133,9 +133,9 @@ function Navbar() {
             />
             
             {/* Drawer */}
-            <div className="fixed top-0 right-0 bottom-0 w-[85%] sm:w-[320px] md:w-[350px] max-w-[400px] bg-white shadow-[-4px_0_20px_rgba(0,0,0,0.1)] z-50 flex flex-col">
+            <div className="fixed top-0 right-0 bottom-0 w-[85%] sm:w-[320px] md:w-[350px] max-w-[400px] bg-white/98 backdrop-blur-sm shadow-[-4px_0_20px_rgba(0,0,0,0.15)] z-50 flex flex-col">
               {/* Mobile Menu Header */}
-              <div className="p-4 sm:p-6 border-b border-black/8 flex justify-between items-center">
+              <div className="p-4 sm:p-6 border-b border-black/10 flex justify-between items-center bg-white/95">
                 <Link 
                   to="/" 
                   onClick={() => setIsMenuOpen(false)}
@@ -157,7 +157,7 @@ function Navbar() {
               </div>
 
               {/* Mobile Menu Links */}
-              <ul className="flex-1 pt-4 px-4 list-none">
+              <ul className="flex-1 pt-4 px-4 list-none bg-white/95">
                 {navLinks.map((link, index) => (
                   <li 
                     key={link.path} 
@@ -171,8 +171,8 @@ function Navbar() {
                       onClick={() => setIsMenuOpen(false)}
                       className={`block w-full px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 no-underline ${
                         isActive(link.path)
-                          ? 'text-primary font-semibold bg-primary/8'
-                          : 'text-secondary hover:bg-black/4'
+                          ? 'text-primary font-semibold bg-primary/10'
+                          : 'text-secondary hover:bg-black/5'
                       }`}
                     >
                       {link.label}
@@ -182,7 +182,7 @@ function Navbar() {
               </ul>
 
               {/* Mobile Menu Buttons */}
-              <div className="p-4 sm:p-6 border-t border-black/8 flex flex-col gap-4">
+              <div className="p-4 sm:p-6 border-t border-black/10 flex flex-col gap-4 bg-white/95">
                 <button 
                   className="w-full border-2 border-secondary text-secondary rounded-full py-3 font-medium transition-all duration-300 hover:bg-secondary hover:text-white"
                 >

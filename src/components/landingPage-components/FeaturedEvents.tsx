@@ -166,10 +166,10 @@ function FeaturedEvents() {
   }, [isUserScrolling, totalPages])
 
   return (
-    <section className="bg-[#f9fafb] py-16 px-8">
+    <section className="bg-[#f9fafb] py-12 sm:py-16 px-4 sm:px-6 md:px-8">
       <h4 
         ref={elementRef}
-        className={`text-center text-secondary text-[2rem] mb-12 font-bold transition-opacity duration-[800ms] ease-out ${
+        className={`text-center text-secondary text-[1.75rem] sm:text-[2rem] mb-8 sm:mb-12 font-bold transition-opacity duration-[800ms] ease-out ${
           isVisible ? 'opacity-100 animate-[fadeIn_0.8s_ease-out]' : 'opacity-0'
         }`}
       >

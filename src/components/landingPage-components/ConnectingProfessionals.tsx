@@ -26,12 +26,12 @@ function ConnectingProfessionals() {
   }
 
   return (
-    <section className="bg-white py-16 px-8">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 items-center animate-[fadeIn_1s_ease-out]">
+    <section className="bg-white py-12 sm:py-16 px-4 sm:px-6 md:px-8">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 sm:gap-12 items-center animate-[fadeIn_1s_ease-out]">
         <div className="flex-1 animate-[slideInLeft_1s_ease-out]">
           <h4 
             ref={elementRef}
-            className={`text-secondary text-[2rem] mb-8 font-bold relative inline-block transition-all duration-[800ms] ease-out ${
+            className={`text-secondary text-[1.75rem] sm:text-[2rem] mb-6 sm:mb-8 font-bold relative inline-block transition-all duration-[800ms] ease-out ${
               isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
             }`}
           >
@@ -41,11 +41,11 @@ function ConnectingProfessionals() {
           {Object.entries(sections).map(([key, section]) => (
             <div 
               key={key}
-              className="border-b border-[#ddd] py-6 transition-all duration-300 hover:pl-2.5 hover:border-l-[3px] hover:border-l-primary"
+              className="border-b border-[#ddd] py-4 sm:py-6 transition-all duration-300 hover:pl-2.5 hover:border-l-[3px] hover:border-l-primary"
             >
               <h6 
                 onClick={() => toggleSection(key)}
-                className={`flex justify-between text-[1.2rem] cursor-pointer transition-colors duration-300 font-semibold hover:text-primary ${
+                className={`flex justify-between text-base sm:text-[1.2rem] cursor-pointer transition-colors duration-300 font-semibold hover:text-primary ${
                   openSection === key ? 'text-primary' : 'text-secondary'
                 }`}
               >
@@ -56,10 +56,10 @@ function ConnectingProfessionals() {
               </h6>
               <div 
                 className={`overflow-hidden transition-all duration-300 ${
-                  openSection === key ? 'max-h-40 opacity-100 mt-4' : 'max-h-0 opacity-0'
+                  openSection === key ? 'max-h-40 opacity-100 mt-3 sm:mt-4' : 'max-h-0 opacity-0'
                 }`}
               >
-                <p className="text-[#666] leading-relaxed">
+                <p className="text-[#666] leading-relaxed text-sm sm:text-base">
                   {section.content}
                 </p>
               </div>
@@ -67,7 +67,7 @@ function ConnectingProfessionals() {
           ))}
         </div>
         
-        <div className="relative animate-[slideInRight_1s_ease-out] before:content-[''] before:absolute before:-top-2.5 before:-left-2.5 before:right-2.5 before:bottom-2.5 before:border-[3px] before:border-primary before:rounded-lg before:-z-10 group">
+        <div className="relative animate-[slideInRight_1s_ease-out] before:content-[''] before:absolute before:-top-2.5 before:-left-2.5 before:right-2.5 before:bottom-2.5 before:border-[3px] before:border-primary before:rounded-lg before:-z-10 group w-full md:w-auto flex-shrink-0">
           <img
             src={connectingImg}
             alt="Connecting Professionals"
