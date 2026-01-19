@@ -1,55 +1,62 @@
-import { TrendingUp, GraduationCap, CheckCircle, ShieldCheck, Users } from "lucide-react";
+import {
+  TrendingUp,
+  GraduationCap,
+  CheckCircle,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 
 const CPDSection = () => {
   return (
-    <div className="py-12 bg-[#f3e8ff] -mx-[50vw] ml-[50%] px-[50vw] pl-[50%] text-center">
-      <div className="max-w-[1000px] mx-auto px-6">
-        <h4 className="text-2xl font-semibold mb-4">
+    <section className="bg-[#E5DCF9] py-16 -mx-[50vw] px-[50vw]">
+      <div className="max-w-4xl mx-auto px-4">
+        <h2 className="text-3xl font-bold text-center text-primary mb-8">
           CPD Accreditation
-        </h4>
-        <h5 className="text-xl font-semibold mb-4">
+        </h2>
+
+        <h3 className="text-xl font-semibold text-[#562497] mb-4">
           Elevate Your Expertise with APF CPD
-        </h5>
-        <p className="max-w-[700px] mx-auto mb-8">
-          Our Continuous Professional Development (CPD) programs are meticulously designed to ensure
-          accountancy practitioners in Uganda remain at the forefront of industry knowledge, ethical
-          standards, and professional skills.
+        </h3>
+        <p className="text-gray-700 mb-8">
+          Our Continuous Professional Development (CPD) programs are meticulously
+          designed to ensure accountancy practitioners in Uganda remain at the
+          forefront of industry knowledge, ethical standards, and professional skills.
         </p>
 
-        <ul className="max-w-[700px] mx-auto text-left list-none">
-          <li className="flex items-start mb-4">
-            <div className="mr-4 mt-1">
-              <TrendingUp className="w-6 h-6 text-primary" />
-            </div>
-            <p>Stay updated with the latest industry trends and regulations.</p>
-          </li>
-          <li className="flex items-start mb-4">
-            <div className="mr-4 mt-1">
-              <GraduationCap className="w-6 h-6 text-primary" />
-            </div>
-            <p>Enhance your professional skills and competencies.</p>
-          </li>
-          <li className="flex items-start mb-4">
-            <div className="mr-4 mt-1">
-              <CheckCircle className="w-6 h-6 text-primary" />
-            </div>
-            <p>Access exclusive workshops, webinars, and conferences.</p>
-          </li>
-          <li className="flex items-start mb-4">
-            <div className="mr-4 mt-1">
-              <ShieldCheck className="w-6 h-6 text-primary" />
-            </div>
-            <p>Maintain your professional license and credibility.</p>
-          </li>
-          <li className="flex items-start mb-4">
-            <div className="mr-4 mt-1">
-              <Users className="w-6 h-6 text-primary" />
-            </div>
-            <p>Network with leading professionals in the accountancy field.</p>
-          </li>
-        </ul>
+        <div className="space-y-6">
+          <div className="flex items-start gap-4">
+            <TrendingUp className="w-6 h-6 text-[#562497] mt-1" />
+            <p className="text-gray-700">
+              Stay updated with the latest industry trends and regulations.
+            </p>
+          </div>
+          <div className="flex items-start gap-4">
+            <GraduationCap className="w-6 h-6 text-[#562497] mt-1" />
+            <p className="text-gray-700">
+              Enhance your professional skills and competencies.
+            </p>
+          </div>
+          <div className="flex items-start gap-4">
+            <CheckCircle className="w-6 h-6 text-[#562497] mt-1" />
+            <p className="text-gray-700">
+              Access exclusive workshops, webinars, and conferences.
+            </p>
+          </div>
+          <div className="flex items-start gap-4">
+            <ShieldCheck className="w-6 h-6 text-[#562497] mt-1" />
+            <p className="text-gray-700">
+              Maintain your professional license and credibility.
+            </p>
+          </div>
+          <div className="flex items-start gap-4">
+            <Users className="w-6 h-6 text-[#562497] mt-1" />
+            <p className="text-gray-700">
+              Network with leading professionals in the accountancy field.
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
