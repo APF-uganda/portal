@@ -8,6 +8,7 @@ import Benefits  from '../components/membershipPage-components/Benefits'
 import MembershipProcess from '../components/membershipPage-components/application'
 import MembershipRequirements from '../components/membershipPage-components/requirements'
 import FAQ from '../components/membershipPage-components/questions'
+import CallToAction from '../components/membershipPage-components/callToAction'
 
 
 function MembershipPage() {
@@ -20,6 +21,7 @@ function MembershipPage() {
       <MembershipProcess />
       <MembershipRequirements />
       <FAQ />
+      <CallToAction />
       <Footer />
     </div>
   )
