@@ -1,8 +1,8 @@
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import Hero from '../components/membershipPage-components/Hero' 
 import Intro from '../components/membershipPage-components/Intro'
-import { Benefits } from '../components/membershipPage-components/Benefits'
+// import { Benefits } from '../components/membershipPage-components/Benefits'
 /*import '../assets/css/UnderDevelopment.css'*/
 
 function MembershipPage() {
@@ -11,7 +11,7 @@ function MembershipPage() {
       <Navbar />
       <Hero />
       <Intro />
-      <Benefits />
+      {/* <Benefits /> */}
 
       {/* <main className="under-development">
         <div className="development-content">
