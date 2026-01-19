@@ -1,212 +1,96 @@
-import { Box, Container, Typography } from '@mui/material'
+import { useState } from 'react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import connectingImg from '../../assets/images/landingPage-image/connecting.jpeg'
 
 function ConnectingProfessionals() {
   const { elementRef, isVisible } = useScrollAnimation()
+  const [openSection, setOpenSection] = useState<string>('empowerment')
+
+  const toggleSection = (section: string) => {
+    setOpenSection(openSection === section ? '' : section)
+  }
+
+  const sections = {
+    empowerment: {
+      title: 'Empowerment',
+      content: 'Access shared resources, insights and opportunities that support continuous learning and professional growth.'
+    },
+    engagement: {
+      title: 'Engagement',
+      content: 'Participate in meaningful discussions, collaborative projects, and initiatives that drive the accounting profession forward.'
+    },
+    networking: {
+      title: 'Networking',
+      content: 'Build valuable connections with fellow professionals, mentors, and industry leaders to expand your professional network.'
+    }
+  }
 
   return (
-    <Box 
-      component="section" 
-      sx={{
-        backgroundColor: 'white',
-        py: 8,
-        px: 4,
-      }}
-    >
-      <Container 
-        maxWidth="lg" 
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: 6,
-          alignItems: 'center',
-          animation: 'fadeIn 1s ease-out',
-          '@keyframes fadeIn': {
-            '0%': { opacity: 0 },
-            '100%': { opacity: 1 },
-          },
-        }}
-      >
-        <Box 
-          sx={{
-            flex: 1,
-            animation: 'slideInLeft 1s ease-out',
-            '@keyframes slideInLeft': {
-              '0%': { opacity: 0, transform: 'translateX(-50px)' },
-              '100%': { opacity: 1, transform: 'translateX(0)' },
-            },
-          }}
-        >
-          <Typography 
+    <section className="bg-white py-12 sm:py-16 px-4 sm:px-6 md:px-8">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 sm:gap-12 items-center animate-[fadeIn_1s_ease-out]">
+        <div className="flex-1 animate-[slideInLeft_1s_ease-out]">
+          <h4 
             ref={elementRef}
-            variant="h4" 
-            sx={{
-              color: '#2c3e50',
-              fontSize: '2rem',
-              mb: 4,
-              fontWeight: 'bold',
-              position: 'relative',
-              display: 'inline-block',
-              opacity: isVisible ? 1 : 0,
-              transform: isVisible ? 'translateX(0)' : 'translateX(-50px)',
-              transition: 'all 0.8s ease-out',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: '-10px',
-                left: 0,
-                width: '60px',
-                height: '3px',
-                backgroundColor: '#7c3aed',
-              },
-            }}
+            className={`text-secondary text-[1.75rem] sm:text-[2rem] mb-6 sm:mb-8 font-bold relative inline-block transition-all duration-[800ms] ease-out ${
+              isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
+            }`}
           >
             Connecting Accounting Professionals
-          </Typography>
+          </h4>
           
-          <Box 
-            sx={{
-              borderBottom: '1px solid #ddd',
-              py: 3,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                paddingLeft: '10px',
-                borderLeft: '3px solid #7c3aed',
-              },
-            }}
-          >
-            <Typography 
-              variant="h6" 
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: '#2c3e50',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                transition: 'color 0.3s ease',
-                '&:hover': {
-                  color: '#7c3aed',
-                },
-              }}
+          {Object.entries(sections).map(([key, section]) => (
+            <div 
+              key={key}
+              className="border-b border-[#ddd] py-4 sm:py-6 transition-all duration-300 hover:pl-2.5 hover:border-l-[3px] hover:border-l-primary"
             >
-              Empowerment <span>▲</span>
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{
-                mt: 2,
-                color: '#666',
-                lineHeight: 1.6,
-                animation: 'fadeIn 0.5s ease-out',
-                '@keyframes fadeIn': {
-                  '0%': { opacity: 0 },
-                  '100%': { opacity: 1 },
-                },
-              }}
-            >
-              Access shared resources, insights and opportunities that support continuous learning and professional growth.
-            </Typography>
-          </Box>
-          
-          <Box 
-            sx={{
-              borderBottom: '1px solid #ddd',
-              py: 3,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                paddingLeft: '10px',
-                borderLeft: '3px solid #7c3aed',
-              },
-            }}
-          >
-            <Typography 
-              variant="h6" 
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: '#2c3e50',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                transition: 'color 0.3s ease',
-                '&:hover': {
-                  color: '#7c3aed',
-                },
-              }}
-            >
-              Engagement <span>▼</span>
-            </Typography>
-          </Box>
-          
-          <Box 
-            sx={{
-              borderBottom: '1px solid #ddd',
-              py: 3,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                paddingLeft: '10px',
-                borderLeft: '3px solid #7c3aed',
-              },
-            }}
-          >
-            <Typography 
-              variant="h6" 
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                color: '#2c3e50',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                transition: 'color 0.3s ease',
-                '&:hover': {
-                  color: '#7c3aed',
-                },
-              }}
-            >
-              Networking <span>▼</span>
-            </Typography>
-          </Box>
-        </Box>
+              <h6 
+                onClick={() => toggleSection(key)}
+                className={`flex justify-between text-base sm:text-[1.2rem] cursor-pointer transition-colors duration-300 font-semibold hover:text-primary ${
+                  openSection === key ? 'text-primary' : 'text-secondary'
+                }`}
+              >
+                {section.title} 
+                <span className="transition-transform duration-300 inline-block">
+                  {openSection === key ? '▲' : '▼'}
+                </span>
+              </h6>
+              <div 
+                className={`overflow-hidden transition-all duration-300 ${
+                  openSection === key ? 'max-h-40 opacity-100 mt-3 sm:mt-4' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <p className="text-[#666] leading-relaxed text-sm sm:text-base">
+                  {section.content}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
         
-        <Box 
-          sx={{
-            position: 'relative',
-            animation: 'slideInRight 1s ease-out',
-            '@keyframes slideInRight': {
-              '0%': { opacity: 0, transform: 'translateX(50px)' },
-              '100%': { opacity: 1, transform: 'translateX(0)' },
-            },
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: '-10px',
-              left: '-10px',
-              right: '10px',
-              bottom: '10px',
-              border: '3px solid #7c3aed',
-              borderRadius: '8px',
-              zIndex: -1,
-            },
-            '&:hover img': {
-              transform: 'scale(1.02)',
-            },
-          }}
-        >
-          <Box
-            component="img"
+        <div className="relative animate-[slideInRight_1s_ease-out] before:content-[''] before:absolute before:-top-2.5 before:-left-2.5 before:right-2.5 before:bottom-2.5 before:border-[3px] before:border-primary before:rounded-lg before:-z-10 group w-full md:w-auto flex-shrink-0">
+          <img
             src={connectingImg}
             alt="Connecting Professionals"
-            sx={{
-              width: { xs: '100%', md: '500px' },
-              height: { xs: 'auto', md: '350px' },
-              objectFit: 'cover',
-              borderRadius: '8px',
-              transition: 'transform 0.3s ease',
-            }}
+            className="w-full md:w-[500px] h-auto md:h-[350px] object-cover rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
           />
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+      
+      <style>{`
+        @keyframes fadeIn {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        @keyframes slideInLeft {
+          0% { opacity: 0; transform: translateX(-50px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+          0% { opacity: 0; transform: translateX(50px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
+    </section>
   )
 }
 

@@ -1,7 +1,5 @@
-import { useState, useRef } from 'react'
-import { Box, Container, Typography, IconButton } from '@mui/material'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import { useState, useRef, useEffect } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import NewsCard from '../common/NewsCard'
 import news1Img from '../../assets/images/landingPage-image/news1.webp'
@@ -19,8 +17,30 @@ interface NewsItem {
 
 function LatestNews() {
   const { elementRef, isVisible } = useScrollAnimation()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [isUserScrolling, setIsUserScrolling] = useState(false)
+  const autoScrollTimerRef = useRef<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [newsPerPage, setNewsPerPage] = useState(3)
+
+  useEffect(() => {
+    const updateNewsPerPage = () => {
+      if (window.innerWidth <= 768) {
+        setNewsPerPage(1)
+      } else if (window.innerWidth <= 1024) {
+        setNewsPerPage(2)
+      } else {
+        setNewsPerPage(3)
+      }
+    }
+
+    updateNewsPerPage()
+    window.addEventListener('resize', updateNewsPerPage)
+    
+    return () => window.removeEventListener('resize', updateNewsPerPage)
+  }, [])
 
   const news: NewsItem[] = [
     {
@@ -73,166 +93,190 @@ function LatestNews() {
     },
   ]
 
+  const totalPages = Math.ceil(news.length / newsPerPage)
+
   const handleReadMore = (newsTitle: string) => {
     console.log('Read more:', newsTitle)
   }
 
-  const scrollToNext = () => {
-    if (currentIndex < news.length - 3) {
-      setCurrentIndex(currentIndex + 1)
-      scrollToIndex(currentIndex + 1)
+  const scrollToPage = (pageIndex: number) => {
+    setCurrentPage(pageIndex)
+    setIsUserScrolling(true)
+    
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current)
+    }
+    autoScrollTimerRef.current = window.setTimeout(() => {
+      setIsUserScrolling(false)
+    }, 1000)
+  }
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true)
+    setIsUserScrolling(true)
+    
+    const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
+    setStartX(pageX)
+    
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current)
     }
   }
 
-  const scrollToPrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1)
-      scrollToIndex(currentIndex - 1)
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return
+    
+    const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
+    const walk = startX - pageX
+    const containerWidth = containerRef.current?.offsetWidth || 1200
+    const threshold = containerWidth * 0.3
+    
+    if (walk > threshold && currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+      setStartX(pageX)
+    } else if (walk < -threshold && currentPage > 0) {
+      setCurrentPage(currentPage - 1)
+      setStartX(pageX)
     }
   }
 
-  const scrollToIndex = (index: number) => {
-    if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.scrollWidth / news.length
-      scrollContainerRef.current.scrollTo({
-        left: cardWidth * index,
-        behavior: 'smooth'
-      })
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current)
     }
+    autoScrollTimerRef.current = window.setTimeout(() => {
+      setIsUserScrolling(false)
+    }, 3000)
   }
+
+  useEffect(() => {
+    let intervalId: number
+
+    if (!isUserScrolling && newsPerPage === 1) {
+      intervalId = window.setInterval(() => {
+        setCurrentPage((prevPage) => (prevPage + 1) % totalPages)
+      }, 10000)
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+      if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current)
+    }
+  }, [isUserScrolling, totalPages, newsPerPage])
 
   return (
-    <Box 
-      component="section" 
-      sx={{
-        backgroundColor: '#e9d5ff',
-        py: 8,
-        px: 4,
-      }}
-    >
-      <Typography 
+    <section className="bg-[#e9d5ff] py-12 sm:py-16 px-4">
+      <h4 
         ref={elementRef}
-        variant="h4" 
-        sx={{
-          textAlign: 'center',
-          color: '#2c3e50',
-          fontSize: '2rem',
-          mb: 6,
-          fontWeight: 'bold',
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.8s ease-out',
-          animation: isVisible ? 'fadeIn 0.8s ease-out' : 'none',
-          '@keyframes fadeIn': {
-            '0%': { opacity: 0 },
-            '100%': { opacity: 1 },
-          },
-        }}
+        className={`text-center text-secondary text-[1.75rem] sm:text-[2rem] mb-8 sm:mb-12 font-bold transition-opacity duration-800 ${
+          isVisible ? 'opacity-100 animate-fade-in' : 'opacity-0'
+        }`}
       >
         Latest News & Insights
-      </Typography>
-      <Container 
-        maxWidth="lg" 
-        sx={{
-          position: 'relative',
-          px: { xs: 6, md: 8 },
-        }}
-      >
-        <IconButton
-          onClick={scrollToPrev}
-          disabled={currentIndex === 0}
-          sx={{
-            position: 'absolute',
-            left: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 10,
-            backgroundColor: 'white',
-            width: 40,
-            height: 40,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-            opacity: currentIndex === 0 ? 0.3 : 1,
-            cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
-            '&:hover:not(:disabled)': {
-              backgroundColor: '#7c3aed',
-              color: 'white',
-              transform: 'translateY(-50%) scale(1.1)',
-              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-            },
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <ArrowBackIosNewIcon />
-        </IconButton>
+      </h4>
+      <div className="max-w-7xl mx-auto relative overflow-hidden select-none px-2 md:px-6">
+        {currentPage > 0 && (
+          <button
+            onClick={() => scrollToPage(currentPage - 1)}
+            className="absolute left-[2%] md:left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white text-primary w-10 h-10 md:w-[50px] md:h-[50px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center hover:bg-primary hover:text-white hover:scale-110 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
         
-        <Box 
-          ref={scrollContainerRef}
-          sx={{
-            display: 'flex',
-            gap: 4,
-            overflowX: 'hidden',
-            scrollBehavior: 'smooth',
-            p: 2,
-          }}
+        <div 
+          ref={containerRef}
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDragMove}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+          className={`overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
-          {news.map((item, index) => (
-            <Box 
-              key={index}
-              sx={{
-                flexShrink: 0,
-                flexGrow: 0,
-                flexBasis: {
-                  xs: '100%',
-                  md: 'calc(50% - 16px)',
-                  lg: 'calc(33.333% - 21.33px)',
-                },
-                minWidth: {
-                  xs: '100%',
-                  md: 'calc(50% - 16px)',
-                  lg: 'calc(33.333% - 21.33px)',
-                },
-              }}
-            >
-              <NewsCard
-                image={item.image}
-                tag={item.tag}
-                title={item.title}
-                description={item.description}
-                date={item.date}
-                readTime={item.readTime}
-                onReadMore={() => handleReadMore(item.title)}
-              />
-            </Box>
-          ))}
-        </Box>
+          <div 
+            className="flex gap-4 md:gap-8 transition-transform duration-500 ease-in-out pb-4"
+            style={{
+              transform: newsPerPage === 1 ? `translateX(-${currentPage * 100}%)` : 'translateX(0)',
+              pointerEvents: isDragging ? 'none' : 'auto',
+            }}
+          >
+            {news.map((item, index) => (
+              <div 
+                key={index}
+                className="flex-shrink-0 min-w-0"
+                style={{
+                  flexBasis: newsPerPage === 1 
+                    ? '100%' 
+                    : `calc(${100 / newsPerPage}% - ${(newsPerPage - 1) * 32 / newsPerPage}px)`
+                }}
+              >
+                <NewsCard
+                  image={item.image}
+                  tag={item.tag}
+                  title={item.title}
+                  description={item.description}
+                  date={item.date}
+                  readTime={item.readTime}
+                  onReadMore={() => handleReadMore(item.title)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
         
-        <IconButton
-          onClick={scrollToNext}
-          disabled={currentIndex >= news.length - 3}
-          sx={{
-            position: 'absolute',
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 10,
-            backgroundColor: 'white',
-            width: 40,
-            height: 40,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-            opacity: currentIndex >= news.length - 3 ? 0.3 : 1,
-            cursor: currentIndex >= news.length - 3 ? 'not-allowed' : 'pointer',
-            '&:hover:not(:disabled)': {
-              backgroundColor: '#7c3aed',
-              color: 'white',
-              transform: 'translateY(-50%) scale(1.1)',
-              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-            },
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <ArrowForwardIosIcon />
-        </IconButton>
-      </Container>
-    </Box>
+        {currentPage < totalPages - 1 && (
+          <button
+            onClick={() => scrollToPage(currentPage + 1)}
+            className="absolute right-[2%] md:right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white text-primary w-10 h-10 md:w-[50px] md:h-[50px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center hover:bg-primary hover:text-white hover:scale-110 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
+            aria-label="Next page"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        )}
+      </div>
+      
+      <div className="flex md:hidden justify-center items-center gap-3 mt-8 p-4">
+        {Array.from({ length: Math.min(totalPages, 3) }).map((_, i) => {
+          let dotIndex = i
+          if (totalPages > 3) {
+            let startIndex = Math.max(0, currentPage - 1)
+            let endIndex = Math.min(totalPages - 1, startIndex + 2)
+            if (endIndex === totalPages - 1) {
+              startIndex = Math.max(0, endIndex - 2)
+            }
+            dotIndex = startIndex + i
+          }
+          
+          return (
+            <button
+              key={dotIndex}
+              onClick={() => scrollToPage(dotIndex)}
+              className={`h-3 border-none cursor-pointer transition-all duration-300 p-0 rounded-full hover:bg-[#94a3b8] hover:scale-120 ${
+                currentPage === dotIndex 
+                  ? 'w-8 bg-[#6b21a8] rounded-md' 
+                  : 'w-3 bg-[#cbd5e1]'
+              }`}
+              aria-label={`Go to page ${dotIndex + 1}`}
+            />
+          )
+        })}
+      </div>
+
+      <style>{`
+        @keyframes fade-in {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out;
+        }
+      `}</style>
+    </section>
   )
 }
 

@@ -1,4 +1,3 @@
-import { Box, Container, Typography, Card, CardContent, CardMedia, TextField, Button, Chip } from '@mui/material'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
 
@@ -78,195 +77,110 @@ function NewsPage() {
   };
 
   return (
-    <Box>
+    <div>
       <Navbar />
       
       {/* Hero Section */}
-      <Box sx={{ 
-        background: 'linear-gradient(90deg, #7c3aed 0%, #6b21a8 100%)', 
-        py: 10, 
-        px: 4, 
-        textAlign: 'center' 
-      }}>
-        <Typography variant="h2" sx={{ color: 'white', fontSize: '3rem', fontWeight: 'bold' }}>
+      <div className="bg-gradient-to-r from-primary to-[#6b21a8] py-20 px-4 text-center">
+        <h2 className="text-white text-5xl font-bold">
           News & Insights
-        </Typography>
-      </Box>
+        </h2>
+      </div>
 
       {/* Main Content */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <div className="max-w-7xl mx-auto py-16 px-4">
         {/* Top Pick Section */}
-        <Box sx={{ mb: 8 }}>
-          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 4 }}>
+        <div className="mb-16">
+          <h4 className="text-[#1e293b] text-[1.875rem] font-bold mb-8">
             Our Latest News: Top Pick
-          </Typography>
-          <Card sx={{ overflow: 'hidden', boxShadow: 3 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' } }}>
-              <Box>
-                <CardContent sx={{ p: 4 }}>
-                  <Chip 
-                    label={featuredArticle.category}
-                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed', fontWeight: 600, mb: 2 }}
-                  />
-                  <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.5rem', fontWeight: 'bold', mb: 1.5 }}>
-                    {featuredArticle.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
-                    By {featuredArticle.author} • {featuredArticle.date}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.7, mb: 3 }}>
-                    {featuredArticle.excerpt}
-                  </Typography>
-                  <Button 
-                    variant="contained"
-                    sx={{ 
-                      backgroundColor: '#7c3aed',
-                      color: 'white',
-                      px: 3,
-                      py: 1,
-                      borderRadius: '25px',
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      transition: 'all 0.3s',
-                      '&:hover': { backgroundColor: '#6d28d9' }
-                    }}
-                  >
-                    Read More
-                  </Button>
-                </CardContent>
-              </Box>
-              <Box sx={{ 
-                height: '100%', 
-                minHeight: '300px', 
-                backgroundImage: `url(${featuredArticle.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }} />
-            </Box>
-          </Card>
-        </Box>
+          </h4>
+          <div className="overflow-hidden shadow-lg rounded-lg bg-white">
+            <div className="grid grid-cols-1 md:grid-cols-[7fr_5fr]">
+              <div className="p-8">
+                <span className="inline-block bg-[#e9d5ff] text-primary font-semibold px-3 py-1 rounded-full text-sm mb-4">
+                  {featuredArticle.category}
+                </span>
+                <h4 className="text-[#1e293b] text-2xl font-bold mb-3">
+                  {featuredArticle.title}
+                </h4>
+                <p className="text-[#6b7280] text-sm mb-4">
+                  By {featuredArticle.author} • {featuredArticle.date}
+                </p>
+                <p className="text-[#374151] leading-[1.7] mb-6">
+                  {featuredArticle.excerpt}
+                </p>
+                <button className="bg-primary text-white px-6 py-2 rounded-[25px] font-semibold transition-all duration-300 hover:bg-primary-dark">
+                  Read More
+                </button>
+              </div>
+              <div 
+                className="h-full min-h-[300px] bg-cover bg-center"
+                style={{ backgroundImage: `url(${featuredArticle.image})` }}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Other News Section */}
-        <Box sx={{ mb: 8 }}>
-          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 4 }}>
+        <div className="mb-16">
+          <h4 className="text-[#1e293b] text-[1.875rem] font-bold mb-8">
             Our Other News
-          </Typography>
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, 
-            gap: 4 
-          }}>
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {newsArticles.map((article) => (
-              <Card 
+              <div 
                 key={article.id} 
-                sx={{ 
-                  height: '100%', 
-                  boxShadow: 2,
-                  transition: 'all 0.3s',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: 6
-                  }
-                }}
+                className="h-full shadow-md rounded-lg bg-white transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
               >
-                <CardMedia
-                  component="div"
-                  sx={{ 
-                    height: 192, 
-                    backgroundImage: `url(${article.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
+                <div 
+                  className="h-48 bg-cover bg-center rounded-t-lg"
+                  style={{ backgroundImage: `url(${article.image})` }}
                 />
-                <CardContent sx={{ p: 3 }}>
-                  <Chip 
-                    label={article.category}
-                    size="small"
-                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed', fontWeight: 600, mb: 1.5 }}
-                  />
-                  <Typography variant="h6" sx={{ color: '#1e293b', fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+                <div className="p-6">
+                  <span className="inline-block bg-[#e9d5ff] text-primary font-semibold px-3 py-1 rounded-full text-xs mb-3">
+                    {article.category}
+                  </span>
+                  <h6 className="text-[#1e293b] text-lg font-semibold mb-2">
                     {article.title}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mb: 1.5 }}>
+                  </h6>
+                  <p className="text-[#6b7280] text-xs block mb-3">
                     By {article.author} • {article.date}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#374151', mb: 2 }}>
+                  </p>
+                  <p className="text-[#374151] text-sm mb-4">
                     {article.excerpt}
-                  </Typography>
-                  <Button 
-                    variant="text"
-                    sx={{ 
-                      color: '#7c3aed', 
-                      fontWeight: 600, 
-                      p: 0, 
-                      textTransform: 'none',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
+                  </p>
+                  <button className="text-primary font-semibold p-0 hover:underline">
                     Read More
-                  </Button>
-                </CardContent>
-              </Card>
+                  </button>
+                </div>
+              </div>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Newsletter Section */}
-        <Box sx={{ 
-          py: 6, 
-          px: 4, 
-          borderRadius: '12px', 
-          textAlign: 'center',
-          background: 'linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%)'
-        }}>
-          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 2 }}>
+        <div className="py-12 px-8 rounded-xl text-center bg-gradient-to-br from-[#e9d5ff] to-[#f3e8ff]">
+          <h4 className="text-[#1e293b] text-[1.875rem] font-bold mb-4">
             Never Miss an Update
-          </Typography>
-          <Typography variant="body1" sx={{ color: '#374151', mb: 3, maxWidth: '672px', mx: 'auto' }}>
+          </h4>
+          <p className="text-[#374151] mb-6 max-w-[672px] mx-auto">
             Subscribe to our newsletter for the latest news, insights, and professional development opportunities.
-          </Typography>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', sm: 'row' }, 
-            gap: 2, 
-            maxWidth: '576px', 
-            mx: 'auto' 
-          }}>
-            <TextField
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 max-w-[576px] mx-auto">
+            <input
               type="email"
               placeholder="Enter your email address"
-              variant="outlined"
-              fullWidth
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '25px',
-                  backgroundColor: 'white',
-                }
-              }}
+              className="flex-1 rounded-[25px] bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <Button 
-              variant="contained"
-              sx={{ 
-                backgroundColor: '#7c3aed',
-                color: 'white',
-                px: 4,
-                py: 1.5,
-                borderRadius: '25px',
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                textTransform: 'none',
-                transition: 'all 0.3s',
-                '&:hover': { backgroundColor: '#6d28d9' }
-              }}
-            >
+            <button className="bg-primary text-white px-8 py-3 rounded-[25px] font-semibold whitespace-nowrap transition-all duration-300 hover:bg-primary-dark">
               Subscribe to Newsletter
-            </Button>
-          </Box>
-        </Box>
-      </Container>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+    </div>
   )
 }
 

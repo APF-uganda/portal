@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
-import { Box, Container, Typography } from '@mui/material'
+import { Users, Calendar, BookOpen } from 'lucide-react'
 
 interface StatItemProps {
-  icon: string
+  icon: React.ReactNode
   value: number
   suffix: string
   label: string
@@ -62,82 +62,61 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
   }, [isVisible, value])
 
   return (
-    <Box 
+    <div 
       ref={elementRef} 
-      sx={{
-        textAlign: 'center',
-        animation: 'fadeInUp 0.8s ease-out',
-        transition: 'transform 0.3s ease',
-        '&:hover': {
-          transform: 'translateY(-10px)',
-        },
-        '@keyframes fadeInUp': {
-          '0%': { opacity: 0, transform: 'translateY(30px)' },
-          '100%': { opacity: 1, transform: 'translateY(0)' },
-        },
-      }}
+      className="flex-1 text-center animate-fade-in-up transition-transform duration-300 hover:-translate-y-2.5 min-w-0 px-1 sm:px-2"
     >
-      <Typography 
-        variant="h2" 
-        sx={{
-          fontSize: '2.5rem',
-          mb: 2,
-          animation: 'bounce 2s ease-in-out infinite',
-          '@keyframes bounce': {
-            '0%, 100%': { transform: 'translateY(0)' },
-            '50%': { transform: 'translateY(-10px)' },
-          },
-        }}
-      >
+      <div className="inline-flex items-center justify-center w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-[#ede9fe] mb-2 xs:mb-3 sm:mb-4 animate-bounce-slow">
         {icon}
-      </Typography>
-      <Typography 
-        variant="h3" 
-        sx={{
-          fontSize: '2.5rem',
-          color: '#2c3e50',
-          mb: 1,
-          fontWeight: 'bold',
-        }}
-      >
+      </div>
+      <h3 className="text-[1.5rem] xs:text-[1.75rem] sm:text-[2rem] md:text-[2.5rem] text-secondary mb-1 sm:mb-2 font-bold leading-tight">
         {count}{suffix}
-      </Typography>
-      <Typography 
-        variant="body1" 
-        sx={{
-          color: '#666',
-        }}
-      >
+      </h3>
+      <p className="text-[#666] text-[0.7rem] xs:text-[0.8rem] sm:text-sm md:text-base px-1 leading-tight">
         {label}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   )
 }
 
 function Stats() {
   return (
-    <Box 
-      component="section" 
-      sx={{
-        backgroundColor: 'white',
-        py: 6,
-        px: 4,
-      }}
-    >
-      <Container 
-        maxWidth="lg" 
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          justifyContent: 'space-around',
-          gap: 4,
-        }}
-      >
-        <StatItem icon="👥" value={1000} suffix="+" label="Active Members" />
-        <StatItem icon="📅" value={10} suffix="+" label="Annual Events" />
-        <StatItem icon="📢" value={100} suffix="+" label="Resources Shared" />
-      </Container>
-    </Box>
+    <section className="bg-white py-6 xs:py-8 sm:py-12 px-2 xs:px-3 sm:px-4">
+      <div className="max-w-7xl mx-auto flex flex-row justify-center items-stretch gap-2 xs:gap-3 sm:gap-4 md:gap-8">
+        <StatItem 
+          icon={<Users className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />} 
+          value={1000} 
+          suffix="+" 
+          label="Active Members" 
+        />
+        <StatItem 
+          icon={<Calendar className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />} 
+          value={10} 
+          suffix="+" 
+          label="Annual Events" 
+        />
+        <StatItem 
+          icon={<BookOpen className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />} 
+          value={100} 
+          suffix="+" 
+          label="Resources Shared" 
+        />
+      </div>
+
+      <style>{`
+        @keyframes bounce-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+      `}</style>
+    </section>
   )
 }
 

@@ -1,6 +1,4 @@
-import { Box, Container, Typography, Card, CardContent } from '@mui/material'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import EventIcon from '@mui/icons-material/Event'
+import { Eye, Calendar } from 'lucide-react'
 
 function VisionMission() {
   const objectives = [
@@ -15,107 +13,61 @@ function VisionMission() {
   ]
 
   return (
-    <Box component="section" sx={{ backgroundColor: '#f9fafb', py: 8, px: 4 }}>
-      <Container maxWidth="lg">
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 4 }}>
-          <Card 
-            sx={{
-              height: '100%',
-              p: 5,
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-              color: 'white',
-              transition: 'all 0.3s',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: 6
-              }
-            }}
-          >
-            <CardContent>
-              <Box sx={{ mb: 3 }}>
-                <VisibilityIcon sx={{ fontSize: 40 }} />
-              </Box>
-              <Typography variant="h4" sx={{ fontSize: '1.875rem', mb: 2, fontWeight: 'bold' }}>
-                Our Vision
-              </Typography>
-              <Typography variant="body1" sx={{ lineHeight: 1.7, opacity: 0.95 }}>
-                To be the leading voice in uplifting standards advancing a strong, 
-                ethical and globally competitive accountancy profession in Uganda and beyond.
-              </Typography>
-            </CardContent>
-          </Card>
+    <section className="bg-[#f9fafb] py-16 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="h-full p-10 rounded-xl bg-gradient-to-br from-primary to-[#5b21b6] text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="mb-6">
+              <Eye className="w-10 h-10" />
+            </div>
+            <h4 className="text-[1.875rem] mb-4 font-bold">
+              Our Vision
+            </h4>
+            <p className="leading-[1.7] opacity-95">
+              To be the leading voice in uplifting standards advancing a strong, 
+              ethical and globally competitive accountancy profession in Uganda and beyond.
+            </p>
+          </div>
 
-          <Card 
-            sx={{ 
-              height: '100%',
-              p: 5,
-              borderRadius: '12px',
-              background: 'white',
-              border: '2px solid #e5e7eb',
-              transition: 'all 0.3s',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: 6
-              }
-            }}
-          >
-            <CardContent>
-              <Box sx={{ mb: 3 }}>
-                <EventIcon sx={{ fontSize: 40, color: '#7c3aed' }} />
-              </Box>
-              <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', mb: 2, fontWeight: 'bold' }}>
-                Our Mission
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.7 }}>
-                To empower accounting professionals through collaborative, continuous 
-                learning, ethical engagement, and advocacy, strengthening the 
-                accountancy profession in Uganda.
-              </Typography>
-            </CardContent>
-          </Card>
+          <div className="h-full p-10 rounded-xl bg-white border-2 border-[#e5e7eb] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="mb-6">
+              <Calendar className="w-10 h-10 text-primary" />
+            </div>
+            <h4 className="text-[#1e293b] text-[1.875rem] mb-4 font-bold">
+              Our Mission
+            </h4>
+            <p className="text-[#374151] leading-[1.7]">
+              To empower accounting professionals through collaborative, continuous 
+              learning, ethical engagement, and advocacy, strengthening the 
+              accountancy profession in Uganda.
+            </p>
+          </div>
 
-          <Box sx={{ gridColumn: { xs: '1', md: 'span 2' } }}>
-            <Card sx={{ p: 5, borderRadius: '12px', boxShadow: 2 }}>
-              <CardContent>
-                <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
-                  Our Objectives
-                </Typography>
-                <Box sx={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
-                  gap: 3 
-                }}>
-                  {objectives.map((obj, index) => (
-                    <Box 
-                      key={index} 
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 1.5, 
-                        p: 1.5,
-                        transition: 'all 0.3s',
-                        borderRadius: '8px',
-                        '&:hover': {
-                          backgroundColor: '#f3f4f6'
-                        }
-                      }}
-                    >
-                      <Typography variant="h5" sx={{ fontSize: '1.5rem' }}>
-                        {obj.icon}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#1f2937', fontSize: '0.875rem' }}>
-                        {obj.text}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+          <div className="md:col-span-2">
+            <div className="p-10 rounded-xl shadow-md bg-white">
+              <h4 className="text-[#1e293b] text-[1.875rem] mb-8 font-bold text-center">
+                Our Objectives
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {objectives.map((obj, index) => (
+                  <div 
+                    key={index} 
+                    className="flex items-center gap-3 p-3 transition-all duration-300 rounded-lg hover:bg-[#f3f4f6]"
+                  >
+                    <span className="text-2xl">
+                      {obj.icon}
+                    </span>
+                    <p className="text-[#1f2937] text-sm">
+                      {obj.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 

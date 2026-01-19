@@ -1,5 +1,3 @@
-import { Card, CardMedia, CardContent, Typography, Chip, Button } from '@mui/material'
-
 interface NewsCardProps {
   image: string
   tag: string
@@ -12,102 +10,35 @@ interface NewsCardProps {
 
 function NewsCard({ image, tag, title, description, date, readTime, onReadMore }: NewsCardProps) {
   return (
-    <Card 
-      sx={{
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.3s ease',
-        animation: 'fadeInUp 0.8s ease-out',
-        '&:hover': {
-          transform: 'translateY(-10px)',
-          boxShadow: '0 8px 25px rgba(124, 58, 237, 0.2)',
-        },
-        '&:hover img': {
-          transform: 'scale(1.05)',
-        },
-        '@keyframes fadeInUp': {
-          '0%': { opacity: 0, transform: 'translateY(30px)' },
-          '100%': { opacity: 1, transform: 'translateY(0)' },
-        },
-      }}
-    >
-      <CardMedia
-        component="img"
-        height="200"
-        image={image}
-        alt={title}
-        sx={{
-          height: '200px',
-          objectFit: 'cover',
-          transition: 'transform 0.3s ease',
-        }}
-      />
-      <CardContent sx={{ p: 3 }}>
-        <Chip 
-          label={tag}
-          size="small"
-          sx={{ 
-            backgroundColor: '#e9d5ff',
-            color: '#7c3aed',
-            fontWeight: 600,
-            fontSize: '0.75rem',
-            mb: 1,
-          }}
+    <div className="bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out animate-fade-in-up h-full flex flex-col hover:-translate-y-2.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.2)] group">
+      <div className="h-[200px] overflow-hidden flex-shrink-0">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
         />
-        <Typography 
-          variant="h6" 
-          sx={{
-            color: '#2c3e50',
-            fontSize: '1.1rem',
-            my: 1,
-          }}
-        >
+      </div>
+      <div className="p-6 flex flex-col flex-grow">
+        <span className="inline-block bg-[#e9d5ff] text-primary text-xs font-semibold px-3 py-1 rounded-full mb-2 self-start">
+          {tag}
+        </span>
+        <h6 className="text-secondary text-[1.1rem] my-2 min-h-[2.6em] leading-[1.3] line-clamp-2 font-semibold">
           {title}
-        </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{
-            color: '#666',
-            fontSize: '0.9rem',
-            lineHeight: 1.6,
-            my: 1,
-          }}
-        >
+        </h6>
+        <p className="text-[#666] text-[0.9rem] leading-[1.6] my-2 min-h-[4.8em] line-clamp-3 flex-grow">
           {description}
-        </Typography>
-        <Typography 
-          variant="caption" 
-          sx={{
-            color: '#999',
-            fontSize: '0.8rem',
-            display: 'block',
-            mt: 1,
-          }}
-        >
+        </p>
+        <p className="text-[#999] text-[0.8rem] block mt-2">
           {date} • {readTime}
-        </Typography>
-        <Button 
+        </p>
+        <button
           onClick={onReadMore}
-          sx={{
-            color: '#7c3aed',
-            fontWeight: 600,
-            mt: 1,
-            p: 0,
-            textTransform: 'none',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              textDecoration: 'underline',
-              transform: 'translateX(5px)',
-              backgroundColor: 'transparent',
-            },
-          }}
+          className="text-primary font-semibold mt-2 p-0 transition-all duration-300 ease-in-out self-start hover:underline hover:translate-x-1.5 bg-transparent"
         >
           Read More
-        </Button>
-      </CardContent>
-    </Card>
+        </button>
+      </div>
+    </div>
   )
 }
 

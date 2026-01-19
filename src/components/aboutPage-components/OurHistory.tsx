@@ -1,71 +1,52 @@
-import { Box, Container, Typography } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
+import { Clock } from 'lucide-react'
 
 function OurHistory() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   return (
-    <Box component="section" sx={{ backgroundColor: 'white', py: 8, px: 4 }}>
-      <Container maxWidth="lg">
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 6 }}>
-          <Box>
-            <Box sx={{ mb: 2 }}>
-              <AccessTimeIcon sx={{ fontSize: 48, color: '#7c3aed' }} />
-            </Box>
-            <Typography 
+    <section className="bg-white py-16 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-12">
+          <div>
+            <div className="mb-4">
+              <Clock className="w-12 h-12 text-primary" />
+            </div>
+            <h4 
               ref={elementRef}
-              variant="h4" 
-              sx={{ 
-                color: '#1e293b', 
-                fontSize: '1.875rem', 
-                mb: 3, 
-                fontWeight: 'bold',
-                opacity: isVisible ? 1 : 0,
-                transform: isVisible ? 'translateY(0)' : 'translateY(32px)',
-                transition: 'opacity 0.8s, transform 0.8s'
-              }}
+              className={`text-[#1e293b] text-[1.875rem] mb-6 font-bold transition-all duration-800 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
             >
               Our History
-            </Typography>
-            <Typography variant="body1" sx={{ lineHeight: 1.7, color: '#374151' }}>
+            </h4>
+            <p className="leading-[1.7] text-[#374151]">
               The Accountancy Practitioners Forum (APF Uganda) is the leading professional 
               body dedicated to advancing the accountancy profession in Uganda. We uphold 
               ethical standards, foster professional development, and advocate for policies 
               that benefit our members and the nation's economic growth.
-            </Typography>
-          </Box>
+            </p>
+          </div>
           
-          <Box sx={{ borderLeft: '4px solid #7c3aed', pl: 4 }}>
+          <div className="border-l-4 border-primary pl-8">
             {[
               { icon: '👤', text: 'Become a Member' },
               { icon: '📅', text: 'Our Events' },
               { icon: '📰', text: 'News & Insights' },
               { icon: '💬', text: "Chairman's message" },
             ].map((link, index) => (
-              <Box 
+              <div 
                 key={index}
-                sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 1.5, 
-                  py: 2, 
-                  cursor: 'pointer',
-                  transition: 'all 0.3s',
-                  '&:hover': {
-                    color: '#7c3aed',
-                    transform: 'translateX(8px)'
-                  }
-                }}
+                className="flex items-center gap-3 py-4 cursor-pointer transition-all duration-300 hover:text-primary hover:translate-x-2"
               >
-                <Typography variant="h6" sx={{ fontSize: '1.25rem' }}>{link.icon}</Typography>
-                <Typography variant="body1" sx={{ color: '#1f2937' }}>{link.text}</Typography>
-              </Box>
+                <span className="text-xl">{link.icon}</span>
+                <p className="text-[#1f2937]">{link.text}</p>
+              </div>
             ))}
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 

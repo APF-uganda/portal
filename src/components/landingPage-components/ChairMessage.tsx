@@ -1,4 +1,3 @@
-import { Box, Container, Typography, Button } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import chairmanImg from '../../assets/images/landingPage-image/chairman.jpg'
 
@@ -6,163 +5,59 @@ function ChairMessage() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   return (
-    <Box 
-      sx={{
-        backgroundColor: '#e9d5ff',
-        py: 8,
-        px: 4,
-      }}
-    >
-      <Container 
-        maxWidth="lg" 
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          gap: 6,
-          alignItems: 'center',
-          animation: 'fadeIn 1s ease-out',
-          '@keyframes fadeIn': {
-            '0%': { opacity: 0 },
-            '100%': { opacity: 1 },
-          },
-        }}
-      >
-        <Box 
-          sx={{
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: '8px',
-            minWidth: '300px',
-            minHeight: '350px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.2), transparent)',
-              zIndex: 1,
-              transition: 'opacity 0.3s ease',
-              pointerEvents: 'none',
-            },
-            '&:hover::before': {
-              opacity: 0,
-            },
-            '&:hover img': {
-              transform: 'scale(1.05)',
-            },
-          }}
-        >
-          <Box
-            component="img"
+    <section className="bg-[#e9d5ff] py-12 sm:py-16 px-4 sm:px-6 md:px-8">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 sm:gap-12 items-center animate-[fadeIn_1s_ease-out]">
+        <div className="relative overflow-hidden rounded-lg w-full max-w-[300px] h-[350px] flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] group flex-shrink-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent z-10 transition-opacity duration-300 pointer-events-none group-hover:opacity-0" />
+          <img
             src={chairmanImg}
             alt="CPA Ronald Mukumba - Chairperson APF Uganda"
-            sx={{
-              width: '300px',
-              height: '350px',
-              objectFit: 'cover',
-              borderRadius: '8px',
-              transition: 'transform 0.3s ease',
-              display: 'block',
-              position: 'relative',
-              zIndex: 0,
-            }}
+            className="w-full h-full object-cover rounded-lg transition-transform duration-300 relative z-0 group-hover:scale-105"
             onError={(e) => {
               console.error('Image failed to load:', chairmanImg)
               e.currentTarget.style.display = 'none'
             }}
           />
-        </Box>
+        </div>
         
-        <Box 
-          sx={{
-            animation: 'slideInRight 1s ease-out',
-            '@keyframes slideInRight': {
-              '0%': { opacity: 0, transform: 'translateX(50px)' },
-              '100%': { opacity: 1, transform: 'translateX(0)' },
-            },
-          }}
-        >
-          <Typography 
+        <div className="animate-[slideInRight_1s_ease-out] flex-1">
+          <h4 
             ref={elementRef}
-            variant="h4" 
-            sx={{
-              color: '#2c3e50',
-              fontSize: '2rem',
-              mb: 3,
-              fontWeight: 'bold',
-              position: 'relative',
-              display: 'inline-block',
-              opacity: isVisible ? 1 : 0,
-              transform: isVisible ? 'translateX(0)' : 'translateX(50px)',
-              transition: 'all 0.8s ease-out',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: '-10px',
-                left: 0,
-                width: '60px',
-                height: '3px',
-                backgroundColor: '#7c3aed',
-              },
-            }}
+            className={`text-secondary text-[1.75rem] sm:text-[2rem] mb-4 sm:mb-6 font-bold relative inline-block transition-all duration-[800ms] ease-out ${
+              isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+            }`}
           >
             Message from the Director
-          </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{
-              lineHeight: 1.8,
-              color: '#333',
-              mb: 2,
-            }}
-          >
+          </h4>
+          <p className="leading-relaxed text-[#333] mb-4 text-sm sm:text-base">
             It is with immense pleasure that I welcome you to the Accountancy Practitioners Forum (APF Uganda). Our mission is clear: to champion advocacy, integrity, and innovation within the accounting profession across Uganda. We are committed to fostering a culture of excellence where continuous learning is paramount, and where the collective voice of our members drives meaningful change. Together, we build a stronger, more credible profession for a prosperous future.
-          </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{
-              fontWeight: 'bold',
-              mt: 3,
-            }}
-          >
+          </p>
+          <p className="font-bold mt-4 sm:mt-6 text-sm sm:text-base">
             CPA Ronald Mutumba
-          </Typography>
-          <Typography 
-            variant="body2" 
-            sx={{
-              color: '#666',
-              fontSize: '0.9rem',
-            }}
-          >
+          </p>
+          <p className="text-[#666] text-[0.85rem] sm:text-[0.9rem]">
             Director - APF Uganda
-          </Typography>
-          <Button 
+          </p>
+          <button 
             onClick={() => console.log('Navigate to full message')}
-            sx={{
-              color: '#7c3aed',
-              fontWeight: 600,
-              mt: 2,
-              p: 0,
-              textTransform: 'none',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                textDecoration: 'underline',
-                transform: 'translateX(5px)',
-                backgroundColor: 'transparent',
-              },
-            }}
+            className="text-primary font-semibold mt-3 sm:mt-4 p-0 transition-all duration-300 bg-transparent text-sm sm:text-base hover:underline hover:translate-x-1.5"
           >
             Read Full Message →
-          </Button>
-        </Box>
-      </Container>
-    </Box>
+          </button>
+        </div>
+      </div>
+      
+      <style>{`
+        @keyframes fadeIn {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        @keyframes slideInRight {
+          0% { opacity: 0; transform: translateX(50px); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
+    </section>
   )
 }
 

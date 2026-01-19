@@ -1,9 +1,6 @@
-import { Box, Container, Typography, IconButton } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import { useState, useEffect, useRef } from 'react'
 import EventCard from '../common/EventCard'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import event1Img from '../../assets/images/landingPage-image/event1.jpg'
 import event2Img from '../../assets/images/landingPage-image/event2.jpeg'
 import event3Img from '../../assets/images/landingPage-image/event3.jpeg'
@@ -169,68 +166,17 @@ function FeaturedEvents() {
   }, [isUserScrolling, totalPages])
 
   return (
-    <Box 
-      component="section" 
-      sx={{
-        backgroundColor: '#f9fafb',
-        py: 8,
-        px: 4,
-      }}
-    >
-      <Typography 
+    <section className="bg-[#f9fafb] py-12 sm:py-16 px-4 sm:px-6 md:px-8">
+      <h4 
         ref={elementRef}
-        variant="h4" 
-        sx={{
-          textAlign: 'center',
-          color: '#2c3e50',
-          fontSize: '2rem',
-          mb: 6,
-          fontWeight: 'bold',
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.8s ease-out',
-          animation: isVisible ? 'fadeIn 0.8s ease-out' : 'none',
-          '@keyframes fadeIn': {
-            '0%': { opacity: 0 },
-            '100%': { opacity: 1 },
-          },
-        }}
+        className={`text-center text-secondary text-[1.75rem] sm:text-[2rem] mb-8 sm:mb-12 font-bold transition-opacity duration-[800ms] ease-out ${
+          isVisible ? 'opacity-100 animate-[fadeIn_0.8s_ease-out]' : 'opacity-0'
+        }`}
       >
         Featured Events
-      </Typography>
-      <Container 
-        maxWidth="lg" 
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          userSelect: 'none',
-        }}
-      >
-        {currentPage > 0 && (
-          <IconButton
-            onClick={() => scrollToPage(currentPage - 1)}
-            sx={{
-              position: 'absolute',
-              left: '-20px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              backgroundColor: 'rgba(107, 33, 168, 0.9)',
-              color: 'white',
-              width: 40,
-              height: 40,
-              display: { xs: 'none', md: 'flex' },
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(107, 33, 168, 1)',
-                transform: 'translateY(-50%) scale(1.1)',
-              },
-            }}
-          >
-            <ArrowBackIosNewIcon fontSize="small" />
-          </IconButton>
-        )}
-        
-        <Box 
+      </h4>
+      <div className="max-w-7xl mx-auto relative overflow-hidden select-none">
+        <div 
           ref={containerRef}
           onMouseDown={handleDragStart}
           onMouseMove={handleDragMove}
@@ -239,25 +185,19 @@ function FeaturedEvents() {
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
-          sx={{
-            overflow: 'hidden',
-            cursor: isDragging ? 'grabbing' : 'grab',
-          }}
+          className={`overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
-          <Box 
-            sx={{
-              display: 'flex',
-              gap: 4,
-              transition: 'transform 0.5s ease-in-out',
-              pb: 2,
+          <div 
+            className="flex gap-8 transition-transform duration-500 ease-in-out pb-4"
+            style={{
               transform: `translateX(-${currentPage * (100 / eventsPerPage)}%)`,
               pointerEvents: isDragging ? 'none' : 'auto',
             }}
           >
             {events.map((event, index) => (
-              <Box 
+              <div 
                 key={index}
-                sx={{
+                style={{
                   flex: `0 0 calc(${100 / eventsPerPage}% - ${(eventsPerPage - 1) * 32 / eventsPerPage}px)`,
                   minWidth: 0,
                 }}
@@ -271,47 +211,13 @@ function FeaturedEvents() {
                   description={event.description}
                   onRegister={() => handleRegister(event.title)}
                 />
-              </Box>
+              </div>
             ))}
-          </Box>
-        </Box>
-        
-        {currentPage < totalPages - 1 && (
-          <IconButton
-            onClick={() => scrollToPage(currentPage + 1)}
-            sx={{
-              position: 'absolute',
-              right: '-20px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              backgroundColor: 'rgba(107, 33, 168, 0.9)',
-              color: 'white',
-              width: 40,
-              height: 40,
-              display: { xs: 'none', md: 'flex' },
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(107, 33, 168, 1)',
-                transform: 'translateY(-50%) scale(1.1)',
-              },
-            }}
-          >
-            <ArrowForwardIosIcon fontSize="small" />
-          </IconButton>
-        )}
-      </Container>
+          </div>
+        </div>
+      </div>
       
-      <Box 
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 1.5,
-          mt: 4,
-          p: 2,
-        }}
-      >
+      <div className="flex justify-center items-center gap-3 mt-8 p-4">
         {Array.from({ length: Math.min(totalPages, 3) }).map((_, i) => {
           let dotIndex = i
           if (totalPages > 3) {
@@ -324,30 +230,27 @@ function FeaturedEvents() {
           }
           
           return (
-            <Box
+            <button
               key={dotIndex}
-              component="button"
               onClick={() => scrollToPage(dotIndex)}
-              sx={{
-                height: 12,
-                width: currentPage === dotIndex ? 32 : 12,
-                borderRadius: currentPage === dotIndex ? '6px' : '50%',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                p: 0,
-                backgroundColor: currentPage === dotIndex ? '#6b21a8' : '#cbd5e1',
-                '&:hover': {
-                  backgroundColor: '#94a3b8',
-                  transform: 'scale(1.2)',
-                },
-              }}
+              className={`h-3 border-none cursor-pointer transition-all duration-300 p-0 hover:bg-[#94a3b8] hover:scale-110 ${
+                currentPage === dotIndex 
+                  ? 'w-8 rounded-md bg-[#6b21a8]' 
+                  : 'w-3 rounded-full bg-[#cbd5e1]'
+              }`}
               aria-label={`Go to page ${dotIndex + 1}`}
             />
           )
         })}
-      </Box>
-    </Box>
+      </div>
+      
+      <style>{`
+        @keyframes fadeIn {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+      `}</style>
+    </section>
   )
 }
 
