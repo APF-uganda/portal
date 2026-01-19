@@ -34,7 +34,7 @@ export default function MembershipRequirements() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-white py-16">
+    <section className="bg-gray-50 py-16">
       {/* EXTRA HORIZONTAL MARGINS */}
       <div className="max-w-6xl mx-auto px-10 lg:px-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">

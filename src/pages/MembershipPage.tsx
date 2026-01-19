@@ -7,6 +7,7 @@ import Intro from '../components/membershipPage-components/Intro'
 import Benefits  from '../components/membershipPage-components/Benefits'
 import MembershipProcess from '../components/membershipPage-components/application'
 import MembershipRequirements from '../components/membershipPage-components/requirements'
+import FAQ from '../components/membershipPage-components/questions'
 
 
 function MembershipPage() {
@@ -18,6 +19,7 @@ function MembershipPage() {
       <Benefits />
       <MembershipProcess />
       <MembershipRequirements />
+      <FAQ />
       <Footer />
     </div>
   )
