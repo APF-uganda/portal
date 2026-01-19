@@ -6,6 +6,7 @@ import Hero from '../components/membershipPage-components/Hero'
 import Intro from '../components/membershipPage-components/Intro'
 import Benefits  from '../components/membershipPage-components/Benefits'
 import MembershipProcess from '../components/membershipPage-components/application'
+import MembershipRequirements from '../components/membershipPage-components/requirements'
 
 
 function MembershipPage() {
@@ -16,6 +17,7 @@ function MembershipPage() {
       <Intro />
       <Benefits />
       <MembershipProcess />
+      <MembershipRequirements />
       <Footer />
     </div>
   )

@@ -23,7 +23,7 @@ export default function MembershipProcess() {
 
         {/* STEPPER */}
         <div className="relative flex items-center justify-between">
-          {/* CONNECTOR LINE (trimmed) */}
+          {/* CONNECTOR LINE  */}
           <div className="absolute top-6 left-[12.5%] right-[12.5%] h-[2px] bg-purple-600" />
 
           {steps.map((step) => {
@@ -36,7 +36,7 @@ export default function MembershipProcess() {
               >
                 {/* ICON WRAPPER */}
                 <div className="relative mb-4">
-                  {/* STEP NUMBER (top-left badge) */}
+                  {/* STEP NUMBER */}
                   <span
                     className="
                       absolute -top-2 -left-2
