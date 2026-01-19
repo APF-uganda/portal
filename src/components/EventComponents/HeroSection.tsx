@@ -4,7 +4,7 @@ const HeroSection = () => {
       {/* Background Image */}
       <div className="relative h-[50vh] md:h-[60vh] w-full">
         <img
-          src="/src/assets/images/Events/Hero.jpg"
+          src="/images/Hero.jpg"
           alt="APF Events Hero"
           className="absolute inset-0 w-full h-full object-cover"
         />

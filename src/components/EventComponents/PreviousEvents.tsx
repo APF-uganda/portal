@@ -18,7 +18,7 @@ const baseEvents: Event[] = [
     location: "Sheraton Kampala Hotel, Kampala",
     description:
       "Join us for our flagship annual event featuring keynote speakers, elections, and networking.",
-    image: "/src/assets/images/Events/annual.png",
+    image: "/images/annual.png",
   },
   {
     title: "Tax Updates Workshop 2026",
@@ -27,7 +27,7 @@ const baseEvents: Event[] = [
     location: "Sheraton Kampala Hotel, Kampala",
     description:
       "Stay ahead with the latest tax regulations and compliance requirements for 2026.",
-    image: "/src/assets/images/Events/Tax.jpg",
+    image: "/images/Tax.jpg",
   },
    {
     title: "Annual APF Conference 2026: Digital Transformation in Accounting",
@@ -36,7 +36,7 @@ const baseEvents: Event[] = [
     location: "Sheraton Kampala Hotel, Kampala",
     description:
       "Join us for our flagship annual event featuring keynote speakers, elections, and networking.",
-    image: "/src/assets/images/Events/annual.png",
+    image: "/images/annual.png",
   },
   {
     title: "Tax Updates Workshop 2026",
@@ -45,7 +45,7 @@ const baseEvents: Event[] = [
     location: "Sheraton Kampala Hotel, Kampala",
     description:
       "Stay ahead with the latest tax regulations and compliance requirements for 2026.",
-    image: "/src/assets/images/Events/Tax.jpg",
+    image: "/images/Tax.jpg",
   },
 ];
 

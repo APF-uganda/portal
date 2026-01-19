@@ -18,7 +18,7 @@ const events: Event[] = [
         location: "Sheraton Kampala Hotel, Kampala",
         description:
             "Join us for our flagship annual event featuring keynote speakers, elections, and networking.",
-        image: "/src/assets/images/Events/annual.png",
+        image: "/images/annual.png",
     },
     {
         title: "Tax Updates Workshop 2026",
@@ -27,7 +27,7 @@ const events: Event[] = [
         location: "Sheraton Kampala Hotel, Kampala",
         description:
             "Stay ahead with the latest tax regulations and compliance requirements for 2026.",
-        image: "/src/assets/images/Events/Tax.jpg",
+        image: "/images/Tax.jpg",
     },
     {
         title: "Annual Ethics in Accounting Seminar",
@@ -36,7 +36,7 @@ const events: Event[] = [
         location: "Sheraton Kampala Hotel, Kampala",
         description:
             "Explore challenges and best practices in modern accounting ethics.",
-        image: "/src/assets/images/Events/Ethics.jpg",
+        image: "/images/Ethics.jpg",
     },
     {
         title: "Annual Digital Transformation Forum",
@@ -45,7 +45,7 @@ const events: Event[] = [
         location: "Sheraton Kampala Hotel, Kampala",
         description:
             "Discover how technology is reshaping the accounting landscape.",
-        image: "/src/assets/images/Events/Digital.jpg",
+        image: "/images/Digital.jpg",
     },
 ];
 
