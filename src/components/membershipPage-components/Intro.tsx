@@ -1,24 +1,23 @@
-
-
-import '../../assets/css/membership/intro.css';
-
 /**
  * Intro component for the membership page.
  * Displays an introductory section about joining APF Uganda.
  */
-function Intro () {
+function Intro() {
   return (
-    <section className="intro-wrapper">
-      <div className="section-intro">
-        <h2>Be part of APF Uganda</h2>
-        <p>
+    <section className="bg-gray-50 py-8 px-6">
+      <div className="max-w-[900px] mx-auto text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Be part of APF Uganda
+        </h2>
+
+        <p className="text-base text-gray-700 leading-[2.2] max-w-[820px] mx-auto">
           By joining APF Uganda, you will be part of a professional community
-          that connects accounting practitioners, supports their growth, and represents
-          their interests across Uganda.
+          that connects accounting practitioners, supports their growth, and
+          represents their interests across Uganda.
         </p>
       </div>
     </section>
   );
-};
+}
 
 export default Intro;
