@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react'
-import '../../assets/css/LatestNews.css'
+import { Box, Container, Typography, IconButton } from '@mui/material'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import NewsCard from '../cards/NewsCard'
+import NewsCard from '../common/NewsCard'
 import news1Img from '../../assets/images/landingPage-image/news1.webp'
 import news2Img from '../../assets/images/landingPage-image/news2.webp'
 import news3Img from '../../assets/images/landingPage-image/news3.png'
@@ -69,27 +71,10 @@ function LatestNews() {
       date: 'August 20, 2024',
       readTime: '6 min read'
     },
-    {
-      image: news1Img,
-      tag: 'Sustainability',
-      title: 'ESG Reporting: The New Frontier for Accountants',
-      description: 'Learn about environmental, social, and governance reporting standards and how they impact the accounting profession.',
-      date: 'August 5, 2024',
-      readTime: '5 min read'
-    },
-    {
-      image: news2Img,
-      tag: 'Career Development',
-      title: 'Building a Successful Career in Public Practice',
-      description: 'Expert advice on career progression, skill development, and networking strategies for accounting professionals.',
-      date: 'July 25, 2024',
-      readTime: '6 min read'
-    }
   ]
 
   const handleReadMore = (newsTitle: string) => {
     console.log('Read more:', newsTitle)
-    // Add navigation logic here
   }
 
   const scrollToNext = () => {
@@ -117,46 +102,137 @@ function LatestNews() {
   }
 
   return (
-    <section className="news">
-      <h2 
+    <Box 
+      component="section" 
+      sx={{
+        backgroundColor: '#e9d5ff',
+        py: 8,
+        px: 4,
+      }}
+    >
+      <Typography 
         ref={elementRef}
-        className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
+        variant="h4" 
+        sx={{
+          textAlign: 'center',
+          color: '#2c3e50',
+          fontSize: '2rem',
+          mb: 6,
+          fontWeight: 'bold',
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.8s ease-out',
+          animation: isVisible ? 'fadeIn 0.8s ease-out' : 'none',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0 },
+            '100%': { opacity: 1 },
+          },
+        }}
       >
         Latest News & Insights
-      </h2>
-      <div className="news-slider">
-        <button 
-          className={`slider-btn prev ${currentIndex === 0 ? 'disabled' : ''}`}
+      </Typography>
+      <Container 
+        maxWidth="lg" 
+        sx={{
+          position: 'relative',
+          px: { xs: 6, md: 8 },
+        }}
+      >
+        <IconButton
           onClick={scrollToPrev}
           disabled={currentIndex === 0}
-          aria-label="Previous news"
+          sx={{
+            position: 'absolute',
+            left: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+            backgroundColor: 'white',
+            width: 40,
+            height: 40,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            opacity: currentIndex === 0 ? 0.3 : 1,
+            cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
+            '&:hover:not(:disabled)': {
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              transform: 'translateY(-50%) scale(1.1)',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+            },
+            transition: 'all 0.3s ease',
+          }}
         >
-          ‹
-        </button>
-        <div className="news-grid" ref={scrollContainerRef}>
+          <ArrowBackIosNewIcon />
+        </IconButton>
+        
+        <Box 
+          ref={scrollContainerRef}
+          sx={{
+            display: 'flex',
+            gap: 4,
+            overflowX: 'hidden',
+            scrollBehavior: 'smooth',
+            p: 2,
+          }}
+        >
           {news.map((item, index) => (
-            <NewsCard
+            <Box 
               key={index}
-              image={item.image}
-              tag={item.tag}
-              title={item.title}
-              description={item.description}
-              date={item.date}
-              readTime={item.readTime}
-              onReadMore={() => handleReadMore(item.title)}
-            />
+              sx={{
+                flexShrink: 0,
+                flexGrow: 0,
+                flexBasis: {
+                  xs: '100%',
+                  md: 'calc(50% - 16px)',
+                  lg: 'calc(33.333% - 21.33px)',
+                },
+                minWidth: {
+                  xs: '100%',
+                  md: 'calc(50% - 16px)',
+                  lg: 'calc(33.333% - 21.33px)',
+                },
+              }}
+            >
+              <NewsCard
+                image={item.image}
+                tag={item.tag}
+                title={item.title}
+                description={item.description}
+                date={item.date}
+                readTime={item.readTime}
+                onReadMore={() => handleReadMore(item.title)}
+              />
+            </Box>
           ))}
-        </div>
-        <button 
-          className={`slider-btn next ${currentIndex >= news.length - 3 ? 'disabled' : ''}`}
+        </Box>
+        
+        <IconButton
           onClick={scrollToNext}
           disabled={currentIndex >= news.length - 3}
-          aria-label="Next news"
+          sx={{
+            position: 'absolute',
+            right: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+            backgroundColor: 'white',
+            width: 40,
+            height: 40,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            opacity: currentIndex >= news.length - 3 ? 0.3 : 1,
+            cursor: currentIndex >= news.length - 3 ? 'not-allowed' : 'pointer',
+            '&:hover:not(:disabled)': {
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              transform: 'translateY(-50%) scale(1.1)',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+            },
+            transition: 'all 0.3s ease',
+          }}
         >
-          ›
-        </button>
-      </div>
-    </section>
+          <ArrowForwardIosIcon />
+        </IconButton>
+      </Container>
+    </Box>
   )
 }
 

@@ -1,4 +1,6 @@
-import '../../assets/css/VisionMission.css'
+import { Box, Container, Typography, Card, CardContent } from '@mui/material'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import EventIcon from '@mui/icons-material/Event'
 
 function VisionMission() {
   const objectives = [
@@ -13,48 +15,107 @@ function VisionMission() {
   ]
 
   return (
-    <section className="vision-mission">
-      <div className="vm-container">
-        <div className="vm-card vision-card">
-          <div className="vm-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="white"/>
-            </svg>
-          </div>
-          <h3>Our Vision</h3>
-          <p>
-            To be the leading voice in uplifting standards advancing a strong, 
-            ethical and globally competitive accountancy profession in Uganda and beyond.
-          </p>
-        </div>
+    <Box component="section" sx={{ backgroundColor: '#f9fafb', py: 8, px: 4 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 4 }}>
+          <Card 
+            sx={{
+              height: '100%',
+              p: 5,
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+              color: 'white',
+              transition: 'all 0.3s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 6
+              }
+            }}
+          >
+            <CardContent>
+              <Box sx={{ mb: 3 }}>
+                <VisibilityIcon sx={{ fontSize: 40 }} />
+              </Box>
+              <Typography variant="h4" sx={{ fontSize: '1.875rem', mb: 2, fontWeight: 'bold' }}>
+                Our Vision
+              </Typography>
+              <Typography variant="body1" sx={{ lineHeight: 1.7, opacity: 0.95 }}>
+                To be the leading voice in uplifting standards advancing a strong, 
+                ethical and globally competitive accountancy profession in Uganda and beyond.
+              </Typography>
+            </CardContent>
+          </Card>
 
-        <div className="vm-card mission-card">
-          <div className="vm-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" fill="#7c3aed"/>
-            </svg>
-          </div>
-          <h3>Our Mission</h3>
-          <p>
-            To empower accounting professionals through collaborative, continuous 
-            learning, ethical engagement, and advocacy, strengthening the 
-            accountancy profession in Uganda.
-          </p>
-        </div>
+          <Card 
+            sx={{ 
+              height: '100%',
+              p: 5,
+              borderRadius: '12px',
+              background: 'white',
+              border: '2px solid #e5e7eb',
+              transition: 'all 0.3s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: 6
+              }
+            }}
+          >
+            <CardContent>
+              <Box sx={{ mb: 3 }}>
+                <EventIcon sx={{ fontSize: 40, color: '#7c3aed' }} />
+              </Box>
+              <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', mb: 2, fontWeight: 'bold' }}>
+                Our Mission
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.7 }}>
+                To empower accounting professionals through collaborative, continuous 
+                learning, ethical engagement, and advocacy, strengthening the 
+                accountancy profession in Uganda.
+              </Typography>
+            </CardContent>
+          </Card>
 
-        <div className="objectives-card">
-          <h3>Our Objectives</h3>
-          <div className="objectives-grid">
-            {objectives.map((obj, index) => (
-              <div key={index} className="objective-item">
-                <span className="objective-icon">{obj.icon}</span>
-                <span className="objective-text">{obj.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
+          <Box sx={{ gridColumn: { xs: '1', md: 'span 2' } }}>
+            <Card sx={{ p: 5, borderRadius: '12px', boxShadow: 2 }}>
+              <CardContent>
+                <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
+                  Our Objectives
+                </Typography>
+                <Box sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
+                  gap: 3 
+                }}>
+                  {objectives.map((obj, index) => (
+                    <Box 
+                      key={index} 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1.5, 
+                        p: 1.5,
+                        transition: 'all 0.3s',
+                        borderRadius: '8px',
+                        '&:hover': {
+                          backgroundColor: '#f3f4f6'
+                        }
+                      }}
+                    >
+                      <Typography variant="h5" sx={{ fontSize: '1.5rem' }}>
+                        {obj.icon}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#1f2937', fontSize: '0.875rem' }}>
+                        {obj.text}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   )
 }
 

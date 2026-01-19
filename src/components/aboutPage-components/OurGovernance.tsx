@@ -1,4 +1,4 @@
-import '../../assets/css/OurGovernance.css'
+import { Box, Container, Typography, Card, CardContent, Avatar } from '@mui/material'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import ronaldImg from '../../assets/images/aboutPage-images/CPA Ronald Katumba.jpg'
 import sarahImg from '../../assets/images/aboutPage-images/CPA Sarah Nejesa.webp'
@@ -20,32 +20,109 @@ function OurGovernance() {
   ]
 
   return (
-    <section className="our-governance">
-      <div className="governance-container">
-        <h2 
+    <Box 
+      component="section" 
+      sx={{
+        backgroundColor: '#f8f9fa',
+        py: 8,
+        px: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Typography 
           ref={elementRef}
-          className={`scroll-animate-heading ${isVisible ? 'visible' : ''}`}
+          variant="h3" 
+          sx={{
+            textAlign: 'center',
+            color: '#2c3e50',
+            fontSize: '2.5rem',
+            mb: 2,
+            fontWeight: 'bold',
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'all 0.8s ease-out',
+          }}
         >
           Our Governance
-        </h2>
-        <p className="governance-subtitle">
+        </Typography>
+        <Typography 
+          variant="body1" 
+          sx={{
+            textAlign: 'center',
+            color: '#666',
+            mb: 6,
+            maxWidth: '700px',
+            mx: 'auto',
+          }}
+        >
           Meet the dedicated leaders who steer APF Uganda towards its vision of 
           professional excellence and integrity.
-        </p>
+        </Typography>
         
-        <div className="leaders-grid">
+        <Box 
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(3, 1fr)',
+            },
+            gap: 4,
+          }}
+        >
           {leaders.map((leader, index) => (
-            <div key={index} className="leader-card">
-              <div className="leader-image">
-                <img src={leader.image} alt={leader.name} />
-              </div>
-              <h3 className="leader-name">{leader.name}</h3>
-              <p className="leader-role">{leader.role}</p>
-            </div>
+            <Card 
+              key={index} 
+              sx={{
+                textAlign: 'center',
+                p: 4,
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 8px 12px rgba(0, 0, 0, 0.15)',
+                },
+              }}
+            >
+              <CardContent>
+                <Avatar
+                  src={leader.image}
+                  alt={leader.name}
+                  sx={{ 
+                    width: 150, 
+                    height: 150,
+                    border: '4px solid #7c3aed',
+                    mx: 'auto',
+                    mb: 3,
+                  }}
+                />
+                <Typography 
+                  variant="h6" 
+                  sx={{
+                    color: '#2c3e50',
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    mb: 1,
+                  }}
+                >
+                  {leader.name}
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{
+                    color: '#666',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {leader.role}
+                </Typography>
+              </CardContent>
+            </Card>
           ))}
-        </div>
-      </div>
-    </section>
+        </Box>
+      </Container>
+    </Box>
   )
 }
 

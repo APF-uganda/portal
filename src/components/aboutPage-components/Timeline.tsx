@@ -1,4 +1,4 @@
-import '../../assets/css/Timeline.css'
+import { Box, Container, Typography } from '@mui/material'
 
 function Timeline() {
   const timelineData = [
@@ -20,22 +20,53 @@ function Timeline() {
   ]
 
   return (
-    <section className="timeline">
-      <div className="timeline-container">
-        {timelineData.map((item, index) => (
-          <div key={index} className="timeline-item">
-            <div className="timeline-marker">
-              <div className="timeline-circle"></div>
-            </div>
-            <div className="timeline-content">
-              <h3 className="timeline-year">{item.year}</h3>
-              <h4 className="timeline-title">{item.title}</h4>
-              <p className="timeline-description">{item.description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+    <Box component="section" sx={{ backgroundColor: 'white', py: 6, px: 4 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          justifyContent: 'space-between', 
+          gap: 4, 
+          position: 'relative' 
+        }}>
+          <Box sx={{ 
+            display: { xs: 'none', md: 'block' },
+            position: 'absolute',
+            top: '40px',
+            left: 0,
+            right: 0,
+            height: '4px',
+            backgroundColor: '#7c3aed',
+            zIndex: 0
+          }} />
+          {timelineData.map((item, index) => (
+            <Box key={index} sx={{ flex: 1, position: 'relative', zIndex: 10 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                <Box sx={{ 
+                  width: 80, 
+                  height: 80, 
+                  borderRadius: '50%', 
+                  backgroundColor: '#7c3aed', 
+                  border: '4px solid white', 
+                  boxShadow: 3 
+                }} />
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h5" sx={{ color: '#7c3aed', fontSize: '1.5rem', fontWeight: 'bold', mb: 1 }}>
+                  {item.year}
+                </Typography>
+                <Typography variant="h6" sx={{ color: '#1e293b', fontSize: '1rem', fontWeight: 600, mb: 1.5 }}>
+                  {item.title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem', lineHeight: 1.7 }}>
+                  {item.description}
+                </Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Container>
+    </Box>
   )
 }
 

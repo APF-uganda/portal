@@ -1,6 +1,6 @@
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import '../assets/css/NewsPage.css'
+import { Box, Container, Typography, Card, CardContent, CardMedia, TextField, Button, Chip } from '@mui/material'
+import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 
 function NewsPage() {
   const newsArticles = [
@@ -11,7 +11,7 @@ function NewsPage() {
       category: "Technology",
       date: "Dec 15, 2023",
       author: "Sarah Johnson",
-      image: "/public/news1.webp",
+      image: "/news1.webp",
       featured: false
     },
     {
@@ -21,7 +21,7 @@ function NewsPage() {
       category: "Ethics",
       date: "Dec 12, 2023", 
       author: "Michael Chen",
-      image: "/public/news2.webp",
+      image: "/news2.webp",
       featured: false
     },
     {
@@ -31,7 +31,7 @@ function NewsPage() {
       category: "Events",
       date: "Dec 10, 2023",
       author: "Emma Wilson",
-      image: "/public/news3.png",
+      image: "/news3.png",
       featured: false
     },
     {
@@ -41,7 +41,7 @@ function NewsPage() {
       category: "Business",
       date: "Dec 8, 2023",
       author: "David Rodriguez",
-      image: "/public/event1.jpg",
+      image: "/event1.jpg",
       featured: false
     },
     {
@@ -51,7 +51,7 @@ function NewsPage() {
       category: "Standards",
       date: "Dec 5, 2023",
       author: "Lisa Thompson",
-      image: "/public/event2.jpeg",
+      image: "/event2.jpeg",
       featured: false
     },
     {
@@ -61,7 +61,7 @@ function NewsPage() {
       category: "Members",
       date: "Dec 3, 2023",
       author: "James Parker",
-      image: "/public/event3.jpeg",
+      image: "/event3.jpeg",
       featured: false
     }
   ];
@@ -73,86 +73,200 @@ function NewsPage() {
     category: "Tax Updates",
     date: "Dec 18, 2023",
     author: "Robert Anderson",
-    image: "/public/news1.webp",
+    image: "/news1.webp",
     featured: true
   };
 
   return (
-    <div className="news-page">
+    <Box>
       <Navbar />
       
       {/* Hero Section */}
-      <section className="news-hero">
-        <h1>News & Insights</h1>
-      </section>
+      <Box sx={{ 
+        background: 'linear-gradient(90deg, #7c3aed 0%, #6b21a8 100%)', 
+        py: 10, 
+        px: 4, 
+        textAlign: 'center' 
+      }}>
+        <Typography variant="h2" sx={{ color: 'white', fontSize: '3rem', fontWeight: 'bold' }}>
+          News & Insights
+        </Typography>
+      </Box>
 
       {/* Main Content */}
-      <main className="news-content">
-        <div className="container">
-          {/* Top Pick Section */}
-          <section className="top-pick-section">
-            <h2 className="section-title">Our Latest News: Top Pick</h2>
-            <div className="top-pick-card">
-              <div className="top-pick-content">
-                <span className="category-tag">{featuredArticle.category}</span>
-                <h2>{featuredArticle.title}</h2>
-                <div className="article-meta">
-                  By {featuredArticle.author} • {featuredArticle.date}
-                </div>
-                <p className="article-excerpt">{featuredArticle.excerpt}</p>
-                <a href="#" className="read-more-btn">Read More</a>
-              </div>
-              <div className="top-pick-image"></div>
-            </div>
-          </section>
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        {/* Top Pick Section */}
+        <Box sx={{ mb: 8 }}>
+          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 4 }}>
+            Our Latest News: Top Pick
+          </Typography>
+          <Card sx={{ overflow: 'hidden', boxShadow: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' } }}>
+              <Box>
+                <CardContent sx={{ p: 4 }}>
+                  <Chip 
+                    label={featuredArticle.category}
+                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed', fontWeight: 600, mb: 2 }}
+                  />
+                  <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.5rem', fontWeight: 'bold', mb: 1.5 }}>
+                    {featuredArticle.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
+                    By {featuredArticle.author} • {featuredArticle.date}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: '#374151', lineHeight: 1.7, mb: 3 }}>
+                    {featuredArticle.excerpt}
+                  </Typography>
+                  <Button 
+                    variant="contained"
+                    sx={{ 
+                      backgroundColor: '#7c3aed',
+                      color: 'white',
+                      px: 3,
+                      py: 1,
+                      borderRadius: '25px',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      transition: 'all 0.3s',
+                      '&:hover': { backgroundColor: '#6d28d9' }
+                    }}
+                  >
+                    Read More
+                  </Button>
+                </CardContent>
+              </Box>
+              <Box sx={{ 
+                height: '100%', 
+                minHeight: '300px', 
+                backgroundImage: `url(${featuredArticle.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }} />
+            </Box>
+          </Card>
+        </Box>
 
-          {/* Other News Section */}
-          <section className="other-news-section">
-            <h2 className="section-title">Our Other News</h2>
-            <div className="news-grid">
-              {newsArticles.map((article) => (
-                <article key={article.id} className="news-card">
-                  <div 
-                    className="news-card-image"
-                    style={{ backgroundImage: `url(${article.image})` }}
-                  ></div>
-                  <div className="news-card-content">
-                    <span className="category-tag">{article.category}</span>
-                    <h3>{article.title}</h3>
-                    <div className="article-meta">
-                      By {article.author} • {article.date}
-                    </div>
-                    <p className="article-excerpt">{article.excerpt}</p>
-                    <a href="#" className="read-more-btn">Read More</a>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          {/* Newsletter Section */}
-          <section className="newsletter-section">
-            <div className="newsletter-content">
-              <h2>Never Miss an Update</h2>
-              <p>Subscribe to our newsletter for the latest news, insights, and professional development opportunities.</p>
-              <form className="newsletter-form">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email address"
-                  className="newsletter-input"
-                  required
+        {/* Other News Section */}
+        <Box sx={{ mb: 8 }}>
+          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 4 }}>
+            Our Other News
+          </Typography>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, 
+            gap: 4 
+          }}>
+            {newsArticles.map((article) => (
+              <Card 
+                key={article.id} 
+                sx={{ 
+                  height: '100%', 
+                  boxShadow: 2,
+                  transition: 'all 0.3s',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: 6
+                  }
+                }}
+              >
+                <CardMedia
+                  component="div"
+                  sx={{ 
+                    height: 192, 
+                    backgroundImage: `url(${article.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
                 />
-                <button type="submit" className="newsletter-btn">
-                  Subscribe to Newsletter
-                </button>
-              </form>
-            </div>
-          </section>
-        </div>
-      </main>
+                <CardContent sx={{ p: 3 }}>
+                  <Chip 
+                    label={article.category}
+                    size="small"
+                    sx={{ backgroundColor: '#e9d5ff', color: '#7c3aed', fontWeight: 600, mb: 1.5 }}
+                  />
+                  <Typography variant="h6" sx={{ color: '#1e293b', fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>
+                    {article.title}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mb: 1.5 }}>
+                    By {article.author} • {article.date}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#374151', mb: 2 }}>
+                    {article.excerpt}
+                  </Typography>
+                  <Button 
+                    variant="text"
+                    sx={{ 
+                      color: '#7c3aed', 
+                      fontWeight: 600, 
+                      p: 0, 
+                      textTransform: 'none',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}
+                  >
+                    Read More
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Newsletter Section */}
+        <Box sx={{ 
+          py: 6, 
+          px: 4, 
+          borderRadius: '12px', 
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%)'
+        }}>
+          <Typography variant="h4" sx={{ color: '#1e293b', fontSize: '1.875rem', fontWeight: 'bold', mb: 2 }}>
+            Never Miss an Update
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#374151', mb: 3, maxWidth: '672px', mx: 'auto' }}>
+            Subscribe to our newsletter for the latest news, insights, and professional development opportunities.
+          </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: 2, 
+            maxWidth: '576px', 
+            mx: 'auto' 
+          }}>
+            <TextField
+              type="email"
+              placeholder="Enter your email address"
+              variant="outlined"
+              fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '25px',
+                  backgroundColor: 'white',
+                }
+              }}
+            />
+            <Button 
+              variant="contained"
+              sx={{ 
+                backgroundColor: '#7c3aed',
+                color: 'white',
+                px: 4,
+                py: 1.5,
+                borderRadius: '25px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                textTransform: 'none',
+                transition: 'all 0.3s',
+                '&:hover': { backgroundColor: '#6d28d9' }
+              }}
+            >
+              Subscribe to Newsletter
+            </Button>
+          </Box>
+        </Box>
+      </Container>
 
       <Footer />
-    </div>
+    </Box>
   )
 }
 
