@@ -29,7 +29,7 @@ function Timeline() {
         <img
   src="/timelinedates.svg"
   alt="APF Timeline"
-  className="w-full scale-110 md:scale-122 origin-center"
+  className="w-full scale-120 md:scale-125 origin-center"
 />
 
 
