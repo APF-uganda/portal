@@ -28,7 +28,7 @@ function OurHistory() {
             </p>
           </div>
           
-          <div className="border-l-4 border-primary pl-8">
+          <div className="border-l-4 border-bg-purple-800 pl-8">
             {[
               { icon: '👤', text: 'Become a Member' },
               { icon: '📅', text: 'Our Events' },

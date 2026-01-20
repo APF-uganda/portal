@@ -20,21 +20,22 @@ function VisionMission() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
           
-          <div className="h-full p-10 rounded-xl bg-primary text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="mb-6">
-              <Eye className="w-10 h-10 stroke-current" />
-            </div>
+        <div className="h-full p-10 rounded-xl bg-purple-700 text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+  <div className="mb-6">
+    <Eye className="w-10 h-10 text-white" />
+  </div>
 
-            <h4 className="text-3xl font-bold mb-4">
-              Our Vision
-            </h4>
+  <h4 className="text-3xl font-bold mb-4 text-white">
+    Our Vision
+  </h4>
 
-            <p className="leading-[1.7] opacity-95">
-              To be the leading voice in uplifting standards and advancing a strong,
-              ethical, and globally competitive accountancy profession in Uganda
-              and beyond.
-            </p>
-          </div>
+  <p className="leading-[1.7] text-white/90">
+    To be the leading voice in uplifting standards and advancing a strong,
+    ethical, and globally competitive accountancy profession in Uganda
+    and beyond.
+  </p>
+</div>
+
 
          
           <div className="h-full p-10 rounded-xl bg-white border border-gray-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -75,9 +76,10 @@ function VisionMission() {
 
         
         <div className="mt-12 text-center">
-          <button className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300">
-            Join APF
-          </button>
+        <button className="bg-purple-700 hover:bg-purple-800 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300">
+  Join APF
+</button>
+
         </div>
 
       </div>
