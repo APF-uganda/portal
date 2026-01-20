@@ -1,24 +1,45 @@
 export default function CallToAction() {
   return (
-    <section className="bg-[#f7f3ff] py-16">
-      <div className="max-w-4xl mx-auto px-6 text-center">
+    <section className="bg-[#f7f3ff] py-12 sm:py-16">
+      <div className="max-w-4xl mx-auto px-5 sm:px-6 text-center">
         {/* HEADING */}
-        <h2 className="text-3xl md:text-4xl font-bold text-[#260B41] mb-4">
+        <h2 className="
+          text-2xl
+          sm:text-2xl
+          md:text-2xl
+          font-bold
+          text-[#260B41]
+          mb-4
+        ">
           Ready to Advance Your Career?
         </h2>
 
         {/* DESCRIPTION */}
-        <p className="text-base md:text-lg text-[#260B41] max-w-3xl mx-auto mb-8">
+        <p className="
+          text-sm
+          sm:text-sm
+          md:text-sm
+          text-[#260B41]
+          max-w-xl
+          sm:max-w-2xl
+          md:max-w-2xl
+          mx-auto
+          mb-6
+          sm:mb-8
+          leading-relaxed
+        ">
           Join APF Uganda today and become part of a vibrant community committed
           to excellence in the accountancy profession. Unlock exclusive
-          benefits, expand your network, and shape the future of accountancy.
+          benefits, expand your network and shape the future of accountancy.
         </p>
 
         {/* CTA BUTTON */}
         <button
           className="
             inline-flex items-center justify-center
-            px-6 py-3
+            px-5 py-3
+            sm:px-6 sm:py-3
+            text-sm sm:text-base
             bg-purple-700 text-white font-semibold
             rounded-lg
             shadow-md

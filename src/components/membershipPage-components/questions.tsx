@@ -28,10 +28,10 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-white py-16">
-      <div className="max-w-4xl mx-auto px-8">
+    <section className="bg-white py-12 sm:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* TITLE */}
-        <h2 className="text-center text-2xl md:text-3xl font-bold text-gray-900 mb-10">
+        <h2 className="text-center text-xl sm:text-2xl md:text-2xl font-bold text-gray-900 mb-8 sm:mb-10">
           Frequently Asked Questions
         </h2>
 
@@ -43,20 +43,20 @@ export default function FAQ() {
             return (
               <div
                 key={index}
-                className="border-b border-gray-200 py-5"
+                className="border-b border-gray-200 py-4 sm:py-5"
               >
                 {/* QUESTION */}
                 <button
                   onClick={() =>
                     setOpenIndex(isOpen ? null : index)
                   }
-                  className="w-full flex items-center justify-between text-left"
+                  className="w-full flex items-center justify-between text-left gap-4"
                 >
-                  <span className="text-sm md:text-base font-medium text-gray-900">
+                  <span className="text-sm sm:text-base font-medium text-gray-900">
                     {faq.question}
                   </span>
 
-                  <span className="ml-4 flex-shrink-0">
+                  <span className="flex-shrink-0">
                     {isOpen ? (
                       <Minus className="w-5 h-5 text-purple-600" />
                     ) : (
@@ -67,7 +67,7 @@ export default function FAQ() {
 
                 {/* ANSWER */}
                 {isOpen && (
-                  <p className="mt-3 text-sm text-gray-600 leading-relaxed max-w-3xl">
+                  <p className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed max-w-3xl">
                     {faq.answer}
                   </p>
                 )}
