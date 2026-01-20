@@ -102,7 +102,7 @@ const UpcomingEvents = () => {
                                     <p className="text-sm text-gray-600">{event.description}</p>
                                 </div>
                                 <div className="mt-4">
-                                    <button className="bg-[#6D28D9] text-white px-4 py-2 rounded-full w-full">
+                                    <button className="bg-[#7E49B3] text-white px-4 py-2 rounded-full w-full">
                                         Register
                                     </button>
                                 </div>
