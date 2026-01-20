@@ -15,53 +15,75 @@ const steps = [
 export default function MembershipProcess() {
   return (
     <section className="bg-[#f7f3ff] py-16">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8">
         {/* TITLE */}
-        <h2 className="text-center text-2xl md:text-3xl font-bold text-gray-900 mb-12">
+        <h2 className="text-center text-2xl sm:text-2xl md:text-2xl font-bold text-gray-900 mb-12">
           Membership Application Process
         </h2>
 
         {/* STEPPER */}
-        <div className="relative flex items-center justify-between">
-          {/* CONNECTOR LINE  */}
-          <div className="absolute top-6 left-[12.5%] right-[12.5%] h-[2px] bg-purple-600" />
+        <div className="relative">
+          {/* DESKTOP CONNECTOR LINE */}
+          <div className="hidden md:block absolute top-6 left-[12.5%] right-[12.5%] h-[2px] bg-purple-600" />
 
-          {steps.map((step) => {
-            const Icon = step.icon;
+          <div className="flex flex-col md:flex-row md:justify-between gap-12 md:gap-0">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isLast = index === steps.length - 1;
 
-            return (
-              <div
-                key={step.id}
-                className="relative z-10 flex flex-col items-center text-center w-1/4"
-              >
-                {/* ICON WRAPPER */}
-                <div className="relative mb-4">
-                  {/* STEP NUMBER */}
-                  <span
-                    className="
-                      absolute -top-2 -left-2
-                      w-5 h-5 rounded-full
-                      bg-white border border-purple-600
-                      text-xs font-semibold text-purple-700
-                      flex items-center justify-center
-                    "
-                  >
-                    {step.id}
-                  </span>
+              return (
+                <div
+                  key={step.id}
+                  className="relative flex items-start md:flex-col md:items-center text-left md:text-center md:w-1/4 px-4 md:px-0"
+                >
+                  {/* ICON + CONNECTOR */}
+                  <div className="relative flex flex-col items-center">
+                    {/* STEP NUMBER */}
+                    <span
+                      className="
+                        absolute -top-2 -left-2
+                        w-5 h-5 rounded-full
+                        bg-white border border-purple-600
+                        text-xs font-semibold text-purple-700
+                        flex items-center justify-center
+                        z-20
+                      "
+                    >
+                      {step.id}
+                    </span>
 
-                  {/* ICON CIRCLE */}
-                  <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white">
-                    <Icon className="w-5 h-5" />
+                    {/* ICON */}
+                    <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white z-10">
+                      <Icon className="w-5 h-5" />
+                    </div>
+
+                    {/* MOBILE CONNECTOR LINE */}
+                    {!isLast && (
+                      <span className="
+                          md:hidden
+                          absolute
+                          top-12
+                          left-1/2
+                          -translate-x-1/2
+                          w-[2px]
+                          h-[calc(100%+3rem)]
+                          bg-purple-300
+                        " />
+                    )}
                   </div>
-                </div>
 
-                {/* LABEL */}
-                <p className="text-sm font-medium text-gray-800 max-w-[160px]">
-                  {step.title}
-                </p>
-              </div>
-            );
-          })}
+                  {/* LABEL */}
+                  <p className="
+                        mt-4
+                        text-sm font-medium text-gray-800
+                        w-[180px]
+                        mx-auto">
+                    {step.title}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

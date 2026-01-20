@@ -34,13 +34,14 @@ export default function MembershipRequirements() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-gray-50 py-16">
-      {/* EXTRA HORIZONTAL MARGINS */}
-      <div className="max-w-6xl mx-auto px-10 lg:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
+    <section className="bg-gray-50 py-12 sm:py-16">
+      {/* CONTAINER */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-start">
+          
           {/* LEFT: ACCORDION */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <h2 className="text-2xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
               Membership Requirements
             </h2>
 
@@ -54,14 +55,14 @@ export default function MembershipRequirements() {
                       onClick={() =>
                         setOpenIndex(isOpen ? null : index)
                       }
-                      className="w-full flex items-center justify-between text-left"
+                      className="w-full flex items-center justify-between text-left gap-4"
                     >
-                      <span className="font-semibold text-gray-900">
+                      <span className="text-sm sm:text-base font-semibold text-gray-900">
                         {item.title}
                       </span>
 
                       <ChevronDown
-                        className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${
+                        className={`w-5 h-5 text-gray-500 transition-transform duration-300 shrink-0 ${
                           isOpen ? "rotate-180" : ""
                         }`}
                       />
@@ -78,20 +79,25 @@ export default function MembershipRequirements() {
             </div>
           </div>
 
-          {/* RIGHT: IMAGE  */}
+          {/* RIGHT: IMAGE */}
           <div className="flex justify-center md:justify-end">
             <img
               src={requirementsImg}
               alt="Membership requirements"
               className="
                 w-full
-                max-w-sm
-                h-auto
-                object-cover
+                max-w-xs
+                sm:max-w-sm
+                md:max-w-md
+                h-64
+                md:h-80
+                lg:h-96
+                object-contain
                 rounded-lg
               "
             />
           </div>
+
         </div>
       </div>
     </section>

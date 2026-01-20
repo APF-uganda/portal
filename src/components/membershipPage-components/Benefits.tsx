@@ -44,12 +44,20 @@ const benefits: Benefit[] = [
   },
 ];
 
-const CARD_WIDTH = 320;
+
+const CARD_WIDTH_MOBILE = 280;
+const CARD_WIDTH_DESKTOP = 320;
 const CARD_GAP = 32;
-const VISIBLE_CARDS = 3;
+
 
  function Benefits(): JSX.Element {
-  const maxIndex = Math.max(0, benefits.length - VISIBLE_CARDS);
+   const isMobile =
+    typeof window !== "undefined" && window.innerWidth < 768;
+
+  const visibleCards = isMobile ? 1 : 3;
+  const cardWidth = isMobile ? CARD_WIDTH_MOBILE : CARD_WIDTH_DESKTOP;
+
+  const maxIndex = Math.max(0, benefits.length - visibleCards);
   const [index, setIndex] = useState(0);
 
   const prev = useCallback(() => {
@@ -75,18 +83,21 @@ const VISIBLE_CARDS = 3;
           aria-label="Previous"
           className={`absolute left-[70px] top-1/2 -translate-y-1/2 z-10
             w-6 h-6 flex items-center justify-center rounded-full
-            bg-white border border-slate-200 shadow
+            bg-purple-500 border border-slate-200 shadow
             ${index === 0 ? "opacity-40 cursor-not-allowed" : "opacity-100"}
           `}
         >
-          <ChevronLeft className="w-3 h-3 text-slate-500" />
+          <ChevronLeft className="w-3 h-3 text-slate-50" />
         </button>
 
         {/* VIEWPORT */}
         <div
           className="overflow-hidden"
           style={{
-            width: CARD_WIDTH * 3 + CARD_GAP * 2,
+               width:
+               cardWidth * visibleCards +
+               CARD_GAP * (visibleCards - 1),
+          
           }}
         >
           {/* TRACK */}
@@ -95,7 +106,7 @@ const VISIBLE_CARDS = 3;
             style={{
               gap: `${CARD_GAP}px`,
               transform: `translateX(-${
-                index * (CARD_WIDTH + CARD_GAP)
+                index * (cardWidth + CARD_GAP)
               }px)`,
             }}
           >
@@ -104,7 +115,7 @@ const VISIBLE_CARDS = 3;
                 key={benefit.id}
                 className="flex-shrink-0 bg-white rounded-lg overflow-hidden
                            border border-slate-100 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
-                style={{ width: CARD_WIDTH }}
+                style={{ width: cardWidth }}
               >
                 {/* IMAGE */}
                 <div className="h-[200px] overflow-hidden">
@@ -135,11 +146,11 @@ const VISIBLE_CARDS = 3;
           aria-label="Next"
           className={`absolute right-[70px] top-1/2 -translate-y-1/2 z-10
             w-6 h-6 flex items-center justify-center rounded-full
-            bg-white border border-slate-200 shadow
+            bg-purple-500 border border-slate-200 shadow
             ${index === maxIndex ? "opacity-40 cursor-not-allowed" : "opacity-100"}
           `}
         >
-          <ChevronRight className="w-3 h-3 text-slate-500" />
+          <ChevronRight className="w-3 h-3 text-slate-50" />
         </button>
       </div>
 
