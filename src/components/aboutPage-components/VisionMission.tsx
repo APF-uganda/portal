@@ -1,6 +1,9 @@
-import { Eye, Calendar, Check } from 'lucide-react'
+import { Eye, Calendar, Check, ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 
 function VisionMission() {
+  const [openObjectives, setOpenObjectives] = useState(false)
+
   const objectives = [
     'Advocacy & Representation',
     'Networking & Collaboration',
@@ -16,32 +19,25 @@ function VisionMission() {
     <section className="bg-gray-50 py-20 px-4">
       <div className="max-w-7xl mx-auto">
 
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+
+          <div className="h-full p-10 rounded-xl bg-purple-700 text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <Eye className="w-10 h-10 mb-6" />
+
+            <h4 className="text-3xl font-bold mb-4">
+              Our Vision
+            </h4>
+
+            <p className="leading-[1.7] text-white/90">
+              To be the leading voice in uplifting standards and advancing a strong,
+              ethical, and globally competitive accountancy profession in Uganda
+              and beyond.
+            </p>
+          </div>
 
           
-        <div className="h-full p-10 rounded-xl bg-purple-700 text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-  <div className="mb-6">
-    <Eye className="w-10 h-10 text-white" />
-  </div>
-
-  <h4 className="text-3xl font-bold mb-4 text-white">
-    Our Vision
-  </h4>
-
-  <p className="leading-[1.7] text-white/90">
-    To be the leading voice in uplifting standards and advancing a strong,
-    ethical, and globally competitive accountancy profession in Uganda
-    and beyond.
-  </p>
-</div>
-
-
-         
           <div className="h-full p-10 rounded-xl bg-white border border-gray-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="mb-6">
-              <Calendar className="w-10 h-10 text-primary stroke-current" />
-            </div>
+            <Calendar className="w-10 h-10 text-purple-700 mb-6" />
 
             <h4 className="text-3xl font-bold text-slate-800 mb-4">
               Our Mission
@@ -54,32 +50,55 @@ function VisionMission() {
             </p>
           </div>
 
-          
-          <div className="h-full p-10 rounded-xl bg-white border border-gray-200">
-            <h4 className="text-3xl font-bold text-slate-800 mb-6">
-              Our Objectives
-            </h4>
+          <div className="pt-4">
 
-            <ul className="space-y-4">
-              {objectives.map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary mt-1 stroke-current" />
-                  <span className="text-gray-700 text-sm leading-relaxed">
-                    {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            
+            <button
+  onClick={() => setOpenObjectives(!openObjectives)}
+  className="flex items-center gap-2 text-left"
+>
+  <h4 className="text-3xl font-bold text-slate-800">
+    Our Objectives
+  </h4>
+
+  <ChevronDown
+    className={`w-6 h-6 text-purple-700 transition-transform duration-300 ${
+      openObjectives ? 'rotate-180' : ''
+    }`}
+  />
+</button>
+
+
+            
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                openObjectives ? 'max-h-[500px] mt-6' : 'max-h-0'
+              }`}
+            >
+              <ul className="space-y-4">
+                {objectives.map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-700 shrink-0 mt-0.5">
+                      <Check className="w-4 h-4 stroke-white stroke-[3]" />
+                    </div>
+
+                    <span className="text-gray-700 text-sm leading-relaxed">
+                      {item}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
           </div>
 
         </div>
 
         
         <div className="mt-12 text-center">
-        <button className="bg-purple-700 hover:bg-purple-800 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300">
-  Join APF
-</button>
-
+        <button className="bg-purple-700 hover:bg-purple-800 text-white px-10 py-4 text-base font-semibold rounded-[25px] shadow-[0_4px_6px_rgba(124,58,237,0.3)] transition-all duration-300 hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_6px_12px_rgba(124,58,237,0.4)]">
+          Join APF
+        </button>
         </div>
 
       </div>

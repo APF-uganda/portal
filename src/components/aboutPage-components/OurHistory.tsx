@@ -1,5 +1,7 @@
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import { Clock } from 'lucide-react'
+import { Clock, Check } from 'lucide-react'
+
+
 
 function OurHistory() {
   const { elementRef, isVisible } = useScrollAnimation()
@@ -10,7 +12,7 @@ function OurHistory() {
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-12">
           <div>
             <div className="mb-4">
-              <Clock className="w-12 h-12 text-primary" />
+              <Clock className="w-12 h-12 text-purple" />
             </div>
             <h4 
               ref={elementRef}
@@ -28,22 +30,30 @@ function OurHistory() {
             </p>
           </div>
           
-          <div className="border-l-4 border-bg-purple-800 pl-8">
-            {[
-              { icon: '👤', text: 'Become a Member' },
-              { icon: '📅', text: 'Our Events' },
-              { icon: '📰', text: 'News & Insights' },
-              { icon: '💬', text: "Chairman's message" },
-            ].map((link, index) => (
-              <div 
-                key={index}
-                className="flex items-center gap-3 py-4 cursor-pointer transition-all duration-300 hover:text-primary hover:translate-x-2"
-              >
-                <span className="text-xl">{link.icon}</span>
-                <p className="text-[#1f2937]">{link.text}</p>
-              </div>
-            ))}
-          </div>
+          <div className="border-l-4 border-primary pl-8">
+  {[
+    'Become a Member',
+    'Our Events',
+    'News & Insights',
+    "Chairman’s Message",
+  ].map((text, index) => (
+    <div
+      key={index}
+      className="flex items-center gap-4 py-4 cursor-pointer transition-all duration-300 hover:text-primary hover:translate-x-2"
+    >
+      
+      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-700 shrink-0 mt-0.5">
+                      <Check className="w-4 h-4 stroke-white stroke-[3]" />
+                    </div>
+
+
+      <p className="text-[#1f2937] font-medium">
+        {text}
+      </p>
+    </div>
+  ))}
+</div>
+
         </div>
       </div>
     </section>
