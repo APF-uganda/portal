@@ -137,7 +137,7 @@ const EventCalendar = () => {
                                                 : hasEvent
                                                     ? "ring-2 ring-[#6D28D9] text-gray-900 hover:bg-[#6D28D9] hover:text-white"
                                                     : isToday
-                                                        ? "bg-black text-white font-semibold"
+                                                        ? "bg-[#10002B] text-white font-semibold"
                                                         : "text-gray-900 hover:bg-gray-200"
                                             }`}
                                     >
