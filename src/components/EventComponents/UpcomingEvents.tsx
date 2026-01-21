@@ -8,6 +8,7 @@ type Event = {
     location: string;
     description: string;
     image: string;
+    registrationLink?: string;
 };
 
 const events: Event[] = [
@@ -19,6 +20,7 @@ const events: Event[] = [
         description:
             "Join us for our flagship annual event featuring keynote speakers, elections, and networking.",
         image: "/images/annual.png",
+        registrationLink: "https://forms.gle/2k1dDQvFKtvJVtzD8"
     },
     {
         title: "Tax Updates Workshop 2026",
@@ -102,10 +104,24 @@ const UpcomingEvents = () => {
                                     <p className="text-sm text-gray-600">{event.description}</p>
                                 </div>
                                 <div className="mt-4">
-                                    <button className="bg-[#7E49B3] text-white px-4 py-2 rounded-full w-full">
-                                        Register
-                                    </button>
+                                    {event.registrationLink ? (
+                                        <a
+                                            href={event.registrationLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block text-center bg-[#7E49B3] text-white px-4 py-2 rounded-full w-full"
+                                        >
+                                            Register
+                                        </a>
+                                    ) : (
+                                        <button
+                                            className="bg-[#7E49B3] text-white px-4 py-2 rounded-full w-full"
+                                        >
+                                           Register
+                                        </button>
+                                    )}
                                 </div>
+
                             </div>
                         </div>
                     ))}
