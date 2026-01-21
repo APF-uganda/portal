@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
+import NewsCard from '../cards/NewsCard'
 import news1Img from '../../assets/images/landingPage-image/news1.webp'
 import news2Img from '../../assets/images/landingPage-image/news2.webp'
 import news3Img from '../../assets/images/landingPage-image/news3.png'
@@ -17,6 +18,10 @@ interface NewsItem {
 function LatestNews() {
   const { elementRef, isVisible } = useScrollAnimation()
   const [cardsVisible, setCardsVisible] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
 
   const news: NewsItem[] = [
     {
@@ -45,26 +50,65 @@ function LatestNews() {
     }
   ]
 
+  const totalPages = news.length
+
   useEffect(() => {
     if (isVisible) {
       setTimeout(() => setCardsVisible(true), 200)
     }
   }, [isVisible])
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) return
+    const interval = setInterval(() => {
+      setCurrentPage((prev) => (prev + 1) % totalPages)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [totalPages, isMobile])
+
   const handlePrevious = () => {
-    console.log('Previous clicked')
+    setCurrentPage((prev) => (prev === 0 ? totalPages - 1 : prev - 1))
   }
 
   const handleNext = () => {
-    console.log('Next clicked')
+    setCurrentPage((prev) => (prev === totalPages - 1 ? 0 : prev + 1))
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = () => {
+    if (!isMobile) return
+    const swipeDistance = touchStartX.current - touchEndX.current
+    const minSwipeDistance = 50
+
+    if (swipeDistance > minSwipeDistance && currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+    } else if (swipeDistance < -minSwipeDistance && currentPage > 0) {
+      setCurrentPage(currentPage - 1)
+    }
   }
 
   return (
-    <section className="bg-purple-300 py-16 px-4 relative">
+    <section className="bg-purple-300 py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 relative">
       <div className="max-w-7xl mx-auto">
         <h2 
           ref={elementRef}
-          className={`text-center text-white text-4xl font-bold mb-12 transition-all duration-1000 transform ${
+          className={`text-center text-white text-2xl sm:text-3xl md:text-4xl font-bold mb-8 sm:mb-10 md:mb-12 transition-all duration-1000 transform px-4 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'
           }`}
         >
@@ -72,72 +116,110 @@ function LatestNews() {
         </h2>
         
         <div className="relative">
+          {/* Desktop Navigation Arrows */}
           <button
             onClick={handlePrevious}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white text-gray-700 w-12 h-12 rounded-full shadow-lg hover:bg-gray-50 hover:scale-110 transition-all duration-300 flex items-center justify-center -ml-6 active:scale-95 ${
+            className={`hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white text-gray-700 w-10 h-10 xl:w-12 xl:h-12 rounded-full shadow-lg hover:bg-gray-50 hover:scale-110 transition-all duration-300 items-center justify-center -ml-4 xl:-ml-6 active:scale-95 ${
               cardsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
             }`}
             style={{ transitionDelay: cardsVisible ? '600ms' : '0ms' }}
             aria-label="Previous"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6" />
           </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {news.map((item, index) => (
+          {/* Mobile Carousel View */}
+          <div className="sm:hidden">
+            <div 
+              className="overflow-hidden"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <div 
-                key={index}
-                className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform ${
-                  cardsVisible 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-12'
-                } hover:-translate-y-2 group`}
-                style={{ 
-                  transitionDelay: cardsVisible ? `${index * 150}ms` : '0ms'
-                }}
+                className="flex transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(-${currentPage * 100}%)` }}
               >
-                <div className="h-48 overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                  />
-                </div>
-                <div className="p-6">
-                  <span className="inline-block bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded mb-3 transition-all duration-300 group-hover:bg-purple-100 group-hover:text-purple-700">
-                    {item.tag}
-                  </span>
-                  
-                  <h3 className="text-lg font-bold text-gray-900 mb-3 min-h-[3.5rem] transition-colors duration-300 group-hover:text-purple-700">
-                    {item.title}
-                  </h3>
-                  
-                  <p className="text-sm text-gray-600 mb-4 min-h-[4.5rem]">
-                    {item.description}
-                  </p>
-                  
-                  <div className="text-xs text-gray-500 mb-3">
-                    {item.date} • {item.readTime}
+                {news.map((item, index) => (
+                  <div key={index} className="w-full flex-shrink-0 px-2">
+                    <NewsCard
+                      image={item.image}
+                      tag={item.tag}
+                      title={item.title}
+                      description={item.description}
+                      date={item.date}
+                      readTime={item.readTime}
+                      onReadMore={() => console.log('Read more:', item.title)}
+                      delay={0}
+                    />
                   </div>
-                  
-                  <button className="text-purple-700 font-semibold text-sm hover:underline transition-all duration-300 hover:translate-x-2 inline-flex items-center group/btn">
-                    Read More
-                    <span className="ml-1 transition-transform duration-300 group-hover/btn:translate-x-1">→</span>
-                  </button>
-                </div>
+                ))}
               </div>
+            </div>
+          </div>
+
+          {/* Tablet & Desktop Grid View */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+            {news.map((item, index) => (
+              <NewsCard
+                key={index}
+                image={item.image}
+                tag={item.tag}
+                title={item.title}
+                description={item.description}
+                date={item.date}
+                readTime={item.readTime}
+                onReadMore={() => console.log('Read more:', item.title)}
+                delay={cardsVisible ? index * 150 : 0}
+              />
             ))}
           </div>
 
+          {/* Desktop Navigation Arrows */}
           <button
             onClick={handleNext}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white text-gray-700 w-12 h-12 rounded-full shadow-lg hover:bg-gray-50 hover:scale-110 transition-all duration-300 flex items-center justify-center -mr-6 active:scale-95 ${
+            className={`hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white text-gray-700 w-10 h-10 xl:w-12 xl:h-12 rounded-full shadow-lg hover:bg-gray-50 hover:scale-110 transition-all duration-300 items-center justify-center -mr-4 xl:-mr-6 active:scale-95 ${
               cardsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
             }`}
             style={{ transitionDelay: cardsVisible ? '600ms' : '0ms' }}
             aria-label="Next"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6" />
+          </button>
+        </div>
+
+        {/* Mobile Navigation Arrows */}
+        <div className="flex sm:hidden justify-center items-center gap-4 mt-6">
+          <button
+            onClick={handlePrevious}
+            className="bg-white text-gray-700 w-10 h-10 rounded-full shadow-lg hover:bg-gray-50 active:scale-95 transition-all duration-300 flex items-center justify-center"
+            aria-label="Previous"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          {/* Pagination Dots for Mobile */}
+          <div className="flex items-center gap-2">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(index)}
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  currentPage === index 
+                    ? 'w-6 bg-purple-700 shadow-md' 
+                    : 'w-1.5 bg-white/60'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+          
+          <button
+            onClick={handleNext}
+            className="bg-white text-gray-700 w-10 h-10 rounded-full shadow-lg hover:bg-gray-50 active:scale-95 transition-all duration-300 flex items-center justify-center"
+            aria-label="Next"
+          >
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>

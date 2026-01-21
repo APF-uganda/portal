@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { Calendar, Clock, MapPin } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
+import EventCard from '../cards/EventCard'
 import event1Img from '../../assets/images/landingPage-image/event1.jpg'
 import event2Img from '../../assets/images/landingPage-image/event2.jpeg'
 import event3Img from '../../assets/images/landingPage-image/event3.jpeg'
@@ -18,6 +18,9 @@ function FeaturedEvents() {
   const { elementRef, isVisible } = useScrollAnimation()
   const [currentPage, setCurrentPage] = useState(0)
   const [cardsVisible, setCardsVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
 
   const events: Event[] = [
     {
@@ -55,87 +58,113 @@ function FeaturedEvents() {
   }, [isVisible])
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) return
     const interval = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages)
     }, 5000)
     return () => clearInterval(interval)
-  }, [totalPages])
+  }, [totalPages, isMobile])
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = () => {
+    if (!isMobile) return
+    const swipeDistance = touchStartX.current - touchEndX.current
+    const minSwipeDistance = 50
+
+    if (swipeDistance > minSwipeDistance && currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+    } else if (swipeDistance < -minSwipeDistance && currentPage > 0) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
 
   return (
-    <section className="bg-gray-50 py-16 px-4">
+    <section className="bg-gray-50 py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <h2 
           ref={elementRef}
-          className={`text-center text-gray-900 text-4xl font-bold mb-12 transition-all duration-1000 transform ${
+          className={`text-center text-gray-900 text-2xl sm:text-3xl md:text-4xl font-bold mb-8 sm:mb-10 md:mb-12 transition-all duration-1000 transform px-4 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'
           }`}
         >
           Featured Events
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {events.map((event, index) => (
+        {/* Mobile Carousel View */}
+        <div className="sm:hidden">
+          <div 
+            className="overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <div 
-              key={index}
-              className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform ${
-                cardsVisible 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-12'
-              } hover:-translate-y-2 group`}
-              style={{ 
-                transitionDelay: cardsVisible ? `${index * 150}ms` : '0ms'
-              }}
+              className="flex transition-transform duration-500 ease-out"
+              style={{ transform: `translateX(-${currentPage * 100}%)` }}
             >
-              <div className="h-48 overflow-hidden">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 min-h-[3.5rem] transition-colors duration-300 group-hover:text-purple-700">
-                  {event.title}
-                </h3>
-                
-                <div className="space-y-2 mb-4 text-sm text-gray-600">
-                  <div className="flex items-start gap-2 transition-transform duration-300 group-hover:translate-x-1">
-                    <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0 text-purple-600" />
-                    <span>{event.date}</span>
-                  </div>
-                  <div className="flex items-start gap-2 transition-transform duration-300 group-hover:translate-x-1">
-                    <Clock className="w-4 h-4 mt-0.5 flex-shrink-0 text-purple-600" />
-                    <span>{event.time}</span>
-                  </div>
-                  <div className="flex items-start gap-2 transition-transform duration-300 group-hover:translate-x-1">
-                    <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-purple-600" />
-                    <span>{event.location}</span>
-                  </div>
+              {events.map((event, index) => (
+                <div key={index} className="w-full flex-shrink-0 px-2">
+                  <EventCard
+                    image={event.image}
+                    title={event.title}
+                    date={event.date}
+                    time={event.time}
+                    location={event.location}
+                    description={event.description}
+                    onRegister={() => console.log('Register for:', event.title)}
+                    delay={0}
+                  />
                 </div>
-                
-                <p className="text-sm text-gray-600 mb-6 min-h-[3rem]">
-                  {event.description}
-                </p>
-                
-                <button className="w-full bg-purple-700 text-white py-3 rounded-full font-semibold hover:bg-purple-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95">
-                  Register
-                </button>
-              </div>
+              ))}
             </div>
+          </div>
+        </div>
+
+        {/* Tablet & Desktop Grid View */}
+        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
+          {events.map((event, index) => (
+            <EventCard
+              key={index}
+              image={event.image}
+              title={event.title}
+              date={event.date}
+              time={event.time}
+              location={event.location}
+              description={event.description}
+              onRegister={() => console.log('Register for:', event.title)}
+              delay={cardsVisible ? index * 150 : 0}
+            />
           ))}
         </div>
         
-        <div className={`flex justify-center items-center gap-2 transition-all duration-1000 ${
+        {/* Pagination Dots */}
+        <div className={`flex justify-center items-center gap-2 sm:gap-2.5 mt-6 sm:mt-0 transition-all duration-1000 px-4 ${
           cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}>
           {Array.from({ length: totalPages }).map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentPage(index)}
-              className={`h-2 rounded-full transition-all duration-500 transform hover:scale-125 ${
+              className={`h-1.5 sm:h-2 rounded-full transition-all duration-500 transform hover:scale-125 active:scale-110 ${
                 currentPage === index 
-                  ? 'w-8 bg-purple-700 shadow-md' 
-                  : 'w-2 bg-gray-400 hover:bg-gray-500'
+                  ? 'w-6 sm:w-8 bg-purple-700 shadow-md' 
+                  : 'w-1.5 sm:w-2 bg-gray-400 hover:bg-gray-500'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

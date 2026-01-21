@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import connectingImg from '../../assets/images/landingPage-image/connecting.jpeg'
 
@@ -31,11 +32,12 @@ function ConnectingProfessionals() {
         <div className="flex-1 animate-[slideInLeft_1s_ease-out]">
           <h4 
             ref={elementRef}
-            className={`text-secondary text-[1.75rem] sm:text-[2rem] mb-6 sm:mb-8 font-bold relative inline-block transition-all duration-[800ms] ease-out ${
+            className={`text-secondary text-[1.75rem] sm:text-[2rem] mb-6 sm:mb-8 font-bold relative transition-all duration-[800ms] ease-out text-center md:text-left ${
               isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
             }`}
           >
-            Connecting Accounting Professionals
+            <span className="block md:inline">Connecting Accounting</span>{' '}
+            <span className="block md:inline">Professionals</span>
           </h4>
           
           {Object.entries(sections).map(([key, section]) => (
@@ -45,13 +47,17 @@ function ConnectingProfessionals() {
             >
               <h6 
                 onClick={() => toggleSection(key)}
-                className={`flex justify-between text-base sm:text-[1.2rem] cursor-pointer transition-colors duration-300 font-semibold hover:text-primary ${
+                className={`flex justify-between items-center text-base sm:text-[1.2rem] cursor-pointer transition-colors duration-300 font-semibold hover:text-primary ${
                   openSection === key ? 'text-primary' : 'text-secondary'
                 }`}
               >
                 {section.title} 
                 <span className="transition-transform duration-300 inline-block">
-                  {openSection === key ? '▲' : '▼'}
+                  {openSection === key ? (
+                    <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" />
+                  )}
                 </span>
               </h6>
               <div 
