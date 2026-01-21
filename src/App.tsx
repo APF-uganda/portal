@@ -5,6 +5,7 @@ import MembershipPage from './pages/MembershipPage'
 import EventsPage from './pages/EventsPage'
 import NewsPage from './pages/NewsPage'
 import ContactPage from './pages/ContactPage'
+import RegisterPage from './pages/RegisterPage'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </div>
     </Router>

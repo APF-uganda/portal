@@ -87,6 +87,7 @@ function Navbar() {
         {/* Desktop Buttons */}
         <div className="hidden lg:flex gap-4">
           {/* Join APF button with purple hover */}
+          <Link to="/register">
           <button
             className={`rounded-full px-6 lg:px-8 py-2 text-[0.85rem] lg:text-[0.9rem] 
                         font-medium transition-all duration-300 whitespace-nowrap 
@@ -98,6 +99,7 @@ function Navbar() {
           >
             Join APF
           </button>
+          </Link>
           {/* Members Login stays purple/white always */}
           <button
             className="bg-[#5F1C9F] rounded-full px-6 lg:px-8 py-2 text-[0.85rem] lg:text-[0.9rem] 
