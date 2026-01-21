@@ -1,3 +1,5 @@
+import { Calendar, Clock, MapPin } from 'lucide-react'
+
 interface EventCardProps {
   image: string
   title: string
@@ -10,33 +12,38 @@ interface EventCardProps {
 
 function EventCard({ image, title, date, time, location, description, onRegister }: EventCardProps) {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out animate-fade-in-up hover:-translate-y-2.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.2)] group">
-      <div className="h-[200px] overflow-hidden">
+    <div className="bg-white rounded-xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      <div className="h-[180px] overflow-hidden">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
+          className="w-full h-full object-cover"
         />
       </div>
-      <div className="p-6">
-        <h6 className="text-secondary text-[1.1rem] mb-2 font-semibold">
+      <div className="p-5">
+        <h3 className="text-gray-800 text-base font-bold mb-4 leading-tight min-h-[48px]">
           {title}
-        </h6>
-        <p className="text-[#666] text-[0.9rem] py-1">
-          📅 {date}
-        </p>
-        <p className="text-[#666] text-[0.9rem] py-1">
-          🕐 {time}
-        </p>
-        <p className="text-[#666] text-[0.9rem] py-1">
-          📍 {location}
-        </p>
-        <p className="text-[#666] text-[0.9rem] py-1 pb-4">
+        </h3>
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2 text-gray-600 text-sm">
+            
+            <span>{date}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-600 text-sm">
+            <Clock className="w-4 h-4 text-purple-600" />
+            <span>{time}</span>
+          </div>
+          <div className="flex items-start gap-2 text-gray-600 text-sm">
+            <MapPin className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+            <span className="leading-relaxed">{location}</span>
+          </div>
+        </div>
+        <p className="text-gray-600 text-sm leading-relaxed mb-5 min-h-[60px]">
           {description}
         </p>
         <button
           onClick={onRegister}
-          className="w-full bg-primary text-white rounded-[25px] py-3 font-semibold transition-all duration-300 ease-in-out hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
+          className="w-full bg-white text-purple-700 border-2 border-purple-700 rounded-lg py-2.5 font-semibold text-sm transition-all duration-300 hover:bg-purple-700 hover:text-white"
         >
           Register
         </button>
