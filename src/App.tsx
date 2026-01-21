@@ -1,15 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+
 import LandingPage from './pages/LandingPage'
 import AboutPage from './pages/AboutPage'
 import MembershipPage from './pages/MembershipPage'
 import EventsPage from './pages/EventsPage'
 import NewsPage from './pages/NewsPage'
 import ContactPage from './pages/ContactPage'
-<<<<<<< Updated upstream
 import RegisterPage from './pages/RegisterPage'
-=======
 import LoginPage from './pages/LoginPage'
->>>>>>> Stashed changes
+import OtpPage from './pages/otpPage'
 
 function App() {
   return (
@@ -22,11 +21,11 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
-<<<<<<< Updated upstream
+
+          {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
-=======
           <Route path="/login" element={<LoginPage />} />
->>>>>>> Stashed changes
+          <Route path="/otp" element={<OtpPage />} />
         </Routes>
       </div>
     </Router>

@@ -10,16 +10,12 @@ function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY
-      const shouldBeScrolled = scrollPosition > 500
-      setIsScrolled(shouldBeScrolled)
+      setIsScrolled(window.scrollY > 500)
     }
 
     handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
@@ -27,10 +23,7 @@ function Navbar() {
     setIsScrolled(false)
   }, [location.pathname])
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
-
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
   const isActive = (path: string) => location.pathname === path
 
   const navLinks = [
@@ -50,33 +43,30 @@ function Navbar() {
           : 'bg-white/15 backdrop-blur-md'
       }`}
     >
-      <nav className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 md:px-8 min-h-[56px] sm:min-h-[64px] flex items-center justify-between">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="flex items-center no-underline transition-transform duration-300 hover:scale-105"
-        >
+      <nav className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 min-h-[64px] flex items-center justify-between">
+        {/* LOGO */}
+        <Link to="/" className="flex items-center">
           <img
             src={logoPurple}
             alt="APF Logo"
-            className="h-[35px] sm:h-[40px] md:h-[50px] w-auto transition-all duration-300"
+            className="h-[38px] sm:h-[42px] md:h-[48px]"
           />
         </Link>
 
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex gap-8 lg:gap-10">
+        {/* DESKTOP LINKS */}
+        <div className="hidden lg:flex gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`relative pb-1 text-[0.9rem] font-medium transition-colors duration-300 whitespace-nowrap hover:text-primary ${
+              className={`text-[0.9rem] font-medium transition-colors ${
                 isActive(link.path)
                   ? isScrolled
-                    ? 'text-primary font-semibold border-b-2 border-primary'
-                    : 'text-white font-semibold border-b-2 border-white'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-white border-b-2 border-white'
                   : isScrolled
-                    ? 'text-secondary'
-                    : 'text-white'
+                    ? 'text-secondary hover:text-primary'
+                    : 'text-white hover:text-white/80'
               }`}
             >
               {link.label}
@@ -84,93 +74,64 @@ function Navbar() {
           ))}
         </div>
 
-        {/* Desktop Buttons */}
+        {/* DESKTOP ACTIONS */}
         <div className="hidden lg:flex gap-4">
-          {/* Join APF button with purple hover */}
           <Link to="/register">
-          <button
-            className={`rounded-full px-6 lg:px-8 py-2 text-[0.85rem] lg:text-[0.9rem] 
-                        font-medium transition-all duration-300 whitespace-nowrap 
-                        hover:-translate-y-0.5 ${
-              isScrolled
-                ? 'border-2 border-secondary text-secondary hover:bg-[#5F1C9F] hover:text-white'
-                : 'border-2 border-white text-white hover:bg-[#5F1C9F] hover:text-white'
-            }`}
-          >
-            Join APF
-          </button>
+            <button
+              className={`rounded-full px-6 py-2 font-medium transition-all ${
+                isScrolled
+                  ? 'border-2 border-secondary text-secondary hover:bg-[#5F1C9F] hover:text-white'
+                  : 'border-2 border-white text-white hover:bg-[#5F1C9F]'
+              }`}
+            >
+              Join APF
+            </button>
           </Link>
-          {/* Members Login stays purple/white always */}
-          <button
-            className="bg-[#5F1C9F] rounded-full px-6 lg:px-8 py-2 text-[0.85rem] lg:text-[0.9rem] 
-                       font-medium text-white shadow-[0_2px_8px_rgba(124,58,237,0.3)] 
-                       transition-all duration-300 whitespace-nowrap hover:bg-primary-dark 
-                       hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(124,58,237,0.5)]"
-          >
-            Members Login
-          </button>
+
+          <Link to="/login">
+            <button className="bg-[#5F1C9F] rounded-full px-6 py-2 font-medium text-white shadow hover:-translate-y-0.5 transition-all">
+              Members Login
+            </button>
+          </Link>
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* MOBILE MENU BUTTON */}
         <button
-          className={`lg:hidden p-2 transition-colors duration-300 rounded-lg ${
+          className={`lg:hidden p-2 rounded-lg ${
             isScrolled
-              ? 'text-secondary hover:bg-primary/8'
+              ? 'text-secondary hover:bg-black/5'
               : 'text-white hover:bg-white/10'
           }`}
           onClick={toggleMenu}
-          aria-label="Toggle menu"
         >
-          <Menu className="w-6 h-6 sm:w-7 sm:h-7" />
+          <Menu className="w-6 h-6" />
         </button>
 
-        {/* Mobile Drawer */}
+        {/* MOBILE DRAWER */}
         {isMenuOpen && (
           <>
             <div
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              className="fixed inset-0 bg-black/50 z-40"
               onClick={toggleMenu}
             />
-            <div className="fixed top-0 right-0 bottom-0 w-[85%] sm:w-[320px] md:w-[350px] max-w-[400px] 
-                            bg-white/98 backdrop-blur-sm shadow-[-4px_0_20px_rgba(0,0,0,0.15)] 
-                            z-50 flex flex-col">
-              <div className="p-4 sm:p-6 border-b border-black/10 flex justify-between items-center bg-white/95">
-                <Link
-                  to="/"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center no-underline"
-                >
-                  <img
-                    src={logoPurple}
-                    alt="APF Logo"
-                    className="h-[35px] sm:h-[40px] w-auto"
-                  />
-                </Link>
-                <button
-                  onClick={toggleMenu}
-                  className="text-secondary p-2 hover:bg-black/5 rounded-lg transition-colors"
-                  aria-label="Close menu"
-                >
+
+            <div className="fixed top-0 right-0 bottom-0 w-[320px] bg-white z-50 flex flex-col shadow-xl">
+              <div className="flex items-center justify-between p-5 border-b">
+                <img src={logoPurple} alt="APF Logo" className="h-10" />
+                <button onClick={toggleMenu}>
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
-              <ul className="flex-1 pt-4 px-4 list-none bg-white/95">
-                {navLinks.map((link, index) => (
-                  <li
-                    key={link.path}
-                    className="mb-2"
-                    style={{
-                      animation: `slideIn 0.3s ease-out ${index * 0.05}s both`,
-                    }}
-                  >
+              <ul className="flex-1 p-4 space-y-2">
+                {navLinks.map((link) => (
+                  <li key={link.path}>
                     <Link
                       to={link.path}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`block w-full px-4 py-3 text-base font-medium rounded-lg 
-                                  transition-all duration-200 no-underline ${
+                      className={`block px-4 py-3 rounded-lg font-medium ${
                         isActive(link.path)
-                          ? 'text-primary font-semibold bg-primary/10'
+                          ? 'bg-primary/10 text-primary'
                           : 'text-secondary hover:bg-black/5'
                       }`}
                     >
@@ -180,27 +141,23 @@ function Navbar() {
                 ))}
               </ul>
 
-              <div className="p-4 sm:p-6 border-t border-black/10 flex flex-col gap-4 bg-white/95">
-                {/* Mobile Join APF button with purple hover */}
-                <button className="w-full border-2 border-secondary text-secondary rounded-full py-3 font-medium transition-all duration-300 hover:bg-[#5F1C9F] hover:text-white">
-                  Join APF
-                </button>
-                {/* Members Login stays purple/white always */}
-                <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow-[0_2px_8px_rgba(124,58,237,0.3)] transition-all duration-300 hover:bg-primary-dark hover:shadow-[0_4px_12px_rgba(124,58,237,0.5)]">
-                  Members Login
-                </button>
+              <div className="p-4 space-y-3 border-t">
+                <Link to="/register" onClick={() => setIsMenuOpen(false)}>
+                  <button className="w-full border-2 border-secondary text-secondary rounded-full py-3 font-medium hover:bg-[#5F1C9F] hover:text-white transition">
+                    Join APF
+                  </button>
+                </Link>
+
+                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                  <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow transition hover:-translate-y-0.5">
+                    Members Login
+                  </button>
+                </Link>
               </div>
             </div>
           </>
         )}
       </nav>
-
-      <style>{`
-        @keyframes slideIn {
-          0% { opacity: 0; transform: translateX(20px); }
-          100% { opacity: 1; transform: translateX(0); }
-        }
-      `}</style>
     </header>
   )
 }
