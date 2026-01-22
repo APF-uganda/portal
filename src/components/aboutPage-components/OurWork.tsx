@@ -5,8 +5,8 @@ function OurWork() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   return (
-    <section className="bg-white py-16 px-4">
-      <div className="max-w-7xl mx-auto">
+    <section className="bg-FBFAFF py-16 px-4">
+      <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
             <h4 

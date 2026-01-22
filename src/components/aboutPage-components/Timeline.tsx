@@ -21,8 +21,8 @@ function Timeline() {
   ]
 
   return (
-    <section className="bg-white py-24">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="bg-[#FFFFFF] py-24">
+      <div className="max-w-6xl mx-auto px-4">
 
        
         <div className="relative">
