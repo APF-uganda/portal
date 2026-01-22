@@ -1,3 +1,4 @@
+
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import ronaldImg from '../../assets/images/aboutPage-images/CPA Ronald Katumba.jpg'
 import sarahImg from '../../assets/images/aboutPage-images/CPA Sarah Nejesa.webp'
@@ -19,8 +20,8 @@ function OurGovernance() {
   ]
 
   return (
-    <section className="bg-[#f8f9fa] py-16 px-4">
-      <div className="max-w-7xl mx-auto">
+    <section className="bg-[#FBFAFF] py-16 px-6">
+      <div className="max-w-6xl mx-auto">
         <h3 
           ref={elementRef}
           className={`text-center text-secondary text-[2.5rem] mb-4 font-bold transition-all duration-800 ${
@@ -38,12 +39,12 @@ function OurGovernance() {
           {leaders.map((leader, index) => (
             <div 
               key={index} 
-              className="text-center p-8 rounded-xl shadow-[0_4px_6px_rgba(0,0,0,0.1)] bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_12px_rgba(0,0,0,0.15)]"
+              className="text-center p-6 rounded-xl shadow-[0_4px_6px_rgba(0,0,0,0.1)] bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_12px_rgba(0,0,0,0.15)]"
             >
               <img
                 src={leader.image}
                 alt={leader.name}
-                className="w-[150px] h-[150px] rounded-full border-4 border-primary mx-auto mb-6 object-cover"
+                className="w-[200px] h-[200px] rounded-[2rem]  mx-auto mb-6 object-cover"
               />
               <h6 className="text-secondary text-[1.1rem] font-semibold mb-2">
                 {leader.name}
