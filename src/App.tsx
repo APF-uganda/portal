@@ -8,7 +8,7 @@ import NewsPage from './pages/NewsPage'
 import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
-import OtpPage from './pages/otpPage'
+import OtpPage from './pages/OtpPage'
 
 function App() {
   return (
