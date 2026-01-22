@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import NewsCard from '../common/NewsCard'
+import NewsCard from '../cards/NewsCard'
 import news1Img from '../../assets/images/landingPage-image/news1.webp'
 import news2Img from '../../assets/images/landingPage-image/news2.webp'
 import news3Img from '../../assets/images/landingPage-image/news3.png'
@@ -17,265 +17,212 @@ interface NewsItem {
 
 function LatestNews() {
   const { elementRef, isVisible } = useScrollAnimation()
+  const [cardsVisible, setCardsVisible] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
-  const [isUserScrolling, setIsUserScrolling] = useState(false)
-  const autoScrollTimerRef = useRef<number | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [startX, setStartX] = useState(0)
-  const [newsPerPage, setNewsPerPage] = useState(3)
-
-  useEffect(() => {
-    const updateNewsPerPage = () => {
-      if (window.innerWidth <= 768) {
-        setNewsPerPage(1)
-      } else if (window.innerWidth <= 1024) {
-        setNewsPerPage(2)
-      } else {
-        setNewsPerPage(3)
-      }
-    }
-
-    updateNewsPerPage()
-    window.addEventListener('resize', updateNewsPerPage)
-    
-    return () => window.removeEventListener('resize', updateNewsPerPage)
-  }, [])
+  const [isMobile, setIsMobile] = useState(false)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
 
   const news: NewsItem[] = [
     {
       image: news1Img,
       tag: 'Thought Leadership',
       title: 'The Future of Accountancy: Embracing Digital Transformation',
-      description: 'Explore how digital tools are revolutionizing the profession from AI-based audits and blockchain to cloud accounting.',
+      description: 'Digital tools are revolutionizing the accounting landscape. Explore how AI, blockchain, and cloud accounting practices are revolutionizing accounting practices and what it means for professionals.',
       date: 'October 18, 2024',
-      readTime: '5 min read'
+      readTime: '7 min read'
     },
     {
       image: news2Img,
       tag: 'Ethics & Governance',
       title: 'Strengthening Ethical Frameworks in Public Practice',
-      description: 'Learn about new strategies and best practices for upholding public trust and the pillars of a strong ethical foundation.',
+      description: 'A deep dive into the importance of ethical conduct in maintaining public trust and the role of APF in fostering integrity within the profession.',
       date: 'October 10, 2024',
-      readTime: '6 min read'
+      readTime: '5 min read'
     },
     {
       image: news3Img,
       tag: 'Announcements',
-      title: 'Highlights from the Annual Conference 2024',
-      description: 'Exciting discussions, inspiring speakers, and networking opportunities that shaped the future of our profession.',
+      title: 'Highlights from the Annual CPD Conference 2024',
+      description: 'Recap of the key takeaways, insightful sessions, and networking opportunities from our recent successful CPD conference.',
       date: 'September 28, 2024',
-      readTime: '4 min read'
-    },
-    {
-      image: news1Img,
-      tag: 'Professional Development',
-      title: 'New CPD Requirements for 2026: What You Need to Know',
-      description: 'Stay compliant with the latest continuing professional development requirements and enhance your career prospects.',
-      date: 'September 15, 2024',
-      readTime: '7 min read'
-    },
-    {
-      image: news2Img,
-      tag: 'Industry Insights',
-      title: 'Navigating Tax Reforms in Uganda: A Comprehensive Guide',
-      description: 'Understanding the recent tax policy changes and their implications for accounting professionals and businesses.',
-      date: 'August 30, 2024',
-      readTime: '8 min read'
-    },
-    {
-      image: news3Img,
-      tag: 'Technology',
-      title: 'AI in Accounting: Opportunities and Challenges',
-      description: 'Discover how artificial intelligence is transforming audit processes, financial reporting, and client advisory services.',
-      date: 'August 20, 2024',
-      readTime: '6 min read'
-    },
+      readTime: '5 min read'
+    }
   ]
 
-  const totalPages = Math.ceil(news.length / newsPerPage)
-
-  const handleReadMore = (newsTitle: string) => {
-    console.log('Read more:', newsTitle)
-  }
-
-  const scrollToPage = (pageIndex: number) => {
-    setCurrentPage(pageIndex)
-    setIsUserScrolling(true)
-    
-    if (autoScrollTimerRef.current) {
-      clearTimeout(autoScrollTimerRef.current)
-    }
-    autoScrollTimerRef.current = window.setTimeout(() => {
-      setIsUserScrolling(false)
-    }, 1000)
-  }
-
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    setIsDragging(true)
-    setIsUserScrolling(true)
-    
-    const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
-    setStartX(pageX)
-    
-    if (autoScrollTimerRef.current) {
-      clearTimeout(autoScrollTimerRef.current)
-    }
-  }
-
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging) return
-    
-    const pageX = 'touches' in e ? e.touches[0].pageX : e.pageX
-    const walk = startX - pageX
-    const containerWidth = containerRef.current?.offsetWidth || 1200
-    const threshold = containerWidth * 0.3
-    
-    if (walk > threshold && currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1)
-      setStartX(pageX)
-    } else if (walk < -threshold && currentPage > 0) {
-      setCurrentPage(currentPage - 1)
-      setStartX(pageX)
-    }
-  }
-
-  const handleDragEnd = () => {
-    setIsDragging(false)
-    
-    if (autoScrollTimerRef.current) {
-      clearTimeout(autoScrollTimerRef.current)
-    }
-    autoScrollTimerRef.current = window.setTimeout(() => {
-      setIsUserScrolling(false)
-    }, 3000)
-  }
+  const totalPages = news.length
 
   useEffect(() => {
-    let intervalId: number
-
-    if (!isUserScrolling && newsPerPage === 1) {
-      intervalId = window.setInterval(() => {
-        setCurrentPage((prevPage) => (prevPage + 1) % totalPages)
-      }, 10000)
+    if (isVisible) {
+      setTimeout(() => setCardsVisible(true), 200)
     }
+  }, [isVisible])
 
-    return () => {
-      if (intervalId) clearInterval(intervalId)
-      if (autoScrollTimerRef.current) clearTimeout(autoScrollTimerRef.current)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
     }
-  }, [isUserScrolling, totalPages, newsPerPage])
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) return
+    const interval = setInterval(() => {
+      setCurrentPage((prev) => (prev + 1) % totalPages)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [totalPages, isMobile])
+
+  const handlePrevious = () => {
+    setCurrentPage((prev) => (prev === 0 ? totalPages - 1 : prev - 1))
+  }
+
+  const handleNext = () => {
+    setCurrentPage((prev) => (prev === totalPages - 1 ? 0 : prev + 1))
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = () => {
+    if (!isMobile) return
+    const swipeDistance = touchStartX.current - touchEndX.current
+    const minSwipeDistance = 50
+
+    if (swipeDistance > minSwipeDistance && currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+    } else if (swipeDistance < -minSwipeDistance && currentPage > 0) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
 
   return (
-    <section className="bg-[#e9d5ff] py-12 sm:py-16 px-4">
-      <h4 
-        ref={elementRef}
-        className={`text-center text-secondary text-[1.75rem] sm:text-[2rem] mb-8 sm:mb-12 font-bold transition-opacity duration-800 ${
-          isVisible ? 'opacity-100 animate-fade-in' : 'opacity-0'
-        }`}
-      >
-        Latest News & Insights
-      </h4>
-      <div className="max-w-7xl mx-auto relative overflow-hidden select-none px-2 md:px-6">
-        {currentPage > 0 && (
-          <button
-            onClick={() => scrollToPage(currentPage - 1)}
-            className="absolute left-[2%] md:left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white text-primary w-10 h-10 md:w-[50px] md:h-[50px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center hover:bg-primary hover:text-white hover:scale-110 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
-            aria-label="Previous page"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-        )}
-        
-        <div 
-          ref={containerRef}
-          onMouseDown={handleDragStart}
-          onMouseMove={handleDragMove}
-          onMouseUp={handleDragEnd}
-          onMouseLeave={handleDragEnd}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-          className={`overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+    <section className="bg-purple-300 py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto">
+        <h2 
+          ref={elementRef}
+          className={`text-center text-white text-2xl sm:text-3xl md:text-4xl font-bold mb-8 sm:mb-10 md:mb-12 transition-all duration-1000 transform px-4 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'
+          }`}
         >
-          <div 
-            className="flex gap-4 md:gap-8 transition-transform duration-500 ease-in-out pb-4"
-            style={{
-              transform: newsPerPage === 1 ? `translateX(-${currentPage * 100}%)` : 'translateX(0)',
-              pointerEvents: isDragging ? 'none' : 'auto',
-            }}
+          Latest News & Insights
+        </h2>
+        
+        <div className="relative">
+          {/* Desktop Navigation Arrows */}
+          <button
+            onClick={handlePrevious}
+            className={`hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white text-gray-700 w-10 h-10 xl:w-12 xl:h-12 rounded-full shadow-lg hover:bg-gray-50 hover:scale-110 transition-all duration-300 items-center justify-center -ml-4 xl:-ml-6 active:scale-95 ${
+              cardsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
+            }`}
+            style={{ transitionDelay: cardsVisible ? '600ms' : '0ms' }}
+            aria-label="Previous"
           >
-            {news.map((item, index) => (
+            <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6" />
+          </button>
+
+          {/* Mobile Carousel View */}
+          <div className="sm:hidden">
+            <div 
+              className="overflow-hidden"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <div 
-                key={index}
-                className="flex-shrink-0 min-w-0"
-                style={{
-                  flexBasis: newsPerPage === 1 
-                    ? '100%' 
-                    : `calc(${100 / newsPerPage}% - ${(newsPerPage - 1) * 32 / newsPerPage}px)`
-                }}
+                className="flex transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(-${currentPage * 100}%)` }}
               >
-                <NewsCard
-                  image={item.image}
-                  tag={item.tag}
-                  title={item.title}
-                  description={item.description}
-                  date={item.date}
-                  readTime={item.readTime}
-                  onReadMore={() => handleReadMore(item.title)}
-                />
+                {news.map((item, index) => (
+                  <div key={index} className="w-full flex-shrink-0 px-2">
+                    <NewsCard
+                      image={item.image}
+                      tag={item.tag}
+                      title={item.title}
+                      description={item.description}
+                      date={item.date}
+                      readTime={item.readTime}
+                      onReadMore={() => console.log('Read more:', item.title)}
+                      delay={0}
+                    />
+                  </div>
+                ))}
               </div>
+            </div>
+          </div>
+
+          {/* Tablet & Desktop Grid View */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+            {news.map((item, index) => (
+              <NewsCard
+                key={index}
+                image={item.image}
+                tag={item.tag}
+                title={item.title}
+                description={item.description}
+                date={item.date}
+                readTime={item.readTime}
+                onReadMore={() => console.log('Read more:', item.title)}
+                delay={cardsVisible ? index * 150 : 0}
+              />
             ))}
           </div>
-        </div>
-        
-        {currentPage < totalPages - 1 && (
-          <button
-            onClick={() => scrollToPage(currentPage + 1)}
-            className="absolute right-[2%] md:right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-white text-primary w-10 h-10 md:w-[50px] md:h-[50px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center hover:bg-primary hover:text-white hover:scale-110 hover:shadow-[0_4px_12px_rgba(124,58,237,0.4)]"
-            aria-label="Next page"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        )}
-      </div>
-      
-      <div className="flex md:hidden justify-center items-center gap-3 mt-8 p-4">
-        {Array.from({ length: Math.min(totalPages, 3) }).map((_, i) => {
-          let dotIndex = i
-          if (totalPages > 3) {
-            let startIndex = Math.max(0, currentPage - 1)
-            let endIndex = Math.min(totalPages - 1, startIndex + 2)
-            if (endIndex === totalPages - 1) {
-              startIndex = Math.max(0, endIndex - 2)
-            }
-            dotIndex = startIndex + i
-          }
-          
-          return (
-            <button
-              key={dotIndex}
-              onClick={() => scrollToPage(dotIndex)}
-              className={`h-3 border-none cursor-pointer transition-all duration-300 p-0 rounded-full hover:bg-[#94a3b8] hover:scale-120 ${
-                currentPage === dotIndex 
-                  ? 'w-8 bg-[#6b21a8] rounded-md' 
-                  : 'w-3 bg-[#cbd5e1]'
-              }`}
-              aria-label={`Go to page ${dotIndex + 1}`}
-            />
-          )
-        })}
-      </div>
 
-      <style>{`
-        @keyframes fade-in {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.8s ease-out;
-        }
-      `}</style>
+          {/* Desktop Navigation Arrows */}
+          <button
+            onClick={handleNext}
+            className={`hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white text-gray-700 w-10 h-10 xl:w-12 xl:h-12 rounded-full shadow-lg hover:bg-gray-50 hover:scale-110 transition-all duration-300 items-center justify-center -mr-4 xl:-mr-6 active:scale-95 ${
+              cardsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+            }`}
+            style={{ transitionDelay: cardsVisible ? '600ms' : '0ms' }}
+            aria-label="Next"
+          >
+            <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6" />
+          </button>
+        </div>
+
+        {/* Mobile Navigation Arrows */}
+        <div className="flex sm:hidden justify-center items-center gap-4 mt-6">
+          <button
+            onClick={handlePrevious}
+            className="bg-white text-gray-700 w-10 h-10 rounded-full shadow-lg hover:bg-gray-50 active:scale-95 transition-all duration-300 flex items-center justify-center"
+            aria-label="Previous"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          {/* Pagination Dots for Mobile */}
+          <div className="flex items-center gap-2">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(index)}
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  currentPage === index 
+                    ? 'w-6 bg-purple-700 shadow-md' 
+                    : 'w-1.5 bg-white/60'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+          
+          <button
+            onClick={handleNext}
+            className="bg-white text-gray-700 w-10 h-10 rounded-full shadow-lg hover:bg-gray-50 active:scale-95 transition-all duration-300 flex items-center justify-center"
+            aria-label="Next"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
     </section>
   )
 }

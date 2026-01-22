@@ -133,11 +133,11 @@ const EventCalendar = () => {
                                         onClick={() => setSelectedDate(fullDate)}
                                         className={`w-10 h-10 flex items-center justify-center rounded-full cursor-pointer mx-auto transition-all duration-300
                                             ${isSelected
-                                                ? "bg-[#6D28D9] text-white font-bold" // solid purple with white text
+                                                ? "bg-[#6D28D9] text-white font-bold" 
                                                 : hasEvent
                                                     ? "ring-2 ring-[#6D28D9] text-gray-900 hover:bg-[#6D28D9] hover:text-white"
                                                     : isToday
-                                                        ? "bg-primary-light text-white font-semibold"
+                                                        ? "bg-[#10002B] text-white font-semibold"
                                                         : "text-gray-900 hover:bg-gray-200"
                                             }`}
                                     >

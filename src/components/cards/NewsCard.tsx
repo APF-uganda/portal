@@ -6,36 +6,57 @@ interface NewsCardProps {
   date: string
   readTime: string
   onReadMore?: () => void
+  delay?: number
 }
 
-function NewsCard({ image, tag, title, description, date, readTime, onReadMore }: NewsCardProps) {
+function NewsCard({ 
+  image, 
+  tag, 
+  title, 
+  description, 
+  date, 
+  readTime, 
+  onReadMore,
+  delay = 0 
+}: NewsCardProps) {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out animate-fade-in-up hover:-translate-y-2.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.2)] group">
-      <div className="h-[200px] overflow-hidden">
+    <div 
+      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group opacity-0 translate-y-12 animate-fade-in-up w-full"
+      style={{ 
+        animationDelay: `${delay}ms`,
+        animationFillMode: 'forwards'
+      }}
+    >
+      <div className="h-40 sm:h-44 md:h-48 overflow-hidden">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
       </div>
-      <div className="p-6">
-        <span className="inline-block bg-[#e9d5ff] text-primary text-xs font-semibold px-3 py-1 rounded-full mb-2">
+      <div className="p-4 sm:p-5 md:p-6">
+        <span className="inline-block bg-gray-100 text-gray-700 text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1 rounded mb-2 sm:mb-3 transition-all duration-300 group-hover:bg-purple-100 group-hover:text-purple-700">
           {tag}
         </span>
-        <h6 className="text-secondary text-[1.1rem] my-2 font-semibold">
+        
+        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[3.5rem] leading-tight transition-colors duration-300 group-hover:text-purple-700">
           {title}
-        </h6>
-        <p className="text-[#666] text-[0.9rem] leading-[1.6] my-2">
+        </h3>
+        
+        <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 min-h-[3rem] sm:min-h-[3.5rem] md:min-h-[4.5rem] leading-relaxed">
           {description}
         </p>
-        <p className="text-[#999] text-[0.8rem] block mt-2">
+        
+        <div className="text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3">
           {date} • {readTime}
-        </p>
-        <button
+        </div>
+        
+        <button 
           onClick={onReadMore}
-          className="text-primary font-semibold mt-2 p-0 transition-all duration-300 ease-in-out hover:underline hover:translate-x-1.5 bg-transparent"
+          className="text-purple-700 font-semibold text-xs sm:text-sm hover:underline transition-all duration-300 hover:translate-x-2 inline-flex items-center group/btn"
         >
           Read More
+          <span className="ml-1 transition-transform duration-300 group-hover/btn:translate-x-1">→</span>
         </button>
       </div>
     </div>

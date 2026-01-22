@@ -8,6 +8,11 @@ function ContactForm() {
     subject: '',
     message: '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null
+    message: string
+  }>({ type: null, message: '' })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -16,10 +21,49 @@ function ContactForm() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
+    setIsSubmitting(true)
+    setSubmitStatus({ type: null, message: '' })
+
+    try {
+      const response = await fetch('http://localhost:8000/api/contacts/submit/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus({
+          type: 'success',
+          message: data.message || 'Your message has been sent successfully!',
+        })
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: '',
+        })
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: data.message || 'Failed to send message. Please try again.',
+        })
+      }
+    } catch (error) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Network error. Please check your connection and try again.',
+      })
+      console.error('Error submitting form:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -86,6 +130,19 @@ function ContactForm() {
 
             {/* Right Column - Contact Form */}
             <form onSubmit={handleSubmit}>
+              {/* Status Message */}
+              {submitStatus.type && (
+                <div
+                  className={`mb-4 p-4 rounded-lg ${
+                    submitStatus.type === 'success'
+                      ? 'bg-green-50 text-green-800 border border-green-200'
+                      : 'bg-red-50 text-red-800 border border-red-200'
+                  }`}
+                >
+                  {submitStatus.message}
+                </div>
+              )}
+
               {/* Form Fields Stacked Vertically */}
               <div className="flex flex-col gap-4 mb-4">
                 {/* Name */}
@@ -152,9 +209,12 @@ function ContactForm() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-primary text-white py-3 rounded-lg text-base font-semibold shadow-[0_2px_8px_rgba(124,58,237,0.3)] transition-all duration-300 hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(124,58,237,0.5)]"
+                disabled={isSubmitting}
+                className={`w-full bg-purple-700 text-white py-3 rounded-full text-base font-semibold shadow-[0_2px_8px_rgba(124,58,237,0.3)] transition-all duration-300 hover:bg-purple-800 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(124,58,237,0.5)] ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                Submit Message
+                {isSubmitting ? 'Sending...' : 'Submit Message'}
               </button>
             </form>
           </div>

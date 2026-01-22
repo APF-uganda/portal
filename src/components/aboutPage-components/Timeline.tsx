@@ -1,59 +1,144 @@
-function Timeline() {
-  const timelineData = [
-    {
-      
-      title: 'Inaugural Meeting and Formation',
-      description:
-        'The Accountancy Practitioners Forum was officially established, bringing together accounting professionals to strengthen the profession in Uganda.'
-    },
-    {
-      
-      title: 'First Annual Conference',
-      description:
-        'Hosted a landmark conference attracting professionals from across the region, discussing innovations in accounting and best practices for future growth.'
-    },
-    {
-    
-      title: 'Launch of CPD Accreditation',
-      description:
-        'Introduced a structured Continuous Professional Development program, ensuring members maintain and enhance their skills and knowledge.'
-    }
-  ]
+import React from 'react';
 
-  return (
-    <section className="bg-[#FFFFFF] py-24">
-      <div className="max-w-6xl mx-auto px-4">
-
-       
-        <div className="relative">
-        <img
-  src="/timelinedates.svg"
-  alt="APF Timeline"
-  className="w-full scale-120 md:scale-125 origin-center"
-/>
-
-
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-16">
-            {timelineData.map((item, index) => (
-              <div key={index} className="text-center px-6">
-                <h4 className="text-primary text-2xl font-bold mb-2">
-                 
-                </h4>
-                <h5 className="text-slate-800 font-semibold mb-3">
-                  {item.title}
-                </h5>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
-    </section>
-  )
+interface TimelineEvent {
+    year: string;
+    title: string;
+    description: string;
+    color: 'black' | '#DFBAE3' | '#9E4FDE';
 }
 
-export default Timeline
+const Timeline: React.FC = () => {
+    const events: TimelineEvent[] = [
+        {
+            year: '2005',
+            title: 'Inaugural Meeting and Formation',
+            description: 'The Accountancy Practitioners Forum was officially established, bringing together key stakeholders to address emerging issues in the Ugandan accounting landscape.',
+            color: 'black'
+        },
+        {
+            year: '2010',
+            title: 'First Annual Conference',
+            description: "Hosted a landmark conference, attracting professionals from across the region to discuss 'Innovations in African Accountancy', setting a precedent for future events.",
+            color: '#DFBAE3'
+        },
+        {
+            year: '2015',
+            title: 'Launch of CPD Accreditation',
+            description: 'Introduced a robust Continuous Professional Development program, ensuring members maintain and enhance their skills in line with global best practices.',
+            color: '#9E4FDE'
+        }
+    ];
+
+    const getCircleClasses = (color: string) => {
+        switch (color) {
+            case 'black':
+                return 'bg-black';
+            case '#DFBAE3':
+                return 'bg-[#DFBAE3]';
+            case '#9E4FDE':
+                return 'bg-[#9E4FDE]';
+            default:
+                return 'bg-gray-500';
+        }
+    };
+
+    const getCircleSize = (color: string) => {
+        if (color === '#DFBAE3') return 'w-10 h-10 md:w-16 md:h-16'; // reduced big ball
+        if (color === '#9E4FDE') return 'w-5 h-5 md:w-8 md:h-8';           // smaller purple ball
+        return 'w-6 h-6 md:w-8 md:h-8';                                  // smaller default
+    };
+
+    return (
+        <div className="w-full bg-white py-12 px-4 md:py-16 md:px-8">
+            <div className="max-w-7xl mx-auto">
+                {/* Desktop View */}
+                <div className="hidden md:block relative">
+                    {/* Wavy Timeline Line using SVG */}
+                    <div className="absolute top-16 left-0 right-0 h-20 overflow-visible">
+                        <svg className="w-full h-20" preserveAspectRatio="none" viewBox="0 0 1200 80">
+                            <path
+                                d="M 0 40 Q 300 10, 600 40 T 1200 40"
+                                stroke="#d1d5db"
+                                strokeWidth="2"
+                                fill="none"
+                            />
+                        </svg>
+                    </div>
+
+                    {/* Timeline Events */}
+                    <div className="grid grid-cols-3 gap-8">
+                        {events.map((event, index) => (
+                            <div key={index} className="relative flex flex-col items-center">
+                                {/* Year */}
+                                <div className="text-center mb-6">
+                                    <h3
+                                        className={`text-3xl font-bold text-purple-600 ${
+                                            event.year === '2005' ? 'translate-y-9' : ''
+                                        } ${event.year === '2010' ? 'translate-y-7' : ''} ${
+                                            event.year === '2015' ? 'translate-y-7' : ''
+                                        }`}
+                                    >
+                                        {event.year}
+                                    </h3>
+                                </div>
+
+                                {/* Circle */}
+                                <div className="flex justify-center mb-8">
+                                    <div
+                                        className={`${getCircleClasses(event.color)} ${getCircleSize(
+                                            event.color
+                                        )} rounded-full ${
+                                            event.year === '2005' ? 'translate-y-10' : ''
+                                        } ${event.year === '2010' ? 'translate-y-[8px]' : ''} ${
+                                            event.year === '2015' ? 'translate-y-4' : ''
+                                        }`}
+                                    ></div>
+                                </div>
+
+                                {/* Content Card */}
+                                <div className="text-center px-4 translate-y-4">
+                                    <h4 className="text-lg font-bold text-purple-900 mb-3">{event.title}</h4>
+                                    <p className="text-sm text-gray-700 leading-relaxed">{event.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Mobile View */}
+                <div className="md:hidden relative ml-4">
+                    {/* Straight vertical line through balls */}
+                    <div className="absolute left-16 top-0 bottom-0 w-0.5 translate-x-[7px] bg-gray-300"></div>
+
+                    {events.map((event, index) => (
+                        <div key={index} className="relative mb-12 flex items-center">
+                            {/* Left Side: Year */}
+                            <div className="w-16 text-right pr-2 flex items-center justify-end">
+                                <h3 className="text-lg font-bold text-purple-600">{event.year}</h3>
+                            </div>
+
+                            {/* Circle on the line */}
+                            <div className="flex items-center">
+                                <div
+                                    className={`${getCircleClasses(event.color)} w-4 h-4 rounded-full`}
+                                ></div>
+                            </div>
+
+                            {/* Right Side: Content */}
+                            <div className="flex-1 pl-4">
+                                <h4 className="text-base font-bold text-purple-900 mb-2">
+                                    {event.title}
+                                </h4>
+                                <p className="text-sm text-gray-700 leading-relaxed">
+                                    {event.description}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Timeline;
