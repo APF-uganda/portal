@@ -123,7 +123,7 @@ function Navbar() {
                 </button>
               </div>
 
-              <ul className="flex-1 p-4 space-y-2">
+              <ul className="flex-1 bg-white p-4 space-y-2">
                 {navLinks.map((link) => (
                   <li key={link.path}>
                     <Link
