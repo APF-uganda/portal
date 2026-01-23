@@ -14,7 +14,7 @@ const HeroSection = () => {
         {/* Centered Text */}
         <div className="absolute inset-0 flex items-center justify-center px-4 text-center">
           <h1 className="text-white text-3xl md:text-5xl font-bold leading-tight max-w-3xl">
-            EVENTS
+            Events
           </h1>
         </div>
       </div>
