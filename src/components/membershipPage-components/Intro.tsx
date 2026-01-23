@@ -4,20 +4,15 @@
  */
 function Intro() {
   return (
-    <section className="bg-gray-50 py-6 sm:py-8 px-4 sm:px-6">
+    <section className="bg-[#f3f4f6] py-6 sm:py-8 px-4 sm:px-6">
       <div className="max-w-[900px] mx-auto text-center">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-          Be part of APF Uganda
-        </h2>
-
         <p className="
           text-sm
           sm:text-base
-          text-gray-700
+          text-black
           leading-relaxed
-          sm:leading-[2.2]
-          max-w-[720px]
-          sm:max-w-[820px]
+          sm:leading-[2.4]
+          max-w-[1050px]
           mx-auto
         ">
           By joining APF Uganda, you will be part of a professional community
@@ -26,7 +21,7 @@ function Intro() {
         </p>
       </div>
     </section>
-  );
+  )
 }
 
-export default Intro;
+export default Intro
