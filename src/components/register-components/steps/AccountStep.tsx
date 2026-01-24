@@ -1,12 +1,12 @@
 import Input from "../Input";
 
 const ACCOUNT_FIELDS = [
-  { label: "Full Name", placeholder: "Richard Male" },
-  { label: "Email Address", placeholder: "richm@gmail.com" },
-  { label: "Phone Number", placeholder: "+256 7XX XXX XXX" },
-  { label: "Username or Email Login", placeholder: "Richard.M" },
-  { label: "Password", type: "password" },
-  { label: "Confirm Password", type: "password" },
+  { label: "Full Name", placeholder: "Richard Male", required: true, pattern: "^[A-Za-z ]+$" },
+  { label: "Email Address", placeholder: "richm@gmail.com", type: "email", required: true },
+  { label: "Phone Number", placeholder: "+256 7XX XXX XXX", required: true, pattern: "^\\+256[0-9]{9}$" },
+  { label: "Username or Email Login", placeholder: "Richard.M", required: true, minLength: 5 },
+  { label: "Password", type: "password", name: "password", required: true, minLength: 8 },
+  { label: "Confirm Password", type: "password", name: "confirmPassword", required: true, minLength: 8 },
 ];
 
 function AccountStep() {
@@ -23,12 +23,16 @@ function AccountStep() {
             label={field.label}
             type={field.type || "text"}
             placeholder={field.placeholder}
+            required={field.required} 
+            pattern={field.pattern}
+            minLength={field.minLength}
           />
         ))}
       </div>
 
       <p className="text-xs text-gray-500 mt-2 text-center">
         Minimum 8 characters
+
       </p>
     </>
   );

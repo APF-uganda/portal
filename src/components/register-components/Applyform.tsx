@@ -5,7 +5,6 @@ import PersonalStep from "./steps/PersonalStep";
 import DocumentsStep from "./steps/DocumentStep";
 import PaymentSteps from "./steps/PaymentSteps";
 
-
 // Constants
 const STEPS = [
   "Account Details",
@@ -16,7 +15,36 @@ const STEPS = [
 
 function ApplyForm() {
   const [currentStep, setCurrentStep] = useState(0);
-  const isLastStep = currentStep === STEPS.length - 1;  
+  const isLastStep = currentStep === STEPS.length - 1;
+
+  const handleNext = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const form = e.currentTarget.closest("form");
+    if (!form) return;
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    if (currentStep === 0) {
+      const password = form.querySelector<HTMLInputElement>('input[name="password"]');
+      const confirmPassword = form.querySelector<HTMLInputElement>('input[name="confirmPassword"]');
+
+      if (password && confirmPassword && password.value !== confirmPassword.value) {
+        confirmPassword.setCustomValidity("Passwords do not match");
+        confirmPassword.reportValidity();
+        return;
+      } else {
+        confirmPassword?.setCustomValidity("");
+      }
+    }
+
+    if (isLastStep) {
+      console.log("Submitting the form");
+    } else {
+      setCurrentStep((s) => s + 1);
+    }
+  };
 
   return (
     <section className="bg-gray-100 py-6 sm:py-10 px-4">
@@ -31,11 +59,7 @@ function ApplyForm() {
           </p>
         </div>
 
-        {/* Stepper
-        <Stepper steps={STEPS} currentStep={currentStep} /> */}
-
-        
-        {/* STEP INDICATOR */}
+        {/* Step Indicator */}
         <div className="w-full mb-6">
           {/* Mobile: simple indicator */}
           <div className="sm:hidden text-center">
@@ -53,45 +77,36 @@ function ApplyForm() {
           </div>
         </div>
 
-        {/* FORM CARD */}
-        <div className="w-full max-w-4xl bg-white border border-purple-300 rounded-lg p-4 sm:p-6 md:p-8">
+        {/* Form Card */}
+        <form className="w-full max-w-4xl bg-white border border-purple-300 rounded-lg p-4 sm:p-6 md:p-8">
           {currentStep === 0 && <AccountStep />}
           {currentStep === 1 && <PersonalStep />}
           {currentStep === 2 && <DocumentsStep />}
           {currentStep === 3 && <PaymentSteps />}
 
-          {/* ACTIONS */}
+          {/* Actions */}
           <div className="flex justify-between mt-10">
             <button
               disabled={currentStep === 0}
               onClick={() => setCurrentStep((s) => s - 1)}
-              className={`px-8 py-2 rounded-lg text-sm font-medium
-                ${
-                  currentStep === 0
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white border border-gray-300 hover:bg-gray-50"
-                }`}
+              className={`px-8 py-2 rounded-lg text-sm font-medium ${
+                currentStep === 0
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-white border border-gray-300 hover:bg-gray-50"
+              }`}
             >
               Back
             </button>
 
             <button
-            type="button"
-            onClick={() => {
-              
-                if (isLastStep) {
-                  console.log("Submitting the form");
-                } else {
-                setCurrentStep((s) => s + 1)
-              }
-            }}
-              className="px-8 py-2 rounded-lg bg-purple-600 text-white
-                         text-sm font-medium hover:bg-purple-700 transition"
+              type="button"
+              onClick={handleNext}
+              className="px-8 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition"
             >
-            {isLastStep ? "Submit" : "Next"}
+              {isLastStep ? "Submit" : "Next"}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </section>
   );

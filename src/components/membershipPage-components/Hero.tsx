@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import heroImg from "../../assets/images/membershipPage-images/meb.png";
 
 function Hero() {
@@ -19,7 +20,7 @@ function Hero() {
         <h1 className="text-2xl md:text-5xl font-bold mb-6 fade-in-up delay-200">
           MEMBERSHIP
         </h1>
-
+        <Link to="/register">
         <button
           className="
             fade-in-up delay-600
@@ -32,6 +33,7 @@ function Hero() {
         >
           Become a Member
         </button>
+        </Link>
       </div>
 
       {/* ANIMATIONS */}

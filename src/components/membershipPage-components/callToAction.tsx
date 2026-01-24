@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 export default function CallToAction() {
   return (
     <section className="bg-[#f7f3ff] py-12 sm:py-16">
@@ -34,14 +35,15 @@ export default function CallToAction() {
         </p>
 
         {/* CTA BUTTON */}
+        <Link to="/register">
         <button
           className="
             inline-flex items-center justify-center
             px-5 py-3
             sm:px-6 sm:py-3
             text-sm sm:text-base
-            bg-purple-700 text-white font-semibold
-            rounded-lg
+            bg-[#5F1C9F] text-white font-semibold
+            rounded-full
             shadow-md
             transition-all duration-300
             hover:bg-purple-800 hover:-translate-y-0.5
@@ -50,6 +52,7 @@ export default function CallToAction() {
         >
           Join APF Today
         </button>
+        </Link>
       </div>
     </section>
   );

@@ -81,7 +81,7 @@ const CARD_GAP = 32;
         <button
           onClick={prev}
           aria-label="Previous"
-          className={`absolute left-[70px] top-1/2 -translate-y-1/2 z-10
+          className={`absolute left-[200px] top-1/2 -translate-y-1/2 z-10
             w-6 h-6 flex items-center justify-center rounded-full
             bg-purple-500 border border-slate-200 shadow
             ${index === 0 ? "opacity-40 cursor-not-allowed" : "opacity-100"}
@@ -144,7 +144,7 @@ const CARD_GAP = 32;
         <button
           onClick={next}
           aria-label="Next"
-          className={`absolute right-[70px] top-1/2 -translate-y-1/2 z-10
+          className={`absolute right-[200px] top-1/2 -translate-y-1/2 z-10
             w-6 h-6 flex items-center justify-center rounded-full
             bg-purple-500 border border-slate-200 shadow
             ${index === maxIndex ? "opacity-40 cursor-not-allowed" : "opacity-100"}

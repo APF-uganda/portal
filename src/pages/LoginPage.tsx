@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import apfLogo from '../assets/whitelogo.png'
+import apfLogo from '../assets/logo_white.jpeg'
 import '../assets/css/LoginPage.css'
 
 function LoginPage() {

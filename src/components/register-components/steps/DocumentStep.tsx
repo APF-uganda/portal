@@ -13,6 +13,7 @@ function DocumentsStep() {
           description="Max file size 5MB · JPG / PNG / PDF"
           accept=".jpg,.jpeg,.png,.pdf"
           maxSizeMB={5}
+          
         />
 
         <CloudUpload
