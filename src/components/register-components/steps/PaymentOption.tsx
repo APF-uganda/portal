@@ -19,11 +19,11 @@ function PaymentOption({
     <button
       type="button"
       onClick={() => onSelect(value)}
-      className={`border rounded-lg p-4 text-sm text-center transition
+      className={`border rounded-lg p-4 text-sm text-center transition min-h-[44px] touch-manipulation
         ${
           isActive
             ? "border-purple-600 bg-purple-50 text-purple-700"
-            : "border-gray-200 hover:border-purple-400"
+            : "border-gray-200 hover:border-purple-400 active:border-purple-500"
         }`}
     >
         <div className="flex justify-center mb-2">

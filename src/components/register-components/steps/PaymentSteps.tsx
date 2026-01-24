@@ -1,13 +1,77 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PaymentOption from "./PaymentOption";
+import { PaymentForms } from "../PaymentForms";
 import mtnLogo from "../../../assets/images/registerPage-images/mtn.png";
 import airtelLogo from "../../../assets/images/registerPage-images/airtel.png";
-import dfcuLogo from "../../../assets/images/registerPage-images/dfcu.jpg"; 
+import dfcuLogo from "../../../assets/images/registerPage-images/dfcu.jpg";
+import { PaymentData, PaymentMethod } from "../../../types/registration";
 
-function PaymentsStep() {
-  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+interface PaymentStepsProps {
+  data?: PaymentData | null;
+  onChange?: (data: PaymentData) => void;
+  onValidationChange?: (isValid: boolean) => void;
+}
+
+function PaymentsStep({ data, onChange, onValidationChange }: PaymentStepsProps) {
   const [consentEKYC, setConsentEKYC] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
+    data?.method || null
+  );
+  const [, setPaymentData] = useState<PaymentData | null>(data || null);
+  const [isPaymentValid, setIsPaymentValid] = useState(false);
+
+  // Restore consent state from data if available
+  useEffect(() => {
+    if (data) {
+      setPaymentMethod(data.method);
+      setPaymentData(data);
+      setIsPaymentValid(data.isValidated);
+    }
+  }, [data]);
+
+  // Update validation state based on consent and payment validation
+  useEffect(() => {
+    // Both consent checkboxes must be checked and payment must be valid
+    const isValid = consentEKYC && agreeTerms && isPaymentValid;
+    if (onValidationChange) {
+      onValidationChange(isValid);
+    }
+  }, [consentEKYC, agreeTerms, isPaymentValid, onValidationChange]);
+
+  // Handle payment method selection
+  const handlePaymentMethodSelect = (method: string) => {
+    const paymentMethodValue = method as PaymentMethod;
+    setPaymentMethod(paymentMethodValue);
+    
+    // Clear previous payment data when method changes (Requirement 5.3)
+    const newPaymentData: PaymentData = {
+      method: paymentMethodValue,
+      status: 'idle',
+      isValidated: false,
+    };
+    setPaymentData(newPaymentData);
+    setIsPaymentValid(false);
+    
+    if (onChange) {
+      onChange(newPaymentData);
+    }
+  };
+
+  // Handle payment data change from PaymentForms
+  const handlePaymentDataChange = (data: PaymentData) => {
+    setPaymentData(data);
+    if (onChange) {
+      onChange(data);
+    }
+  };
+
+  // Handle payment validation result from PaymentForms
+  const handlePaymentValidated = (isValid: boolean) => {
+    setIsPaymentValid(isValid);
+    // Note: Payment data is already updated by handlePaymentDataChange
+    // No need to update it again here to avoid overwriting the status
+  };
 
   return (
     <div className="space-y-6">
@@ -57,68 +121,65 @@ function PaymentsStep() {
         </div>
       </div>
 
-      {/* APPLICATION FEE */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
-        <h3 className="font-semibold text-gray-800 mb-2">
-          Application Fee
-        </h3>
+      {/* APPLICATION FEE - Only show if consent is given */}
+      {consentEKYC && agreeTerms && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+          <h3 className="font-semibold text-gray-800 mb-2">
+            Application Fee
+          </h3>
 
-        <p className="text-xl font-semibold text-gray-900 mt-2">
-          UGX 50,000
-        </p>
-
-        <p className="text-sm text-gray-600 mt-1">
-          This is a one-time application processing fee. Payment does not
-          guarantee membership approval.
-        </p>
-
-        {/* PAYMENT OPTIONS */}
-        <div className="mt-6">
-          <p className="text-sm font-medium text-gray-700 mb-3">
-            Payment Options
+          <p className="text-xl font-semibold text-gray-900 mt-2">
+            UGX 50,000
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <PaymentOption
-              label="MTN Mobile Money"
-              value="mtn"
-              logo={mtnLogo}
-              selected={paymentMethod}
-              onSelect={setPaymentMethod}
-            />
+          <p className="text-sm text-gray-600 mt-1">
+            This is a one-time application processing fee. Payment does not
+            guarantee membership approval.
+          </p>
 
-            <PaymentOption
-              label="Airtel Money"
-              value="airtel"
-              logo={airtelLogo}
-              selected={paymentMethod}
-              onSelect={setPaymentMethod}
-            />
+          {/* PAYMENT OPTIONS */}
+          <div className="mt-6">
+            <p className="text-sm font-medium text-gray-700 mb-3">
+              Payment Options
+            </p>
 
-            <PaymentOption
-              label="DFCU Bank"
-              value="dfcu"
-              logo={dfcuLogo}
-              selected={paymentMethod}
-              onSelect={setPaymentMethod}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <PaymentOption
+                label="MTN Mobile Money"
+                value="mtn"
+                logo={mtnLogo}
+                selected={paymentMethod}
+                onSelect={handlePaymentMethodSelect}
+              />
+
+              <PaymentOption
+                label="Airtel Money"
+                value="airtel"
+                logo={airtelLogo}
+                selected={paymentMethod}
+                onSelect={handlePaymentMethodSelect}
+              />
+
+              <PaymentOption
+                label="Credit Card"
+                value="credit_card"
+                logo={dfcuLogo}
+                selected={paymentMethod}
+                onSelect={handlePaymentMethodSelect}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* PROCEED BUTTON */}
-        <button
-          type="button"
-          disabled={!paymentMethod}
-          className={`w-full mt-6 py-3 rounded-lg text-sm font-medium
-            ${
-              paymentMethod
-                ? "bg-purple-600 text-white hover:bg-purple-700"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
-        >
-          Proceed to Payment
-        </button>
-      </div>
+          {/* PAYMENT FORMS - Conditional based on selected method */}
+          {paymentMethod && (
+            <PaymentForms
+              selectedMethod={paymentMethod}
+              onPaymentDataChange={handlePaymentDataChange}
+              onPaymentValidated={handlePaymentValidated}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
