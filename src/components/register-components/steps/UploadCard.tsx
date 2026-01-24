@@ -5,6 +5,10 @@ type CloudUploadProps = {
   description: string;
   accept: string;
   maxSizeMB: number;
+  onFileSelected?: (file: File) => void;
+  onFileRemoved?: () => void;
+  existingFile?: File | null;
+  existingError?: string | null;
 };
 
 function CloudUpload({
@@ -12,22 +16,48 @@ function CloudUpload({
   description,
   accept,
   maxSizeMB,
+  onFileSelected,
+  onFileRemoved,
+  existingFile,
+  existingError,
 }: CloudUploadProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(existingFile || null);
+  const [error, setError] = useState<string | null>(existingError || null);
 
   const handleFile = (file?: File) => {
     if (!file) return;
 
     if (file.size > maxSizeMB * 1024 * 1024) {
-      setError(`File must be less than ${maxSizeMB}MB`);
+      const errorMsg = `File must be less than ${maxSizeMB}MB`;
+      setError(errorMsg);
       setFile(null);
       return;
     }
 
     setError(null);
     setFile(file);
+    
+    // Notify parent component
+    if (onFileSelected) {
+      onFileSelected(file);
+    }
+  };
+
+  const handleRemoveFile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFile(null);
+    setError(null);
+    
+    // Reset the input
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+    
+    // Notify parent component
+    if (onFileRemoved) {
+      onFileRemoved();
+    }
   };
 
   return (
@@ -81,6 +111,26 @@ function CloudUpload({
                   </svg>
                 </span>
                 <span>{file.name}</span>
+                <button
+                  onClick={handleRemoveFile}
+                  className="ml-2 text-red-600 hover:text-red-800 transition"
+                  title="Remove file"
+                  type="button"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
               </span>
             )}
           </div>

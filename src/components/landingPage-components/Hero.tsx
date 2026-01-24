@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import heroImg from '../../assets/images/landingPage-image/landing_halo-section.jpg'
+import heroImg from '../../assets/images/landingPage-image/land.jpg'
 
 function Hero() {
   const navigate = useNavigate()

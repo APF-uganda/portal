@@ -1,16 +1,17 @@
 import { Link } from "react-router-dom";
-import heroImg from "../../assets/images/membershipPage-images/meb.png";
+import heroImg from "../../assets/images/membershipPage-images/member.jpg";
 
 function Hero() {
   return (
     <section
       className="
-        relative h-[400px] flex items-center justify-center overflow-hidden
+        relative h-[500px] flex items-center justify-center overflow-hidden
         pt-[56px] sm:pt-[64px]
         mt-[-56px] sm:mt-[-64px]
         bg-cover bg-center
       "
-      style={{ backgroundImage: `url(${heroImg})` }}
+      style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${heroImg})` }}
+      
     >
       {/* GRADIENT OVERLAY */}
       <div className="absolute inset-0 gradient-overlay" />
@@ -18,7 +19,7 @@ function Hero() {
       {/* CONTENT */}
       <div className="relative z-10 max-w-3xl mx-auto text-center text-white p-4 fade-in-up">
         <h1 className="text-2xl md:text-5xl font-bold mb-6 fade-in-up delay-200">
-          MEMBERSHIP
+          Membership
         </h1>
         <Link to="/register">
         <button
@@ -40,8 +41,8 @@ function Hero() {
       <style>
         {`
           @keyframes gradientShift {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.1; }
           }
 
           @keyframes fadeInUp {

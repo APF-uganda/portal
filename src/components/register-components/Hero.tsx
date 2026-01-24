@@ -1,4 +1,4 @@
-import heroImg from "../../assets/images/registerPage-images/register.png";
+import heroImg from "../../assets/images/registerPage-images/reg.jpg";
 
 function Hero() {
   return (
