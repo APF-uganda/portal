@@ -17,7 +17,7 @@ function Hero() {
       {/* CONTENT */}
       <div className="relative z-10 max-w-3xl mx-auto text-center text-white p-4 fade-in-up">
         <h1 className="text-2xl md:text-5xl font-bold mb-6 fade-in-up delay-200">
-          JOIN US
+        Join Us
         </h1>
       </div>
 

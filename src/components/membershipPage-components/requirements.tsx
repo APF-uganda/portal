@@ -41,7 +41,7 @@ export default function MembershipRequirements() {
           
           {/* LEFT: ACCORDION */}
           <div>
-            <h2 className="text-2xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
               Membership Requirements
             </h2>
 

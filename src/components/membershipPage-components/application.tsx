@@ -17,7 +17,7 @@ export default function MembershipProcess() {
     <section className="bg-[#f7f3ff] py-16">
       <div className="max-w-6xl mx-auto px-6 sm:px-8">
         {/* TITLE */}
-        <h2 className="text-center text-2xl sm:text-2xl md:text-2xl font-bold text-gray-900 mb-12">
+        <h2 className="text-center text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-12">
           Membership Application Process
         </h2>
 

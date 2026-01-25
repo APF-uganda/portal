@@ -5,13 +5,14 @@ export default function CallToAction() {
       <div className="max-w-4xl mx-auto px-5 sm:px-6 text-center">
         {/* HEADING */}
         <h2 className="
-          text-2xl
-          sm:text-2xl
+          text-lg
+          sm:text-xl
           md:text-2xl
           font-bold
           text-[#260B41]
           mb-4
         ">
+          
           Ready to Advance Your Career?
         </h2>
 

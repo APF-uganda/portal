@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import logoPurple from '../../assets/logo_purple.png'
+import whitelogo from '../../assets/whitelogo.png'
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -21,9 +22,10 @@ function Navbar() {
   useEffect(() => {
     window.scrollTo(0, 0)
     setIsScrolled(false)
+    setIsMenuOpen(false)
   }, [location.pathname])
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  const toggleMenu = () => setIsMenuOpen((prev) => !prev)
   const isActive = (path: string) => location.pathname === path
 
   const navLinks = [
@@ -43,13 +45,14 @@ function Navbar() {
           : 'bg-white/15 backdrop-blur-md'
       }`}
     >
+      {/* NAVBAR */}
       <nav className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 min-h-[64px] flex items-center justify-between">
         {/* LOGO */}
         <Link to="/" className="flex items-center">
           <img
-            src={logoPurple}
+            src={isScrolled ? logoPurple : whitelogo}
             alt="APF Logo"
-            className="h-[38px] sm:h-[42px] md:h-[48px]"
+            className="h-[38px] sm:h-[42px] md:h-[48px] transition-opacity duration-300"
           />
         </Link>
 
@@ -65,8 +68,8 @@ function Navbar() {
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-white border-b-2 border-white'
                   : isScrolled
-                    ? 'text-secondary hover:text-primary'
-                    : 'text-white hover:text-white/80'
+                  ? 'text-secondary hover:text-primary'
+                  : 'text-white hover:text-white/80'
               }`}
             >
               {link.label}
@@ -106,42 +109,45 @@ function Navbar() {
         >
           <Menu className="w-6 h-6" />
         </button>
+      </nav>
 
-        {/* MOBILE DRAWER */}
-        {isMenuOpen && (
-          <>
-            <div
-              className="fixed inset-0 bg-black/50 z-40"
-              onClick={toggleMenu}
-            />
+      {/* ================= MOBILE DRAWER ================= */}
+      {isMenuOpen && (
+        <>
+          {/* OVERLAY */}
+          <div
+            className="fixed inset-0 bg-black/60 z-[60]"
+            onClick={toggleMenu}
+          />
 
-            <div className="fixed top-0 right-0 bottom-0 w-[320px] bg-white z-50 flex flex-col shadow-xl">
-              <div className="flex items-center justify-between p-5 border-b">
-                <img src={logoPurple} alt="APF Logo" className="h-10" />
-                <button onClick={toggleMenu}>
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
+          {/* SIDEBAR */}
+          <aside className="fixed top-0 right-0 h-screen w-[320px] bg-white z-[70] shadow-2xl flex flex-col">
+            {/* HEADER */}
+            <div className="flex items-center justify-between p-5">
+              <button onClick={toggleMenu}>
+                <X className="w-6 h-6 text-secondary" />
+              </button>
+            </div>
 
-              <ul className="flex-1 bg-white p-4 space-y-2">
-                {navLinks.map((link) => (
-                  <li key={link.path}>
-                    <Link
-                      to={link.path}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`block px-4 py-3 rounded-lg font-medium ${
-                        isActive(link.path)
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-secondary hover:bg-black/5'
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            {/* CONTENT*/}
+            <div className="flex-1 px-4 space-y-2 overflow-y-auto">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block px-4 py-3 rounded-lg font-medium transition ${
+                    isActive(link.path)
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-secondary hover:bg-black/5'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
 
-              <div className="p-4 space-y-3 border-t">
+              {/* ACTION BUTTONS */}
+              <div className="pt-6 flex flex-col gap-5">
                 <Link to="/register" onClick={() => setIsMenuOpen(false)}>
                   <button className="w-full border-2 border-secondary text-secondary rounded-full py-3 font-medium hover:bg-[#5F1C9F] hover:text-white transition">
                     Join APF
@@ -155,9 +161,9 @@ function Navbar() {
                 </Link>
               </div>
             </div>
-          </>
-        )}
-      </nav>
+          </aside>
+        </>
+      )}
     </header>
   )
 }

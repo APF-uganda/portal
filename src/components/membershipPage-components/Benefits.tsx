@@ -44,14 +44,13 @@ const benefits: Benefit[] = [
   },
 ];
 
-
-const CARD_WIDTH_MOBILE = 280;
-const CARD_WIDTH_DESKTOP = 320;
+// 🔧 Card sizing
+const CARD_WIDTH_MOBILE = 260;
+const CARD_WIDTH_DESKTOP = 300;
 const CARD_GAP = 32;
 
-
- function Benefits(): JSX.Element {
-   const isMobile =
+function Benefits(): JSX.Element {
+  const isMobile =
     typeof window !== "undefined" && window.innerWidth < 768;
 
   const visibleCards = isMobile ? 1 : 3;
@@ -71,87 +70,91 @@ const CARD_GAP = 32;
   return (
     <section className="bg-white py-16">
       {/* TITLE */}
-      <h2 className="text-center text-2xl font-bold mb-8">
+      <h2 className="text-center text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-10">
         Benefits of Joining APF Uganda
       </h2>
 
-      {/* CAROUSEL WRAPPER */}
-      <div className="relative flex items-center justify-center">
-        {/* LEFT ARROW */}
-        <button
-          onClick={prev}
-          aria-label="Previous"
-          className={`absolute left-[200px] top-1/2 -translate-y-1/2 z-10
-            w-6 h-6 flex items-center justify-center rounded-full
-            bg-purple-500 border border-slate-200 shadow
-            ${index === 0 ? "opacity-40 cursor-not-allowed" : "opacity-100"}
-          `}
-        >
-          <ChevronLeft className="w-3 h-3 text-slate-50" />
-        </button>
+      {/* CAROUSEL */}
+      <div className="flex justify-center">
+        <div className="relative">
+          {/* LEFT ARROW (outside mask) */}
+          <button
+            onClick={prev}
+            aria-label="Previous"
+            className={`absolute
+              -left-10
+              top-1/2 -translate-y-1/2 z-10
+              w-8 h-8 flex items-center justify-center rounded-full
+              bg-purple-500
+              ${index === 0 ? "opacity-40 cursor-not-allowed" : "opacity-100"}
+            `}
+          >
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
 
-        {/* VIEWPORT */}
-        <div
-          className="overflow-hidden"
-          style={{
-               width:
-               cardWidth * visibleCards +
-               CARD_GAP * (visibleCards - 1),
-          
-          }}
-        >
-          {/* TRACK */}
+          {/* MASK (STRICT VIEWPORT — SHOWS EXACTLY 3 ON DESKTOP) */}
           <div
-            className="flex transition-transform duration-300 ease-in-out"
+            className="overflow-hidden"
             style={{
-              gap: `${CARD_GAP}px`,
-              transform: `translateX(-${
-                index * (cardWidth + CARD_GAP)
-              }px)`,
+              width:
+                cardWidth * visibleCards +
+                CARD_GAP * (visibleCards - 1),
             }}
           >
-            {benefits.map((benefit) => (
-              <div
-                key={benefit.id}
-                className="flex-shrink-0 bg-white rounded-lg overflow-hidden
-                           border border-slate-100 shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
-                style={{ width: cardWidth }}
-              >
-                {/* IMAGE */}
-                <div className="h-[200px] overflow-hidden">
-                  <img
-                    src={benefit.image}
-                    alt={benefit.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            {/* TRACK */}
+            <div
+              className="flex transition-transform duration-300 ease-in-out"
+              style={{
+                gap: `${CARD_GAP}px`,
+                transform: `translateX(-${
+                  index * (cardWidth + CARD_GAP)
+                }px)`,
+              }}
+            >
+              {benefits.map((benefit) => (
+                <div
+                  key={benefit.id}
+                  className="flex-shrink-0 bg-white rounded-lg overflow-hidden border border-slate-100"
+                  style={{ width: cardWidth }}
+                >
+                  {/* IMAGE */}
+                  <div className="h-[180px] sm:h-[200px] overflow-hidden">
+                    <img
+                      src={benefit.image}
+                      alt={benefit.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                {/* CONTENT */}
-                <div className="p-4">
-                  <h3 className="font-semibold mb-1">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-sm text-slate-500">
-                    {benefit.description}
-                  </p>
+                  {/* CONTENT */}
+                  <div className="p-4">
+                    <h3 className="font-semibold mb-1">
+                      {benefit.title}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {benefit.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* RIGHT ARROW */}
-        <button
-          onClick={next}
-          aria-label="Next"
-          className={`absolute right-[200px] top-1/2 -translate-y-1/2 z-10
-            w-6 h-6 flex items-center justify-center rounded-full
-            bg-purple-500 border border-slate-200 shadow
-            ${index === maxIndex ? "opacity-40 cursor-not-allowed" : "opacity-100"}
-          `}
-        >
-          <ChevronRight className="w-3 h-3 text-slate-50" />
-        </button>
+          {/* RIGHT ARROW (outside mask) */}
+          <button
+            onClick={next}
+            aria-label="Next"
+            className={`absolute
+              -right-10
+              top-1/2 -translate-y-1/2 z-10
+              w-8 h-8 flex items-center justify-center rounded-full
+              bg-purple-500
+              ${index === maxIndex ? "opacity-40 cursor-not-allowed" : "opacity-100"}
+            `}
+          >
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
+        </div>
       </div>
 
       {/* DOTS */}
