@@ -14,7 +14,7 @@ const PreviousEvents = () => {
         const cardWidth = scrollRef.current.offsetWidth
         const nextIndex = (activeIndex + 1) % previousEvents.length
         const scrollAmount =
-          scrollRef.current.children[nextIndex]?.offsetLeft ??
+          (scrollRef.current.children[nextIndex] as HTMLElement)?.offsetLeft ??
           nextIndex * cardWidth
         scrollRef.current.scrollTo({ left: scrollAmount, behavior: "smooth" })
         setActiveIndex(nextIndex)
