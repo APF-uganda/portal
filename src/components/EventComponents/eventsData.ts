@@ -14,7 +14,7 @@ export const baseEvents: Event[] = [
     date: "October 15, 2026",
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
-    description: "Join us for our flagship annual event...",
+    description: "Join us for our flagship annual event featuring keynote speakers, elections and networking",
     image: "/images/annual.png",
   },
   {
@@ -22,7 +22,7 @@ export const baseEvents: Event[] = [
     date: "February 12, 2026",
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
-    description: "Stay ahead with the latest tax regulations...",
+    description: "Stay ahead with the latest tax regulations and compliance requirements for 2026",
     image: "/images/Tax.jpg",
   },
   
@@ -32,7 +32,7 @@ export const baseEvents: Event[] = [
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
     description:
-      "Explore challenges and best practices in modern accounting ethics.",
+      "Explore ethical challenges and best practices in modern accountancy practice.",
     image: "/images/Ethics.jpg",
   },
   {
@@ -41,7 +41,7 @@ export const baseEvents: Event[] = [
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
     description:
-      "Discover how technology is reshaping the accounting landscape.",
+      "Discover how technology is reshaping the future of accounting and finance.",
     image: "/images/Digital.jpg",
   },
    {
@@ -49,7 +49,7 @@ export const baseEvents: Event[] = [
     date: "October 15, 2025",
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
-    description: "Join us for our flagship annual event...",
+    description: "Join us for our flagship annual event featuring keynote speakers, elections and networking",
     image: "/images/annual.png",
   },
   {
@@ -57,7 +57,7 @@ export const baseEvents: Event[] = [
     date: "February 12, 2025",
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
-    description: "Stay ahead with the latest tax regulations...",
+    description: "Stay ahead with the latest tax regulations and compliance requirements for 2026",
     image: "/images/Tax.jpg",
   },
   
@@ -67,7 +67,7 @@ export const baseEvents: Event[] = [
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
     description:
-      "Explore challenges and best practices in modern accounting ethics.",
+      "Explore ethical challenges and best practices in modern accountancy practice.",
     image: "/images/Ethics.jpg",
   },
   {
@@ -76,7 +76,7 @@ export const baseEvents: Event[] = [
     time: "9:00 AM – 5:00 PM",
     location: "Sheraton Kampala Hotel, Kampala",
     description:
-      "Discover how technology is reshaping the accounting landscape.",
+      "Discover how technology is reshaping the future of accounting and finance.",
     image: "/images/Digital.jpg",
   },
 ]
