@@ -24,12 +24,12 @@ function App() {
                     <Route path="/news" element={<NewsPage />} />
                     <Route path="/contact" element={<ContactPage />} />
 
-          {/* Auth routes */}
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/otp" element={<OtpPage />} />
-        </Routes>
-      </div>
+                    {/* Auth routes */}
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/otp" element={<OtpPage />} />
+                </Routes>
+              </div>
     </Router>
   )
 }
