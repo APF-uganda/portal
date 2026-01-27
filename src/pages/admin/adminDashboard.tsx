@@ -1,12 +1,14 @@
 
-import adminSideNav from '../components/common/adminSideNav'
+import AdminSideNav from '../../components/common/adminSideNav'
 
-function adminDashboard() {
+function AdminDashboard() {
   return (
     <div>
-      <adminSideNav />
+      <AdminSideNav />
      
     </div>
   )
 }
-export default adminDashboard
+export default AdminDashboard
+
+
