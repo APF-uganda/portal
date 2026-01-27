@@ -9,27 +9,36 @@ import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import OtpPage from './pages/otpPage'
+import AdminApproval from './pages/admin/adminApproval'
+
+// ProtectedRoute wrapper
+// import ProtectedRoute from './components/auth/ProtectedRoute'
 
 function App() {
-  return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/membership" element={<MembershipPage />} />
-          <Route path="/events" element={<EventsPage />} />
-          <Route path="/news" element={<NewsPage />} />
-          <Route path="/contact" element={<ContactPage />} />
+    return (
+        <Router>
+            <div className="min-h-screen flex flex-col">
+                <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/membership" element={<MembershipPage />} />
+                    <Route path="/events" element={<EventsPage />} />
+                    <Route path="/news" element={<NewsPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
 
-          {/* Auth routes */}
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/otp" element={<OtpPage />} />
-        </Routes>
-      </div>
-    </Router>
-  )
+                    {/* Auth routes */}
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/otp" element={<OtpPage />} />
+
+                    {/* Temporary admin route */}
+                    <Route path="/admin/approval" element={<AdminApproval />} />
+
+                </Routes>
+            </div>
+        </Router>
+    )
 }
 
 export default App
