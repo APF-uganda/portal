@@ -5,16 +5,24 @@ import { baseEvents } from "./eventsData"
 const PreviousEvents = () => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [cardHeight, setCardHeight] = useState<number | undefined>(undefined)
+  const [activeIndex, setActiveIndex] = useState(0)
 
-  // Auto-scroll every 60 seconds
+  // Auto-scroll: 30s mobile, 60s desktop
   useEffect(() => {
     const interval = setInterval(() => {
       if (scrollRef.current) {
-        scrollRef.current.scrollBy({ left: 340, behavior: "smooth" })
+        const cardWidth = scrollRef.current.offsetWidth
+        const nextIndex = (activeIndex + 1) % previousEvents.length
+        const scrollAmount =
+          (scrollRef.current.children[nextIndex] as HTMLElement)?.offsetLeft ??
+          nextIndex * cardWidth
+        scrollRef.current.scrollTo({ left: scrollAmount, behavior: "smooth" })
+        setActiveIndex(nextIndex)
       }
-    }, 60000)
+    }, window.innerWidth < 768 ? 30000 : 60000)
+
     return () => clearInterval(interval)
-  }, [])
+  }, [activeIndex])
 
   // Calculate max card height dynamically based on content
   useEffect(() => {
@@ -26,6 +34,22 @@ const PreviousEvents = () => {
         setCardHeight(Math.max(...heights))
       }
     }
+  }, [])
+
+  // Track scroll position for dots (mobile)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        const scrollLeft = scrollRef.current.scrollLeft
+        const cardWidth = scrollRef.current.offsetWidth
+        const index = Math.round(scrollLeft / cardWidth)
+        setActiveIndex(index)
+      }
+    }
+
+    const ref = scrollRef.current
+    ref?.addEventListener("scroll", handleScroll)
+    return () => ref?.removeEventListener("scroll", handleScroll)
   }, [])
 
   const scrollLeft = () => {
@@ -51,16 +75,16 @@ const PreviousEvents = () => {
 
   return (
     <section className="bg-[#F5EFFB] py-12 -mx-[50vw] px-[50vw]">
-      <div className="max-w-7xl mx-auto px-8 relative">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
           Previous Events
         </h2>
 
         <div className="flex items-center gap-4">
-          {/* Left Arrow */}
+          {/* Left Arrow (desktop only) */}
           <button
             onClick={scrollLeft}
-            className="bg-[#7E49B3] text-white rounded-full shadow p-3 hover:bg-[#3C096C] transition-colors flex-shrink-0"
+            className="hidden md:flex bg-[#7E49B3] text-white rounded-full shadow p-3 hover:bg-[#3C096C] transition-colors flex-shrink-0"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -68,13 +92,14 @@ const PreviousEvents = () => {
           {/* Scrollable Cards */}
           <div
             ref={scrollRef}
-            className="flex overflow-x-auto gap-8 snap-x snap-mandatory pb-4 scroll-smooth
-                       [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] flex-grow"
+            className="flex overflow-x-auto snap-x snap-mandatory pb-4 scroll-smooth
+                       [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] flex-grow gap-6"
           >
             {previousEvents.map((event, index) => (
               <div
                 key={index}
-                className="min-w-[300px] max-w-sm bg-gray-50 rounded-2xl shadow-md snap-start flex-shrink-0 flex flex-col"
+                className="w-full snap-start flex-shrink-0 px-2
+                           md:min-w-[350px] md:max-w-[350px] bg-gray-50 rounded-2xl shadow-md flex flex-col"
                 style={{ height: cardHeight ? `${cardHeight}px` : "auto" }}
               >
                 <img
@@ -107,13 +132,24 @@ const PreviousEvents = () => {
             ))}
           </div>
 
-          {/* Right Arrow */}
+          {/* Right Arrow (desktop only) */}
           <button
             onClick={scrollRight}
-            className="bg-[#7E49B3] text-white rounded-full shadow p-3 hover:bg-[#3C096C] transition-colors flex-shrink-0"
+            className="hidden md:flex bg-[#7E49B3] text-white rounded-full shadow p-3 hover:bg-[#3C096C] transition-colors flex-shrink-0"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
+        </div>
+
+        {/* Progress Dots (mobile only) */}
+        <div className="flex justify-center mt-6 gap-2 md:hidden">
+          {previousEvents.map((_, index) => (
+            <div
+              key={index}
+              className={`w-3 h-3 rounded-full transition-all duration-300
+                ${index === activeIndex ? "bg-[#7E49B3]" : "bg-gray-300"}`}
+            />
+          ))}
         </div>
       </div>
     </section>
