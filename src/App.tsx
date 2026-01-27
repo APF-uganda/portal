@@ -9,6 +9,7 @@ import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import OtpPage from './pages/otpPage'
+import AdminDashboard from './pages/admin/adminDashboard'
 
 function App() {
   return (
@@ -26,6 +27,9 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/otp" element={<OtpPage />} />
+
+          {/* Admin routes*/}
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </div>
     </Router>
