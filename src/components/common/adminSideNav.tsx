@@ -4,8 +4,7 @@ import {
   FiBell,
   FiInbox,
   FiLogOut,
-  FiUser,
-  FiMessageSquare,
+  FiUser,  
 } from "react-icons/fi";
 import {
   MdDashboard,
@@ -33,7 +32,7 @@ const Sidebar: FC = () => {
           <NavItem icon={<FaMoneyBill />} label="Payments & Renewals" to="/admin/payments" />
           <NavItem icon={<MdInsights />} label="Reports & Analytics" to="/admin/reports" />
           <NavItem icon={<FaComments />} label="Community Forum" to="/admin/forum" />
-          <NavItem icon={<FiMessageSquare />} label="Communications" to="/admin/communications" />
+          <NavItem icon={<FiBell />} label="Notifications" to="/admin/notifications" />
           
         </nav>
       </div>
