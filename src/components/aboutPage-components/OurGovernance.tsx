@@ -11,9 +11,9 @@ function OurGovernance() {
   const { elementRef, isVisible } = useScrollAnimation()
 
   const leaders = [
-    { name: 'CPA Ronald Katumba', role: 'Chairperson', image: ronaldImg },
+    { name: 'CPA Ronald Katumba', role: 'Director', image: ronaldImg },
     { name: 'CPA Sarah Nejesa', role: 'Vice Chairperson', image: sarahImg },
-    { name: 'CPA Michael Tugyetwena', role: 'Director', image: michaelImg },
+    { name: 'CPA Michael Tugyetwena', role: 'Chairperson', image: michaelImg },
     { name: 'CPA John Kato', role: 'Secretary', image: johnImg },
     { name: 'CPA Arinda Jolus', role: 'Technical lead', image: arindaImg },
     { name: 'CPA Patience Atuhaire', role: 'Chief Accountant', image: patienceImg }

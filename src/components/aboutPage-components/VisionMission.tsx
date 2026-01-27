@@ -1,13 +1,14 @@
-import { Rocket, Target, CircleCheckBig, ChevronDown } from 'lucide-react'
+import { Rocket, Target, CircleCheckBig, ChevronUp, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 
 function VisionMission() {
-  const [openObjectives, setOpenObjectives] = useState(false)
+  const [openObjectives, setOpenObjectives] = useState(true)
 
   const objectives = [
     'Advocacy & Representation',
     'Networking & Collaboration',
     'Policy Engagement',
+    'Governance & Leadership',
     'Learning Community',
     'Public Awareness',
     'Knowledge Hub',
@@ -16,93 +17,82 @@ function VisionMission() {
   ]
 
   return (
-    <section className="bg-[#F7F2FD] py-16 px-4">
-      <div className="max-w-6xl mx-auto ">
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-20 items-start">
-
-          <div className="relative h-full p-10 rounded-xl bg-[#6A1B9A] text-white shadow-sm">
+    <section className="bg-[#F8F7FF] py-20 px-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          
+          {/* Our Vision Card */}
+          <div className="relative p-10 bg-[#5E2590] text-white flex flex-col min-h-[450px]">
             
-            <div className="absolute top-6 right-6 w-10 h-10  flex items-center justify-center">
-              <Rocket className="w-5 h-5 text-white" />
+            <div className="absolute top-10 right-10">
+              <Rocket className="w-10 h-10 text-white opacity-90" />
             </div>
-
-            <h4 className="text-2xl font-semibold mb-4">
-              Our Vision
-            </h4>
-
-            <p className="leading-[1.7] text-white/90 text-sm">
-              To be the leading voice in uplifting standards and advancing a strong,
-              ethical, and globally competitive accountancy profession in Uganda
-              and beyond.
-            </p>
+            
+            
+            <div className="mt-auto mb-14">
+              <h4 className="text-3xl font-bold mb-6 tracking-tight">Our Vision</h4>
+              <p className="leading-relaxed text-[1rem] text-white/90">
+                To be the leading practitioner-led platform advancing a strong,
+                ethical, and innovative accountancy profession in Uganda and beyond.
+              </p>
+            </div>
           </div>
 
-        
-          <div className="relative h-full p-10 rounded-xl bg-white border border-gray-200 shadow-sm">
+          {/* Our Mission Card  */}
+          <div className="relative p-10 bg-white border border-gray-100 shadow-sm flex flex-col min-h-[450px]">
+            
+            <div className="absolute top-5 right-5">
+              <div className="absolute top-5 right-5">
+                <Target className="w-10 h-10 text-purple-800 opacity-90" />
+              </div>
+            </div>
+            
+            
+            <div className="mt-auto mb-4">
+              <h4 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Our Mission</h4>
+              <p className="text-black-600 leading-relaxed text-[1rem]">
+                To support accounting professionals through collaboration, continuous
+                learning, professional engagement, and advocacy, while upholding ethical
+                standards and strengthening the accounting profession in Uganda.
+              </p>
+            </div>
+          </div>
+
+          {/* Our Objectives Section */}
+          <div className="flex flex-col pt-2">
            
-            <div className="absolute top-6 right-6 w-10 h-10  flex items-center justify-center">
-              <Target className="w-5 h-5 text-purple-700" />
-            </div>
-
-            <h4 className="text-2xl font-semibold text-slate-800 mb-4">
-              Our Mission
-            </h4>
-
-            <p className="text-gray-600 leading-[1.7] text-sm">
-              To empower accounting professionals through collaborative and
-              continuous learning, ethical engagement, and advocacy while
-              strengthening the accountancy profession in Uganda.
-            </p>
-          </div>
-
-         
-          <div className="pt-6 lg:ml-12 pb-2 border-b border-slate-200 mb-6 w-fit">
-
-            
             <button
               onClick={() => setOpenObjectives(!openObjectives)}
-              className="flex items-center gap-2"
+              className="flex items-center justify-start gap-2 w-fit border-b border-gray-400 pb-4 mb-6"
             >
-              <h4 className="text-2xl font-semibold text-slate-800">
-                Our Objectives
-              </h4>
-
-              <ChevronDown
-                className={`w-5 h-5 text-purple-700 transition-transform duration-300 ${
-                  openObjectives ? 'rotate-180' : ''
-                }`}
-              />
+              <h4 className="text-3xl font-bold text-gray-900">Our Objectives</h4>
+              {openObjectives ? (
+                <ChevronUp className="w-6 h-6 text-[#5E2590]" />
+              ) : (
+                <ChevronDown className="w-6 h-6 text-[#5E2590]" />
+              )}
             </button>
 
-            
             <div
-              className={`overflow-hidden transition-all duration-300 ${
-                openObjectives ? 'max-h-[500px] mt-6' : 'max-h-0'
+              className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                openObjectives ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
               }`}
             >
-              <ul className="space-y-4">
+              <ul className="grid grid-cols-1 gap-y-4">
                 {objectives.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
+                  <li key={index} className="flex items-center gap-3">
                    
-                    <div className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
-                      <CircleCheckBig className="size={24} text-black-500" />
-                    </div>
-
-                    <span className="text-gray-600 text-sm leading-relaxed">
+                    <CircleCheckBig className="w-5 h-5 text-b shrink-0" />
+                    <span className="text-gray-700 text-[0.95rem] font-medium">
                       {item}
                     </span>
                   </li>
                 ))}
               </ul>
             </div>
-
           </div>
 
         </div>
-
-       
-
       </div>
     </section>
   )
