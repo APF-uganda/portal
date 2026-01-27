@@ -43,7 +43,6 @@ function OurWork() {
           {/* Slider Content */}
           <div className="relative flex items-center">
             
-            
             <button
               onClick={prevSlide}
               className="absolute left-[-24px] top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-purple-400/50 shadow-xl flex items-center justify-center text-[#ffffff] hover:bg-[#5E2590] hover:text-white transition-all duration-300 z-20"
@@ -69,10 +68,10 @@ function OurWork() {
               ))}
             </div>
 
-            
+            {/* onClick from prevSlide to nextSlide */}
             <button
-              onClick={prevSlide}
-              className="flex w-7 h-7 rounded-full bg-purple-400/50  items-center justify-center text-[#ffffff] "
+              onClick={nextSlide}
+              className="flex w-7 h-7 rounded-full bg-purple-400/50 items-center justify-center text-[#ffffff] "
             >
               <ArrowRight size={20} strokeWidth={3} />
             </button>
