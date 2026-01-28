@@ -5,7 +5,7 @@ import {
   validateEmail,
   validatePasswordLength,
   validatePasswordMatch,
-} from '../../../utils/validators';
+} from '../../../lib/validators';
 
 interface AccountDetailsStepProps {
   data: AccountDetailsData;
