@@ -25,15 +25,25 @@ import AdminApproval from "./pages/admin/adminApproval";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("role"); // set this after login
-
+  const token = localStorage.getItem("access_token");
+  const userStr = localStorage.getItem("user");
+  
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  if (role && userRole !== role) {
-    return <Navigate to="/" replace />;
+  if (role && userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      const userRole = user.role === '1' || user.role === 1 ? 'admin' : 'member';
+      
+      if (userRole !== role) {
+        return <Navigate to="/" replace />;
+      }
+    } catch (e) {
+      console.error('Failed to parse user data:', e);
+      return <Navigate to="/login" replace />;
+    }
   }
 
   return children;
