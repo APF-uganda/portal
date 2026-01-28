@@ -41,6 +41,7 @@ function App() {
 
           {/* Member dashboard */}
           <Route path="/dashboard" element={<MemberDashboard />} />
+          <Route path="/member/dashboard" element={<MemberDashboard />} />
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/forum" element={<ForumPage />} />
@@ -48,6 +49,7 @@ function App() {
 
           {/* Admin routes */}
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/approval" element={<AdminApproval />} />
         </Routes>
       </div>

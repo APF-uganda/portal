@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   FiBell,
   FiInbox,
@@ -13,6 +13,18 @@ import { FaFileAlt, FaMoneyBill, FaComments } from "react-icons/fa";
 
 const Sidebar: FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    
+    // Redirect to landing page
+    navigate('/');
+  };
 
   return (
     <aside
@@ -55,7 +67,20 @@ const Sidebar: FC = () => {
 
       {/* Bottom Section */}
       <div className="p-3 mb-2 border-t border-[#D6EAD9]">
-        <NavItem icon={<FiLogOut />} label="Logout" to="/logout" collapsed={collapsed} />
+        <button
+          onClick={handleLogout}
+          className="group relative flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-all hover:bg-[#D588FE] hover:text-black w-full"
+        >
+          <span className="text-[18px]"><FiLogOut /></span>
+          {!collapsed && <span className="flex-1">Logout</span>}
+          
+          {/* Tooltip when collapsed */}
+          {collapsed && (
+            <span className="absolute left-20 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              Logout
+            </span>
+          )}
+        </button>
       </div>
     </aside>
   );
