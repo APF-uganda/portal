@@ -9,18 +9,98 @@
 import axios, { AxiosError } from 'axios';
 import { ApplicationSubmissionData } from '../types/registration';
 import { Application } from '../types/Application';
+import { API_BASE_URL } from '../config/api';
 
 /**
- * API base URL from environment variables
+ * Shape of application items returned by the backend list endpoint
  */
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+interface ApplicationListItem {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  payment_status: string;
+  status: string;
+  submitted_at: string;
+}
 
 /**
- * Fetch applications (stub function for admin functionality)
+ * Map raw API application list item to UI `Application` type
+ */
+function mapApiApplicationToApplication(app: ApplicationListItem): Application {
+  // Derive full name
+  const name = `${app.first_name} ${app.last_name}`.trim();
+
+  // Map status to constrained union used in the UI
+  const rawStatus = (app.status || '').toLowerCase();
+  let status: Application['status'];
+  if (rawStatus === 'approved') {
+    status = 'Approved';
+  } else if (rawStatus === 'rejected') {
+    status = 'Rejected';
+  } else {
+    status = 'Pending';
+  }
+
+  // Map payment status
+  const rawPaymentStatus = (app.payment_status || '').toLowerCase();
+  const feeStatus: Application['feeStatus'] =
+    rawPaymentStatus === 'paid' || rawPaymentStatus === 'completed'
+      ? 'Paid'
+      : 'Not Paid';
+
+  // Normalize submitted date to YYYY-MM-DD for display
+  let submissionDate = app.submitted_at;
+  const parsedDate = new Date(app.submitted_at);
+  if (!Number.isNaN(parsedDate.getTime())) {
+    submissionDate = parsedDate.toISOString().split('T')[0];
+  }
+
+  // Category is not yet defined in the backend response type.
+  // Default to "Full Member" until backend adds a specific field.
+  const category: Application['category'] = 'Full Member';
+
+  return {
+    id: app.id,
+    name,
+    email: app.email,
+    category,
+    icpaCertNo: "", // Backend does not yet expose this field
+    feeStatus,
+    status,
+    submissionDate,
+  };
+}
+
+/**
+ * Fetch applications for admin approval dashboard
  */
 export async function fetchApplications(): Promise<Application[]> {
-  // TODO: Implement actual API call when admin functionality is ready
-  return [];
+  try {
+    const token = localStorage.getItem('access_token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Note: DRF router is mounted at /api/v1/applications/ and
+    // the viewset is registered as "applications", so the list
+    // endpoint is /api/v1/applications/applications/
+    const response = await axios.get<ApplicationListItem[]>(
+      `${API_BASE_URL}/api/v1/applications/applications/`,
+      {
+        headers,
+        timeout: 30000,
+      }
+    );
+
+    return response.data.map(mapApiApplicationToApplication);
+  } catch (error) {
+    // For now, log and return an empty list so the UI remains usable
+    console.error('Failed to fetch applications', error);
+    return [];
+  }
 }
 
 /**
@@ -303,4 +383,192 @@ export function formatFieldErrors(fieldErrors: { [field: string]: string[] }): s
   }
   
   return messages.join('\n');
+}
+
+/**
+ * Admin API Response for approve/reject/retry actions
+ */
+export interface AdminActionResponse {
+  application: ApplicationListItem;
+  notification?: {
+    id: number;
+    message: string;
+    type: string;
+    created_at: string;
+  } | null;
+  message?: string;
+}
+
+/**
+ * Result type for admin actions
+ */
+export interface AdminActionResult {
+  success: boolean;
+  data?: AdminActionResponse;
+  error?: string;
+}
+
+/**
+ * Get authentication headers with JWT token
+ * 
+ * @returns Headers object with Authorization header if token exists
+ */
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('access_token');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
+
+/**
+ * Approve an application
+ * 
+ * @param applicationId - ID of the application to approve
+ * @returns Promise with action result
+ */
+export async function approveApplication(applicationId: number): Promise<AdminActionResult> {
+  try {
+    const response = await axios.patch<AdminActionResponse>(
+      `${API_BASE_URL}/api/v1/applications/applications/${applicationId}/approve/`,
+      {},
+      {
+        headers: getAuthHeaders(),
+        timeout: 30000,
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return handleAdminActionError(error);
+  }
+}
+
+/**
+ * Reject an application
+ * 
+ * @param applicationId - ID of the application to reject
+ * @returns Promise with action result
+ */
+export async function rejectApplication(applicationId: number): Promise<AdminActionResult> {
+  try {
+    const response = await axios.patch<AdminActionResponse>(
+      `${API_BASE_URL}/api/v1/applications/applications/${applicationId}/reject/`,
+      {},
+      {
+        headers: getAuthHeaders(),
+        timeout: 30000,
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return handleAdminActionError(error);
+  }
+}
+
+/**
+ * Retry/reset an application back to pending
+ * 
+ * @param applicationId - ID of the application to retry
+ * @returns Promise with action result
+ */
+export async function retryApplication(applicationId: number): Promise<AdminActionResult> {
+  try {
+    const response = await axios.patch<AdminActionResponse>(
+      `${API_BASE_URL}/api/v1/applications/applications/${applicationId}/retry/`,
+      {},
+      {
+        headers: getAuthHeaders(),
+        timeout: 30000,
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return handleAdminActionError(error);
+  }
+}
+
+/**
+ * Handle errors from admin action API calls
+ * 
+ * @param error - Error from axios request
+ * @returns Admin action result with error information
+ */
+function handleAdminActionError(error: unknown): AdminActionResult {
+  if (axios.isAxiosError(error)) {
+    // Network error (no response from server)
+    if (!error.response) {
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        return {
+          success: false,
+          error: 'Request timed out. Please check your connection and try again.',
+        };
+      }
+      
+      return {
+        success: false,
+        error: 'Unable to connect to the server. Please check your internet connection and try again.',
+      };
+    }
+    
+    // Server responded with error status
+    const { status, data } = error.response;
+    
+    switch (status) {
+      case 401:
+        return {
+          success: false,
+          error: 'You are not authorized to perform this action. Please log in again.',
+        };
+      
+      case 403:
+        return {
+          success: false,
+          error: 'You do not have permission to perform this action.',
+        };
+      
+      case 404:
+        return {
+          success: false,
+          error: 'Application not found.',
+        };
+      
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        return {
+          success: false,
+          error: 'Something went wrong on our end. Please try again later.',
+        };
+      
+      default:
+        return {
+          success: false,
+          error: data?.error?.message || 'An error occurred. Please try again.',
+        };
+    }
+  }
+  
+  // Handle unexpected errors
+  return {
+    success: false,
+    error: 'An unexpected error occurred. Please try again.',
+  };
 }
