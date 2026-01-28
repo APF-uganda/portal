@@ -43,7 +43,7 @@ const Sidebar: FC = () => {
         <nav className="space-y-2">
           <NavItem icon={<MdDashboard />} label="Dashboard" to="/admin/dashboard" collapsed={collapsed} highlight />
           <NavItem icon={<FiInbox />} label="Inbox" to="/admin/inbox" badgeCount={99} collapsed={collapsed} />
-          <NavItem icon={<FiUser />} label="Membership Applications" to="/adminApproval" collapsed={collapsed} />
+          <NavItem icon={<FiUser />} label="Membership Applications" to="/admin/approval" collapsed={collapsed} />
           <NavItem icon={<FiUser />} label="Profile" to="/admin/profile" collapsed={collapsed} />
           <NavItem icon={<FaFileAlt />} label="Documents" to="/admin/documents" collapsed={collapsed} />
           <NavItem icon={<FaMoneyBill />} label="Payments & Renewals" to="/admin/payments" collapsed={collapsed} />
