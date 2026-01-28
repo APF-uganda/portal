@@ -13,8 +13,8 @@ import { Stat } from "../../types/dashboard";
 import RecentApplications from "../../components/adminOverview-components/recentApplications";
 import RecentPayments from "../../components/adminOverview-components/recentPayments";
 import QuickActions from "../../components/adminOverview-components/quickActions";
-import TopBar from "../../components/layout/Header";
-import { useState } from "react";
+import Header from "../../components/layout/Header";
+// import { useState } from "react";
 
 const stats: Stat[] = [
   { title: "Total Members", value: "2,547", change: "+12.5%", trend: "up", icon: Users },
@@ -24,7 +24,7 @@ const stats: Stat[] = [
 ];
 
 function AdminDashboard(){
-    const [mobileOpen, setMobileOpen] = useState(false);
+    // const [mobileOpen, setMobileOpen] = useState(false);
     return(
     <div className="flex min-h-screen">
        <Sidebar />
@@ -32,9 +32,9 @@ function AdminDashboard(){
     {/* Right side */}
       <div className="flex flex-1 flex-col">
         {/* Top Bar */}
-        <TopBar
+        <Header
           title="Dashboard"
-          onMenuClick={() => setMobileOpen(true)}
+          
         />
 
     <main className="flex-1 p-6">
