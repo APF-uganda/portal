@@ -1,7 +1,6 @@
 import {
   Users,
   FileText,
-  CreditCard,
   TrendingUp,
   
 } from "lucide-react";
@@ -14,13 +13,15 @@ import RecentApplications from "../../components/adminOverview-components/recent
 import RecentPayments from "../../components/adminOverview-components/recentPayments";
 import QuickActions from "../../components/adminOverview-components/quickActions";
 import Header from "../../components/layout/Header";
+import WelcomeBanner from "../../components/adminOverview-components/banner";
+
 // import { useState } from "react";
 
 const stats: Stat[] = [
-  { title: "Total Members", value: "2,547", change: "+12.5%", trend: "up", icon: Users },
-  { title: "Pending Applications", value: "23", change: "+5", trend: "up", icon: FileText },
-  { title: "Revenue (This Month)", value: "UGX 45.2M", change: "+8.3%", trend: "up", icon: CreditCard },
-  { title: "Active Subscriptions", value: "2,341", change: "+3.2%", trend: "up", icon: TrendingUp },
+  { title: "Total Members", value: "2,547", trend: "up",percentage: "+12.5%",period: "from last month", icon: Users, color: "purple", },
+  { title: "Pending Applications", value: "23", trend: "up", percentage: "+5%",period: "from last month",icon: FileText,color: "orange", },
+  { title: "Revenue (This Month)", value: "UGX 45.2M", trend: "up",percentage: "+2%", period: "from last month", icon: TrendingUp,  color: "green", },
+
 ];
 
 function AdminDashboard(){
@@ -38,6 +39,10 @@ function AdminDashboard(){
         />
 
     <main className="flex-1 p-6">
+
+        {/* Welcome Banner */}
+       <WelcomeBanner name="Peter" />
+
        {/* Stats */}
         <StatsGrid stats={stats} />
 

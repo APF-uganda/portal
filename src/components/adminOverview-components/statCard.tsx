@@ -1,40 +1,69 @@
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { Stat } from "../../types/dashboard";
+import { Stat, StatColor } from "../../types/dashboard";
 
 type StatCardProps = {
   stat: Stat;
   index: number;
 };
 
+const colorMap: Record<
+  StatColor,
+  { bg: string; text: string }
+> = {
+  purple: {
+    bg: "bg-purple-100",
+    text: "text-purple-600",
+  },
+  orange: {
+    bg: "bg-orange-100",
+    text: "text-orange-600",
+  },
+  green: {
+    bg: "bg-green-100",
+    text: "text-green-600",
+  },
+};
+
 function StatCard({ stat, index }: StatCardProps) {
+  const colors = colorMap[stat.color];
+
   return (
     <div
-      className="animate-slide-up rounded-xl border border-border bg-card p-4 transition hover:shadow-lg"
+      className="animate-slide-up rounded-xl border border-border bg-white p-5 transition-shadow hover:shadow-md"
       style={{ animationDelay: `${index * 50}ms` }}
     >
+      {/* Title + Icon */}
       <div className="flex items-center justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-          <stat.icon className="h-5 w-5 text-primary" />
-        </div>
+        <p className="text-sm font-medium text-gray-500">
+          {stat.title}
+        </p>
 
         <div
-          className={`flex items-center gap-1 text-sm ${
-            stat.trend === "up" ? "text-green-600" : "text-red-600"
-          }`}
+          className={`flex h-9 w-9 items-center justify-center rounded-lg ${colors.bg}`}
         >
-          {stat.trend === "up" ? (
-            <ArrowUpRight className="h-4 w-4" />
-          ) : (
-            <ArrowDownRight className="h-4 w-4" />
-          )}
-          {stat.change}
+          <stat.icon className={`h-4 w-4 ${colors.text}`} />
         </div>
       </div>
 
-      <div className="mt-3">
-        <p className="text-sm text-muted-foreground">{stat.title}</p>
-        <p className="text-2xl font-bold">{stat.value}</p>
-      </div>
+      {/* Value */}
+      <p className="mt-4 text-2xl font-semibold text-gray-900">
+        {stat.value}
+      </p>
+
+      {/* Growth */}
+      <div className="mt-2 flex items-center gap-1 text-sm">
+          <span
+          className={`flex items-center gap-0.5 font-medium ${
+            stat.trend === "up" ? "text-green-600" : "text-red-600"
+            }`}
+          >
+           {stat.trend === "up" ? "↑" : "↓"}
+           {stat.percentage}
+          </span>
+
+          <span className="text-gray-400">
+           {stat.period}
+         </span>
+      </div>   
     </div>
   );
 }

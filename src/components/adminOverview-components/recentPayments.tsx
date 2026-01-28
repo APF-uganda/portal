@@ -5,8 +5,8 @@ function RecentPayments(){
          <div className="animate-slide-up rounded-xl border border-border bg-card p-4">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Recent Payments</h2>
-            <Link to="/admin/payments" className="text-sm text-primary hover:underline">
-              View All
+            <Link to="/admin/payments" className="text-sm text-purple-600 hover:underline" >
+               View All →
             </Link>
           </div>
 

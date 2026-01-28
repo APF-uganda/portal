@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { FiBell } from "react-icons/fi";
-
+import { FiBell} from "react-icons/fi";
+import {Search } from "lucide-react"
 type HeaderProps = {
   title: string;
 };
@@ -15,8 +15,20 @@ title
       {title}
       </h2>
 
+       
+
       {/* Right: Actions */}
       <div className="flex items-center gap-6">
+        {/* Search */} 
+        <div className="relative hidden md:block">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-64 rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm
+                       outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
         {/* Notifications */}
         <button className="relative">
           <FiBell className="text-xl text-gray-600" />
