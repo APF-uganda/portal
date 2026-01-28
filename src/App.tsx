@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
+/*public pages*/
 import LandingPage from './pages/LandingPage'
 import AboutPage from './pages/AboutPage'
 import MembershipPage from './pages/MembershipPage'
@@ -35,12 +36,11 @@ function App() {
 
                     {/* Temporary admin route */}
                     <Route path="/admin/approval" element={<AdminApproval />} />
-                    <Route path="/admin/" element={<AdminDashboard />} />
-
+                    <Route path="/admin" element={<AdminDashboard />} />
                 </Routes>
-            </div>
-        </Router>
-    )
+              </div>
+    </Router>
+  )
 }
 
 export default App

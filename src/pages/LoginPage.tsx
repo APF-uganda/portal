@@ -4,16 +4,72 @@ import { Eye, EyeOff } from 'lucide-react'
 import apfLogo from '../assets/whitelogo.png'
 import loginImage from '../assets/images/Login-image/login.jpg'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
 function LoginPage() {
   const navigate = useNavigate()
 
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault()
-  navigate('/otp')
-}
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Store session_id and remember_me for OTP page
+        sessionStorage.setItem('otp_session_id', data.session_id)
+        sessionStorage.setItem('remember_me', rememberMe.toString())
+        sessionStorage.setItem('login_email', email)
+        
+        // Send OTP email via EmailJS (frontend)
+        if (data.otp_code) {
+          try {
+            const { sendOTPEmail } = await import('../services/emailService')
+            await sendOTPEmail({
+              to_email: data.email,
+              otp_code: data.otp_code,
+              user_name: data.user_name
+            })
+            console.log('✅ OTP email sent via EmailJS')
+          } catch (emailError) {
+            console.error('⚠️ Failed to send OTP email:', emailError)
+            // Continue anyway - user can still see OTP in console
+          }
+        }
+        
+        // Navigate to OTP page
+        navigate('/otp')
+      } else {
+        // Show error message
+        setError(data.error?.message || 'Invalid email or password')
+      }
+    } catch (err) {
+      console.error('Login error:', err)
+      setError('Unable to connect to server. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
 
   return (
@@ -27,7 +83,9 @@ function LoginPage() {
 
         {/* LEFT SIDE */}
         <div className="flex flex-col justify-center px-10 py-16 text-white text-center md:text-left">
-          <img src={apfLogo} alt="APF Logo" className="w-56 mx-auto md:mx-0" />
+          <Link to="/" className="w-56 mx-auto md:mx-0 cursor-pointer">
+            <img src={apfLogo} alt="APF Logo" className="w-56" />
+          </Link>
           <h1 className="mt-8 text-3xl md:text-4xl font-semibold leading-tight">
             Your Professional Journey Begins Here
           </h1>
@@ -42,6 +100,13 @@ function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             {/* Email */}
             <div>
               <label className="text-sm font-semibold text-gray-700">
@@ -51,9 +116,13 @@ function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
                 className="mt-2 w-full rounded-lg border-2 border-gray-200 px-4 py-3
                   focus:outline-none focus:border-purple-600
-                  focus:ring-4 focus:ring-purple-200"
+                  focus:ring-4 focus:ring-purple-200
+                  disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -68,15 +137,21 @@ function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                   className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 pr-12
                     focus:outline-none focus:border-purple-600
-                    focus:ring-4 focus:ring-purple-200"
+                    focus:ring-4 focus:ring-purple-200
+                    disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600"
+                  disabled={loading}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600
+                    disabled:opacity-50"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -91,7 +166,8 @@ function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="accent-purple-600"
+                  disabled={loading}
+                  className="accent-purple-600 disabled:cursor-not-allowed"
                 />
                 Remember me
               </label>
@@ -107,10 +183,23 @@ function LoginPage() {
             {/* Button */}
             <button
               type="submit"
+              disabled={loading}
               className="w-full rounded-xl bg-purple-600 py-3 text-white font-semibold
-                hover:bg-purple-700 transition"
+                hover:bg-purple-700 transition
+                disabled:bg-purple-400 disabled:cursor-not-allowed
+                flex items-center justify-center gap-2"
             >
-              Sign In
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
 
             {/* Sign up */}
