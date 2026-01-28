@@ -13,6 +13,11 @@ import OtpPage from './pages/otpPage'
 
 /* Dashboards */
 import MemberDashboard from './pages/member/memberDashboard'
+import DocumentsPage from './pages/member/DocumentsPage'
+
+import PaymentsPage from './pages/member/PaymentsPage'
+import ForumPage from './pages/member/ForumPage'
+import NotificationsPage from './pages/member/NotificationsPage'
 import AdminDashboard from './pages/admin/adminDashboard'
 import AdminApproval from './pages/admin/adminApproval'
 
@@ -36,6 +41,10 @@ function App() {
 
           {/* Member dashboard */}
           <Route path="/dashboard" element={<MemberDashboard />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/payments" element={<PaymentsPage />} />
+          <Route path="/forum" element={<ForumPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={<AdminDashboard />} />

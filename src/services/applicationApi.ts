@@ -8,11 +8,20 @@
 
 import axios, { AxiosError } from 'axios';
 import { ApplicationSubmissionData } from '../types/registration';
+import { Application } from '../types/Application';
 
 /**
  * API base URL from environment variables
  */
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+/**
+ * Fetch applications (stub function for admin functionality)
+ */
+export async function fetchApplications(): Promise<Application[]> {
+  // TODO: Implement actual API call when admin functionality is ready
+  return [];
+}
 
 /**
  * API response for successful application submission

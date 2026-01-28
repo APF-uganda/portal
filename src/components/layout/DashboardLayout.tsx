@@ -21,7 +21,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#EFF0F0' }}>
+    <div className="min-h-screen bg-gray-50">
       {/*MEMBER SIDEBAR */}
       <MemberSideNav isCollapsed={isCollapsed} onToggle={toggleSidebar} />
 
@@ -30,7 +30,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         isCollapsed ? 'ml-16' : 'ml-64'
       }`}>
         {/* Header - Match logo section height */}
-        <header className="bg-gray-100 border-b px-6 h-20 flex items-center">
+        <header className="bg-white border-b px-6 h-20 flex items-center shadow-sm">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4">
               <Search className="w-5 h-5 text-gray-400" />
@@ -52,14 +52,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6" style={{ backgroundColor: '#EFF0F0' }}>
+        <main className="flex-1 p-6 bg-gray-50">
           {children}
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-gray-300 px-6 py-4" style={{ backgroundColor: '#EFF0F0' }}>
-          <div className="text-center text-sm text-gray-600">
-            © 2024 FinSaas Pro. All rights reserved. | Privacy Policy | Terms of Service
+        <footer className="border-t border-gray-200 p-4 bg-white">
+          <div className="text-center text-sm text-gray-500">
+            © 2026 APF. All rights reserved. | Privacy Policy | Terms of Service
           </div>
         </footer>
       </div>
