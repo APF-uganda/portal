@@ -4,7 +4,7 @@ import { PersonalInfoData } from '../../../types/registration';
 import {
   validatePhoneNumber,
   validateAge,
-} from '../../../utils/validators';
+} from '../../../lib/validators';
 
 interface PersonalInfoStepProps {
   data: PersonalInfoData;

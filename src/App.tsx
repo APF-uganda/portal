@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
-/*public pages*/
+/* Public pages */
 import LandingPage from './pages/LandingPage'
 import AboutPage from './pages/AboutPage'
 import MembershipPage from './pages/MembershipPage'
@@ -10,35 +10,47 @@ import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import OtpPage from './pages/otpPage'
-import AdminApproval from './pages/admin/adminApproval'
-import AdminDashboard from './pages/admin/adminDashboard'
 
-// ProtectedRoute wrapper
-// import ProtectedRoute from './components/auth/ProtectedRoute'
+/* Dashboards */
+import MemberDashboard from './pages/member/memberDashboard'
+import DocumentsPage from './pages/member/DocumentsPage'
+
+import PaymentsPage from './pages/member/PaymentsPage'
+import ForumPage from './pages/member/ForumPage'
+import NotificationsPage from './pages/member/NotificationsPage'
+import AdminDashboard from './pages/admin/adminDashboard'
+import AdminApproval from './pages/admin/adminApproval'
 
 function App() {
-    return (
-        <Router>
-            <div className="min-h-screen flex flex-col">
-                <Routes>
-                    {/* Public routes */}
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/membership" element={<MembershipPage />} />
-                    <Route path="/events" element={<EventsPage />} />
-                    <Route path="/news" element={<NewsPage />} />
-                    <Route path="/contact" element={<ContactPage />} />
+  return (
+    <Router>
+      <div className="min-h-screen flex flex-col">
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/membership" element={<MembershipPage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
-                    {/* Auth routes */}
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/otp" element={<OtpPage />} />
+          {/* Auth routes */}
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/otp" element={<OtpPage />} />
 
-                    {/* Temporary admin route */}
-                    <Route path="/admin/approval" element={<AdminApproval />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                </Routes>
-              </div>
+          {/* Member dashboard */}
+          <Route path="/dashboard" element={<MemberDashboard />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/payments" element={<PaymentsPage />} />
+          <Route path="/forum" element={<ForumPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+
+          {/* Admin routes */}
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/approval" element={<AdminApproval />} />
+        </Routes>
+      </div>
     </Router>
   )
 }

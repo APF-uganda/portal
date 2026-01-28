@@ -2,6 +2,7 @@ import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import StatsCard from "../../components/dashboard/StatsCard";
 import ApplicationsTable from "../../components/applications/ApplicationsTable";
+import Footer from "../../components/layout/Footer";
 
 import {
   MdPendingActions,
@@ -105,6 +106,7 @@ const AdminApprovals = () => {
           </div>
           <ApplicationsTable applicants={applications} loading={loading} />
         </div>
+        <Footer />
       </main>
     </div>
   );
