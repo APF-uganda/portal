@@ -19,7 +19,7 @@ import WelcomeBanner from "../../components/adminOverview-components/banner";
 
 const stats: Stat[] = [
   { title: "Total Members", value: "2,547", trend: "up",percentage: "+12.5%",period: "from last month", icon: Users, color: "purple", },
-  { title: "Pending Applications", value: "23", trend: "up", percentage: "+5%",period: "from last month",icon: FileText,color: "orange", },
+  { title: "Total Applications", value: "23", trend: "up", percentage: "+5%",period: "from last month",icon: FileText,color: "orange", },
   { title: "Revenue (This Month)", value: "UGX 45.2M", trend: "up",percentage: "+2%", period: "from last month", icon: TrendingUp,  color: "green", },
 
 ];
@@ -34,7 +34,7 @@ function AdminDashboard(){
       <div className="flex flex-1 flex-col">
         {/* Top Bar */}
         <Header
-          title="Dashboard"
+          title=" Dashboard Overview"
           
         />
 

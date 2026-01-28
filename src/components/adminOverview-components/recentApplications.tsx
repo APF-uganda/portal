@@ -11,7 +11,7 @@ function RecentApplications() {
           Recent Applications
         </h2>
         <Link
-          to="/admin/applications"
+          to="/admin/approval"
           className="text-sm text-purple-600 hover:underline"
         >
           View All →

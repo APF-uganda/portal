@@ -141,13 +141,13 @@ export async function submitApplication(
     
     // Send POST request to backend
     const response = await axios.post<ApplicationAPIResponse>(
-      `${API_BASE_URL}/api/applications/`,
+      `${API_BASE_URL}/api/v1/applications/`,
       formData,
       {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 30000, // 30 second timeout
+        timeout: 30000, 
       }
     );
     
