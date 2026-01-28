@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
   LayoutGrid,
   ArrowLeft,
@@ -29,6 +29,18 @@ interface MemberSideNavProps {
 
 function MemberSideNav({ isCollapsed, onToggle }: MemberSideNavProps) {
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user')
+    sessionStorage.clear()
+    
+    // Redirect to landing page
+    navigate('/')
+  }
 
   return (
     <aside className={`bg-white shadow-sm fixed left-0 top-0 h-screen flex flex-col z-10 transition-all duration-300 ${
@@ -92,9 +104,9 @@ function MemberSideNav({ isCollapsed, onToggle }: MemberSideNavProps) {
 
       {/* ================= LOGOUT BUTTON ================= */}
       <div className="p-4 border-t flex-shrink-0">
-        <Link
-          to="/login"
-          className={`flex items-center space-x-3 px-4 py-3 rounded-full text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors group relative ${
+        <button
+          onClick={handleLogout}
+          className={`flex items-center space-x-3 px-4 py-3 rounded-full text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors group relative w-full ${
             isCollapsed ? 'justify-center' : ''
           }`}
           title={isCollapsed ? 'Log Out' : ''}
@@ -108,7 +120,7 @@ function MemberSideNav({ isCollapsed, onToggle }: MemberSideNavProps) {
               Log Out
             </div>
           )}
-        </Link>
+        </button>
       </div>
     </aside>
   )
