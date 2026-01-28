@@ -10,7 +10,7 @@ import {
   ChevronLeft,
   Menu,
 } from "lucide-react"
-import logoPurple from "../../assets/logo_purple.png"
+import logoDashboard from "../../assets/LogoDashboard.png"
 
 /* MEMBER navigation items */
 const memberNavItems = [
@@ -49,9 +49,9 @@ function MemberSideNav({ isCollapsed, onToggle }: MemberSideNavProps) {
       {/* ================= LOGO & TOGGLE - Match header height ================= */}
       <div className="h-20 border-b flex-shrink-0 flex items-center justify-between px-4">
         {!isCollapsed && (
-          <Link to="/dashboard" className="block">
+          <Link to="/dashboard" className="flex-1 flex justify-center">
             <img
-              src={logoPurple}
+              src={logoDashboard}
               alt="APF Logo"
               className="h-12 w-auto object-contain"
             />

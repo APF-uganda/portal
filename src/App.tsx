@@ -22,6 +22,9 @@ import NotificationsPage from "./pages/member/NotificationsPage";
 /* Admin dashboard */
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
+/* Dashboards */
+import MembershipStatusPage from './pages/member/MembershipStatusPage';
+import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -116,6 +119,14 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          {/* Member dashboard */}
+          <Route path="/dashboard" element={<MemberDashboard />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/membership-status" element={<MembershipStatusPage />} />
+          <Route path="/payments" element={<PaymentsPage />} />
+          <Route path="/payment-history" element={<PaymentHistoryPage />} />
+          <Route path="/forum" element={<ForumPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
 
           {/* Admin routes (protected) */}
           <Route
