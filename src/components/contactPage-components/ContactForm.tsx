@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Phone, Mail, MapPin } from 'lucide-react'
+import { API_V1_BASE_URL } from '../../config/api'
 
 function ContactForm() {
   const [formData, setFormData] = useState({
@@ -26,10 +27,8 @@ function ContactForm() {
     setIsSubmitting(true)
     setSubmitStatus({ type: null, message: '' })
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
     try {
-      const response = await fetch(`${API_URL}/api/v1/contacts/submit/`, {
+      const response = await fetch(`${API_V1_BASE_URL}/contacts/submit/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

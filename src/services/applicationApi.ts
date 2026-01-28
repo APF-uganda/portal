@@ -9,11 +9,7 @@
 import axios, { AxiosError } from 'axios';
 import { ApplicationSubmissionData } from '../types/registration';
 import { Application } from '../types/Application';
-
-/**
- * API base URL from environment variables
- */
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * Shape of application items returned by the backend list endpoint

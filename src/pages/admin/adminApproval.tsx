@@ -16,7 +16,7 @@ import {
 
 const AdminApprovals = () => {
   const { applications, loading, error: fetchError, refetch } = useApplications();
-  const { approve, reject, retry, isLoading: actionLoading, error: actionError, clearError } = useAdminActions();
+  const { approve, reject, retry, error: actionError, clearError } = useAdminActions();
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
