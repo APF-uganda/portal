@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import {
     FiEye,
     FiCheck,
@@ -6,27 +6,92 @@ import {
     FiDownload,
     FiPlus,
     FiRotateCcw,
+    FiLoader,
 } from "react-icons/fi";
-
-export interface Application {
-    id: number;
-    name: string;
-    email: string;
-    category: string;
-    icpaCertNo: string;
-    feeStatus: string;
-    status: string;
-    submissionDate: string;
-}
+import { Application } from "../../types/Application";
 
 interface ApplicationsTableProps {
     applicants: Application[];
     loading: boolean;
+    onApprove?: (applicationId: number) => Promise<void>;
+    onReject?: (applicationId: number) => Promise<void>;
+    onRetry?: (applicationId: number) => Promise<void>;
+    onView?: (applicationId: number) => void;
+    actionLoading?: number | null; // ID of application currently being processed
 }
 
-const ApplicationsTable: FC<ApplicationsTableProps> = ({ applicants, loading }) => {
+const ApplicationsTable: FC<ApplicationsTableProps> = ({
+    applicants,
+    loading,
+    onApprove,
+    onReject,
+    onRetry,
+    onView,
+    actionLoading = null,
+}) => {
+    const [processingId, setProcessingId] = useState<number | null>(null);
+
+    const handleAction = async (
+        applicationId: number,
+        action: () => Promise<void>
+    ) => {
+        if (processingId || actionLoading === applicationId) return;
+        
+        setProcessingId(applicationId);
+        try {
+            await action();
+        } catch (error) {
+            console.error('Action failed:', error);
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const handleApprove = (applicationId: number) => {
+        if (onApprove) {
+            handleAction(applicationId, () => onApprove(applicationId));
+        }
+    };
+
+    const handleReject = (applicationId: number) => {
+        if (onReject) {
+            handleAction(applicationId, () => onReject(applicationId));
+        }
+    };
+
+    const handleRetry = (applicationId: number) => {
+        if (onRetry) {
+            handleAction(applicationId, () => onRetry(applicationId));
+        }
+    };
+
+    const handleView = (applicationId: number) => {
+        if (onView) {
+            onView(applicationId);
+        }
+    };
+
+    const isProcessing = (applicationId: number) => {
+        return processingId === applicationId || actionLoading === applicationId;
+    };
+
     if (loading) {
-        return <p className="text-gray-500">Loading applications...</p>;
+        return (
+            <div className="bg-white shadow rounded-lg p-6">
+                <div className="flex items-center justify-center py-8">
+                    <FiLoader className="animate-spin text-[#5F2F8B] text-2xl mr-2" />
+                    <p className="text-gray-500">Loading applications...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (applicants.length === 0) {
+        return (
+            <div className="bg-white shadow rounded-lg p-6">
+                <p className="text-gray-500 text-center py-8">No applications found.</p>
+            </div>
+        );
     }
 
     return (
@@ -92,34 +157,83 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({ applicants, loading }) 
                                 <div className="flex gap-2">
                                     {app.status === "Pending" && (
                                         <>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                            <button
+                                                onClick={() => handleView(app.id)}
+                                                className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs transition-colors"
+                                                title="View Details"
+                                                disabled={isProcessing(app.id)}
+                                            >
                                                 <FiEye />
                                             </button>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
-                                                <FiCheck />
+                                            <button
+                                                onClick={() => handleApprove(app.id)}
+                                                disabled={isProcessing(app.id)}
+                                                className={`bg-transparent border-2 border-green-200 hover:bg-green-200 text-green-700 px-2 py-1 rounded text-xs transition-colors ${
+                                                    isProcessing(app.id) ? 'opacity-50 cursor-not-allowed' : ''
+                                                }`}
+                                                title="Approve Application"
+                                            >
+                                                {isProcessing(app.id) ? (
+                                                    <FiLoader className="animate-spin" />
+                                                ) : (
+                                                    <FiCheck />
+                                                )}
                                             </button>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
-                                                <FiX />
+                                            <button
+                                                onClick={() => handleReject(app.id)}
+                                                disabled={isProcessing(app.id)}
+                                                className={`bg-transparent border-2 border-red-200 hover:bg-red-200 text-red-700 px-2 py-1 rounded text-xs transition-colors ${
+                                                    isProcessing(app.id) ? 'opacity-50 cursor-not-allowed' : ''
+                                                }`}
+                                                title="Reject Application"
+                                            >
+                                                {isProcessing(app.id) ? (
+                                                    <FiLoader className="animate-spin" />
+                                                ) : (
+                                                    <FiX />
+                                                )}
                                             </button>
                                         </>
                                     )}
                                     {app.status === "Approved" && (
                                         <>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                            <button
+                                                onClick={() => handleView(app.id)}
+                                                className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs transition-colors"
+                                                title="View Details"
+                                            >
                                                 <FiEye />
                                             </button>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                            <button
+                                                className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs transition-colors"
+                                                title="Download Documents"
+                                            >
                                                 <FiDownload />
                                             </button>
                                         </>
                                     )}
                                     {app.status === "Rejected" && (
                                         <>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                            <button
+                                                onClick={() => handleView(app.id)}
+                                                className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs transition-colors"
+                                                title="View Details"
+                                            >
                                                 <FiEye />
                                             </button>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
-                                                <FiRotateCcw />
+                                            <button
+                                                onClick={() => handleRetry(app.id)}
+                                                disabled={isProcessing(app.id)}
+                                                className={`bg-transparent border-2 border-blue-200 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs transition-colors ${
+                                                    isProcessing(app.id) ? 'opacity-50 cursor-not-allowed' : ''
+                                                }`}
+                                                title="Reset to Pending"
+                                            >
+                                                {isProcessing(app.id) ? (
+                                                    <FiLoader className="animate-spin" />
+                                                ) : (
+                                                    <FiRotateCcw />
+                                                )}
                                             </button>
                                         </>
                                     )}
