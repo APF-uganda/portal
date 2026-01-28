@@ -35,7 +35,7 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({ applicants, loading }) 
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-700">All Applications</h3>
                 <div className="flex gap-3">
-                    <button className="flex items-center bg-transparent  border-2 border-[#5F2F8B]  gap-1 text-sm text-[#5F2F8B] hover:text-black rounded-xl px-3 py-1 pl-2 pr-4">
+                    <button className="flex items-center bg-transparent border-2 border-[#5F2F8B] gap-1 text-sm text-[#5F2F8B] hover:text-white hover:bg-[#5F2F8B] rounded-xl px-3 py-1 pl-2 pr-4">
                         <FiDownload className="text-base" />
                         Export
                     </button>
@@ -76,17 +76,18 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({ applicants, loading }) 
                             </td>
                             <td className="px-4 py-2">
                                 <span
-                                    className={`px-3 py-1 rounded-full text-xs font-bold ${app.status === "Pending"
+                                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                        app.status === "Pending"
                                             ? "bg-[#E5E0FE] text-[#5F2F8B]"
                                             : app.status === "Approved"
-                                                ? "bg-[#D3F0E6] text-[#0FB880]"
-                                                : "bg-[#E5E0FE] text-[#EE4444]"
-                                        }`}
+                                            ? "bg-[#D3F0E6] text-[#0FB880]"
+                                            : "bg-[#E5E0FE] text-[#EE4444]"
+                                    }`}
                                 >
                                     {app.status}
                                 </span>
                             </td>
-                            <td className="px-4 py-2  font-medium">{app.submissionDate}</td>
+                            <td className="px-4 py-2 font-medium">{app.submissionDate}</td>
                             <td className="px-4 py-2">
                                 <div className="flex gap-2">
                                     {app.status === "Pending" && (
@@ -94,23 +95,33 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({ applicants, loading }) 
                                             <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
                                                 <FiEye />
                                             </button>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-green-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
                                                 <FiCheck />
                                             </button>
-                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-red-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
                                                 <FiX />
                                             </button>
                                         </>
                                     )}
                                     {app.status === "Approved" && (
-                                        <button className="bg-transparent border-2 border-gray-200 hover:bg-green-200 text-gray-900 px-2 py-1 rounded  text-xs">
-                                            <FiCheck />
-                                        </button>
+                                        <>
+                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                                <FiEye />
+                                            </button>
+                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                                <FiDownload />
+                                            </button>
+                                        </>
                                     )}
                                     {app.status === "Rejected" && (
-                                        <button className="bg-transparent border-2 border-gray-200 hover:bg-yellow-200 text-gray-900 px-2 py-1 rounded text-xs">
-                                            <FiRotateCcw />
-                                        </button>
+                                        <>
+                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                                <FiEye />
+                                            </button>
+                                            <button className="bg-transparent border-2 border-gray-200 hover:bg-gray-200 text-gray-900 px-2 py-1 rounded text-xs">
+                                                <FiRotateCcw />
+                                            </button>
+                                        </>
                                     )}
                                 </div>
                             </td>
