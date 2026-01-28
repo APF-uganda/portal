@@ -76,7 +76,7 @@ export interface SubmissionResult {
  * Submit application to backend API
  * 
  * Creates FormData with all application fields and uploaded documents,
- * sends POST request to /api/applications/, and handles response/errors.
+ * sends POST request to /api/v1/applications/, and handles response/errors.
  * 
  * @param applicationData - Complete application data including files
  * @returns Promise with submission result
