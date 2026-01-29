@@ -50,20 +50,31 @@ const Timeline: React.FC = () => {
 
     return (
         <div className="w-full bg-white py-12 px-4 md:py-16 md:px-8">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 {/* Desktop View */}
                 <div className="hidden md:block relative">
-                    {/* Wavy Timeline Line using SVG */}
+                    
                     <div className="absolute top-16 left-0 right-0 h-20 overflow-visible">
-                        <svg className="w-full h-20" preserveAspectRatio="none" viewBox="0 0 1200 80">
-                            <path
-                                d="M 0 40 Q 300 10, 600 40 T 1200 40"
-                                stroke="#d1d5db"
-                                strokeWidth="2"
-                                fill="none"
-                            />
-                        </svg>
-                    </div>
+                            <svg className="w-full h-20" preserveAspectRatio="none" viewBox="0 0 1200 80">
+                                <defs>
+                                    
+                                    <linearGradient id="multiStepGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="#000000" />   
+                                        <stop offset="33%" stopColor="#6B7280" />   
+                                        <stop offset="66%" stopColor="#DFBAE3" />   
+                                        <stop offset="100%" stopColor="#9E4FDE" />  
+                                    </linearGradient>
+                                </defs>
+                                
+                                <path
+                                    d="M 0 40 Q 300 10, 600 40 T 1200 40"
+                                    stroke="url(#multiStepGradient)"
+                                    strokeWidth="14"
+                                    fill="transparent"
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                        </div>
 
                     {/* Timeline Events */}
                     <div className="grid grid-cols-3 gap-8">
@@ -107,8 +118,8 @@ const Timeline: React.FC = () => {
 
                 {/* Mobile View */}
                 <div className="md:hidden relative ml-4">
-                    {/* Straight vertical line through balls */}
-                    <div className="absolute left-16 top-0 bottom-0 w-0.5 translate-x-[7px] bg-gray-300"></div>
+                   
+                    <div className="absolute left-16 top-0 bottom-0 w-1 translate-x-[7px] bg-gray-300"></div>
 
                     {events.map((event, index) => (
                         <div key={index} className="relative mb-12 flex items-center">

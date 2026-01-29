@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { AlertTriangle, Clock } from 'lucide-react';
 
 const StatusAlert = () => {
