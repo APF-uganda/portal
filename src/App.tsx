@@ -139,17 +139,17 @@ const App: React.FC = () => {
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute role="admin">
+              
                 <AdminDashboard />
-              </ProtectedRoute>
+              
             }
           />
           <Route
             path="/admin/approval"
             element={
-              <ProtectedRoute role="admin">
+              
                 <AdminApproval />
-              </ProtectedRoute>
+              
             }
           />
         </Routes>
