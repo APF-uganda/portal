@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import apfLogo from '../assets/logo_purple.png'
 import loginImage from '../assets/images/Login-image/login.jpg'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API_V1_BASE_URL } from '../config/api'
 
 function OtpPage() {
   const navigate = useNavigate()
@@ -75,9 +75,9 @@ function OtpPage() {
     setIsVerifying(true)
     setError('')
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/verify-otp`, {
-        method: 'POST',
+try {
+  const response = await fetch(`${API_V1_BASE_URL}/auth/verify-otp/`, {
+    method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

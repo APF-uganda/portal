@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import apfLogo from '../assets/whitelogo.png'
 import loginImage from '../assets/images/Login-image/login.jpg'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API_V1_BASE_URL } from '../config/api'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -22,7 +22,7 @@ function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      const response = await fetch(`${API_V1_BASE_URL}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
