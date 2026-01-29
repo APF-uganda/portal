@@ -18,12 +18,11 @@ import DocumentsPage from "./pages/member/DocumentsPage";
 import PaymentsPage from "./pages/member/PaymentsPage";
 import ForumPage from "./pages/member/ForumPage";
 import NotificationsPage from "./pages/member/NotificationsPage";
-
-/* Admin dashboard */
+import MembershipStatus from "./pages/member/membershipStatus";
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
 /* Dashboards */
-import MembershipStatusPage from './pages/member/MembershipStatusPage';
+//import MembershipStatusPage from './pages/member/MembershipStatusPage';
 import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
 
 /* Simple auth guard */
@@ -122,7 +121,7 @@ const App: React.FC = () => {
           {/* Member dashboard */}
           <Route path="/dashboard" element={<MemberDashboard />} />
           <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/membership-status" element={<MembershipStatusPage />} />
+          <Route path="/membership-status" element={<MembershipStatus />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/payment-history" element={<PaymentHistoryPage />} />
           <Route path="/forum" element={<ForumPage />} />
