@@ -15,17 +15,42 @@ import QuickActions from "../../components/adminOverview-components/quickActions
 import Header from "../../components/layout/Header";
 import WelcomeBanner from "../../components/adminOverview-components/banner";
 
-// import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchTotalApplications,fetchTotalMembers } from "../../services/dashboard";
 
-const stats: Stat[] = [
-  { title: "Total Members", value: "2,547", trend: "up",percentage: "+12.5%",period: "from last month", icon: Users, color: "purple", },
-  { title: "Total Applications", value: "23", trend: "up", percentage: "+5%",period: "from last month",icon: FileText,color: "orange", },
+
+
+function AdminDashboard(){
+    const [totalApplications, setTotalApplications] = useState<number>(0);
+    const [totalmembers, setTotalmembers] = useState<number>(0);
+   
+   useEffect(() => {
+      const loadDashboardStats = async () => {
+      const total = await fetchTotalApplications();
+      setTotalApplications(total);
+   };
+
+  loadDashboardStats();
+}, []);
+
+
+   useEffect(() => {
+      const loadDashboardStats = async () => {
+      const total = await fetchTotalMembers();
+      setTotalmembers(total);
+   };
+
+  loadDashboardStats();
+}, []);
+
+ 
+
+  const stats: Stat[] = [
+  { title: "Total Members", value: totalmembers.toString(), trend: "up",percentage: "+12.5%",period: "from last month", icon: Users, color: "purple", },
+  { title: "Total Applications", value: totalApplications.toString(), trend: "up", percentage: "+5%",period: "from last month",icon: FileText,color: "orange", },
   { title: "Revenue (This Month)", value: "UGX 45.2M", trend: "up",percentage: "+2%", period: "from last month", icon: TrendingUp,  color: "green", },
 
 ];
-
-function AdminDashboard(){
-    // const [mobileOpen, setMobileOpen] = useState(false);
     return(
     <div className="flex min-h-screen">
        <Sidebar />
