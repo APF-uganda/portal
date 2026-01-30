@@ -20,6 +20,8 @@ interface ApplicationListItem {
   email: string;
   first_name: string;
   last_name: string;
+  national_id_number?: string;
+  icpau_certificate_number?: string;
   payment_status: string;
   status: string;
   submitted_at: string;
@@ -46,7 +48,7 @@ function mapApiApplicationToApplication(app: ApplicationListItem): Application {
   // Map payment status
   const rawPaymentStatus = (app.payment_status || '').toLowerCase();
   const feeStatus: Application['feeStatus'] =
-    rawPaymentStatus === 'paid' || rawPaymentStatus === 'completed'
+    rawPaymentStatus === 'success' || rawPaymentStatus === 'completed'
       ? 'Paid'
       : 'Not Paid';
 
@@ -66,7 +68,7 @@ function mapApiApplicationToApplication(app: ApplicationListItem): Application {
     name,
     email: app.email,
     category,
-    icpaCertNo: "", // Backend does not yet expose this field
+    icpaCertNo: app.icpau_certificate_number || "N/A", // Use actual backend field
     feeStatus,
     status,
     submissionDate,
@@ -79,14 +81,17 @@ function mapApiApplicationToApplication(app: ApplicationListItem): Application {
 export async function fetchApplications(): Promise<Application[]> {
   try {
     const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      console.error('No access token found - user not logged in');
+      return [];
+    }
+
     const headers: Record<string, string> = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Note: DRF router is mounted at /api/v1/applications/ and
-    // the viewset is registered as "applications", so the list
-    // endpoint is /api/v1/applications/applications/
     const response = await axios.get<ApplicationListItem[]>(
       `${API_BASE_URL}/api/v1/applications/`,
       {
@@ -97,8 +102,21 @@ export async function fetchApplications(): Promise<Application[]> {
 
     return response.data.map(mapApiApplicationToApplication);
   } catch (error) {
-    // For now, log and return an empty list so the UI remains usable
     console.error('Failed to fetch applications', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Response status:', error.response?.status);
+      console.error('Response data:', error.response?.data);
+      
+      if (error.response?.status === 401) {
+        console.error('Authentication failed - token may be invalid or expired');
+        // Clear invalid tokens
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        // Redirect to login
+        window.location.href = '/login';
+      }
+    }
     return [];
   }
 }

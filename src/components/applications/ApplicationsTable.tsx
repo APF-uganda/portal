@@ -112,24 +112,29 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
             </div>
 
             {/* Table */}
-            <table className="w-full text-sm text-left text-gray-600 border border-[#F4F2FE] rounded-xl">
-                <thead className="bg-[#F4F2FE] text-gray-700 uppercase text-xs">
-                    <tr>
-                        <th className="px-4 py-2 border-b">Applicant Name</th>
-                        <th className="px-4 py-2 border-b">Email Address</th>
-                        <th className="px-4 py-2 border-b">Category</th>
-                        <th className="px-4 py-2 border-b">ICPA Cert. No.</th>
-                        <th className="px-4 py-2 border-b">Fee Status</th>
-                        <th className="px-4 py-2 border-b">Application Status</th>
-                        <th className="px-4 py-2 border-b">Submission Date</th>
-                        <th className="px-4 py-2 border-b">Actions</th>
-                    </tr>
-                </thead>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-600 border border-[#F4F2FE] rounded-xl">
+                    <thead className="bg-[#F4F2FE] text-gray-700 uppercase text-xs">
+                        <tr>
+                            <th className="px-4 py-2 border-b min-w-[150px]">Applicant Name</th>
+                            <th className="px-4 py-2 border-b min-w-[200px] max-w-[250px]">Email Address</th>
+                            <th className="px-4 py-2 border-b min-w-[120px]">Category</th>
+                            <th className="px-4 py-2 border-b min-w-[120px]">ICPA Cert. No.</th>
+                            <th className="px-4 py-2 border-b min-w-[100px]">Fee Status</th>
+                            <th className="px-4 py-2 border-b min-w-[120px]">Application Status</th>
+                            <th className="px-4 py-2 border-b min-w-[120px]">Submission Date</th>
+                            <th className="px-4 py-2 border-b min-w-[120px]">Actions</th>
+                        </tr>
+                    </thead>
                 <tbody>
                     {applicants.map((app) => (
                         <tr key={app.id} className="border-b last:border-none hover:bg-gray-50">
                             <td className="px-4 py-2 font-bold">{app.name}</td>
-                            <td className="px-4 py-2 font-medium">{app.email}</td>
+                            <td className="px-4 py-2 font-medium max-w-xs">
+                                <div className="truncate" title={app.email}>
+                                    {app.email}
+                                </div>
+                            </td>
                             <td className="px-4 py-2 font-medium">{app.category}</td>
                             <td className="px-4 py-2 font-medium">{app.icpaCertNo}</td>
                             <td className="px-4 py-2 text-sm font-medium">
@@ -243,6 +248,7 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

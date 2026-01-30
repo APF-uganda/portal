@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import StatsCard from "../../components/dashboard/StatsCard";
@@ -6,6 +6,9 @@ import ApplicationsTable from "../../components/applications/ApplicationsTable";
 import Footer from "../../components/layout/Footer";
 import { useApplications } from "../../hooks/useApplications";
 import { useAdminActions } from "../../hooks/useAdminActions";
+import { useDashboardStats } from "../../hooks/useDashboardStats";
+import { requireAdmin } from "../../utils/auth";
+import { AuthDebug } from "../../components/debug/AuthDebug";
 
 import {
   MdPendingActions,
@@ -16,15 +19,24 @@ import {
 
 const AdminApprovals = () => {
   const { applications, loading, error: fetchError, refetch } = useApplications();
+  const { statistics, loading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStats();
   const { approve, reject, retry, error: actionError, clearError } = useAdminActions();
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false); // track sidebar state
 
-  const pendingCount = applications.filter((app) => app.status === "Pending").length;
-  const approvedCount = applications.filter((app) => app.status === "Approved").length;
-  const rejectedCount = applications.filter((app) => app.status === "Rejected").length;
-  const paidCount = applications.filter((app) => app.feeStatus === "Paid").length;
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!requireAdmin()) {
+      return; // Will redirect to login
+    }
+  }, []);
+
+  // Use statistics from API if available, otherwise fall back to local calculations
+  const pendingCount = statistics?.pending_applications ?? applications.filter((app) => app.status === "Pending").length;
+  const approvedCount = statistics?.approved_applications ?? applications.filter((app) => app.status === "Approved").length;
+  const rejectedCount = statistics?.rejected_applications ?? applications.filter((app) => app.status === "Rejected").length;
+  const paidCount = statistics?.paid_applications ?? applications.filter((app) => app.feeStatus === "Paid").length;
 
   const handleApprove = async (applicationId: number) => {
     clearError();
@@ -34,7 +46,7 @@ const AdminApprovals = () => {
       const result = await approve(applicationId);
       if (result.success) {
         setSuccessMessage("Application approved successfully");
-        await refetch();
+        await Promise.all([refetch(), refetchStats()]);
         setTimeout(() => setSuccessMessage(null), 3000);
       }
     } catch (error) {
@@ -52,7 +64,7 @@ const AdminApprovals = () => {
       const result = await reject(applicationId);
       if (result.success) {
         setSuccessMessage("Application rejected successfully");
-        await refetch();
+        await Promise.all([refetch(), refetchStats()]);
         setTimeout(() => setSuccessMessage(null), 3000);
       }
     } catch (error) {
@@ -70,7 +82,7 @@ const AdminApprovals = () => {
       const result = await retry(applicationId);
       if (result.success) {
         setSuccessMessage("Application reset to pending successfully");
-        await refetch();
+        await Promise.all([refetch(), refetchStats()]);
         setTimeout(() => setSuccessMessage(null), 3000);
       }
     } catch (error) {
@@ -85,7 +97,7 @@ const AdminApprovals = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen flex-col">
       {/* Sidebar */}
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
@@ -93,12 +105,12 @@ const AdminApprovals = () => {
       <main
         className={`flex-1 bg-gray-50 p-0 overflow-y-auto transition-all duration-300 ${
           collapsed ? "ml-20" : "ml-64"
-        }`}
+        } flex flex-col min-h-screen`}
       >
         <Header title="Application Approval" />
 
         {/* Success/Error Messages */}
-        {(successMessage || actionError || fetchError) && (
+        {(successMessage || actionError || fetchError || statsError) && (
           <div className="mx-6 mt-4">
             {successMessage && (
               <div
@@ -128,51 +140,48 @@ const AdminApprovals = () => {
                 </button>
               </div>
             )}
-            {fetchError && (
+            {(fetchError || statsError) && (
               <div
                 className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
                 role="alert"
               >
-                <span className="block sm:inline">{fetchError}</span>
+                <span className="block sm:inline">{fetchError || statsError}</span>
               </div>
             )}
           </div>
         )}
 
-        <div className="bg-[#F4F2FE] p-6 rounded-lg mb-6">
+        {/* Main Content - Flex grow to push footer down */}
+        <div className="flex-1 bg-[#F4F2FE] p-6 rounded-lg mb-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <StatsCard
               title="Pending Applications"
               value={pendingCount}
-              change=""
-              direction="up"
+              change={statistics?.trends.pending_change ?? 0}
               icon={<MdPendingActions />}
             />
             <StatsCard
               title="Approved"
               value={approvedCount}
-              change=""
-              direction="up"
+              change={statistics?.trends.approved_change ?? 0}
               icon={<MdCheckCircle />}
             />
             <StatsCard
               title="Rejected"
               value={rejectedCount}
-              change=""
-              direction="down"
+              change={statistics?.trends.rejected_change ?? 0}
               icon={<MdCancel />}
             />
             <StatsCard
               title="Payment Received"
               value={paidCount}
-              change=""
-              direction="up"
+              change={statistics?.trends.paid_change ?? 0}
               icon={<MdAttachMoney />}
             />
           </div>
           <ApplicationsTable
             applicants={applications}
-            loading={loading}
+            loading={loading || statsLoading}
             onApprove={handleApprove}
             onReject={handleReject}
             onRetry={handleRetry}
@@ -180,7 +189,12 @@ const AdminApprovals = () => {
             actionLoading={actionLoadingId}
           />
         </div>
-        <Footer />
+        
+        {/* Sticky Footer */}
+        <div className="mt-auto">
+          <Footer />
+        </div>
+        <AuthDebug />
       </main>
     </div>
   );
