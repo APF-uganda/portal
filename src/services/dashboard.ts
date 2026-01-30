@@ -26,6 +26,18 @@ export interface DashboardStatistics {
 }
 
 /**
+ * Recent application item for dashboard display
+ */
+export interface RecentApplication {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  status: string;
+  submitted_at: string;
+}
+
+/**
  * Get authentication headers with JWT token
  */
 function getAuthHeaders(): Record<string, string> {
@@ -104,9 +116,9 @@ export async function fetchTotalMembers(): Promise<number> {
 /**
  * Fetch recent applications for dashboard display
  */
-export async function fetchRecentApplications(limit: number = 5) {
+export async function fetchRecentApplications(limit: number = 5): Promise<RecentApplication[]> {
   try {
-    const response = await axios.get(
+    const response = await axios.get<RecentApplication[]>(
       `${API_BASE_URL}/api/v1/recent-applications/`,
       {
         headers: getAuthHeaders(),
