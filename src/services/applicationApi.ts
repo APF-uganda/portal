@@ -88,7 +88,7 @@ export async function fetchApplications(): Promise<Application[]> {
     // the viewset is registered as "applications", so the list
     // endpoint is /api/v1/applications/applications/
     const response = await axios.get<ApplicationListItem[]>(
-      `${API_BASE_URL}/api/v1/applications/applications/`,
+      `${API_BASE_URL}/api/v1/applications/`,
       {
         headers,
         timeout: 30000,

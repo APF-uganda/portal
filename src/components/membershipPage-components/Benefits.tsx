@@ -73,6 +73,19 @@ function Benefits(): JSX.Element {
       <h2 className="text-center text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-10">
         Benefits of Joining APF Uganda
       </h2>
+       <p className="
+          text-sm
+          sm:text-base
+          text-black
+          leading-relaxed
+          sm:leading-[2.4]
+          max-w-[1050px]
+          mx-auto
+        ">
+          By joining APF Uganda, you will be part of a professional community
+          that connects accounting practitioners, supports their growth, and
+          represents their interests across Uganda.
+        </p>
 
       {/* CAROUSEL */}
       <div className="flex justify-center">

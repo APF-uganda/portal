@@ -1,4 +1,3 @@
-import React from 'react';
 import { Gem, SquareCheckBig } from 'lucide-react';
 
 const BenefitsCard = () => {

@@ -1,10 +1,5 @@
-import {
-  Users,
-  FileText,
-  TrendingUp,
-  
-} from "lucide-react";
 
+import { Users, FileText, TrendingUp } from "lucide-react";
 
 import Sidebar from "../../components/common/adminSideNav";
 import StatsGrid from "../../components/adminOverview-components/statGrid";
@@ -21,6 +16,7 @@ import { fetchTotalApplications,fetchTotalMembers } from "../../services/dashboa
 
 
 function AdminDashboard(){
+    const [collapsed, setCollapsed] = useState(false);
     const [totalApplications, setTotalApplications] = useState<number>(0);
     const [totalmembers, setTotalmembers] = useState<number>(0);
    
@@ -43,7 +39,6 @@ function AdminDashboard(){
   loadDashboardStats();
 }, []);
 
- 
 
   const stats: Stat[] = [
   { title: "Total Members", value: totalmembers.toString(), trend: "up",percentage: "+12.5%",period: "from last month", icon: Users, color: "purple", },
@@ -51,42 +46,40 @@ function AdminDashboard(){
   { title: "Revenue (This Month)", value: "UGX 45.2M", trend: "up",percentage: "+2%", period: "from last month", icon: TrendingUp,  color: "green", },
 
 ];
-    return(
+
+  return (
     <div className="flex min-h-screen">
-       <Sidebar />
+      {/* Sidebar */}
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-    {/* Right side */}
-      <div className="flex flex-1 flex-col">
+      {/* Content wrapper with margin to avoid overlap */}
+      <div className="flex flex-1 flex-col transition-all duration-300 ml-64">
         {/* Top Bar */}
-        <Header
-          title=" Dashboard Overview"
-          
-        />
+        <Header title="Dashboard Overview" />
 
-    <main className="flex-1 p-6">
+        <main className="flex-1 p-6">
+          {/* Welcome Banner */}
+          <WelcomeBanner name="Peter" />
 
-        {/* Welcome Banner */}
-       <WelcomeBanner name="Peter" />
+          {/* Stats */}
+          <StatsGrid stats={stats} />
 
-       {/* Stats */}
-        <StatsGrid stats={stats} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Recent Applications */}
+            <RecentApplications />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Applications */}
-        <RecentApplications />
+            {/* Recent Payments */}
+            <RecentPayments />
+          </div>
 
-        {/* Recent Payments */}
-        <RecentPayments />
+          {/* Quick Actions */}
+          <div className="mt-6 animate-slide-up rounded-xl border border-border bg-card p-4">
+            <QuickActions />
+          </div>
+        </main>
       </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6 animate-slide-up rounded-xl border border-border bg-card p-4">
-       <QuickActions />
-      </div>
-    </main>
     </div>
-    </div>
-    )
-
+  );
 }
-export default AdminDashboard
+
+export default AdminDashboard;

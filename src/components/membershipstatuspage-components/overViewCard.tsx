@@ -1,4 +1,3 @@
-import React from 'react';
 import { IdCard, User, CalendarCheck, CalendarX, BarChart3 } from 'lucide-react';
 
 const OverviewCard = () => {
