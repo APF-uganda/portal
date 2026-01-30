@@ -112,7 +112,7 @@ export interface ApplicationAPIResponse {
   email: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: string;
+  age_range: string;
   phoneNumber: string;
   address: string;
   nationalIdNumber: string;
@@ -178,7 +178,7 @@ export async function submitApplication(
     // Add personal information
     formData.append('first_name', applicationData.firstName);
     formData.append('last_name', applicationData.lastName);
-    formData.append('date_of_birth', applicationData.dateOfBirth);
+    formData.append('age_range', applicationData.age_range);
     formData.append('phone_number', applicationData.phoneNumber);
     formData.append('address', applicationData.address);
     formData.append('national_id_number', applicationData.nationalIdNumber);
@@ -435,7 +435,7 @@ function getAuthHeaders(): Record<string, string> {
 export async function approveApplication(applicationId: number): Promise<AdminActionResult> {
   try {
     const response = await axios.patch<AdminActionResponse>(
-      `${API_BASE_URL}/api/v1/applications/applications/${applicationId}/approve/`,
+      `${API_BASE_URL}/api/v1/applications/${applicationId}/approve/`,
       {},
       {
         headers: getAuthHeaders(),
@@ -461,7 +461,7 @@ export async function approveApplication(applicationId: number): Promise<AdminAc
 export async function rejectApplication(applicationId: number): Promise<AdminActionResult> {
   try {
     const response = await axios.patch<AdminActionResponse>(
-      `${API_BASE_URL}/api/v1/applications/applications/${applicationId}/reject/`,
+      `${API_BASE_URL}/api/v1/applications/${applicationId}/reject/`,
       {},
       {
         headers: getAuthHeaders(),
@@ -487,7 +487,7 @@ export async function rejectApplication(applicationId: number): Promise<AdminAct
 export async function retryApplication(applicationId: number): Promise<AdminActionResult> {
   try {
     const response = await axios.patch<AdminActionResponse>(
-      `${API_BASE_URL}/api/v1/applications/applications/${applicationId}/retry/`,
+      `${API_BASE_URL}/api/v1/applications/${applicationId}/retry/`,
       {},
       {
         headers: getAuthHeaders(),

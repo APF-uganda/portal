@@ -59,7 +59,7 @@ function ApplyForm() {
   const personalData: PersonalInfoData = personalInfo || {
     firstName: '',
     lastName: '',
-    dateOfBirth: '',
+    ageRange: '',
     phoneNumber: '',
     address: '',
     nationalIdNumber: '',
@@ -108,7 +108,7 @@ function ApplyForm() {
         // Personal information
         firstName: personalData.firstName,
         lastName: personalData.lastName,
-        dateOfBirth: personalData.dateOfBirth,
+        age_range: personalData.ageRange,
         phoneNumber: personalData.phoneNumber,
         address: personalData.address,
         nationalIdNumber: personalData.nationalIdNumber,
@@ -127,7 +127,10 @@ function ApplyForm() {
         paymentErrorMessage: paymentData.errorMessage,
         
         // Documents - extract File objects
-        documents: documentsData.map(doc => doc.file),
+        // documents: documentsData.map(doc => doc.file),
+         documents: documentsData
+           .map(doc => doc.file)
+           .filter((file): file is File => file instanceof File),
       };
 
       // Submit application

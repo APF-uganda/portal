@@ -65,3 +65,37 @@ export async function fetchTotalMembers(): Promise<number> {
 }
 
 
+export interface RecentApplication {
+  id: number;
+  first_name: string;
+  last_name: string;
+  status: "pending" | "approved" | "rejected";
+  submitted_at: string;
+}
+
+/**
+ * Fetch recent applications for dashboard
+ */
+export async function fetchRecentApplications(): Promise<RecentApplication[]> {
+  try {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await axios.get<RecentApplication[]>(
+      `${API_BASE_URL}/api/v1/applications/recent/`,
+      {
+        headers,
+        timeout: 30000,
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch recent applications", error);
+    return [];
+  }
+}
