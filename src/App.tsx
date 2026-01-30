@@ -81,9 +81,9 @@ const App: React.FC = () => {
           <Route
             path="/member/dashboard"
             element={
-              //<ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <MemberDashboard />
-             //</ProtectedRoute>
+             </ProtectedRoute>
             }
           />
           <Route
@@ -131,17 +131,17 @@ const App: React.FC = () => {
           <Route
             path="/admin"
             element={
-             // <ProtectedRoute role="admin">
+              <ProtectedRoute role="admin">
                 <AdminDashboard />
-             //</ProtectedRoute>
+             </ProtectedRoute>
             }
           />
           <Route
             path="/admin/dashboard"
             element={
-              // <ProtectedRoute role="admin">
+              <ProtectedRoute role="admin">
                 <AdminDashboard />
-              // </ProtectedRoute>
+              </ProtectedRoute>
               
             }
           />
