@@ -73,17 +73,17 @@ const App: React.FC = () => {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute role="member">
+              
                 <MemberDashboard />
-              </ProtectedRoute>
+              
             }
           />
           <Route
             path="/member/dashboard"
             element={
-              <ProtectedRoute role="member">
+              //<ProtectedRoute role="member">
                 <MemberDashboard />
-              </ProtectedRoute>
+             //</ProtectedRoute>
             }
           />
           <Route

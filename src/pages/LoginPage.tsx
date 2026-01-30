@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
+
 import apfLogo from '../assets/whitelogo.png'
 import loginImage from '../assets/images/Login-image/login.jpg'
 
@@ -25,7 +26,7 @@ function LoginPage() {
       const response = await fetch(`${API_V1_BASE_URL}/auth/login/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           email,
@@ -40,11 +41,11 @@ function LoginPage() {
         sessionStorage.setItem('otp_session_id', data.session_id)
         sessionStorage.setItem('remember_me', rememberMe.toString())
         sessionStorage.setItem('login_email', email)
-        
+
         // Send OTP email via EmailJS (frontend)
         if (data.otp_code) {
           try {
-            const { sendOTPEmail } = await import('../services/emailService')
+            const { sendOTPEmail } = await import('../services/emailService')  
             await sendOTPEmail({
               to_email: data.email,
               otp_code: data.otp_code,
@@ -52,11 +53,11 @@ function LoginPage() {
             })
             console.log('✅ OTP email sent via EmailJS')
           } catch (emailError) {
-            console.error('⚠️ Failed to send OTP email:', emailError)
+            console.error('⚠ Failed to send OTP email:', emailError)
             // Continue anyway - user can still see OTP in console
           }
         }
-        
+
         // Navigate to OTP page
         navigate('/otp')
       } else {
@@ -71,16 +72,14 @@ function LoginPage() {
     }
   }
 
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-cover bg-center
       bg-[linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6))]"
       style={{ backgroundImage: `url(${loginImage})` }}
       >
 
-      <div className="w-[90%] max-w-5xl grid grid-cols-1 md:grid-cols-2
-        bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl">
-
+      <div className="w-[90%] max-w-5xl grid grid-cols-1 md:grid-cols-2        
+        bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl">  
         {/* LEFT SIDE */}
         <div className="flex flex-col justify-center px-10 py-16 text-white text-center md:text-left">
           <Link to="/" className="w-56 mx-auto md:mx-0 cursor-pointer">
@@ -185,7 +184,7 @@ function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full rounded-xl bg-purple-600 py-3 text-white font-semibold
-                hover:bg-purple-700 transition
+                hover:bg-purple-700 transition-
                 disabled:bg-purple-400 disabled:cursor-not-allowed
                 flex items-center justify-center gap-2"
             >
@@ -204,7 +203,7 @@ function LoginPage() {
 
             {/* Sign up */}
             <div className="text-center text-sm text-gray-600 mt-6">
-              Don’t have an account?{' '}
+              Don't have an account?{' '}
               <Link
                 to="/register"
                 className="text-purple-600 font-semibold hover:underline"
@@ -215,7 +214,6 @@ function LoginPage() {
 
           </form>
         </div>
-
       </div>
     </div>
   )
