@@ -76,7 +76,7 @@ export default function MembershipProcess() {
                   {/* LABEL */}
                   <p className="
                         mt-4
-                        text-sm font-medium text-gray-800
+                        text-[18px] font-medium text-gray-800
                         w-[180px]
                         mx-auto">
                     {step.title}
