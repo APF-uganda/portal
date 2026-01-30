@@ -10,7 +10,7 @@ import RecentPayments from "../../components/adminOverview-components/recentPaym
 import QuickActions from "../../components/adminOverview-components/quickActions";
 import Header from "../../components/layout/Header";
 import WelcomeBanner from "../../components/adminOverview-components/banner";
-import Footer from "../../components/common/Footer";
+import Footer from "../../components/layout/Footer";
 import { fetchTotalApplications, fetchTotalMembers } from "../../services/dashboard";
 import { requireAdmin, getCurrentUser } from "../../utils/auth";
 
