@@ -22,7 +22,7 @@ function FeaturedEvents() {
   const [cardsVisible, setCardsVisible] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const autoScrollTimerRef = useRef<number | null>(null)
+  const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
