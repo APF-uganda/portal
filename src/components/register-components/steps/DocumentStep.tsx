@@ -16,6 +16,14 @@ const DOCUMENT_FIELDS = {
   PASSPORT_PHOTO: 'passport_photo',
 } as const;
 
+const REQUIRED_DOCUMENT_IDS = [
+  DOCUMENT_FIELDS.NATIONAL_ID_FRONT,
+  DOCUMENT_FIELDS.NATIONAL_ID_BACK,
+  DOCUMENT_FIELDS.PRACTISING_CERTIFICATE,
+  DOCUMENT_FIELDS.PASSPORT_PHOTO,
+] as const;
+
+
 function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsStepProps) {
   // Helper to find document by field ID
   const getDocumentByField = (fieldId: string): DocumentData | undefined => {
@@ -23,16 +31,30 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
   };
 
   // Helper to check if at least one document is uploaded
-  const hasAtLeastOneDocument = (): boolean => {
-    return documents.some(doc => doc.file && doc.uploadStatus === 'uploaded');
-  };
+  // const hasAtLeastOneDocument = (): boolean => {
+  //   return documents.some(doc => doc.file && doc.uploadStatus === 'uploaded');
+  // };
+
+  const hasAllRequiredDocuments = (): boolean => {
+  return REQUIRED_DOCUMENT_IDS.every((id) =>
+    documents.some(
+      (doc) =>
+        doc.id === id &&
+        doc.uploadStatus === 'uploaded' &&
+        doc.file instanceof File
+    )
+  );
+};
+
 
   // Update validation state whenever documents change
   useEffect(() => {
-    const isValid = hasAtLeastOneDocument();
+    const isValid = hasAllRequiredDocuments();
     onValidationChange(isValid);
   }, [documents, onValidationChange]);
 
+ 
+  
   // Handle file selection for a specific field
   const handleFileSelected = (fieldId: string, file: File) => {
     const newDocument: DocumentData = {
@@ -59,6 +81,7 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
 
     onChange(updatedDocuments);
   };
+
 
   // Handle file removal for a specific field
   const handleFileRemoved = (fieldId: string) => {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import connectingImg from '../../assets/images/landingPage-image/connect.jpg'
+import connectingImg from '../../assets/images/landingPage-image/shake.jpg'
 
 function ConnectingProfessionals() {
   const { elementRef, isVisible } = useScrollAnimation()

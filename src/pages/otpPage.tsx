@@ -92,8 +92,8 @@ try {
 
       if (response.ok && data.success) {
         // Store tokens
-        localStorage.setItem('access_token', data.access_token)
-        localStorage.setItem('refresh_token', data.refresh_token)
+        localStorage.setItem('access_token', data.access)
+        localStorage.setItem('refresh_token', data.refresh)
         localStorage.setItem('user', JSON.stringify(data.user))
         
         // Clear session storage

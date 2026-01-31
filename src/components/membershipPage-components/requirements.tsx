@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import requirementsImg from "../../assets/images/membershipPage-images/application.jpg";
+import requirementsImg from "../../assets/images/membershipPage-images/account.jpg";
 
 const requirements = [
   {

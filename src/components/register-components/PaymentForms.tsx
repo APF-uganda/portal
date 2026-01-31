@@ -55,6 +55,10 @@ export function PaymentForms({
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
+const MTN_PREFIXES = ['25677', '25678', '25676'];
+const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
+
+
   // Clear payment data when method changes
   useEffect(() => {
     if (selectedMethod && prevMethodRef.current !== null && selectedMethod !== prevMethodRef.current) {
@@ -219,6 +223,20 @@ export function PaymentForms({
         error={getFieldError('phoneNumber')}
         required
       />
+      {selectedMethod === 'mtn' &&
+          AIRTEL_PREFIXES.some(p => phoneNumber.startsWith(p)) && (
+           <p className="text-xs text-red-700 mt-1">
+             Please enter an MTN number
+          </p>
+         )}
+
+     {selectedMethod === 'airtel' &&
+         MTN_PREFIXES.some(p => phoneNumber.startsWith(p)) && (
+         <p className="text-xs text-red-700 mt-1">
+             Please enter an Airtel number
+        </p>
+     )}
+
 
       <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded">
         <p className="font-medium mb-1">Instructions:</p>

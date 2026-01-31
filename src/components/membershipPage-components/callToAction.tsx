@@ -20,7 +20,7 @@ export default function CallToAction() {
         <p className="
           text-sm
           sm:text-sm
-          md:text-sm
+          md:text-xl
           text-[#260B41]
           max-w-xl
           sm:max-w-2xl

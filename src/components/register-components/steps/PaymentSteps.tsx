@@ -128,12 +128,12 @@ function PaymentsStep({ data, onChange, onValidationChange }: PaymentStepsProps)
             Application Fee
           </h3>
 
-          <p className="text-xl font-semibold text-gray-900 mt-2">
+          <p className="text-xl font-semibold text-[#5F1C9F] mt-2">
             UGX 50,000
           </p>
 
           <p className="text-sm text-gray-600 mt-1">
-            This is a one-time application processing fee. Payment does not
+            This is a one-time non-refundable application fee. Payment does not
             guarantee membership approval.
           </p>
 

@@ -4,6 +4,7 @@ import {
   CreditCard,
   UserCheck,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const steps = [
   { id: 1, title: "Create Account", icon: User },
@@ -24,7 +25,7 @@ export default function MembershipProcess() {
         {/* STEPPER */}
         <div className="relative">
           {/* DESKTOP CONNECTOR LINE */}
-          <div className="hidden md:block absolute top-6 left-[12.5%] right-[12.5%] h-[2px] bg-purple-600" />
+          <div className="hidden md:block absolute top-6 left-[12.5%] right-[12.5%] h-[3px] bg-purple-600" />
 
           <div className="flex flex-col md:flex-row md:justify-between gap-12 md:gap-0">
             {steps.map((step, index) => {
@@ -37,12 +38,12 @@ export default function MembershipProcess() {
                   className="relative flex items-start md:flex-col md:items-center text-left md:text-center md:w-1/4 px-4 md:px-0"
                 >
                   {/* ICON + CONNECTOR */}
-                  <div className="relative flex flex-col items-center">
+                  <Link to="/register" className="relative flex flex-col items-center">
                     {/* STEP NUMBER */}
                     <span
                       className="
                         absolute -top-2 -left-2
-                        w-5 h-5 rounded-full
+                        w-8 h-8 rounded-full
                         bg-white border border-purple-600
                         text-xs font-semibold text-purple-700
                         flex items-center justify-center
@@ -53,8 +54,8 @@ export default function MembershipProcess() {
                     </span>
 
                     {/* ICON */}
-                    <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white z-10">
-                      <Icon className="w-5 h-5" />
+                    <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-white z-10">
+                      <Icon className="w-7 h-7" />
                     </div>
 
                     {/* MOBILE CONNECTOR LINE */}
@@ -70,12 +71,12 @@ export default function MembershipProcess() {
                           bg-purple-300
                         " />
                     )}
-                  </div>
+                  </Link>
 
                   {/* LABEL */}
                   <p className="
                         mt-4
-                        text-sm font-medium text-gray-800
+                        text-[18px] font-medium text-gray-800
                         w-[180px]
                         mx-auto">
                     {step.title}

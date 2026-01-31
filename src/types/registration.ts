@@ -19,7 +19,7 @@ export interface AccountDetailsData {
 export interface PersonalInfoData {
   firstName: string;
   lastName: string;
-  dateOfBirth: string; // ISO date format (YYYY-MM-DD)
+  ageRange: string; // ISO date format (YYYY-MM-DD)
   phoneNumber: string;
   address: string;
   nationalIdNumber: string; // NIN
@@ -78,7 +78,7 @@ export interface ApplicationSubmissionData {
   password: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: string;
+  age_range: string;
   phoneNumber: string;
   address: string;
   nationalIdNumber: string; // NIN
@@ -136,7 +136,7 @@ export interface APISuccessResponse {
   email: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: string;
+  age_range: string;
   phoneNumber: string;
   address: string;
   paymentMethod: string;

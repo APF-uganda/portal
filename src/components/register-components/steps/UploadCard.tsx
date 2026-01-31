@@ -27,6 +27,16 @@ function CloudUpload({
 
   const handleFile = (file?: File) => {
     if (!file) return;
+     if (file.type.startsWith("video/")) {
+    const errorMsg = "Video files are not allowed. Please upload an image or PDF.";
+    setError(errorMsg);
+    setFile(null);
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+    return;
+  }
 
     if (file.size > maxSizeMB * 1024 * 1024) {
       const errorMsg = `File must be less than ${maxSizeMB}MB`;

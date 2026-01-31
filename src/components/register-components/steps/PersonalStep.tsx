@@ -3,9 +3,17 @@ import Input from "../Input";
 import { PersonalInfoData } from '../../../types/registration';
 import {
   validatePhoneNumber,
-  validateAge,
+  
 } from '../../../lib/validators';
 
+const AGE_RANGES = [
+  '18 – 24',
+  '25 – 34',
+  '35 – 44',
+  '45 – 54',
+  '55 – 64',
+  '65+',
+];
 interface PersonalInfoStepProps {
   data: PersonalInfoData;
   onChange: (data: PersonalInfoData) => void;
@@ -31,14 +39,9 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
     }
 
     // Validate date of birth (required and age validation)
-    if (!data.dateOfBirth || data.dateOfBirth.trim() === '') {
-      newErrors.dateOfBirth = 'Date of birth is required';
-    } else {
-      const ageResult = validateAge(data.dateOfBirth);
-      if (!ageResult.isValid) {
-        newErrors.dateOfBirth = ageResult.errorMessage || 'Invalid date of birth';
-      }
-    }
+    if (!data.ageRange || data.ageRange.trim() === '') {
+      newErrors.ageRange = 'Age range is required';
+    } 
 
     // Validate phone number (required and format validation)
     if (!data.phoneNumber || data.phoneNumber.trim() === '') {
@@ -73,7 +76,7 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
     const isValid = Object.keys(newErrors).length === 0 &&
                     data.firstName.trim() !== '' &&
                     data.lastName.trim() !== '' &&
-                    data.dateOfBirth.trim() !== '' &&
+                    data.ageRange.trim() !== '' &&
                     data.phoneNumber.trim() !== '' &&
                     data.address.trim() !== '' &&
                     data.nationalIdNumber.trim() !== '' &&
@@ -131,16 +134,31 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
           required
         />
 
-        <Input
-          label="Date of Birth"
-          type="date"
-          name="dateOfBirth"
-          value={data.dateOfBirth}
-          onChange={(e) => handleFieldChange('dateOfBirth', e.target.value)}
-          onBlur={() => handleBlur('dateOfBirth')}
-          error={getFieldError('dateOfBirth')}
-          required
-        />
+       <div className=''>
+       <label className="block text-sm font-medium text-gray-700 mb-1">
+         Age Range <span className="text-red-500">*</span>
+       </label>
+
+        <select
+        value={data.ageRange}
+        onChange={(e) => handleFieldChange('ageRange', e.target.value)}
+        onBlur={() => handleBlur('ageRange')}
+        className=" w-full h-10 px-3 rounded-md border border-gray-300 text-sm bg-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 ">
+        <option value="">Select age range</option>
+          {AGE_RANGES.map((range) => (
+          <option key={range} value={range}>
+             {range}
+          </option>
+        ))}
+        </select>
+
+       {getFieldError('ageRange') && (
+          <p className="text-xs text-red-500 mt-1">
+          {getFieldError('ageRange')}
+         </p>
+       )}
+      </div>
+
 
         <Input
           label="Phone Number"
@@ -203,7 +221,7 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
       </div>
 
       <p className="text-xs text-gray-500 mt-2">
-        Phone number must be in format 256XXXXXXXXX. You must be at least 18 years old.
+        Phone number must be in format 256XXXXXXXXX.
       </p>
     </>
   );
