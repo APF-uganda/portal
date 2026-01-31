@@ -53,28 +53,25 @@ const Timeline: React.FC = () => {
             <div className="max-w-6xl mx-auto">
                 {/* Desktop View */}
                 <div className="hidden md:block relative">
-                    
+                    {/* Wavy Timeline Line using SVG */}
+                    {/* Wavy Timeline Line using SVG */}
                     <div className="absolute top-16 left-0 right-0 h-20 overflow-visible">
-                            <svg className="w-full h-20" preserveAspectRatio="none" viewBox="0 0 1200 80">
-                                <defs>
-                                    
-                                    <linearGradient id="multiStepGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stopColor="#000000" />   
-                                        <stop offset="33%" stopColor="#6B7280" />   
-                                        <stop offset="66%" stopColor="#DFBAE3" />   
-                                        <stop offset="100%" stopColor="#9E4FDE" />  
-                                    </linearGradient>
-                                </defs>
-                                
-                                <path
-                                    d="M 0 40 Q 300 10, 600 40 T 1200 40"
-                                    stroke="url(#multiStepGradient)"
-                                    strokeWidth="14"
-                                    fill="transparent"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                        </div>
+                        <svg className="w-full h-20" preserveAspectRatio="none" viewBox="0 0 1200 80">
+                            <defs>
+                                <linearGradient id="timelineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="black" />
+                                    <stop offset="50%" stopColor="#a78bfa" /> {/* light purple */}
+                                    <stop offset="100%" stopColor="#7e22ce" /> {/* deep purple */}
+                                </linearGradient>
+                            </defs>
+                            <path
+                                d="M 0 40 Q 300 10, 600 40 T 1200 40"
+                                stroke="url(#timelineGradient)"
+                                strokeWidth="8"   
+                                fill="none"
+                            />
+                        </svg>
+                    </div>
 
                     {/* Timeline Events */}
                     <div className="grid grid-cols-3 gap-8">
@@ -83,11 +80,9 @@ const Timeline: React.FC = () => {
                                 {/* Year */}
                                 <div className="text-center mb-6">
                                     <h3
-                                        className={`text-3xl font-bold text-purple-600 ${
-                                            event.year === '2005' ? 'translate-y-9' : ''
-                                        } ${event.year === '2010' ? 'translate-y-7' : ''} ${
-                                            event.year === '2015' ? 'translate-y-7' : ''
-                                        }`}
+                                        className={`text-3xl font-bold text-purple-600 ${event.year === '2005' ? 'translate-y-9' : ''
+                                            } ${event.year === '2010' ? 'translate-y-7' : ''} ${event.year === '2015' ? 'translate-y-6' : ''
+                                            }`}
                                     >
                                         {event.year}
                                     </h3>
@@ -98,11 +93,9 @@ const Timeline: React.FC = () => {
                                     <div
                                         className={`${getCircleClasses(event.color)} ${getCircleSize(
                                             event.color
-                                        )} rounded-full ${
-                                            event.year === '2005' ? 'translate-y-10' : ''
-                                        } ${event.year === '2010' ? 'translate-y-[8px]' : ''} ${
-                                            event.year === '2015' ? 'translate-y-4' : ''
-                                        }`}
+                                        )} rounded-full ${event.year === '2005' ? 'translate-y-9' : ''
+                                            } ${event.year === '2010' ? 'translate-y-[8px]' : ''} ${event.year === '2015' ? 'translate-y-6' : ''
+                                            }`}
                                     ></div>
                                 </div>
 
