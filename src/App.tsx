@@ -21,6 +21,8 @@ import NotificationsPage from "./pages/member/NotificationsPage";
 import MembershipStatus from "./pages/member/membershipStatus";
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
+import ReportsPage from "./pages/admin/reportsAnalytics";
+
 /* Dashboards */
 //import MembershipStatusPage from './pages/member/MembershipStatusPage';
 import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
@@ -102,6 +104,27 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+
+
+<Route
+            path="/payments"
+            element={
+              <ProtectedRoute role="member">
+                <PaymentsPage />
+              </ProtectedRoute>
+            }
+          />
+
+<Route
+            path="/payments"
+            element={
+              <ProtectedRoute role="member">
+                <PaymentsPage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/forum"
             element={
@@ -126,6 +149,7 @@ const App: React.FC = () => {
           <Route path="/payment-history" element={<PaymentHistoryPage />} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
 
           {/* Admin routes (protected) */}
           <Route
@@ -143,6 +167,7 @@ const App: React.FC = () => {
                 <AdminDashboard />
               </ProtectedRoute>
               
+              
             }
           />
           <Route
@@ -154,6 +179,18 @@ const App: React.FC = () => {
               
             }
           />
+
+    <Route
+                path="/admin/reports"
+                element={
+                    <ProtectedRoute role="admin">
+                    <ReportsPage />
+                    </ProtectedRoute>
+                  
+                }
+              />
+
+
         </Routes>
       </div>
     </Router>
