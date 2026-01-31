@@ -22,6 +22,7 @@ import MembershipStatus from "./pages/member/membershipStatus";
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
 import ReportsPage from "./pages/admin/reportsAnalytics";
+import ProfilePage from "./pages/admin/profilePage";
 
 /* Dashboards */
 //import MembershipStatusPage from './pages/member/MembershipStatusPage';
@@ -150,6 +151,7 @@ const App: React.FC = () => {
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/profilepage" element={<ProfilePage />} />
 
           {/* Admin routes (protected) */}
           <Route
@@ -180,11 +182,24 @@ const App: React.FC = () => {
             }
           />
 
-    <Route
-                path="/admin/reports"
+      <Route
+                  path="/admin/reports"
+                  element={
+                      <ProtectedRoute role="admin">
+                      <ReportsPage />
+                      </ProtectedRoute>
+                    
+                  }
+                />
+
+
+
+
+<Route
+                path="/admin/profilePage"
                 element={
                     <ProtectedRoute role="admin">
-                    <ReportsPage />
+                    <ProfilePage />
                     </ProtectedRoute>
                   
                 }
