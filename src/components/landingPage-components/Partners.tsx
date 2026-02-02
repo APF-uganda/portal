@@ -6,7 +6,7 @@ function Partners() {
   // Replace partner names with objects containing logo paths
   const partners = [
     { name: 'ICPAU', logo: '/ICPAU.jfif' },
-    { name: 'ACCA', logo: '/acca.png' },
+    { name: 'ACCA', logo: '/ACCA.jfif' },
     { name: 'UBA', logo: '/uba.png' },
 
   ]

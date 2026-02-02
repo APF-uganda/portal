@@ -32,7 +32,11 @@ function EventCard({
 
       {/* Content */}
       <div className="p-6 flex flex-col flex-grow">
-        <h6 className="text-secondary text-[1.1rem] mb-2 leading-[1.3] font-semibold">
+        {/* Title with hover color change */}
+        <h6
+          className="text-secondary text-[1.1rem] mb-2 leading-[1.3] font-semibold 
+                     transition-colors duration-300 group-hover:text-purple-600"
+        >
           {title}
         </h6>
 
