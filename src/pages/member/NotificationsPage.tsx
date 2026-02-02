@@ -4,7 +4,6 @@ import {
   Filter,
   CheckCheck,
   Search,
-  Crown,
   CreditCard,
   Server,
   Rocket,
@@ -31,15 +30,6 @@ interface NotificationItem {
 const NotificationsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all')
   const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: '1',
-      title: 'New Membership Tier Available!',
-      description: 'Upgrade to our Premium tier and unlock exclusive features with a single click.',
-      time: '10:30 AM',
-      type: 'membership',
-      isUnread: true,
-      icon: Crown,
-    },
     {
       id: '2',
       title: 'Payment Reminder: Invoice #2023001',
@@ -357,29 +347,6 @@ const NotificationsPage: React.FC = () => {
                     <span className="font-semibold">2</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Upgrade Card */}
-            <Card className="bg-gradient-to-br from-purple-100 to-gray-100 border border-purple-200 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-purple-700">Upgrade to Premium</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4 leading-relaxed">
-                  Get access to advanced analytics, priority support, and exclusive financial insights.
-                </p>
-                
-                <div className="bg-white/70 p-4 rounded-lg mb-4">
-                  <div className="text-sm text-gray-600 mb-1">Limited Time Offer</div>
-                  <div className="text-xl font-bold text-purple-700">HOLIDAY20</div>
-                  <div className="text-sm text-gray-600">20% off all annual plans</div>
-                </div>
-                
-                <Button className="w-full bg-purple-600 hover:bg-purple-700 flex items-center gap-2">
-                  <Crown className="w-4 h-4" />
-                  Upgrade Now
-                </Button>
               </CardContent>
             </Card>
           </div>

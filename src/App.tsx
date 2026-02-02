@@ -17,13 +17,23 @@ import MemberDashboard from "./pages/member/memberDashboard";
 import DocumentsPage from "./pages/member/DocumentsPage";
 import PaymentsPage from "./pages/member/PaymentsPage";
 import ForumPage from "./pages/member/ForumPage";
+import CreatePostPage from "./pages/member/CreatePostPage";
+import MyPostsPage from "./pages/member/MyPostsPage";
+import PostDetailPage from "./pages/member/PostDetailPage";
 import NotificationsPage from "./pages/member/NotificationsPage";
 import MembershipStatus from "./pages/member/membershipStatus";
+import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
+import ProfilePage from "./pages/member/ProfilePage";
+
+
+
+
+
+/* Admin pages */
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
-/* Dashboards */
-//import MembershipStatusPage from './pages/member/MembershipStatusPage';
-import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
+import ReportsPage from "./pages/admin/reportsAnalytics";
+import CmsContentPage from "./pages/admin/cmsPage";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -63,27 +73,28 @@ const App: React.FC = () => {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/cmspage" element={<CmsContentPage />} />
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/otp" element={<OtpPage />} />
 
-          {/* Member dashboard (protected) */}
+          {/* Member routes (protected) */}
           <Route
             path="/dashboard"
             element={
-              
+              <ProtectedRoute role="member">
                 <MemberDashboard />
-              
+              </ProtectedRoute>
             }
           />
           <Route
-            path="/member/dashboard"
+            path="/membership-status"
             element={
               <ProtectedRoute role="member">
-                <MemberDashboard />
-             </ProtectedRoute>
+                <MembershipStatus />
+              </ProtectedRoute>
             }
           />
           <Route
@@ -103,11 +114,43 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/payment-history"
+            element={
+              <ProtectedRoute role="member">
+                <PaymentHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/forum"
             element={
               //<ProtectedRoute role="member">
                 <ForumPage />
               //</ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forum/create-post"
+            element={
+              <ProtectedRoute role="member">
+                <CreatePostPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forum/my-posts"
+            element={
+              <ProtectedRoute role="member">
+                <MyPostsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forum/post/:id"
+            element={
+              <ProtectedRoute role="member">
+                <PostDetailPage />
+              </ProtectedRoute>
             }
           />
           <Route
@@ -118,14 +161,14 @@ const App: React.FC = () => {
              // </ProtectedRoute>
             }
           />
-          {/* Member dashboard */}
-          <Route path="/dashboard" element={<MemberDashboard />} />
-          <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/membership-status" element={<MembershipStatus />} />
-          <Route path="/payments" element={<PaymentsPage />} />
-          <Route path="/payment-history" element={<PaymentHistoryPage />} />
-          <Route path="/forum" element={<ForumPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute role="member">
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin routes (protected) */}
           <Route
@@ -133,7 +176,7 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute role="admin">
                 <AdminDashboard />
-             </ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
@@ -142,18 +185,37 @@ const App: React.FC = () => {
               <ProtectedRoute role="admin">
                 <AdminDashboard />
               </ProtectedRoute>
-              
             }
           />
           <Route
             path="/admin/approval"
             element={
-                <ProtectedRoute role="admin">
+              <ProtectedRoute role="admin">
                 <AdminApproval />
-                </ProtectedRoute>
-              
+              </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute role="admin">
+                <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+
+
+  <Route
+              path="/admin/cmsPage"
+              element={
+                <ProtectedRoute role="admin">
+                  <CmsContentPage />
+                </ProtectedRoute>
+              }
+            />
+
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>

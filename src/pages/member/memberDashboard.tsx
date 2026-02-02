@@ -1,4 +1,5 @@
 import React from "react"
+import { Link } from "react-router-dom"
 import {
   User,
   FileText,
@@ -23,15 +24,30 @@ import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
+import { useProfile } from "../../hooks/useProfile"
 
 const MemberDashboard: React.FC = () => {
+  const { profile, loading } = useProfile();
+  
+  // Get display name from profile
+  const displayName = profile?.full_name || profile?.first_name || profile?.email?.split('@')[0] || 'Member';
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
         {/* Welcome Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, Joan N!</h1>
-          <p className="text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p>
+          {loading ? (
+            <>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-64 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-96"></div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {displayName}!</h1>
+              <p className="text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p>
+            </>
+          )}
         </div>
 
         {/* Top Row - 3 Cards */}
@@ -39,10 +55,12 @@ const MemberDashboard: React.FC = () => {
           {/* Membership Status Card */}
           <Card className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <User className="h-5 w-5 text-purple-600" />
-                Membership Status
-              </CardTitle>
+              <Link to="/membership-status">
+                <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2 hover:text-purple-600 transition-colors cursor-pointer">
+                  <User className="h-5 w-5 text-purple-600" />
+                  Membership Status
+                </CardTitle>
+              </Link>
               <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200">Active</Badge>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -59,18 +77,24 @@ const MemberDashboard: React.FC = () => {
                 <span className="font-semibold text-gray-900">March 15, 2020</span>
               </div>
               <div className="space-y-2 pt-4">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Eye className="w-4 h-4 mr-2" />
-                  View Profile
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Documents
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Renew Subscription
-                </Button>
+                <Link to="/profile">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Profile
+                  </Button>
+                </Link>
+                <Link to="/documents">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Documents
+                  </Button>
+                </Link>
+                <Link to="/payments">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Renew Subscription
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

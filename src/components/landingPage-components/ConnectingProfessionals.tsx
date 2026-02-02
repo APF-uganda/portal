@@ -43,7 +43,7 @@ function ConnectingProfessionals() {
           {Object.entries(sections).map(([key, section]) => (
             <div 
               key={key}
-              className="border-b border-[#ddd] py-4 sm:py-6 transition-all duration-300 hover:pl-2.5 hover:border-l-[3px] hover:border-l-primary"
+              className="border-b border-[#ddd] py-4 sm:py-6 transition-all duration-300 hover:pl-2.5 hover:border-l-[1px] hover:border-l-primary"
             >
               <h6 
                 onClick={() => toggleSection(key)}

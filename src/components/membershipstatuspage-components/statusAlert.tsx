@@ -1,4 +1,5 @@
 import { AlertTriangle, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const StatusAlert = () => {
   return (
@@ -38,9 +39,11 @@ const StatusAlert = () => {
 
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-            <button className="bg-[#7338A0] hover:bg-[#4C1D95] text-white px-7 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm text-center">
-              Renew Now
-            </button>
+            <Link to="/payments">
+              <button className="bg-[#7338A0] hover:bg-[#4C1D95] text-white px-7 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm text-center w-full">
+                Renew Now
+              </button>
+            </Link>
             <button className="bg-[#F5F3FF] hover:bg-[#EDE9FE] text-black px-7 py-2.5 rounded-xl font-bold text-sm transition-all text-center border border-transparent">
               Remind Later
             </button>

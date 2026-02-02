@@ -26,6 +26,39 @@ export interface DashboardStatistics {
 }
 
 /**
+ * Recent application item for dashboard display
+ */
+export interface RecentApplication {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  status: string;
+  submitted_at: string;
+}
+
+/**
+ * Dashboard stats for UI display
+ */
+export interface DashboardStats {
+  totalMembers: {
+    value: number;
+    change: number;
+    trend: 'up' | 'down';
+  };
+  totalApplications: {
+    value: number;
+    change: number;
+    trend: 'up' | 'down';
+  };
+  revenue: {
+    value: string;
+    change: number;
+    trend: 'up' | 'down';
+  };
+}
+
+/**
  * Get authentication headers with JWT token
  */
 function getAuthHeaders(): Record<string, string> {
@@ -104,9 +137,9 @@ export async function fetchTotalMembers(): Promise<number> {
 /**
  * Fetch recent applications for dashboard display
  */
-export async function fetchRecentApplications(limit: number = 5) {
+export async function fetchRecentApplications(limit: number = 5): Promise<RecentApplication[]> {
   try {
-    const response = await axios.get(
+    const response = await axios.get<RecentApplication[]>(
       `${API_BASE_URL}/api/v1/recent-applications/`,
       {
         headers: getAuthHeaders(),
@@ -119,5 +152,57 @@ export async function fetchRecentApplications(limit: number = 5) {
   } catch (error) {
     console.error('Failed to fetch recent applications:', error);
     return [];
+  }
+}
+
+/**
+ * Fetch dashboard stats with trends for UI display
+ */
+export async function fetchDashboardStats(): Promise<DashboardStats> {
+  try {
+    const stats = await fetchDashboardStatistics();
+    
+    // Calculate revenue based on approved applications (assuming 150,000 UGX per member)
+    const revenuePerMember = 150000;
+    const totalRevenue = stats.approved_applications * revenuePerMember;
+    const revenueChange = stats.trends.approved_change; // Use approved applications trend for revenue
+    
+    return {
+      totalMembers: {
+        value: stats.approved_applications,
+        change: Math.abs(stats.trends.approved_change),
+        trend: stats.trends.approved_change >= 0 ? 'up' : 'down'
+      },
+      totalApplications: {
+        value: stats.total_applications,
+        change: Math.abs(stats.trends.total_change),
+        trend: stats.trends.total_change >= 0 ? 'up' : 'down'
+      },
+      revenue: {
+        value: `UGX ${(totalRevenue / 1000000).toFixed(1)}M`,
+        change: Math.abs(revenueChange),
+        trend: revenueChange >= 0 ? 'up' : 'down'
+      }
+    };
+  } catch (error) {
+    console.error('Failed to fetch dashboard stats:', error);
+    // Return default values
+    return {
+      totalMembers: {
+        value: 0,
+        change: 0,
+        trend: 'up'
+      },
+      totalApplications: {
+        value: 0,
+        change: 0,
+        trend: 'up'
+      },
+      revenue: {
+        value: 'UGX 0.0M',
+        change: 0,
+        trend: 'up'
+      }
+    };
   }
 }

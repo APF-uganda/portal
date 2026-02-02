@@ -50,7 +50,7 @@ const Timeline: React.FC = () => {
 
     return (
         <div className="w-full bg-white py-12 px-4 md:py-16 md:px-8">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 {/* Desktop View */}
                 <div className="hidden md:block relative">
                     {/* Wavy Timeline Line using SVG */}
@@ -111,8 +111,8 @@ const Timeline: React.FC = () => {
 
                 {/* Mobile View */}
                 <div className="md:hidden relative ml-4">
-                    {/* Straight vertical line through balls */}
-                    <div className="absolute left-16 top-0 bottom-0 w-0.5 translate-x-[7px] bg-gray-300"></div>
+                   
+                    <div className="absolute left-16 top-0 bottom-0 w-1 translate-x-[7px] bg-gray-300"></div>
 
                     {events.map((event, index) => (
                         <div key={index} className="relative mb-12 flex items-center">
