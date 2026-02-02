@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import {
-  Search,
   Bell,
   ChevronDown,
 } from "lucide-react"
@@ -9,10 +8,12 @@ import MemberSideNav from "../common/memberSideNav"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
+  headerContent?: React.ReactNode
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
+  headerContent,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -29,17 +30,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       <div className={`flex flex-col min-h-screen transition-all duration-300 ${
         isCollapsed ? 'ml-16' : 'ml-64'
       }`}>
-        {/* Header - Match logo section height */}
-        <header className="bg-white border-b px-6 h-20 flex items-center shadow-sm">
+        {/* Header - Smaller height */}
+        <header className="bg-white border-b px-6 h-16 flex items-center shadow-sm">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4">
-              <Search className="w-5 h-5 text-gray-400" />
+              {headerContent}
             </div>
 
             <div className="flex items-center space-x-4">
               <Bell className="w-5 h-5 text-gray-400" />
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-[#60308C] rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">
                     JN
                   </span>
@@ -59,7 +60,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Footer */}
         <footer className="border-t border-gray-200 p-4 bg-white">
           <div className="text-center text-sm text-gray-500">
-            © 2026 APF. All rights reserved. | Privacy Policy | Terms of Service
+            © 2026 APF Uganda. All rights reserved. | Privacy Policy | Terms of Service
           </div>
         </footer>
       </div>
