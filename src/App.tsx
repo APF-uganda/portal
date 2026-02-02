@@ -89,33 +89,33 @@ const App: React.FC = () => {
           <Route
             path="/documents"
             element={
-              <ProtectedRoute role="member">
+              //<ProtectedRoute role="member">
                 <DocumentsPage />
-              </ProtectedRoute>
+              //</ProtectedRoute>
             }
           />
           <Route
             path="/payments"
             element={
-              <ProtectedRoute role="member">
+              //<ProtectedRoute role="member">
                 <PaymentsPage />
-              </ProtectedRoute>
+              //</ProtectedRoute>
             }
           />
           <Route
             path="/forum"
             element={
-              <ProtectedRoute role="member">
+              //<ProtectedRoute role="member">
                 <ForumPage />
-              </ProtectedRoute>
+              //</ProtectedRoute>
             }
           />
           <Route
             path="/notifications"
             element={
-              <ProtectedRoute role="member">
+             // <ProtectedRoute role="member">
                 <NotificationsPage />
-              </ProtectedRoute>
+             // </ProtectedRoute>
             }
           />
           {/* Member dashboard */}
