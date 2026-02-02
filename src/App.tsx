@@ -25,10 +25,15 @@ import MembershipStatus from "./pages/member/membershipStatus";
 import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
 import ProfilePage from "./pages/member/ProfilePage";
 
+
+
+
+
 /* Admin pages */
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
 import ReportsPage from "./pages/admin/reportsAnalytics";
+import CmsContentPage from "./pages/admin/cmsPage";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -68,6 +73,7 @@ const App: React.FC = () => {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/cmspage" element={<CmsContentPage />} />
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
@@ -197,6 +203,16 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+
+  <Route
+              path="/admin/cmsPage"
+              element={
+                <ProtectedRoute role="admin">
+                  <CmsContentPage />
+                </ProtectedRoute>
+              }
+            />
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
