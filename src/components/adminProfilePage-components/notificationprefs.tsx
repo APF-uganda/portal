@@ -56,7 +56,7 @@ export const NotificationPrefs = () => {
 
       <div className="bg-gray-50 p-6 rounded-xl">
         <p className="text-xs font-bold text-[#5C32A3] mb-4 flex items-center gap-2 uppercase tracking-wider">
-          <span role="img" aria-label="clipboard">📋</span> Notification Categories
+          Notification Categories
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {categories.map((cat) => (

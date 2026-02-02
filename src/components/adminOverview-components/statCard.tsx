@@ -1,4 +1,5 @@
 import { Stat, StatColor } from "../../types/dashboard";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 type StatCardProps = {
   stat: Stat;
@@ -52,11 +53,15 @@ function StatCard({ stat, index }: StatCardProps) {
       {/* Growth */}
       <div className="mt-2 flex items-center gap-1 text-sm">
           <span
-          className={`flex items-center gap-0.5 font-medium ${
+          className={`flex items-center gap-1 font-medium ${
             stat.trend === "up" ? "text-green-600" : "text-red-600"
             }`}
           >
-           {stat.trend === "up" ? "↑" : "↓"}
+           {stat.trend === "up" ? (
+             <TrendingUp className="h-3 w-3" />
+           ) : (
+             <TrendingDown className="h-3 w-3" />
+           )}
            {stat.percentage}
           </span>
 

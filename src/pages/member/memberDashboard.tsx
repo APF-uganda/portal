@@ -23,15 +23,30 @@ import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
+import { useProfile } from "../../hooks/useProfile"
 
 const MemberDashboard: React.FC = () => {
+  const { profile, loading } = useProfile();
+  
+  // Get display name from profile
+  const displayName = profile?.full_name || profile?.first_name || profile?.email?.split('@')[0] || 'Member';
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
         {/* Welcome Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, Joan N!</h1>
-          <p className="text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p>
+          {loading ? (
+            <>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-64 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-96"></div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {displayName}!</h1>
+              <p className="text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p>
+            </>
+          )}
         </div>
 
         {/* Top Row - 3 Cards */}
