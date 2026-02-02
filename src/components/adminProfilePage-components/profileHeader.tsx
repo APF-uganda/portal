@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Pencil, Mail, Phone, MapPin, Upload, Trash2, User } from 'lucide-react';
+import { Pencil, Mail, Phone, Upload, Trash2, User } from 'lucide-react';
 import { UserProfile } from '../../services/profileApi';
 
 interface ProfileHeaderProps {

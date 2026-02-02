@@ -239,7 +239,7 @@ export const useProfile = (): UseProfileReturn => {
   }, [profile]);
 
   // Update password
-  const updatePassword = useCallback(async (data: {
+  const updatePassword = useCallback(async (_data: {
     current_password: string;
     new_password: string;
     confirm_password: string;

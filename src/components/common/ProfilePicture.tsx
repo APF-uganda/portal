@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useState } from 'react';
-import { Camera, Upload, X, User } from 'lucide-react';
+import { Camera, Upload, X } from 'lucide-react';
 import { validateProfilePicture } from '../../services/profileApi';
 
 interface ProfilePictureProps {
