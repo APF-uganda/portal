@@ -6,12 +6,12 @@ import {
   Filter,
   Download,
   Eye,
-  ArrowLeft,
   Smartphone,
   Wallet,
   Building2,
   RefreshCw,
   Search,
+  ChevronLeft,
 } from "lucide-react"
 
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
@@ -151,21 +151,23 @@ const PaymentHistoryPage: React.FC = () => {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      headerContent={
+        <Link 
+          to="/payments" 
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Payments
+        </Link>
+      }
+    >
       <div className="space-y-8">
         {/* Header */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-4">
-            <Link to="/payments">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Payments
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment History</h1>
-              <p className="text-gray-600">Complete transaction history and detailed payment records</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment History</h1>
+            <p className="text-gray-600">Complete transaction history and detailed payment records</p>
           </div>
           <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
             <Calendar className="w-4 h-4" />

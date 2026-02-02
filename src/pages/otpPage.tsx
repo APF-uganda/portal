@@ -105,7 +105,7 @@ try {
         if (data.user.role === '1') {
           navigate('/admin/dashboard')
         } else {
-          navigate('/member/dashboard')
+          navigate('/dashboard')
         }
       } else {
         setError(data.error?.message || 'Invalid or expired OTP code')
