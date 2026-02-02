@@ -192,9 +192,6 @@ const App: React.FC = () => {
                   }
                 />
 
-
-
-
 <Route
                 path="/admin/profilePage"
                 element={
