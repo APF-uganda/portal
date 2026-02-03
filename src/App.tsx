@@ -80,89 +80,89 @@ const App: React.FC = () => {
           <Route
             path="/dashboard"
             element={
-              // <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <MemberDashboard />
-              //{/* </ProtectedRoute> */}
+              </ProtectedRoute>
             }
           />
           <Route
             path="/membership-status"
             element={
-              // <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <MembershipStatus />
-              //{/* </ProtectedRoute> */}
+              </ProtectedRoute>
             }
           />
           <Route
             path="/documents"
             element={
-              //<ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <DocumentsPage />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/payments"
             element={
-              //<ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <PaymentsPage />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/payment-history"
             element={
-              // <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <PaymentHistoryPage />
-              //{/* </ProtectedRoute> */}
+              </ProtectedRoute>
             }
           />
           <Route
             path="/forum"
             element={
-              //<ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <ForumPage />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/forum/create-post"
             element={
-              // <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <CreatePostPage />
-              //{/* </ProtectedRoute> */}
+              </ProtectedRoute>
             }
           />
           <Route
             path="/forum/my-posts"
             element={
-              // <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <MyPostsPage />
-              // </ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/forum/post/:id"
             element={
-              // <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <PostDetailPage />
-              //{/* </ProtectedRoute> */}
+              </ProtectedRoute>
             }
           />
           <Route
             path="/notifications"
             element={
-             // <ProtectedRoute role="member">
+             <ProtectedRoute role="member">
                 <NotificationsPage />
-             // </ProtectedRoute>
+             </ProtectedRoute>
             }
           />
           <Route
             path="/profile"
             element={
-              // <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <ProfilePage />
-              // </ProtectedRoute>
+              </ProtectedRoute>
             }
           />
 

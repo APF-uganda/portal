@@ -18,7 +18,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
-  const { profile, loading, initials, displayName, profilePictureUrl } = useProfile()
+  const { loading, initials, displayName, profilePictureUrl } = useProfile()
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
