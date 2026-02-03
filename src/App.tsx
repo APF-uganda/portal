@@ -25,10 +25,6 @@ import MembershipStatus from "./pages/member/membershipStatus";
 import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
 import ProfilePage from "./pages/member/ProfilePage";
 
-
-
-
-
 /* Admin pages */
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
@@ -84,17 +80,17 @@ const App: React.FC = () => {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute role="member">
+              // <ProtectedRoute role="member">
                 <MemberDashboard />
-              </ProtectedRoute>
+              //{/* </ProtectedRoute> */}
             }
           />
           <Route
             path="/membership-status"
             element={
-              <ProtectedRoute role="member">
+              // <ProtectedRoute role="member">
                 <MembershipStatus />
-              </ProtectedRoute>
+              //{/* </ProtectedRoute> */}
             }
           />
           <Route
@@ -116,9 +112,9 @@ const App: React.FC = () => {
           <Route
             path="/payment-history"
             element={
-              <ProtectedRoute role="member">
+              // <ProtectedRoute role="member">
                 <PaymentHistoryPage />
-              </ProtectedRoute>
+              //{/* </ProtectedRoute> */}
             }
           />
           <Route
@@ -132,25 +128,25 @@ const App: React.FC = () => {
           <Route
             path="/forum/create-post"
             element={
-              <ProtectedRoute role="member">
+              // <ProtectedRoute role="member">
                 <CreatePostPage />
-              </ProtectedRoute>
+              //{/* </ProtectedRoute> */}
             }
           />
           <Route
             path="/forum/my-posts"
             element={
-              <ProtectedRoute role="member">
+              // <ProtectedRoute role="member">
                 <MyPostsPage />
-              </ProtectedRoute>
+              // </ProtectedRoute>
             }
           />
           <Route
             path="/forum/post/:id"
             element={
-              <ProtectedRoute role="member">
+              // <ProtectedRoute role="member">
                 <PostDetailPage />
-              </ProtectedRoute>
+              //{/* </ProtectedRoute> */}
             }
           />
           <Route
@@ -164,9 +160,9 @@ const App: React.FC = () => {
           <Route
             path="/profile"
             element={
-              <ProtectedRoute role="member">
+              // <ProtectedRoute role="member">
                 <ProfilePage />
-              </ProtectedRoute>
+              // </ProtectedRoute>
             }
           />
 

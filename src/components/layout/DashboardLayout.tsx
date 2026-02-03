@@ -5,6 +5,7 @@ import {
 } from "lucide-react"
 
 import MemberSideNav from "../common/memberSideNav"
+import { useProfile } from "../../hooks/useProfile"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -16,6 +17,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   headerContent,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [avatarError, setAvatarError] = useState(false)
+  const { profile, loading, initials, displayName, profilePictureUrl } = useProfile()
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -40,12 +43,25 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="flex items-center space-x-4">
               <Bell className="w-5 h-5 text-gray-400" />
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-[#60308C] rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    JN
-                  </span>
+                <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-[#60308C]">
+                  {loading ? (
+                    <div className="w-full h-full bg-gray-200 animate-pulse" />
+                  ) : profilePictureUrl && !avatarError ? (
+                    <img
+                      src={profilePictureUrl}
+                      alt={displayName}
+                      className="w-full h-full object-cover"
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : (
+                    <span className="text-white text-sm font-medium">
+                      {initials || 'U'}
+                    </span>
+                  )}
                 </div>
-                <span className="font-medium">Joan N.</span>
+                <span className="font-medium">
+                  {loading ? 'Loading...' : displayName}
+                </span>
                 <ChevronDown className="w-4 h-4 text-gray-400" />
               </div>
             </div>

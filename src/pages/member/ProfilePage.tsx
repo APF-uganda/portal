@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
-  Edit3, 
-  Save, 
-  X, 
+import { useEffect, useMemo, useState } from 'react';
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Edit3,
+  Save,
+  X,
   Camera,
   Shield,
   Bell,
@@ -16,26 +16,24 @@ import {
   EyeOff
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { useProfile } from '../../hooks/useProfile';
 
 const ProfilePage = () => {
+  const { profile, loading, error, updating, updateProfile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
+  const [avatarError, setAvatarError] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Mock user data
-  const [userProfile, setUserProfile] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+256 700 123 456',
-    address: 'Kampala, Uganda',
-    membershipId: 'APF-2024-001',
-    joinDate: '2024-01-15',
-    membershipType: 'Professional Member',
-    bio: 'Experienced accountant with over 10 years in financial management and auditing.',
-    profileImage: null
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone_number: '',
+    address_line_1: '',
+    bio: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -51,11 +49,63 @@ const ProfilePage = () => {
     securityAlerts: true
   });
 
-  const handleSaveProfile = () => {
-    // Here you would typically make an API call to update the profile
-    setIsEditing(false);
-    // Show success message
-    alert('Profile updated successfully!');
+  useEffect(() => {
+    if (!profile) {
+      return;
+    }
+
+    setFormData({
+      first_name: profile.first_name || '',
+      last_name: profile.last_name || '',
+      email: profile.email || '',
+      phone_number: profile.phone_number || '',
+      address_line_1: profile.address_line_1 || '',
+      bio: profile.bio || ''
+    });
+  }, [profile]);
+
+  const displayName = useMemo(() => {
+    if (profile?.full_name) {
+      return profile.full_name;
+    }
+    const combined = `${formData.first_name} ${formData.last_name}`.trim();
+    if (combined) {
+      return combined;
+    }
+    return profile?.email?.split('@')[0] || 'User';
+  }, [profile, formData.first_name, formData.last_name]);
+
+  const initials = useMemo(() => {
+    if (profile?.initials) {
+      return profile.initials;
+    }
+    const first = formData.first_name?.[0] || '';
+    const last = formData.last_name?.[0] || '';
+    const combined = `${first}${last}`.toUpperCase();
+    if (combined) {
+      return combined;
+    }
+    return (profile?.email?.[0] || 'U').toUpperCase();
+  }, [profile, formData.first_name, formData.last_name]);
+
+  const membershipType = profile?.user_role === '1' ? 'Administrator' : 'Member';
+  const membershipId = profile?.icpau_registration_number || 'N/A';
+  const joinDate = profile?.date_joined
+    ? new Date(profile.date_joined).toLocaleDateString()
+    : 'N/A';
+
+  const handleSaveProfile = async () => {
+    const success = await updateProfile({
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      phone_number: formData.phone_number,
+      address_line_1: formData.address_line_1,
+      bio: formData.bio
+    });
+
+    if (success) {
+      setIsEditing(false);
+    }
   };
 
   const handlePasswordChange = () => {
@@ -67,7 +117,6 @@ const ProfilePage = () => {
       alert('Password must be at least 8 characters long!');
       return;
     }
-    // Here you would make an API call to change password
     alert('Password changed successfully!');
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
   };
@@ -100,13 +149,15 @@ const ProfilePage = () => {
                 <button
                   onClick={() => setIsEditing(false)}
                   className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  disabled={updating}
                 >
                   <X className="w-4 h-4" />
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveProfile}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-60"
+                  disabled={updating}
                 >
                   <Save className="w-4 h-4" />
                   Save Changes
@@ -116,24 +167,39 @@ const ProfilePage = () => {
           </div>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                {userProfile.firstName[0]}{userProfile.lastName[0]}
-              </div>
+              {profile?.profile_picture_url && !avatarError ? (
+                <img
+                  src={profile.profile_picture_url}
+                  alt={displayName}
+                  className="w-24 h-24 rounded-full object-cover"
+                  onError={() => setAvatarError(true)}
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  {initials}
+                </div>
+              )}
               <button className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
                 <Camera className="w-4 h-4 text-gray-600" />
               </button>
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900">
-                {userProfile.firstName} {userProfile.lastName}
+                {loading ? 'Loading...' : displayName}
               </h2>
-              <p className="text-gray-600">{userProfile.membershipType}</p>
+              <p className="text-gray-600">{membershipType}</p>
               <p className="text-sm text-gray-500 mt-1">
-                Member ID: {userProfile.membershipId} • Joined {new Date(userProfile.joinDate).toLocaleDateString()}
+                Member ID: {membershipId} • Joined {joinDate}
               </p>
             </div>
           </div>
@@ -173,6 +239,7 @@ const ProfilePage = () => {
                     <button
                       onClick={() => setIsEditing(true)}
                       className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                      disabled={loading}
                     >
                       <Edit3 className="w-4 h-4" />
                       Edit Profile
@@ -188,12 +255,12 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <input
                         type="text"
-                        value={userProfile.firstName}
-                        onChange={(e) => setUserProfile(prev => ({ ...prev, firstName: e.target.value }))}
+                        value={formData.first_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                     ) : (
-                      <p className="text-gray-900 py-2">{userProfile.firstName}</p>
+                      <p className="text-gray-900 py-2">{profile?.first_name || 'Not provided'}</p>
                     )}
                   </div>
 
@@ -204,12 +271,12 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <input
                         type="text"
-                        value={userProfile.lastName}
-                        onChange={(e) => setUserProfile(prev => ({ ...prev, lastName: e.target.value }))}
+                        value={formData.last_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                     ) : (
-                      <p className="text-gray-900 py-2">{userProfile.lastName}</p>
+                      <p className="text-gray-900 py-2">{profile?.last_name || 'Not provided'}</p>
                     )}
                   </div>
 
@@ -222,12 +289,12 @@ const ProfilePage = () => {
                       {isEditing ? (
                         <input
                           type="email"
-                          value={userProfile.email}
-                          onChange={(e) => setUserProfile(prev => ({ ...prev, email: e.target.value }))}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          value={formData.email}
+                          disabled
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{userProfile.email}</p>
+                        <p className="text-gray-900 py-2">{profile?.email || 'Loading...'}</p>
                       )}
                     </div>
                   </div>
@@ -241,12 +308,12 @@ const ProfilePage = () => {
                       {isEditing ? (
                         <input
                           type="tel"
-                          value={userProfile.phone}
-                          onChange={(e) => setUserProfile(prev => ({ ...prev, phone: e.target.value }))}
+                          value={formData.phone_number}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{userProfile.phone}</p>
+                        <p className="text-gray-900 py-2">{profile?.phone_number || 'Not provided'}</p>
                       )}
                     </div>
                   </div>
@@ -260,12 +327,14 @@ const ProfilePage = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={userProfile.address}
-                          onChange={(e) => setUserProfile(prev => ({ ...prev, address: e.target.value }))}
+                          value={formData.address_line_1}
+                          onChange={(e) => setFormData(prev => ({ ...prev, address_line_1: e.target.value }))}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{userProfile.address}</p>
+                        <p className="text-gray-900 py-2">
+                          {profile?.address_line_1 || 'Not provided'}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -276,13 +345,13 @@ const ProfilePage = () => {
                     </label>
                     {isEditing ? (
                       <textarea
-                        value={userProfile.bio}
-                        onChange={(e) => setUserProfile(prev => ({ ...prev, bio: e.target.value }))}
+                        value={formData.bio}
+                        onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                     ) : (
-                      <p className="text-gray-900 py-2">{userProfile.bio}</p>
+                      <p className="text-gray-900 py-2">{profile?.bio || 'Not provided'}</p>
                     )}
                   </div>
                 </div>
@@ -295,13 +364,13 @@ const ProfilePage = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Member ID
                       </label>
-                      <p className="text-gray-900 py-2 font-mono">{userProfile.membershipId}</p>
+                      <p className="text-gray-900 py-2 font-mono">{membershipId}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Membership Type
                       </label>
-                      <p className="text-gray-900 py-2">{userProfile.membershipType}</p>
+                      <p className="text-gray-900 py-2">{membershipType}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -309,7 +378,7 @@ const ProfilePage = () => {
                       </label>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        <p className="text-gray-900 py-2">{new Date(userProfile.joinDate).toLocaleDateString()}</p>
+                        <p className="text-gray-900 py-2">{joinDate}</p>
                       </div>
                     </div>
                   </div>
@@ -321,7 +390,7 @@ const ProfilePage = () => {
             {activeTab === 'security' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
-                
+
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h4 className="text-md font-semibold text-gray-900 mb-4">Change Password</h4>
                   <div className="space-y-4">
@@ -404,7 +473,7 @@ const ProfilePage = () => {
             {activeTab === 'notifications' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900">Notification Preferences</h3>
-                
+
                 <div className="space-y-4">
                   {Object.entries(notifications).map(([key, value]) => (
                     <div key={key} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">

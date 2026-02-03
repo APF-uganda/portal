@@ -126,11 +126,8 @@ function ApplyForm() {
         paymentTransactionReference: paymentData.transactionReference,
         paymentErrorMessage: paymentData.errorMessage,
         
-        // Documents - extract File objects
-        // documents: documentsData.map(doc => doc.file),
-         documents: documentsData
-           .map(doc => doc.file)
-           .filter((file): file is File => file instanceof File),
+        // Documents with IDs
+        documents: documentsData.filter((doc) => doc.file instanceof File),
       };
 
       // Submit application

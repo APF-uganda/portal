@@ -57,11 +57,37 @@ interface UseProfileReturn {
   isProfileComplete: boolean;
 }
 
+const PROFILE_STORAGE_KEY = 'user_profile';
+
+const loadProfileFromStorage = (): UserProfile | null => {
+  const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(stored) as UserProfile;
+  } catch (error) {
+    console.warn('Failed to parse stored profile data:', error);
+    localStorage.removeItem(PROFILE_STORAGE_KEY);
+    return null;
+  }
+};
+
+const saveProfileToStorage = (profile: UserProfile | null) => {
+  if (!profile) {
+    localStorage.removeItem(PROFILE_STORAGE_KEY);
+    return;
+  }
+
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+};
+
 export const useProfile = (): UseProfileReturn => {
   // State
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(loadProfileFromStorage);
   const [completionStatus, setCompletionStatus] = useState<ProfileCompletionStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!profile);
   const [updating, setUpdating] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -75,6 +101,7 @@ export const useProfile = (): UseProfileReturn => {
       
       const profileData = await fetchUserProfile();
       setProfile(profileData);
+      saveProfileToStorage(profileData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
       setError(errorMessage);
@@ -103,6 +130,7 @@ export const useProfile = (): UseProfileReturn => {
       
       const updatedProfile = await updateUserProfile(data);
       setProfile(updatedProfile);
+      saveProfileToStorage(updatedProfile);
       
       // Reload completion status after update
       await loadCompletionStatus();
@@ -135,11 +163,13 @@ export const useProfile = (): UseProfileReturn => {
       
       // Update profile with new picture URL
       if (profile) {
-        setProfile({
+        const nextProfile = {
           ...profile,
           profile_picture_url: result.profile_picture_url,
           initials: result.initials
-        });
+        };
+        setProfile(nextProfile);
+        saveProfileToStorage(nextProfile);
       }
       
       // Reload completion status
@@ -166,11 +196,13 @@ export const useProfile = (): UseProfileReturn => {
       
       // Update profile to remove picture
       if (profile) {
-        setProfile({
+        const nextProfile = {
           ...profile,
           profile_picture_url: null,
           initials: result.initials
-        });
+        };
+        setProfile(nextProfile);
+        saveProfileToStorage(nextProfile);
       }
       
       return true;
@@ -194,10 +226,12 @@ export const useProfile = (): UseProfileReturn => {
       
       // Update local profile state
       if (profile) {
-        setProfile({
+        const nextProfile = {
           ...profile,
           ...settings
-        });
+        };
+        setProfile(nextProfile);
+        saveProfileToStorage(nextProfile);
       }
       
       return true;
@@ -221,10 +255,12 @@ export const useProfile = (): UseProfileReturn => {
       
       // Update local profile state
       if (profile) {
-        setProfile({
+        const nextProfile = {
           ...profile,
           ...preferences
-        });
+        };
+        setProfile(nextProfile);
+        saveProfileToStorage(nextProfile);
       }
       
       return true;

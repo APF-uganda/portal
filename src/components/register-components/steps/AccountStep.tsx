@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Input from '../Input';
 import { AccountDetailsData } from '../../../types/registration';
 import {
@@ -6,6 +6,7 @@ import {
   validatePasswordLength,
   validatePasswordMatch,
 } from '../../../lib/validators';
+import { checkApplicationAvailability } from '../../../services/applicationApi';
 
 interface AccountDetailsStepProps {
   data: AccountDetailsData;
@@ -16,6 +17,8 @@ interface AccountDetailsStepProps {
 function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetailsStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [availabilityErrors, setAvailabilityErrors] = useState<Record<string, string>>({});
+  const requestIdRef = useRef(0);
 
   // Validate all fields and update validation state
   useEffect(() => {
@@ -60,13 +63,84 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
 
     // Notify parent of validation state
     const isValid = Object.keys(newErrors).length === 0 &&
+                    Object.keys(availabilityErrors).length === 0 &&
                     data.username.trim() !== '' &&
                     data.email.trim() !== '' &&
                     data.password.trim() !== '' &&
                     data.passwordConfirmation.trim() !== '';
     
     onValidationChange(isValid);
-  }, [data, onValidationChange]);
+  }, [data, availabilityErrors, onValidationChange]);
+
+  useEffect(() => {
+    const email = data.email.trim();
+    const username = data.username.trim();
+
+    const emailValid = email !== '' && validateEmail(email).isValid;
+    const usernameValid = username !== '';
+
+    if (!email) {
+      setAvailabilityErrors(prev => {
+        const nextErrors = { ...prev };
+        delete nextErrors.email;
+        return nextErrors;
+      });
+    }
+
+    if (!username) {
+      setAvailabilityErrors(prev => {
+        const nextErrors = { ...prev };
+        delete nextErrors.username;
+        return nextErrors;
+      });
+    }
+
+    if (!emailValid && !usernameValid) {
+      return;
+    }
+
+    const currentRequestId = ++requestIdRef.current;
+    const timer = setTimeout(async () => {
+      try {
+        const availability = await checkApplicationAvailability({
+          email: emailValid ? email : undefined,
+          username: usernameValid ? username : undefined,
+        });
+
+        if (requestIdRef.current !== currentRequestId) {
+          return;
+        }
+
+        setAvailabilityErrors(prev => {
+          const nextErrors = { ...prev };
+
+          if (emailValid) {
+            if (!availability.email_available) {
+              nextErrors.email = 'Email already exists';
+            } else {
+              delete nextErrors.email;
+            }
+          }
+
+          if (usernameValid) {
+            if (!availability.username_available) {
+              nextErrors.username = 'Username already exists';
+            } else {
+              delete nextErrors.username;
+            }
+          }
+
+          return nextErrors;
+        });
+      } catch {
+        // Silent fail: avoid blocking the user on availability errors.
+      } finally {
+        // No-op
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [data.email, data.username]);
 
   const handleFieldChange = (field: keyof AccountDetailsData, value: string) => {
     onChange({
@@ -83,7 +157,13 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
   };
 
   const getFieldError = (field: keyof AccountDetailsData): string | undefined => {
-    return touched[field] ? errors[field] : undefined;
+    if (availabilityErrors[field]) {
+      return availabilityErrors[field];
+    }
+    if (!touched[field]) {
+      return undefined;
+    }
+    return errors[field];
   };
 
   return (
