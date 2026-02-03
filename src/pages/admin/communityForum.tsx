@@ -1,18 +1,13 @@
 import { useState } from "react";
-
-
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-
-
 import StatsCard from '../../components/adminForum-components/statscard';
 import FilterBar from '../../components/adminForum-components/filter';
 import { PostTable } from '../../components/adminForum-components/postTable';
 import { ForumPost } from '../../components/adminForum-components/types';
 
-
-import { FileText, Users, Flag } from 'lucide-react';
+import { FileText, Users, Flag, Plus } from 'lucide-react';
 
 const MOCK_DATA: ForumPost[] = [
   { id: '1', title: 'How to create a realistic monthly budget?', category: 'Budgeting', comments: 42, authorName: 'Samantha Lee', authorInitials: 'SL', tags: ['budgeting', 'discussion'], status: 'Published', date: 'Mar 12, 2026' },
@@ -22,34 +17,37 @@ const MOCK_DATA: ForumPost[] = [
 ];
 
 const CommunityForum = () => {
- 
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex min-h-screen">
-     
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      
       <main 
         className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}
       >
-       
         <Header title="Community Forum" />
 
-      
         <div className="flex-1 bg-[#F4F7FE] p-8">
           <div className="max-w-[1400px] mx-auto">
             
-           
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Community Forum</h1>
-              <nav className="text-sm font-medium text-gray-400">
-                Admin Dashboard <span className="mx-1">&gt;</span> Community Forum
-              </nav>
+            
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Community Forum</h1>
+                <nav className="text-sm font-medium text-gray-400">
+                  Admin Dashboard <span className="mx-1">&gt;</span> Community Forum
+                </nav>
+              </div>
+
+             
+              <button className="bg-[#5C32A3] hover:bg-[#4a2885] text-white px-6 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-lg shadow-purple-200 transition-all active:scale-95">
+                <Plus size={20} strokeWidth={3} />
+                Create Post
+              </button>
             </div>
 
-          
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <StatsCard 
                 title="Total Posts" 
@@ -72,10 +70,8 @@ const CommunityForum = () => {
               />
             </div>
 
-           
             <FilterBar />
 
-          
             <div className="mt-6">
                <PostTable posts={MOCK_DATA} />
             </div>
@@ -83,7 +79,6 @@ const CommunityForum = () => {
           </div>
         </div>
 
-        
         <Footer />
       </main>
     </div>
