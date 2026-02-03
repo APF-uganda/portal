@@ -65,7 +65,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, onToggle }) => {
           <NavItem icon={<MdDashboard />} label="Dashboard" to="/admin/dashboard" collapsed={collapsed} />
           <NavItem icon={<FiInbox />} label="Inbox" to="/admin/inbox" badgeCount={99} collapsed={collapsed} />
           <NavItem icon={<FiUser />} label="Membership Applications" to="/admin/approval" collapsed={collapsed} />
-          <NavItem icon={<FiUser />} label="Profile" to="/admin/profilePage" collapsed={collapsed} />
+          <NavItem icon={<FiUser />} label="Profile" to="/admin/profile" collapsed={collapsed} />
           <NavItem icon={<FaFileAlt />} label="Documents" to="/admin/documents" collapsed={collapsed} />
           <NavItem icon={<FaMoneyBill />} label="Payments & Renewals" to="/admin/payments" collapsed={collapsed} />
           <NavItem icon={<MdInsights />} label="Reports & Analytics" to="/admin/reports" collapsed={collapsed} />
