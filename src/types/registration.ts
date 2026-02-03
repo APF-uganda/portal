@@ -93,7 +93,7 @@ export interface ApplicationSubmissionData {
   paymentStatus?: string;
   paymentTransactionReference?: string;
   paymentErrorMessage?: string;
-  documents: File[];
+  documents: DocumentData[];
 }
 
 /**

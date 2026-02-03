@@ -1,5 +1,4 @@
-
-import { Users, FileText, TrendingUp } from "lucide-react";
+import { Users, FileText, TrendingUp, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import Sidebar from "../../components/common/adminSideNav";
@@ -19,6 +18,8 @@ function AdminDashboard(){
     const [collapsed, setCollapsed] = useState(false);
     const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     
     // Get profile data for welcome banner
     const { profile } = useProfile();
@@ -30,24 +31,45 @@ function AdminDashboard(){
       }
     }, []);
    
-   useEffect(() => {
-      const loadDashboardStats = async () => {
-        try {
+   const loadDashboardStats = async (isRefresh = false) => {
+      try {
+        if (isRefresh) {
+          setRefreshing(true);
+        } else {
           setLoading(true);
-          const stats = await fetchDashboardStats();
-          setDashboardStats(stats);
-        } catch (error) {
-          console.error('Failed to load dashboard stats:', error);
-        } finally {
-          setLoading(false);
         }
-      };
+        const stats = await fetchDashboardStats();
+        setDashboardStats(stats);
+        setLastUpdated(new Date());
+      } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    };
 
+   useEffect(() => {
       loadDashboardStats();
+      
+      // Auto-refresh every 5 minutes
+      const intervalId = setInterval(() => {
+        loadDashboardStats(true);
+      }, 5 * 60 * 1000); // 5 minutes
+
+      return () => clearInterval(intervalId);
    }, []);
 
   // Get display name from profile or fallback to email
   const displayName = profile?.full_name || profile?.first_name || profile?.email?.split('@')[0] || 'Admin';
+
+  // Format last updated time
+  const formatLastUpdated = () => {
+    const seconds = Math.floor((new Date().getTime() - lastUpdated.getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+    return lastUpdated.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
 
   // Create stats array from dashboard data
   const stats: Stat[] = dashboardStats ? [
@@ -91,8 +113,24 @@ function AdminDashboard(){
         <Header title="Dashboard Overview" />
 
         <main className="flex-1 p-6">
-          {/* Welcome Banner */}
-          <WelcomeBanner name={displayName} />
+          {/* Welcome Banner with Refresh */}
+          <div className="flex items-center justify-between mb-6">
+            <WelcomeBanner name={displayName} />
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">
+                Updated: {formatLastUpdated()}
+              </span>
+              <button
+                onClick={() => loadDashboardStats(true)}
+                disabled={refreshing}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh dashboard data"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                <span className="text-sm font-medium">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
+            </div>
+          </div>
 
           {/* Stats */}
           {loading ? (

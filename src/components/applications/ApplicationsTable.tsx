@@ -30,6 +30,7 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
     actionLoading = null,
 }) => {
     const [processingId, setProcessingId] = useState<number | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     const handleAction = async (
         applicationId: number,
@@ -44,6 +45,55 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
             console.error('Action failed:', error);
         } finally {
             setProcessingId(null);
+        }
+    };
+
+    const handleExport = () => {
+        setIsExporting(true);
+        
+        try {
+            // Prepare data for export
+            const exportData = applicants.map(app => ({
+                'Applicant Name': app.name,
+                'Email Address': app.email,
+                'Category': app.category,
+                'ICPA Certificate No': app.icpaCertNo,
+                'Fee Status': app.feeStatus,
+                'Application Status': app.status,
+                'Submission Date': app.submissionDate,
+            }));
+
+            // Convert to CSV
+            const headers = Object.keys(exportData[0]);
+            const csvContent = [
+                headers.join(','),
+                ...exportData.map(row => 
+                    headers.map(header => {
+                        const value = row[header as keyof typeof row];
+                        // Escape commas and quotes in values
+                        return `"${String(value).replace(/"/g, '""')}"`;
+                    }).join(',')
+                )
+            ].join('\n');
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `applications_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            console.log('Applications exported successfully');
+        } catch (error) {
+            console.error('Error exporting applications:', error);
+            alert('Failed to export applications. Please try again.');
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -100,9 +150,17 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-700">All Applications</h3>
                 <div className="flex gap-3">
-                    <button className="flex items-center bg-transparent border-2 border-[#5F2F8B] gap-1 text-sm text-[#5F2F8B] hover:text-white hover:bg-[#5F2F8B] rounded-xl px-3 py-1 pl-2 pr-4">
-                        <FiDownload className="text-base" />
-                        Export
+                    <button 
+                        onClick={handleExport}
+                        disabled={isExporting || applicants.length === 0}
+                        className="flex items-center bg-transparent border-2 border-[#5F2F8B] gap-1 text-sm text-[#5F2F8B] hover:text-white hover:bg-[#5F2F8B] rounded-xl px-3 py-1 pl-2 pr-4 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {isExporting ? (
+                            <FiLoader className="text-base animate-spin" />
+                        ) : (
+                            <FiDownload className="text-base" />
+                        )}
+                        {isExporting ? 'Exporting...' : 'Export'}
                     </button>
                     <button className="flex items-center gap-1 text-sm text-white bg-[#5F2F8B] hover:bg-purple-800 px-3 py-1 pl-2 pr-4 rounded-xl">
                         <FiPlus className="text-base" />

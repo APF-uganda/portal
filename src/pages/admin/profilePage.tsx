@@ -10,7 +10,7 @@ import { NotificationPrefs } from '../../components/adminProfilePage-components/
 import { useProfile } from '../../hooks/useProfile';
 import { requireAdmin } from '../../utils/auth';
 
-const ProfilePage = () => {
+const AdminProfilePage = () => {
   const [collapsed, setCollapsed] = useState(false);
   const {
     profile,
@@ -105,4 +105,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default AdminProfilePage;

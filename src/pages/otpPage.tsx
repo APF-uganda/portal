@@ -4,6 +4,7 @@ import apfLogo from '../assets/logo_purple.png'
 import loginImage from '../assets/images/Login-image/login.jpg'
 
 import { API_V1_BASE_URL } from '../config/api'
+import { fetchUserProfile } from '../services/profileApi'
 
 function OtpPage() {
   const navigate = useNavigate()
@@ -95,6 +96,13 @@ try {
         localStorage.setItem('access_token', data.access)
         localStorage.setItem('refresh_token', data.refresh)
         localStorage.setItem('user', JSON.stringify(data.user))
+
+        try {
+          const profile = await fetchUserProfile()
+          localStorage.setItem('user_profile', JSON.stringify(profile))
+        } catch (profileError) {
+          console.error('Failed to preload user profile:', profileError)
+        }
         
         // Clear session storage
         sessionStorage.removeItem('otp_session_id')

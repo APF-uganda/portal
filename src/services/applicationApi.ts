@@ -241,9 +241,10 @@ export async function submitApplication(
       formData.append('payment_error_message', applicationData.paymentErrorMessage);
     }
     
-    // Add document files
-    applicationData.documents.forEach((file) => {
-      formData.append('documents', file);
+    // Add document files with types
+    applicationData.documents.forEach((doc) => {
+      formData.append('documents', doc.file);
+      formData.append('document_types', doc.id);
     });
     
     // Send POST request to backend
@@ -426,6 +427,11 @@ export interface AdminActionResult {
   error?: string;
 }
 
+export interface AvailabilityResponse {
+  email_available: boolean;
+  username_available: boolean;
+}
+
 /**
  * Get authentication headers with JWT token
  * 
@@ -520,6 +526,25 @@ export async function retryApplication(applicationId: number): Promise<AdminActi
   } catch (error) {
     return handleAdminActionError(error);
   }
+}
+
+export async function checkApplicationAvailability(
+  params: { email?: string; username?: string }
+): Promise<AvailabilityResponse> {
+  const query = new URLSearchParams();
+  if (params.email) {
+    query.set('email', params.email);
+  }
+  if (params.username) {
+    query.set('username', params.username);
+  }
+
+  const response = await axios.get<AvailabilityResponse>(
+    `${API_BASE_URL}/api/v1/applications/check-availability/?${query.toString()}`,
+    { timeout: 15000 }
+  );
+
+  return response.data;
 }
 
 /**

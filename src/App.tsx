@@ -25,13 +25,10 @@ import MembershipStatus from "./pages/member/membershipStatus";
 import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
 import ProfilePage from "./pages/member/ProfilePage";
 
-
-
-
-
 /* Admin pages */
 import AdminDashboard from "./pages/admin/adminDashboard";
 import AdminApproval from "./pages/admin/adminApproval";
+import AdminProfilePage from "./pages/admin/profilePage";
 import ReportsPage from "./pages/admin/reportsAnalytics";
 import CmsContentPage from "./pages/admin/cmsPage";
 import CommunityForum from "./pages/admin/communityForum";
@@ -158,9 +155,9 @@ const App: React.FC = () => {
           <Route
             path="/notifications"
             element={
-              <ProtectedRoute role="member">
+             <ProtectedRoute role="member">
                 <NotificationsPage />
-              </ProtectedRoute>
+             </ProtectedRoute>
             }
           />
           <Route
@@ -209,7 +206,7 @@ const App: React.FC = () => {
             path="/admin/profile"
             element={
               <ProtectedRoute role="admin">
-                <ProfilePage />
+                <AdminProfilePage />
               </ProtectedRoute>
             }
           />
