@@ -69,7 +69,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, onToggle }) => {
           <NavItem icon={<FaFileAlt />} label="Documents" to="/admin/documents" collapsed={collapsed} />
           <NavItem icon={<FaMoneyBill />} label="Payments & Renewals" to="/admin/payments" collapsed={collapsed} />
           <NavItem icon={<MdInsights />} label="Reports & Analytics" to="/admin/reports" collapsed={collapsed} />
-          <NavItem icon={<FaComments />} label="Community Forum" to="/admin/communityforum" collapsed={collapsed} />
+          <NavItem icon={<FaComments />} label="Community Forum" to="/admin/communityForum" collapsed={collapsed} />
           <NavItem icon={<FiBell />} label="Notifications" to="/admin/notifications" collapsed={collapsed} />
         </nav>
       </div>

@@ -2,7 +2,7 @@
 
 import  StatsCard  from '../../components/adminForum-components/statscard';
 import  FilterBar  from '../../components/adminForum-components/filter';
-import { PostTable } from '../../components/adminForum-components/postTable';
+import  { PostTable } from '../../components/adminForum-components/postTable';
 import { ForumPost } from './types';
 
 

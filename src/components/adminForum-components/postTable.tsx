@@ -39,7 +39,7 @@ export const PostTable = ({ posts }: { posts: ForumPost[] }) => (
               
              
               <td className="px-6 py-5 max-w-[280px]">
-                <div className="font-bold text-black-100 text-sm leading-tight line-clamp-2 mb-1">
+                <div className="font-bold text-gray-800 text-sm leading-tight line-clamp-2 mb-1">
                   {post.title}
                 </div>
                 <div className="text-[11px] text-gray-400 whitespace-nowrap">
@@ -47,7 +47,7 @@ export const PostTable = ({ posts }: { posts: ForumPost[] }) => (
                 </div>
               </td>
 
-              
+             
               <td className="px-6 py-5 whitespace-nowrap">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-[#8B5CF6] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
@@ -57,7 +57,7 @@ export const PostTable = ({ posts }: { posts: ForumPost[] }) => (
                 </div>
               </td>
 
-              
+             
               <td className="px-6 py-5">
                 <div className="flex flex-col gap-1 items-start">
                   {post.tags.map(tag => (
@@ -76,9 +76,9 @@ export const PostTable = ({ posts }: { posts: ForumPost[] }) => (
                 {post.date}
               </td>
 
-             
+              
               <td className="px-6 py-5">
-                <div className="flex justify-center items-center gap-5 text-black-100">
+                <div className="flex justify-center items-center gap-5 text-gray-400">
                   <button className="hover:text-indigo-600 transition-colors" title="View">
                     <Eye size={15} strokeWidth={2.5} />
                   </button>

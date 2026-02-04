@@ -194,6 +194,19 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+
+<Route
+            path="/admin/communityForum"
+            element={
+              <ProtectedRoute role="admin">
+                <CommunityForum />
+              </ProtectedRoute>
+            }
+          />
+
+
+
           <Route
             path="/admin/reports"
             element={
@@ -203,14 +216,7 @@ const App: React.FC = () => {
             }
           />
 
-<Route
-            path="/admin/communityforum"
-            element={
-              <ProtectedRoute role="admin">
-                <CommunityForum />
-              </ProtectedRoute>
-            }
-          />
+
 
 
 
