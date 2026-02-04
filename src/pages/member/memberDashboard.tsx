@@ -12,7 +12,6 @@ import {
   RotateCcw,
   Edit,
   Download,
-  Home,
   Briefcase,
   MoreVertical,
   MapPin,
@@ -27,6 +26,16 @@ import { Badge } from "../../components/ui/badge"
 import { useProfile } from "../../hooks/useProfile"
 
 const MemberDashboard: React.FC = () => {
+  // Calculate next renewal date (one year from now)
+  const getNextRenewalDate = () => {
+    const nextYear = new Date()
+    nextYear.setFullYear(nextYear.getFullYear() + 1)
+    return nextYear.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
   const { profile, loading } = useProfile();
   
   // Get display name from profile
@@ -55,13 +64,11 @@ const MemberDashboard: React.FC = () => {
           {/* Membership Status Card */}
           <Card className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 md:pb-4">
-              <Link to="/membership-status">
-                <CardTitle className="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2 hover:text-purple-600 transition-colors cursor-pointer">
-                  <User className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
-                  <span className="hidden sm:inline">Membership Status</span>
-                  <span className="sm:hidden">Status</span>
-                </CardTitle>
-              </Link>
+              <CardTitle className="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <User className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+                <span className="hidden sm:inline">Membership Status</span>
+                <span className="sm:hidden">Status</span>
+              </CardTitle>
               <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs">Active</Badge>
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
@@ -71,7 +78,7 @@ const MemberDashboard: React.FC = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Next Renewal</span>
-                <span className="font-semibold text-gray-900 text-sm">March 15, 2026</span>
+                <span className="font-semibold text-gray-900 text-sm">{getNextRenewalDate()}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Member Since</span>
@@ -177,10 +184,10 @@ const MemberDashboard: React.FC = () => {
                 <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Home className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
+                      <FileCheck className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Proof of Address</p>
+                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">ICPAU Certificate</p>
                       <p className="text-xs text-gray-500">Uploaded: 2024-03-01</p>
                     </div>
                   </div>

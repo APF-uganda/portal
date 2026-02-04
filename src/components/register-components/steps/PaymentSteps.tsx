@@ -160,13 +160,21 @@ function PaymentsStep({ data, onChange, onValidationChange }: PaymentStepsProps)
                 onSelect={handlePaymentMethodSelect}
               />
 
-              <PaymentOption
-                label="Credit Card"
-                value="credit_card"
-                logo={dfcuLogo}
-                selected={paymentMethod}
-                onSelect={handlePaymentMethodSelect}
-              />
+              <div className="relative">
+                <PaymentOption
+                  label="Credit Card"
+                  value="credit_card"
+                  logo={dfcuLogo}
+                  selected={paymentMethod}
+                  onSelect={handlePaymentMethodSelect}
+                  disabled={true}
+                />
+                <div className="absolute inset-0 bg-white bg-opacity-75 rounded-lg flex items-center justify-center pointer-events-none">
+                  <span className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full font-medium">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 

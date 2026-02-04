@@ -18,6 +18,7 @@ import {
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
+import { getCurrentDateFormatted } from "../../utils/dateUtils"
 import { Badge } from "../../components/ui/badge"
 
 const DocumentsPage: React.FC = () => {
@@ -93,7 +94,7 @@ const DocumentsPage: React.FC = () => {
           </div>
           <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            January 28, 2026
+            {getCurrentDateFormatted()}
           </div>
         </div>
 
