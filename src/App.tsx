@@ -21,7 +21,7 @@ import CreatePostPage from "./pages/member/CreatePostPage";
 import MyPostsPage from "./pages/member/MyPostsPage";
 import PostDetailPage from "./pages/member/PostDetailPage";
 import NotificationsPage from "./pages/member/NotificationsPage";
-import MembershipStatus from "./pages/member/membershipStatus";
+
 import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
 import ProfilePage from "./pages/member/ProfilePage";
 
@@ -31,6 +31,7 @@ import AdminApproval from "./pages/admin/adminApproval";
 import AdminProfilePage from "./pages/admin/profilePage";
 import ReportsPage from "./pages/admin/reportsAnalytics";
 import CmsContentPage from "./pages/admin/cmsPage";
+import CommunityForum from "./pages/admin/communityForum";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -71,6 +72,7 @@ const App: React.FC = () => {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/cmspage" element={<CmsContentPage />} />
+          <Route path="/communityforum" element={<CommunityForum />} />
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
@@ -86,14 +88,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/membership-status"
-            element={
-              <ProtectedRoute role="member">
-                <MembershipStatus />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/documents"
             element={
@@ -200,6 +195,18 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+<Route
+            path="/admin/communityforum"
+            element={
+              <ProtectedRoute role="admin">
+                <CommunityForum />
+              </ProtectedRoute>
+            }
+          />
+
+
+
           <Route
             path="/admin/profile"
             element={

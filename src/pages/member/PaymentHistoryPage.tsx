@@ -6,9 +6,6 @@ import {
   Filter,
   Download,
   Eye,
-  Smartphone,
-  Wallet,
-  Building2,
   RefreshCw,
   Search,
   ChevronLeft,
@@ -18,6 +15,9 @@ import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
+import { getCurrentDateFormatted } from "../../utils/dateUtils"
+import { ReceiptGenerator, TransactionData, showNotification } from "../../services/receiptGenerator"
+import { TransactionDataService } from "../../services/transactionData"
 
 const PaymentHistoryPage: React.FC = () => {
   const [dateRange, setDateRange] = useState('last30')
@@ -25,88 +25,78 @@ const PaymentHistoryPage: React.FC = () => {
   const [status, setStatus] = useState('all')
   const [isLoading, setIsLoading] = useState(false)
 
-  const transactions = [
-    {
-      date: '2023-11-20',
-      type: 'Annual Subscription',
-      reference: 'APF-SUB-23-001',
-      amount: 'UGX 150,000',
-      method: 'MTN Mobile Money',
-      methodIcon: Smartphone,
-      status: 'Completed',
-      description: 'Annual membership subscription for 2023-2024',
-    },
-    {
-      date: '2023-01-15',
-      type: 'Application Fee',
-      reference: 'APF-APP-23-005',
-      amount: 'UGX 50,000',
-      method: 'DFCU Bank',
-      methodIcon: Building2,
-      status: 'Completed',
-      description: 'Membership application processing fee',
-    },
-    {
-      date: '2022-11-20',
-      type: 'Annual Subscription',
-      reference: 'APF-SUB-22-001',
-      amount: 'UGX 150,000',
-      method: 'Airtel Money',
-      methodIcon: Wallet,
-      status: 'Completed',
-      description: 'Annual membership subscription for 2022-2023',
-    },
-    {
-      date: '2022-06-01',
-      type: 'Donation',
-      reference: 'APF-DON-22-010',
-      amount: 'UGX 100,000',
-      method: 'MTN Mobile Money',
-      methodIcon: Smartphone,
-      status: 'Completed',
-      description: 'Voluntary contribution to APF development fund',
-    },
-    {
-      date: '2021-11-20',
-      type: 'Annual Subscription',
-      reference: 'APF-SUB-21-001',
-      amount: 'UGX 150,000',
-      method: 'DFCU Bank',
-      methodIcon: Building2,
-      status: 'Completed',
-      description: 'Annual membership subscription for 2021-2022',
-    },
-    {
-      date: '2021-08-15',
-      type: 'Workshop Fee',
-      reference: 'APF-WRK-21-008',
-      amount: 'UGX 75,000',
-      method: 'MTN Mobile Money',
-      methodIcon: Smartphone,
-      status: 'Completed',
-      description: 'Professional development workshop registration',
-    },
-    {
-      date: '2021-03-10',
-      type: 'CPD Event',
-      reference: 'APF-CPD-21-003',
-      amount: 'UGX 25,000',
-      method: 'Airtel Money',
-      methodIcon: Wallet,
-      status: 'Completed',
-      description: 'Continuing Professional Development seminar',
-    },
-    {
-      date: '2020-11-20',
-      type: 'Annual Subscription',
-      reference: 'APF-SUB-20-001',
-      amount: 'UGX 150,000',
-      method: 'DFCU Bank',
-      methodIcon: Building2,
-      status: 'Completed',
-      description: 'Annual membership subscription for 2020-2021',
-    },
-  ]
+  // Get all transactions from the service
+  const allTransactions = TransactionDataService.getAllTransactions()
+  
+  // Filter transactions based on selected criteria
+  const filteredTransactions = TransactionDataService.filterTransactions(
+    allTransactions,
+    dateRange,
+    paymentType,
+    status
+  )
+
+  const handleDownloadReceipt = async (transaction: any) => {
+    try {
+      showNotification('Generating PDF receipt...', 'success')
+      
+      const transactionData: TransactionData = {
+        reference: transaction.reference,
+        type: transaction.type,
+        date: transaction.date,
+        description: transaction.description,
+        method: transaction.method,
+        amount: transaction.amount,
+        status: transaction.status
+      }
+      
+      const pdf = await ReceiptGenerator.generateTransactionReceiptPDF(transactionData)
+      const filename = `APF_${transaction.reference}_Receipt.pdf`
+      ReceiptGenerator.downloadPDF(pdf, filename)
+      
+      showNotification(`Receipt for ${transaction.reference} downloaded successfully`, 'success')
+    } catch (error) {
+      console.error('Download error:', error)
+      showNotification('Failed to generate PDF receipt', 'error')
+    }
+  }
+
+  const handleExportTransactions = () => {
+    try {
+      // Create CSV content
+      let csvContent = 'Date,Type,Reference,Amount,Method,Status,Description\n'
+      
+      filteredTransactions.forEach(transaction => {
+        const row = [
+          transaction.date,
+          transaction.type,
+          transaction.reference,
+          transaction.amount.replace(',', ''),
+          transaction.method,
+          transaction.status,
+          `"${transaction.description}"`
+        ].join(',')
+        csvContent += row + '\n'
+      })
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `APF_Payment_History_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      showNotification('Payment history exported successfully', 'success')
+    } catch (error) {
+      console.error('Export error:', error)
+      showNotification('Failed to export payment history', 'error')
+    }
+  }
+
+
 
   const handleLoadMore = () => {
     setIsLoading(true)
@@ -114,10 +104,6 @@ const PaymentHistoryPage: React.FC = () => {
       setIsLoading(false)
       alert('Loading more transactions...')
     }, 1500)
-  }
-
-  const handleExportTransactions = () => {
-    alert('Exporting transaction history to CSV...')
   }
 
   const getStatusColor = (status: string) => {
@@ -171,7 +157,7 @@ const PaymentHistoryPage: React.FC = () => {
           </div>
           <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            January 28, 2026
+            {getCurrentDateFormatted()}
           </div>
         </div>
 
@@ -261,7 +247,7 @@ const PaymentHistoryPage: React.FC = () => {
               Transaction History
             </CardTitle>
             <div className="text-sm text-gray-600">
-              Showing {transactions.length} transactions
+              Showing {filteredTransactions.length} transactions
             </div>
           </CardHeader>
           <CardContent>
@@ -280,7 +266,7 @@ const PaymentHistoryPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((transaction, index) => {
+                  {filteredTransactions.map((transaction, index) => {
                     const MethodIcon = transaction.methodIcon
                     return (
                       <tr key={index} className="border-b hover:bg-purple-50/30 transition-colors">
@@ -328,7 +314,7 @@ const PaymentHistoryPage: React.FC = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => alert(`Downloading receipt for ${transaction.reference}`)}
+                              onClick={() => handleDownloadReceipt(transaction)}
                             >
                               <Download className="w-3 h-3" />
                             </Button>
