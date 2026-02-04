@@ -45,7 +45,7 @@ const MemberDashboard: React.FC = () => {
           ) : (
             <>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {displayName}!</h1>
-              <p className="text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p>
+              {/* <p className="text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p> */}
             </>
           )}
         </div>
@@ -64,10 +64,10 @@ const MemberDashboard: React.FC = () => {
               <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200">Active</Badge>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
+              {/* <div className="flex justify-between items-center">
                 <span className="text-gray-600">Category</span>
                 <Badge className="bg-green-100 text-green-700">Premium Member</Badge>
-              </div>
+              </div> */}
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Next Renewal</span>
                 <span className="font-semibold text-gray-900">March 15, 2026</span>
