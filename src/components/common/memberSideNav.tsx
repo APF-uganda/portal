@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
   LayoutGrid,
-  ArrowLeft,
   Bookmark,
   CreditCard,
   MessageSquare,
@@ -20,7 +19,6 @@ import logoDashboard from "../../assets/LogoDashboard.png"
 /* MEMBER navigation items */
 const memberNavItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-  { label: "Membership Status", href: "/membership-status", icon: ArrowLeft },
   { label: "Documents", href: "/documents", icon: Bookmark },
   { label: "Notifications", href: "/notifications", icon: Diamond },
 ]

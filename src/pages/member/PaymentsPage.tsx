@@ -20,6 +20,9 @@ import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
+import { getCurrentDateFormatted } from "../../utils/dateUtils"
+import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/receiptGenerator"
+import { TransactionDataService } from "../../services/transactionData"
 
 const PaymentsPage: React.FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mtn')
@@ -31,80 +34,29 @@ const PaymentsPage: React.FC = () => {
       name: 'MTN Mobile Money',
       description: 'Pay via MTN mobile wallet',
       icon: Smartphone,
+      disabled: false,
     },
     {
       id: 'airtel',
       name: 'Airtel Money',
       description: 'Pay via Airtel mobile wallet',
       icon: Wallet,
+      disabled: false,
     },
     {
       id: 'bank',
       name: 'DFCU Bank',
-      description: 'Direct bank transfer',
+      description: 'Direct bank transfer (Currently unavailable)',
       icon: Building2,
+      disabled: true,
     },
   ]
 
-  const recentTransactions = [
-    {
-      date: '2023-11-20',
-      type: 'Annual Subscription',
-      reference: 'APF-SUB-23-001',
-      amount: 'UGX 150,000',
-      method: 'MTN Mobile Money',
-      methodIcon: Smartphone,
-    },
-    {
-      date: '2023-01-15',
-      type: 'Application Fee',
-      reference: 'APF-APP-23-005',
-      amount: 'UGX 50,000',
-      method: 'DFCU Bank',
-      methodIcon: Building2,
-    },
-    {
-      date: '2022-11-20',
-      type: 'Annual Subscription',
-      reference: 'APF-SUB-22-001',
-      amount: 'UGX 150,000',
-      method: 'Airtel Money',
-      methodIcon: Wallet,
-    },
-  ]
+  // Get recent transactions from the shared service
+  const recentTransactions = TransactionDataService.getRecentTransactions(3)
 
-  const receipts = [
-    {
-      title: 'Annual Membership Invoice 2023',
-      date: 'November 20, 2023',
-      amount: 'UGX 150,000',
-    },
-    {
-      title: 'Annual Membership Invoice 2022',
-      date: 'November 20, 2022',
-      amount: 'UGX 150,000',
-    },
-    {
-      title: 'Application Fee Receipt 2023',
-      date: 'January 15, 2023',
-      amount: 'UGX 50,000',
-    },
-    {
-      title: 'Donation Receipt 2022',
-      date: 'June 1, 2022',
-      amount: 'UGX 100,000',
-    },
-    {
-      title: 'Annual Membership Invoice 2021',
-      date: 'November 20, 2021',
-      amount: 'UGX 150,000',
-    },
-    {
-      title: 'Workshop Fee Receipt 2021',
-      date: 'August 15, 2021',
-      amount: 'UGX 75,000',
-    },
-  ]
+  // Get receipts from the shared service
+  const receipts = TransactionDataService.getAllReceipts()
 
   const handlePaymentMethodSelect = (methodId: string) => {
     setSelectedPaymentMethod(methodId)
@@ -120,24 +72,79 @@ const PaymentsPage: React.FC = () => {
     }, 1500)
   }
 
-  const handleDownloadReceipt = (receiptTitle: string) => {
-    // Simulate download
-    alert(`Downloading ${receiptTitle}...`)
-    
-    // Show success notification
-    const notification = document.createElement('div')
-    notification.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2'
-    notification.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>${receiptTitle} downloaded successfully`
-    document.body.appendChild(notification)
-    
-    setTimeout(() => {
-      document.body.removeChild(notification)
-    }, 3000)
+  const handleDownloadReceipt = async (receipt: any) => {
+    try {
+      showNotification('Generating PDF receipt...', 'success')
+      
+      const receiptData: ReceiptData = {
+        id: receipt.id,
+        title: receipt.title,
+        reference: receipt.reference,
+        date: receipt.date,
+        amount: receipt.amount,
+        type: receipt.type as 'invoice' | 'receipt'
+      }
+      
+      const pdf = await ReceiptGenerator.generateReceiptPDF(receiptData)
+      const filename = `APF_${receipt.reference}_${receipt.title.replace(/\s+/g, '_')}.pdf`
+      ReceiptGenerator.downloadPDF(pdf, filename)
+      
+      showNotification(`${receipt.title} downloaded successfully`, 'success')
+    } catch (error) {
+      console.error('Download error:', error)
+      showNotification('Failed to generate PDF receipt', 'error')
+    }
   }
 
-  const handleViewReceipt = (receiptTitle: string) => {
-    alert(`Opening ${receiptTitle} in PDF viewer...`)
+  const handleViewReceipt = async (receipt: any) => {
+    try {
+      showNotification('Opening PDF receipt...', 'success')
+      
+      const receiptData: ReceiptData = {
+        id: receipt.id,
+        title: receipt.title,
+        reference: receipt.reference,
+        date: receipt.date,
+        amount: receipt.amount,
+        type: receipt.type as 'invoice' | 'receipt'
+      }
+      
+      const pdf = await ReceiptGenerator.generateReceiptPDF(receiptData)
+      const success = ReceiptGenerator.viewPDF(pdf)
+      
+      if (!success) {
+        showNotification('Please allow popups to view receipts', 'error')
+      }
+    } catch (error) {
+      console.error('View error:', error)
+      showNotification('Failed to open PDF receipt', 'error')
+    }
   }
+
+  const handleDownloadAllReceipts = async () => {
+    try {
+      showNotification('Generating receipts summary PDF...', 'success')
+      
+      const receiptDataList: ReceiptData[] = receipts.map(receipt => ({
+        id: receipt.id,
+        title: receipt.title,
+        reference: receipt.reference,
+        date: receipt.date,
+        amount: receipt.amount,
+        type: receipt.type as 'invoice' | 'receipt'
+      }))
+      
+      const pdf = await ReceiptGenerator.generateSummaryPDF(receiptDataList)
+      ReceiptGenerator.downloadPDF(pdf, 'APF_All_Receipts_Summary.pdf')
+      
+      showNotification('All receipts summary downloaded successfully', 'success')
+    } catch (error) {
+      console.error('Download all error:', error)
+      showNotification('Failed to download receipts summary', 'error')
+    }
+  }
+
+
 
   return (
     <DashboardLayout>
@@ -150,7 +157,7 @@ const PaymentsPage: React.FC = () => {
           </div>
           <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            January 28, 2026
+            {getCurrentDateFormatted()}
           </div>
         </div>
 
@@ -172,25 +179,39 @@ const PaymentsPage: React.FC = () => {
                   {paymentMethods.map((method) => {
                     const Icon = method.icon
                     const isSelected = selectedPaymentMethod === method.id
+                    const isDisabled = method.disabled
                     
                     return (
                       <div
                         key={method.id}
-                        onClick={() => handlePaymentMethodSelect(method.id)}
-                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all flex items-center gap-4 ${
-                          isSelected 
-                            ? 'border-purple-600 bg-purple-50' 
-                            : 'border-gray-200 hover:border-purple-200 hover:bg-purple-50/30'
+                        onClick={() => !isDisabled && handlePaymentMethodSelect(method.id)}
+                        className={`border-2 rounded-lg p-4 transition-all flex items-center gap-4 ${
+                          isDisabled 
+                            ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60' 
+                            : isSelected 
+                              ? 'border-purple-600 bg-purple-50 cursor-pointer' 
+                              : 'border-gray-200 hover:border-purple-200 hover:bg-purple-50/30 cursor-pointer'
                         }`}
                       >
-                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Icon className="w-6 h-6 text-purple-600" />
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                          isDisabled ? 'bg-gray-200' : 'bg-purple-100'
+                        }`}>
+                          <Icon className={`w-6 h-6 ${isDisabled ? 'text-gray-400' : 'text-purple-600'}`} />
                         </div>
                         <div className="flex-1">
-                          <div className="font-semibold text-gray-900">{method.name}</div>
-                          <div className="text-sm text-gray-600">{method.description}</div>
+                          <div className={`font-semibold ${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}>
+                            {method.name}
+                            {isDisabled && (
+                              <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
+                                Unavailable
+                              </span>
+                            )}
+                          </div>
+                          <div className={`text-sm ${isDisabled ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {method.description}
+                          </div>
                         </div>
-                        {isSelected && (
+                        {isSelected && !isDisabled && (
                           <CheckCircle className="w-5 h-5 text-purple-600" />
                         )}
                       </div>
@@ -290,8 +311,8 @@ const PaymentsPage: React.FC = () => {
             <p className="text-gray-600">Here you can download your invoices and receipts in PDF format for your records.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {receipts.map((receipt, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-purple-200 hover:bg-purple-50/30 transition-all">
+              {receipts.map((receipt) => (
+                <div key={receipt.id} className="border border-gray-200 rounded-lg p-4 hover:border-purple-200 hover:bg-purple-50/30 transition-all">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <FileText className="w-6 h-6 text-purple-600" />
@@ -300,14 +321,15 @@ const PaymentsPage: React.FC = () => {
                       <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1">{receipt.title}</h4>
                       <p className="text-xs text-gray-600">Issued: {receipt.date}</p>
                       <p className="text-xs text-gray-600">Amount: {receipt.amount}</p>
+                      <p className="text-xs text-gray-500">Ref: {receipt.reference}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1 text-xs"
-                      onClick={() => handleViewReceipt(receipt.title)}
+                      className="flex-1 text-xs hover:bg-purple-50 hover:border-purple-300"
+                      onClick={() => handleViewReceipt(receipt)}
                     >
                       <Eye className="w-3 h-3 mr-1" />
                       View
@@ -315,7 +337,7 @@ const PaymentsPage: React.FC = () => {
                     <Button 
                       size="sm" 
                       className="flex-1 bg-purple-600 hover:bg-purple-700 text-xs"
-                      onClick={() => handleDownloadReceipt(receipt.title)}
+                      onClick={() => handleDownloadReceipt(receipt)}
                     >
                       <Download className="w-3 h-3 mr-1" />
                       Download
@@ -328,11 +350,11 @@ const PaymentsPage: React.FC = () => {
             <div className="pt-4 border-t border-gray-200">
               <Button 
                 variant="outline" 
-                className="w-full flex items-center gap-2"
-                onClick={() => alert('Downloading all receipts as ZIP file...')}
+                className="w-full flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300"
+                onClick={handleDownloadAllReceipts}
               >
                 <FileArchive className="w-4 h-4" />
-                Download All Receipts (ZIP)
+                Download All Receipts Summary (PDF)
               </Button>
             </div>
           </CardContent>

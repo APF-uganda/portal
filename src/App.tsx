@@ -21,7 +21,7 @@ import CreatePostPage from "./pages/member/CreatePostPage";
 import MyPostsPage from "./pages/member/MyPostsPage";
 import PostDetailPage from "./pages/member/PostDetailPage";
 import NotificationsPage from "./pages/member/NotificationsPage";
-import MembershipStatus from "./pages/member/membershipStatus";
+
 import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
 import ProfilePage from "./pages/member/ProfilePage";
 
@@ -88,14 +88,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/membership-status"
-            element={
-              <ProtectedRoute role="member">
-                <MembershipStatus />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/documents"
             element={
