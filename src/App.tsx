@@ -236,6 +236,18 @@ const App: React.FC = () => {
             }
           />
 
+
+<Route
+            path="/admin/announcements"
+            element={
+              <ProtectedRoute role="admin">
+                <CommunicationDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+
+
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
