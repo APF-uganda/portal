@@ -190,6 +190,16 @@ const App: React.FC = () => {
 
 
 <Route
+            path="/admin/cmsPage"
+            element={
+              <ProtectedRoute role="admin">
+                <CmsContentPage />
+              </ProtectedRoute>
+            }
+          />
+
+
+<Route
             path="/admin/communityForum"
             element={
               <ProtectedRoute role="admin">

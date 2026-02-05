@@ -9,7 +9,7 @@ import { ForumPost } from '../../components/adminForum-components/types';
 
 import { 
   FileText, Users, Flag, Plus, LayoutGrid, List, 
-  MessageSquare, ThumbsUp, Eye, Edit3, Trash2, ChevronDown, ChevronUp 
+  MessageSquare, ThumbsUp, Trash2, ChevronDown, ChevronUp 
 } from 'lucide-react';
 
 const MOCK_DATA: ForumPost[] = [
@@ -81,8 +81,7 @@ const CommunityForum = () => {
                             </div>
                           </div>
                           <div className="flex gap-4 text-gray-400">
-                            <button className="hover:text-indigo-600 transition-colors"><Eye size={18} /></button>
-                            <button className="hover:text-indigo-600 transition-colors"><Edit3 size={18} /></button>
+                            
                             <button className="hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
                           </div>
                         </div>
