@@ -39,7 +39,7 @@ const CmsContentPage = () => {
                 <p className="text-slate-500 mt-1">Manage news, events, announcements, and other content across the portal</p>
               </div>
               <div className="flex gap-3">
-                <button className="bg-[#4B2C82] hover:bg-[#3a2266] text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-purple-200 transition-all">
+                <button className="bg-[#4B2C82] hover:bg-[#3a2266] text-white nowrap px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-purple-200 transition-all">
                   <Plus size={20} /> Create New Content
                 </button>
                 <button className="bg-white border border-gray-200 text-gray-700 px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold hover:bg-gray-50 transition-all shadow-sm">

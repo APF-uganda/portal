@@ -32,6 +32,7 @@ import AdminProfilePage from "./pages/admin/profilePage";
 import ReportsPage from "./pages/admin/reportsAnalytics";
 import CmsContentPage from "./pages/admin/cmsPage";
 import CommunityForum from "./pages/admin/communityForum";
+import CommunicationDashboard from "./pages/admin/announcements";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -73,6 +74,9 @@ const App: React.FC = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/cmspage" element={<CmsContentPage />} />
           <Route path="/communityforum" element={<CommunityForum />} />
+          <Route path="/announcements" element={<CommunicationDashboard />} />
+
+
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
