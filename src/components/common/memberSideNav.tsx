@@ -1,10 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
-  LayoutGrid,
-  Bookmark,
+  LayoutDashboard,
+  FolderCheck,
+  Bell,
   CreditCard,
   MessageSquare,
-  Diamond,
   LogOut,
   ChevronLeft,
   User,
@@ -16,11 +16,11 @@ import {
 import { useState } from "react"
 import logoDashboard from "../../assets/LogoDashboard.png"
 
-/* MEMBER navigation items */
+/* MEMBER navigation items - Clean, semantic icon mapping */
 const memberNavItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-  { label: "Documents", href: "/documents", icon: Bookmark },
-  { label: "Notifications", href: "/notifications", icon: Diamond },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Documents", href: "/documents", icon: FolderCheck },
+  { label: "Notifications", href: "/notifications", icon: Bell },
 ]
 
 interface MemberSideNavProps {
