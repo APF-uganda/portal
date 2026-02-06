@@ -6,31 +6,38 @@ import Footer from "../../components/layout/Footer";
 import StatsCard from '../../components/adminForum-components/statscard';
 import FilterBar from '../../components/adminForum-components/filter';
 import { PostTable } from '../../components/adminForum-components/postTable';
-import { PostStatus } from '../../components/adminForum-components/types';
+import PostDetailModal from '../../components/adminForum-components/PostDetailModal';
+import { PostStatus, ForumPost } from '../../components/adminForum-components/types';
 import { 
   useForumPosts, 
   useForumStats, 
   useCategories, 
   useDeletePost,
-  useToggleLike 
+  useToggleLike,
+  useComments,
+  useCreateComment
 } from '../../hooks/useForumData';
 
 import { 
   FileText, Users, Flag, Plus, LayoutGrid, List, 
-  MessageSquare, ThumbsUp, Trash2, ChevronDown, ChevronUp 
+  MessageSquare, ThumbsUp, Trash2, Eye, Edit
 } from 'lucide-react';
 
 const CommunityForum = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState<'feed' | 'table'>('feed');
-  const [expandedPost, setExpandedPost] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'published' | 'draft'>('published');
+  const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<PostStatus | 'all'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Character limit for preview
+  const PREVIEW_CHAR_LIMIT = 200;
 
   // Debounce search
   useEffect(() => {
@@ -40,12 +47,12 @@ const CommunityForum = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Build filters for API
+  // Build filters for API based on active tab
   const filters = useMemo(() => ({
-    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+    status: (activeTab === 'published' ? 'published' : 'draft') as PostStatus,
     category: selectedCategory !== 'all' ? selectedCategory : undefined,
     search: debouncedSearch || undefined,
-  }), [selectedStatus, selectedCategory, debouncedSearch]);
+  }), [activeTab, selectedCategory, debouncedSearch]);
 
   // Fetch data
   const { data: postsData, loading: postsLoading, error: postsError, refetch: refetchPosts } = useForumPosts(filters);
@@ -53,6 +60,10 @@ const CommunityForum = () => {
   const { data: categories, loading: categoriesLoading } = useCategories();
   const { deletePost } = useDeletePost();
   const { toggleLike } = useToggleLike();
+  
+  // Comments management
+  const { data: comments, loading: commentsLoading, refetch: refetchComments } = useComments(selectedPost?.id || null);
+  const { createComment } = useCreateComment();
 
   console.log('📊 Posts data:', postsData);
   console.log('📊 Posts loading:', postsLoading);
@@ -74,11 +85,40 @@ const CommunityForum = () => {
     const success = await toggleLike(postId, isLiked);
     if (success) {
       refetchPosts();
+      // Update the selected post if modal is open
+      if (selectedPost && selectedPost.id === postId) {
+        setSelectedPost({
+          ...selectedPost,
+          is_liked: !isLiked,
+          like_count: isLiked ? selectedPost.like_count - 1 : selectedPost.like_count + 1
+        });
+      }
     }
   };
 
-  const toggleExpand = (id: number) => {
-    setExpandedPost(expandedPost === id ? null : id);
+  const openPostModal = (post: ForumPost) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const closePostModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedPost(null), 300);
+  };
+
+  const handleAddComment = async (postId: number, content: string): Promise<boolean> => {
+    const comment = await createComment({ post: postId, content });
+    if (comment) {
+      refetchComments();
+      refetchPosts(); // Refresh to update comment count
+      return true;
+    }
+    return false;
+  };
+
+  const truncateContent = (content: string, limit: number) => {
+    if (content.length <= limit) return content;
+    return content.substring(0, limit) + '...';
   };
 
   const formatDate = (dateString: string) => {
@@ -151,7 +191,7 @@ const CommunityForum = () => {
                   <StatsCard 
                     title="Total Posts" 
                     value={stats.total_posts} 
-                    trend={`${stats.published_posts} published`} 
+                    trend={`${stats.published_posts} published, ${stats.draft_posts} drafts`} 
                     icon={<FileText size={20} />} 
                   />
                   <StatsCard 
@@ -171,12 +211,50 @@ const CommunityForum = () => {
               ) : null}
             </div>
 
+            {/* Tabs for Published/Draft */}
+            <div className="mb-6">
+              <div className="flex gap-2 border-b border-gray-200">
+                <button
+                  onClick={() => setActiveTab('published')}
+                  className={`px-6 py-3 font-semibold text-sm transition-all ${
+                    activeTab === 'published'
+                      ? 'text-[#5C32A3] border-b-2 border-[#5C32A3]'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Published Posts
+                  {stats && (
+                    <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full text-xs">
+                      {stats.published_posts}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('draft')}
+                  className={`px-6 py-3 font-semibold text-sm transition-all ${
+                    activeTab === 'draft'
+                      ? 'text-[#5C32A3] border-b-2 border-[#5C32A3]'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Draft Posts
+                  {stats && (
+                    <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                      {stats.draft_posts}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
             {/* Filter Bar */}
             <FilterBar 
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              selectedStatus={selectedStatus}
-              onStatusChange={setSelectedStatus}
+              selectedStatus={activeTab as PostStatus}
+              onStatusChange={() => {
+                // Status is controlled by tabs now
+              }}
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               categories={categories}
@@ -230,25 +308,29 @@ const CommunityForum = () => {
                     <div className="bg-white p-12 rounded-2xl border border-gray-100 shadow-sm text-center">
                       <div className="max-w-md mx-auto">
                         <FileText size={64} className="text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-700 mb-2">No posts yet</h3>
+                        <h3 className="text-xl font-bold text-gray-700 mb-2">
+                          {activeTab === 'published' ? 'No published posts yet' : 'No draft posts yet'}
+                        </h3>
                         <p className="text-gray-500 mb-6">
-                          {(selectedStatus !== 'all' || selectedCategory !== 'all' || debouncedSearch) 
+                          {(selectedCategory !== 'all' || debouncedSearch) 
                             ? 'No posts match your current filters. Try adjusting your search criteria.'
-                            : 'Be the first to create a post in the community forum!'}
+                            : activeTab === 'published' 
+                              ? 'Be the first to publish a post in the community forum!'
+                              : 'You don\'t have any draft posts. Create a new post to get started!'}
                         </p>
-                        {selectedStatus === 'all' && selectedCategory === 'all' && !debouncedSearch && (
+                        {selectedCategory === 'all' && !debouncedSearch && (
                           <button
                             onClick={() => navigate('/admin/communityForum/create-post')}
                             className="bg-[#5C32A3] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#4A2885] transition-colors inline-flex items-center gap-2"
                           >
-                            <Plus size={20} /> Create First Post
+                            <Plus size={20} /> Create {activeTab === 'draft' ? 'Draft' : 'Post'}
                           </button>
                         )}
                       </div>
                     </div>
                   ) : (
                     posts.map((post) => (
-                      <div key={post.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all">
+                      <div key={post.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-[#8B5CF6] text-white flex items-center justify-center font-bold">
@@ -259,32 +341,41 @@ const CommunityForum = () => {
                               <p className="text-xs text-gray-400">{formatDate(post.created_at)}</p>
                             </div>
                           </div>
-                          <div className="flex gap-4 text-gray-400">
+                          <div className="flex gap-2">
+                            {activeTab === 'draft' && (
+                              <button 
+                                onClick={() => navigate(`/admin/communityForum/edit-post/${post.id}`)}
+                                className="p-2 hover:bg-purple-50 rounded-lg transition-colors text-purple-600"
+                                title="Edit draft"
+                              >
+                                <Edit size={18} />
+                              </button>
+                            )}
                             <button 
                               onClick={() => handleDeletePost(post.id)}
-                              className="hover:text-red-500 transition-colors"
+                              className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500"
+                              title="Delete post"
                             >
                               <Trash2 size={18} />
                             </button>
                           </div>
                         </div>
 
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 break-words">{post.title}</h3>
                         
-                        <div className={`text-sm text-gray-600 leading-relaxed mb-4 ${expandedPost === post.id ? '' : 'line-clamp-2'}`}>
-                          {post.content}
+                        <div className="text-sm text-gray-600 leading-relaxed mb-4 whitespace-pre-wrap break-words">
+                          {truncateContent(post.content, PREVIEW_CHAR_LIMIT)}
                         </div>
 
-                        <button 
-                          onClick={() => toggleExpand(post.id)}
-                          className="text-[#5C32A3] text-xs font-bold flex items-center gap-1 mb-4 hover:underline"
-                        >
-                          {expandedPost === post.id ? (
-                            <>Show Less <ChevronUp size={14} /></>
-                          ) : (
-                            <>Read More <ChevronDown size={14} /></>
-                          )}
-                        </button>
+                        {post.content.length > PREVIEW_CHAR_LIMIT && (
+                          <button 
+                            onClick={() => openPostModal(post)}
+                            className="text-[#5C32A3] text-sm font-bold flex items-center gap-2 mb-4 hover:underline"
+                          >
+                            <Eye size={16} />
+                            Read More
+                          </button>
+                        )}
 
                         <div className="flex justify-between items-center pt-4 border-t border-gray-50">
                           <div className="flex gap-5 text-gray-400 text-xs font-medium">
@@ -324,6 +415,19 @@ const CommunityForum = () => {
         </div>
         <Footer />
       </main>
+
+      {/* Post Detail Modal */}
+      {selectedPost && (
+        <PostDetailModal
+          post={selectedPost}
+          isOpen={isModalOpen}
+          onClose={closePostModal}
+          onToggleLike={handleToggleLike}
+          comments={comments || []}
+          onAddComment={handleAddComment}
+          loadingComments={commentsLoading}
+        />
+      )}
     </div>
   );
 };

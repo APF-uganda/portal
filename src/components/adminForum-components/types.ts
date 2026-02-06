@@ -75,10 +75,15 @@ export interface ForumPost {
   is_liked: boolean;
   created_at: string;
   updated_at: string;
+  // For display purposes in admin components
+  authorName?: string;
+  authorInitials?: string;
+  date?: string;
+  comments?: number;
 }
 
 // Forum Post Detail Interface (includes comments)
-export interface ForumPostDetail extends ForumPost {
+export interface ForumPostDetail extends Omit<ForumPost, 'comments'> {
   comments: Comment[];
 }
 

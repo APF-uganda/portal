@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react';
-import { Category, Tag, PostStatus } from './types';
+import { Category, PostStatus } from './types';
 
 interface FilterBarProps {
   searchTerm: string;

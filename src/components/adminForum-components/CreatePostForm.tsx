@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Category, Tag, PostStatus, CreatePostRequest } from '../adminForum-components/types';
 

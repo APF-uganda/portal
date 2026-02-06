@@ -92,7 +92,7 @@ function AdminDashboard(){
       color: "orange" 
     },
     { 
-      title: "Revenue (This Month)", 
+      title: "Total Revenue", 
       value: dashboardStats.revenue.value, 
       trend: dashboardStats.revenue.trend,
       percentage: `${dashboardStats.revenue.trend === 'up' ? '+' : '-'}${dashboardStats.revenue.change}%`, 
