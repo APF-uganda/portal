@@ -16,12 +16,14 @@ export interface DashboardStatistics {
   approved_applications: number;
   rejected_applications: number;
   paid_applications: number;
+  total_revenue: number;
   trends: {
     total_change: number;
     pending_change: number;
     approved_change: number;
     rejected_change: number;
     paid_change: number;
+    revenue_change: number;
   };
 }
 
@@ -97,12 +99,14 @@ export async function fetchDashboardStatistics(): Promise<DashboardStatistics> {
       approved_applications: 0,
       rejected_applications: 0,
       paid_applications: 0,
+      total_revenue: 0,
       trends: {
         total_change: 0,
         pending_change: 0,
         approved_change: 0,
         rejected_change: 0,
         paid_change: 0,
+        revenue_change: 0,
       },
     };
   }
@@ -162,10 +166,17 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
   try {
     const stats = await fetchDashboardStatistics();
     
-    // Calculate revenue based on approved applications (assuming 150,000 UGX per member)
-    const revenuePerMember = 150000;
-    const totalRevenue = stats.approved_applications * revenuePerMember;
-    const revenueChange = stats.trends.approved_change; // Use approved applications trend for revenue
+    // Format revenue in UGX with proper formatting
+    const formatUGX = (amount: number): string => {
+      if (amount >= 1000000000) {
+        return `UGX ${(amount / 1000000000).toFixed(2)}B`;
+      } else if (amount >= 1000000) {
+        return `UGX ${(amount / 1000000).toFixed(2)}M`;
+      } else if (amount >= 1000) {
+        return `UGX ${(amount / 1000).toFixed(2)}K`;
+      }
+      return `UGX ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
     
     return {
       totalMembers: {
@@ -179,9 +190,9 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
         trend: stats.trends.total_change >= 0 ? 'up' : 'down'
       },
       revenue: {
-        value: `UGX ${(totalRevenue / 1000000).toFixed(1)}M`,
-        change: Math.abs(revenueChange),
-        trend: revenueChange >= 0 ? 'up' : 'down'
+        value: formatUGX(stats.total_revenue),
+        change: Math.abs(stats.trends.revenue_change),
+        trend: stats.trends.revenue_change >= 0 ? 'up' : 'down'
       }
     };
   } catch (error) {
@@ -199,7 +210,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
         trend: 'up'
       },
       revenue: {
-        value: 'UGX 0.0M',
+        value: 'UGX 0.00',
         change: 0,
         trend: 'up'
       }

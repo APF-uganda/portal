@@ -8,6 +8,7 @@ import emailjs from '@emailjs/browser';
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_algcmhn';
 const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'cA_eld2ezDC7RRjxD';
 const EMAILJS_TEMPLATE_ID_OTP = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_OTP || 'template_le2zqzf';
+const EMAILJS_TEMPLATE_ID_APPROVAL = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_APPROVAL || 'template_approval';
 
 // Initialize EmailJS
 emailjs.init(EMAILJS_PUBLIC_KEY);
@@ -16,6 +17,12 @@ export interface SendOTPEmailParams {
   to_email: string;
   otp_code: string;
   user_name?: string;
+}
+
+export interface SendApprovalEmailParams {
+  to_email: string;
+  user_name: string;
+  from_email?: string;
 }
 
 /**
@@ -36,14 +43,47 @@ export const sendOTPEmail = async (params: SendOTPEmailParams): Promise<boolean>
     );
 
     if (response.status === 200) {
-      console.log('✅ OTP email sent successfully via EmailJS');
+      console.log(' OTP email sent successfully via EmailJS');
       return true;
     } else {
-      console.error('❌ EmailJS error:', response);
+      console.error(' EmailJS error:', response);
       return false;
     }
   } catch (error) {
-    console.error('❌ Error sending OTP email:', error);
+    console.error(' Error sending OTP email:', error);
     return false;
   }
 };
+
+/**
+ * Send application approval email using EmailJS from frontend
+ */
+export const sendApprovalEmail = async (params: SendApprovalEmailParams): Promise<boolean> => {
+  try {
+    const templateParams = {
+      to_email: params.to_email,
+      user_name: params.user_name,
+      from_email: params.from_email || 'abnowellah@gmail.com',
+      reply_to: 'abnowellah@gmail.com',
+    };
+
+    const response = await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID_APPROVAL,
+      templateParams
+    );
+
+    if (response.status === 200) {
+      console.log(' Approval email sent successfully via EmailJS');
+      return true;
+    } else {
+      console.error(' EmailJS error:', response);
+      return false;
+    }
+  } catch (error) {
+    console.error(' Error sending approval email:', error);
+    return false;
+  }
+};
+
+

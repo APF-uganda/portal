@@ -91,9 +91,9 @@ function MemberSideNav({ isCollapsed, onToggle, isMobileOpen = false, onMobileTo
               className="h-8 md:h-10 w-auto object-contain flex-shrink-0"
             />
             {!isCollapsed && (
-              <div className="text-lg md:text-xl font-bold text-gray-900 leading-tight">
+              <div className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
                 <div>APF</div>
-                <div className="text-base md:text-lg">Uganda</div>
+                <div className="text-lg md:text-xl">Uganda</div>
               </div>
             )}
           </Link>
