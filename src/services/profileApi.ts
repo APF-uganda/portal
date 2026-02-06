@@ -399,6 +399,31 @@ export async function getProfileActivityLog(): Promise<{ activities: ProfileActi
 }
 
 /**
+ * Change user password
+ */
+export async function changePassword(data: {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}): Promise<{ success: boolean; message?: string }> {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/api/v1/auth/profile/change-password/`,
+      data,
+      {
+        headers: getAuthHeaders(),
+        timeout: 30000,
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Failed to change password:', error);
+    handleApiError(error);
+  }
+}
+
+/**
  * Validate file for profile picture upload
  */
 export function validateProfilePicture(file: File): string | null {

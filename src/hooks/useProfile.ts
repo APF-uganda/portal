@@ -17,6 +17,7 @@ import {
   updatePrivacySettings,
   updateNotificationPreferences,
   getProfileCompletionStatus,
+  changePassword,
   validateProfilePicture,
   generateInitials
 } from '../services/profileApi';
@@ -284,9 +285,11 @@ export const useProfile = (): UseProfileReturn => {
       setChangingPassword(true);
       setError(null);
       
-      // TODO: Implement password change API call
-      // For now, just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await changePassword({
+        current_password: _data.current_password,
+        new_password: _data.new_password,
+        confirm_password: _data.confirm_password,
+      });
       
       return true;
     } catch (err) {

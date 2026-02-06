@@ -32,6 +32,7 @@ import AdminProfilePage from "./pages/admin/profilePage";
 import ReportsPage from "./pages/admin/reportsAnalytics";
 import CmsContentPage from "./pages/admin/cmsPage";
 import CommunityForum from "./pages/admin/communityForum";
+import CommunicationDashboard from "./pages/admin/announcements";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -73,6 +74,9 @@ const App: React.FC = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/cmspage" element={<CmsContentPage />} />
           <Route path="/communityforum" element={<CommunityForum />} />
+          <Route path="/announcements" element={<CommunicationDashboard />} />
+
+
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
@@ -187,6 +191,29 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+
+<Route
+            path="/admin/cmsPage"
+            element={
+              <ProtectedRoute role="admin">
+                <CmsContentPage />
+              </ProtectedRoute>
+            }
+          />
+
+
+<Route
+            path="/admin/communityForum"
+            element={
+              <ProtectedRoute role="admin">
+                <CommunityForum />
+              </ProtectedRoute>
+            }
+          />
+
+
+
           <Route
             path="/admin/reports"
             element={
@@ -196,14 +223,7 @@ const App: React.FC = () => {
             }
           />
 
-<Route
-            path="/admin/communityforum"
-            element={
-              <ProtectedRoute role="admin">
-                <CommunityForum />
-              </ProtectedRoute>
-            }
-          />
+
 
 
 
@@ -215,6 +235,18 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+
+<Route
+            path="/admin/announcements"
+            element={
+              <ProtectedRoute role="admin">
+                <CommunicationDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />

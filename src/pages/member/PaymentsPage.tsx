@@ -14,6 +14,7 @@ import {
   CheckCircle,
   FileArchive,
   ExternalLink,
+  Loader2,
 } from "lucide-react"
 
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
@@ -22,11 +23,17 @@ import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
 import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/receiptGenerator"
-import { TransactionDataService } from "../../services/transactionData"
+import { useRecentTransactions, useReceipts } from "../../hooks/usePaymentHistory"
 
 const PaymentsPage: React.FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mtn')
   const [isProcessing, setIsProcessing] = useState(false)
+
+  // Get recent transactions from payment history (shared data source)
+  const { transactions: recentTransactions, loading: transactionsLoading } = useRecentTransactions(3)
+
+  // Get receipts from backend
+  const { receipts, loading: receiptsLoading } = useReceipts()
 
   const paymentMethods = [
     {
@@ -51,12 +58,6 @@ const PaymentsPage: React.FC = () => {
       disabled: true,
     },
   ]
-
-  // Get recent transactions from the shared service
-  const recentTransactions = TransactionDataService.getRecentTransactions(3)
-
-  // Get receipts from the shared service
-  const receipts = TransactionDataService.getAllReceipts()
 
   const handlePaymentMethodSelect = (methodId: string) => {
     setSelectedPaymentMethod(methodId)
@@ -261,33 +262,45 @@ const PaymentsPage: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3">
-                {recentTransactions.map((transaction, index) => {
-                  const MethodIcon = transaction.methodIcon
-                  return (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-purple-200 hover:bg-purple-50/30 transition-all">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900">{transaction.date}</div>
-                          <Badge className="bg-purple-100 text-purple-700 text-xs mt-1">
-                            {transaction.type}
-                          </Badge>
+              {transactionsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+                </div>
+              ) : recentTransactions.length === 0 ? (
+                <div className="text-center py-8">
+                  <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600 text-sm">No recent transactions</p>
+                  <p className="text-gray-500 text-xs mt-1">Your payment history will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentTransactions.map((transaction, index) => {
+                    const MethodIcon = transaction.methodIcon
+                    return (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-purple-200 hover:bg-purple-50/30 transition-all">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-900">{transaction.date}</div>
+                            <Badge className="bg-purple-100 text-purple-700 text-xs mt-1">
+                              {transaction.type}
+                            </Badge>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold text-gray-900">{transaction.amount}</div>
+                            <div className="text-sm text-gray-600">{transaction.reference}</div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <div className="font-semibold text-gray-900">{transaction.amount}</div>
-                          <div className="text-sm text-gray-600">{transaction.reference}</div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                            <MethodIcon className="w-3 h-3 text-purple-600" />
+                          </div>
+                          {transaction.method}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                          <MethodIcon className="w-3 h-3 text-purple-600" />
-                        </div>
-                        {transaction.method}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+              )}
               
               <Link to="/payment-history">
                 <Button variant="outline" className="w-full flex items-center gap-2">
@@ -310,53 +323,67 @@ const PaymentsPage: React.FC = () => {
           <CardContent className="space-y-6">
             <p className="text-gray-600">Here you can download your invoices and receipts in PDF format for your records.</p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {receipts.map((receipt) => (
-                <div key={receipt.id} className="border border-gray-200 rounded-lg p-4 hover:border-purple-200 hover:bg-purple-50/30 transition-all">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-6 h-6 text-purple-600" />
+            {receiptsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+              </div>
+            ) : receipts.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600 text-sm">No receipts available</p>
+                <p className="text-gray-500 text-xs mt-1">Receipts and invoices will appear here after payments are made</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {receipts.map((receipt) => (
+                    <div key={receipt.id} className="border border-gray-200 rounded-lg p-4 hover:border-purple-200 hover:bg-purple-50/30 transition-all">
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1">{receipt.title}</h4>
+                          <p className="text-xs text-gray-600">Issued: {receipt.date}</p>
+                          <p className="text-xs text-gray-600">Amount: {receipt.amount}</p>
+                          <p className="text-xs text-gray-500">Ref: {receipt.reference}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 text-xs hover:bg-purple-50 hover:border-purple-300"
+                          onClick={() => handleViewReceipt(receipt)}
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          View
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          className="flex-1 bg-purple-600 hover:bg-purple-700 text-xs"
+                          onClick={() => handleDownloadReceipt(receipt)}
+                        >
+                          <Download className="w-3 h-3 mr-1" />
+                          Download
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1">{receipt.title}</h4>
-                      <p className="text-xs text-gray-600">Issued: {receipt.date}</p>
-                      <p className="text-xs text-gray-600">Amount: {receipt.amount}</p>
-                      <p className="text-xs text-gray-500">Ref: {receipt.reference}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 text-xs hover:bg-purple-50 hover:border-purple-300"
-                      onClick={() => handleViewReceipt(receipt)}
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      View
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-xs"
-                      onClick={() => handleDownloadReceipt(receipt)}
-                    >
-                      <Download className="w-3 h-3 mr-1" />
-                      Download
-                    </Button>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="pt-4 border-t border-gray-200">
-              <Button 
-                variant="outline" 
-                className="w-full flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300"
-                onClick={handleDownloadAllReceipts}
-              >
-                <FileArchive className="w-4 h-4" />
-                Download All Receipts Summary (PDF)
-              </Button>
-            </div>
+                <div className="pt-4 border-t border-gray-200">
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center gap-2 hover:bg-purple-50 hover:border-purple-300"
+                    onClick={handleDownloadAllReceipts}
+                  >
+                    <FileArchive className="w-4 h-4" />
+                    Download All Receipts Summary (PDF)
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

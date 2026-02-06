@@ -63,14 +63,14 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, onToggle }) => {
       <div className="flex-1 overflow-y-auto px-2">
         <nav className="space-y-2 mt-4">
           <NavItem icon={<MdDashboard />} label="Dashboard" to="/admin/dashboard" collapsed={collapsed} />
-          <NavItem icon={<FiInbox />} label="Inbox" to="/admin/inbox" badgeCount={99} collapsed={collapsed} />
+          <NavItem icon={<FiInbox />} label="Manage CMS" to="/admin/cmsPage"  collapsed={collapsed} />
           <NavItem icon={<FiUser />} label="Membership Applications" to="/admin/approval" collapsed={collapsed} />
           <NavItem icon={<FiUser />} label="Profile" to="/admin/profile" collapsed={collapsed} />
           <NavItem icon={<FaFileAlt />} label="Documents" to="/admin/documents" collapsed={collapsed} />
           <NavItem icon={<FaMoneyBill />} label="Payments & Renewals" to="/admin/payments" collapsed={collapsed} />
           <NavItem icon={<MdInsights />} label="Reports & Analytics" to="/admin/reports" collapsed={collapsed} />
-          <NavItem icon={<FaComments />} label="Community Forum" to="/admin/communityforum" collapsed={collapsed} />
-          <NavItem icon={<FiBell />} label="Notifications" to="/admin/notifications" collapsed={collapsed} />
+          <NavItem icon={<FaComments />} label="Community Forum" to="/admin/communityForum" collapsed={collapsed} />
+          <NavItem icon={<FiBell />} label="Announcements" to="/admin/announcements" collapsed={collapsed} />
         </nav>
       </div>
 
