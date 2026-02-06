@@ -320,6 +320,11 @@ export async function submitApplication(
       formData.append('payment_error_message', applicationData.paymentErrorMessage);
     }
     
+    // Add payment amount
+    if (applicationData.paymentAmount !== undefined) {
+      formData.append('payment_amount', applicationData.paymentAmount.toString());
+    }
+    
     // Add document files with types
     applicationData.documents.forEach((doc) => {
       formData.append('documents', doc.file);

@@ -64,6 +64,15 @@ const AdminApprovals = () => {
         hasTotalRevenue: statistics?.total_revenue !== undefined
     });
 
+    // Force refresh of statistics periodically to ensure revenue is current
+    useEffect(() => {
+        const interval = setInterval(() => {
+            refetchStats();
+        }, 30000); // Refresh stats every 30 seconds
+
+        return () => clearInterval(interval);
+    }, [refetchStats]);
+
     const handleApprove = async (applicationId: number) => {
         clearError();
         setSuccessMessage(null);
@@ -94,14 +103,19 @@ const AdminApprovals = () => {
                 }
             }
 
+            // Refetch all data to ensure revenue stats are updated immediately
             await Promise.all([refetch(), refetchStats()]);
-            setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (error) {
-        console.error("Failed to approve application:", error);
-    } finally {
-        setActionLoadingId(null);
-    }
-};
+            // Also force an immediate refetch to ensure revenue is current
+            setTimeout(() => {
+                refetchStats();  // Additional refresh to get latest revenue
+                setSuccessMessage(null);
+            }, 3000);
+        } catch (error) {
+            console.error("Failed to approve application:", error);
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
 
 const handleReject = async (applicationId: number) => {
     clearError();
@@ -111,8 +125,13 @@ const handleReject = async (applicationId: number) => {
         const result = await reject(applicationId);
         if (result.success) {
             setSuccessMessage("Application rejected successfully");
+            // Refetch all data to ensure revenue stats are updated immediately
             await Promise.all([refetch(), refetchStats()]);
-            setTimeout(() => setSuccessMessage(null), 3000);
+            // Also force an immediate refetch to ensure revenue is current
+            setTimeout(() => {
+                refetchStats();  // Additional refresh to get latest revenue
+                setSuccessMessage(null);
+            }, 3000);
         }
     } catch (error) {
         console.error("Failed to reject application:", error);
@@ -129,8 +148,13 @@ const handleRetry = async (applicationId: number) => {
         const result = await retry(applicationId);
         if (result.success) {
             setSuccessMessage("Application reset to pending successfully");
+            // Refetch all data to ensure revenue stats are updated immediately
             await Promise.all([refetch(), refetchStats()]);
-            setTimeout(() => setSuccessMessage(null), 3000);
+            // Also force an immediate refetch to ensure revenue is current
+            setTimeout(() => {
+                refetchStats();  // Additional refresh to get latest revenue
+                setSuccessMessage(null);
+            }, 3000);
         }
     } catch (error) {
         console.error("Failed to reset application:", error);
