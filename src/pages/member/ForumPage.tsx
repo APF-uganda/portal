@@ -13,68 +13,81 @@ import {
   Lightbulb,
   HelpCircle,
   Briefcase,
-  UserPlus
+  UserPlus,
+  Loader2
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { useForumPosts, useForumCategories, useActiveUsers } from '../../hooks/useForum';
 
 const ForumPage = () => {
-  const [activeCategory, setActiveCategory] = useState('announcements');
+  const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [likedPosts, setLikedPosts] = useState<number[]>([]);
+  const [bookmarkedPosts, setBookmarkedPosts] = useState<number[]>([]);
 
-  const categories = [
-    { id: 'announcements', name: 'Announcements', icon: Megaphone, count: 124 },
-    { id: 'suggestions', name: 'Suggestions', icon: Lightbulb, count: 308 },
-    { id: 'general', name: 'General Discussion', icon: MessageSquare, count: 954 },
-    { id: 'qa', name: 'Q&A Support', icon: HelpCircle, count: 421 },
-    { id: 'tips', name: 'Professional Tips', icon: Briefcase, count: 287 },
-    { id: 'networking', name: 'Networking', icon: UserPlus, count: 156 }
+  // Use hooks to fetch data
+  const { posts: forumPosts, loading: postsLoading, error: postsError } = useForumPosts(activeCategory, activeFilter);
+  const { categories, loading: categoriesLoading } = useForumCategories();
+  const { users: activeUsers, loading: usersLoading } = useActiveUsers();
+
+  // Default categories if API returns empty
+  const defaultCategories = [
+    { id: 'announcements', name: 'Announcements', icon: Megaphone, count: 0 },
+    { id: 'suggestions', name: 'Suggestions', icon: Lightbulb, count: 0 },
+    { id: 'general', name: 'General Discussion', icon: MessageSquare, count: 0 },
+    { id: 'qa', name: 'Q&A Support', icon: HelpCircle, count: 0 },
+    { id: 'tips', name: 'Professional Tips', icon: Briefcase, count: 0 },
+    { id: 'networking', name: 'Networking', icon: UserPlus, count: 0 }
   ];
 
-  const activeUsers = [
-    { name: 'Alice Wonderland', initials: 'AW', status: 'online', lastSeen: 'Online now' },
-    { name: 'Bob The Builder', initials: 'BT', status: 'online', lastSeen: 'Online now' },
-    { name: 'Evanescence Star', initials: 'ES', status: 'away', lastSeen: 'Last seen 30 min ago' },
-    { name: 'Michael Jordan', initials: 'MJ', status: 'online', lastSeen: 'Online now' }
-  ];
+  const displayCategories = categories.length > 0 ? categories : defaultCategories;
 
-  const forumPosts = [
-    {
-      id: 1,
-      title: 'Understanding Your APF Membership Benefits',
-      author: 'Alice Wonderland',
-      authorInitials: 'AW',
-      time: '2 hours ago',
-      category: 'Announcements',
-      excerpt: 'Dive deep into the full spectrum of benefits available with your APF membership. From exclusive resources and networking opportunities to professional development tools, this guide will help you maximize your membership value.',
-      replies: 124,
-      likes: 32,
-      views: 1289
-    },
-    {
-      id: 2,
-      title: 'Idea: Dark Mode Option for the APF Portal',
-      author: 'Evanescence Star',
-      authorInitials: 'ES',
-      time: '1 week ago',
-      category: 'Suggestions',
-      excerpt: 'Many modern applications offer a dark mode for better eye comfort, especially during nighttime use. Would the APF team consider implementing a dark mode option for the portal?',
-      replies: 210,
-      likes: 55,
-      views: 2100
-    },
-    {
-      id: 3,
-      title: 'Seeking Advice: Best Practices for Project Management',
-      author: 'Bob The Builder',
-      authorInitials: 'BT',
-      time: '1 day ago',
-      category: 'General Discussion',
-      excerpt: 'I\'m new to leading projects within APF and would appreciate advice from experienced members. What are some essential tools or methodologies you recommend for effective project management?',
-      replies: 87,
-      likes: 18,
-      views: 954
+  const handleLike = (postId: number) => {
+    if (likedPosts.includes(postId)) {
+      setLikedPosts(likedPosts.filter(id => id !== postId));
+    } else {
+      setLikedPosts([...likedPosts, postId]);
     }
-  ];
+  };
+
+  const handleBookmark = (postId: number) => {
+    if (bookmarkedPosts.includes(postId)) {
+      setBookmarkedPosts(bookmarkedPosts.filter(id => id !== postId));
+    } else {
+      setBookmarkedPosts([...bookmarkedPosts, postId]);
+    }
+  };
+
+  // Loading state
+  if (postsLoading || categoriesLoading || usersLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading forum...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Error state
+  if (postsError) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 text-red-600" />
+            </div>
+            <p className="text-gray-900 font-semibold mb-2">Failed to load forum</p>
+            <p className="text-gray-600 text-sm">{postsError}</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>
@@ -111,7 +124,7 @@ const ForumPage = () => {
                 Forum Categories
               </h3>
               <div className="space-y-2">
-                {categories.map((category) => {
+                {displayCategories.map((category) => {
                   const IconComponent = category.icon;
                   return (
                     <button
@@ -143,22 +156,28 @@ const ForumPage = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-4 border-b border-gray-200">
                 Active Members
               </h3>
-              <div className="space-y-3">
-                {activeUsers.map((user, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 transition-colors">
-                    <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                      {user.initials}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 text-sm">{user.name}</div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <div className={`w-2 h-2 rounded-full ${user.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                        <span>{user.lastSeen}</span>
+              {activeUsers.length > 0 ? (
+                <div className="space-y-3">
+                  {activeUsers.map((user, index) => (
+                    <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 transition-colors">
+                      <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        {user.initials}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900 text-sm">{user.name}</div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <div className={`w-2 h-2 rounded-full ${user.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                          <span>{user.lastSeen}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No active members at the moment
+                </div>
+              )}
             </div>
           </div>
 
@@ -196,7 +215,22 @@ const ForumPage = () => {
 
             {/* Forum Posts */}
             <div className="space-y-6">
-              {forumPosts.map((post) => (
+              {forumPosts.length === 0 ? (
+                <div className="bg-white rounded-lg p-12 shadow-sm border border-gray-200 text-center">
+                  <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No posts yet</h3>
+                  <p className="text-gray-600 mb-6">
+                    Be the first to start a discussion in the APF community
+                  </p>
+                  <Link to="/forum/create-post">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors mx-auto">
+                      <Plus className="w-5 h-5" />
+                      Create First Post
+                    </button>
+                  </Link>
+                </div>
+              ) : (
+                forumPosts.map((post) => (
                 <div key={post.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                   {/* Post Header */}
                   <div className="flex items-center justify-between mb-5">
@@ -245,17 +279,33 @@ const ForumPage = () => {
                   {/* Post Actions */}
                   <div className="flex items-center justify-between pt-5 border-t border-gray-200">
                     <div className="flex gap-3">
-                      <button className="flex items-center gap-2 px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                        <Reply className="w-4 h-4" />
-                        Reply
+                      <Link to={`/forum/post/${post.id}`}>
+                        <button className="flex items-center gap-2 px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                          <Reply className="w-4 h-4" />
+                          Reply
+                        </button>
+                      </Link>
+                      <button 
+                        onClick={() => handleLike(post.id)}
+                        className={`flex items-center gap-2 px-5 py-2 border rounded-lg transition-colors ${
+                          likedPosts.includes(post.id)
+                            ? 'border-red-200 bg-red-50 text-red-600'
+                            : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 ${likedPosts.includes(post.id) ? 'fill-current' : ''}`} />
+                        {likedPosts.includes(post.id) ? 'Liked' : 'Like'}
                       </button>
-                      <button className="flex items-center gap-2 px-5 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        <Heart className="w-4 h-4" />
-                        Like
-                      </button>
-                      <button className="flex items-center gap-2 px-5 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        <Bookmark className="w-4 h-4" />
-                        Bookmark
+                      <button 
+                        onClick={() => handleBookmark(post.id)}
+                        className={`flex items-center gap-2 px-5 py-2 border rounded-lg transition-colors ${
+                          bookmarkedPosts.includes(post.id)
+                            ? 'border-purple-200 bg-purple-50 text-purple-600'
+                            : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Bookmark className={`w-4 h-4 ${bookmarkedPosts.includes(post.id) ? 'fill-current' : ''}`} />
+                        {bookmarkedPosts.includes(post.id) ? 'Bookmarked' : 'Bookmark'}
                       </button>
                     </div>
                     <Link to={`/forum/post/${post.id}`} className="flex items-center gap-1 text-purple-600 font-semibold hover:underline">
@@ -264,30 +314,8 @@ const ForumPage = () => {
                     </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Forum Stats */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-5">Community Statistics</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <div className="text-sm text-gray-600 mb-2">Total Members</div>
-                  <div className="text-2xl font-bold text-gray-900">2,458</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <div className="text-sm text-gray-600 mb-2">Active Today</div>
-                  <div className="text-2xl font-bold text-gray-900">312</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <div className="text-sm text-gray-600 mb-2">Total Posts</div>
-                  <div className="text-2xl font-bold text-gray-900">1,842</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <div className="text-sm text-gray-600 mb-2">Total Replies</div>
-                  <div className="text-2xl font-bold text-gray-900">9,427</div>
-                </div>
-              </div>
+              ))
+              )}
             </div>
           </div>
         </div>

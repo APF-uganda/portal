@@ -17,6 +17,8 @@ import {
   MapPin,
   FileCheck,
   Megaphone,
+  ExternalLink,
+  Loader2,
 } from "lucide-react"
 
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
@@ -24,6 +26,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
 import { useProfile } from "../../hooks/useProfile"
+import { useRecentTransactions } from "../../hooks/usePaymentHistory"
+import { useDocuments } from "../../hooks/useDocuments"
+import { useSpendingOverview } from "../../hooks/useSpending"
+import { useRecentActivity } from "../../hooks/useRecentActivity"
 
 const MemberDashboard: React.FC = () => {
   // Calculate next renewal date (one year from now)
@@ -38,8 +44,63 @@ const MemberDashboard: React.FC = () => {
   }
   const { profile, loading } = useProfile();
   
+  // Get recent transactions from payment history
+  const { transactions: recentTransactions, loading: transactionsLoading } = useRecentTransactions(5);
+  
+  // Get documents from documents page
+  const { documents, loading: documentsLoading } = useDocuments();
+  
+  // Get spending overview data
+  const { data: spendingData, loading: spendingLoading } = useSpendingOverview();
+  
+  // Get recent activity (event-based from backend)
+  const { activities, loading: activityLoading } = useRecentActivity(4);
+  
+  // Combine system and user documents, take first 3
+  const allDocuments = [...documents.system, ...documents.user].slice(0, 3);
+  
   // Get display name from profile
   const displayName = profile?.full_name || profile?.first_name || profile?.email?.split('@')[0] || 'Member';
+
+  // Helper function to get document icon
+  const getDocumentIcon = (docName: string) => {
+    if (docName.toLowerCase().includes('id')) return User;
+    if (docName.toLowerCase().includes('icpau') || docName.toLowerCase().includes('certificate')) return FileCheck;
+    if (docName.toLowerCase().includes('business') || docName.toLowerCase().includes('license')) return Briefcase;
+    return FileText;
+  };
+
+  // Helper function to get activity icon and color based on type
+  const getActivityDisplay = (type: string) => {
+    const typeMap: Record<string, { icon: any; bgColor: string }> = {
+      'profile_update': { icon: Edit, bgColor: 'bg-purple-600' },
+      'payment': { icon: CreditCard, bgColor: 'bg-green-600' },
+      'document_upload': { icon: Upload, bgColor: 'bg-green-400' },
+      'document_download': { icon: Download, bgColor: 'bg-purple-400' },
+      'forum_post': { icon: StickyNote, bgColor: 'bg-blue-600' },
+      'forum_reply': { icon: StickyNote, bgColor: 'bg-blue-400' },
+      'application_submit': { icon: FileText, bgColor: 'bg-yellow-600' },
+      'application_approved': { icon: FileCheck, bgColor: 'bg-green-600' },
+      'application_rejected': { icon: FileText, bgColor: 'bg-red-600' },
+    };
+    
+    return typeMap[type] || { icon: Activity, bgColor: 'bg-gray-600' };
+  };
+
+  // Helper function to format activity timestamp
+  const formatActivityTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
+    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    if (diffDays < 7) return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <DashboardLayout>
@@ -117,44 +178,34 @@ const MemberDashboard: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
-              <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                    <Edit className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Profile details updated</p>
-                    <p className="text-xs text-gray-500">2 hours ago</p>
-                  </div>
+              {activityLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
                 </div>
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                    <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Payment of UGX 150,000 processed</p>
-                    <p className="text-xs text-gray-500">1 day ago</p>
-                  </div>
+              ) : activities.length === 0 ? (
+                <div className="text-center py-8">
+                  <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600 text-sm">No recent activity</p>
+                  <p className="text-gray-500 text-xs mt-1">Your recent actions will appear here</p>
                 </div>
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-400 rounded-lg flex items-center justify-center">
-                    <Download className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Membership certificate downloaded</p>
-                    <p className="text-xs text-gray-500">3 days ago</p>
-                  </div>
+              ) : (
+                <div className="space-y-2 md:space-y-3">
+                  {activities.map((activity) => {
+                    const { icon: IconComponent, bgColor } = getActivityDisplay(activity.type);
+                    return (
+                      <div key={activity.id} className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
+                        <div className={`w-8 h-8 md:w-10 md:h-10 ${bgColor} rounded-lg flex items-center justify-center`}>
+                          <IconComponent className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs md:text-sm font-medium text-gray-900 truncate">{activity.message}</p>
+                          <p className="text-xs text-gray-500">{formatActivityTime(activity.createdAt)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-green-400 rounded-lg flex items-center justify-center">
-                    <Upload className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">New document "Business License" uploaded</p>
-                    <p className="text-xs text-gray-500">5 days ago</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -166,119 +217,122 @@ const MemberDashboard: React.FC = () => {
                 <span className="hidden sm:inline">Documents & Certificates</span>
                 <span className="sm:hidden">Documents</span>
               </CardTitle>
+              <Link to="/documents">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  <span className="hidden sm:inline">View All</span>
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
-              <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <User className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">National ID</p>
-                      <p className="text-xs text-gray-500">Uploaded: 2023-01-10</p>
-                    </div>
-                  </div>
-                  <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
+              {documentsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
                 </div>
-                <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <FileCheck className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">ICPAU Certificate</p>
-                      <p className="text-xs text-gray-500">Uploaded: 2024-03-01</p>
-                    </div>
-                  </div>
-                  <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
+              ) : allDocuments.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">No documents uploaded yet</p>
+                  <Link to="/documents">
+                    <Button className="bg-purple-600 hover:bg-purple-700">
+                      Upload Documents
+                    </Button>
+                  </Link>
                 </div>
-                <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Business License</p>
-                      <p className="text-xs text-gray-500">Uploaded: 2023-05-20</p>
-                    </div>
-                  </div>
-                  <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
+              ) : (
+                <div className="space-y-2 md:space-y-3">
+                  {allDocuments.map((doc) => {
+                    const IconComponent = getDocumentIcon(doc.name);
+                    return (
+                      <div key={doc.id} className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <IconComponent className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs md:text-sm font-medium text-gray-900 truncate">{doc.name}</p>
+                            <p className="text-xs text-gray-500">Uploaded: {doc.uploadedDate}</p>
+                          </div>
+                        </div>
+                        <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
         {/* Payment History Table - Mobile Responsive */}
         <Card className="bg-white shadow-lg border border-gray-200">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
               <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
               Payment History
             </CardTitle>
+            <Link to="/payment-history">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                <span className="hidden sm:inline">View All</span>
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-4 px-4 font-semibold text-gray-600">Date</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-600">Description</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-600">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2024-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2023-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2022-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2021-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2020-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden space-y-3">
-              {[
-                { date: '2024-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2023-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2022-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2021-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2020-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-              ].map((payment, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{payment.description}</p>
-                      <p className="text-xs text-gray-500">{payment.date}</p>
-                    </div>
-                    <p className="text-sm font-semibold text-purple-600">{payment.amount}</p>
-                  </div>
+            {transactionsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-500">Loading payment history...</div>
+              </div>
+            ) : recentTransactions.length === 0 ? (
+              <div className="text-center py-8">
+                <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600 mb-4">No payment history yet</p>
+                <Link to="/payments">
+                  <Button className="bg-purple-600 hover:bg-purple-700">
+                    Make a Payment
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b-2 border-gray-200">
+                        <th className="text-left py-4 px-4 font-semibold text-gray-600">Date</th>
+                        <th className="text-left py-4 px-4 font-semibold text-gray-600">Description</th>
+                        <th className="text-left py-4 px-4 font-semibold text-gray-600">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentTransactions.map((transaction, index) => (
+                        <tr key={index} className="border-b hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-4 text-sm">{transaction.date}</td>
+                          <td className="py-4 px-4 text-sm">{transaction.type}</td>
+                          <td className="py-4 px-4 text-sm font-semibold text-purple-600">{transaction.amount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
-            </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-3">
+                  {recentTransactions.map((transaction, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{transaction.type}</p>
+                          <p className="text-xs text-gray-500">{transaction.date}</p>
+                        </div>
+                        <p className="text-sm font-semibold text-purple-600">{transaction.amount}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -293,16 +347,37 @@ const MemberDashboard: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-40 md:h-56 flex items-end justify-center gap-3 md:gap-6 px-2 md:px-4 py-4 md:py-6">
-                {/* Chart bars - responsive sizing */}
-                {['2024', '2023', '2022', '2021', '2020'].map((year) => (
-                  <div key={year} className="flex flex-col items-center flex-1 max-w-12 md:max-w-16">
-                    <div className="text-xs font-semibold text-purple-600 mb-1 md:mb-2">UGX 150K</div>
-                    <div className="w-full h-24 md:h-32 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all duration-300 hover:opacity-90"></div>
-                    <div className="text-xs text-gray-500 mt-1 md:mt-2">{year}</div>
-                  </div>
-                ))}
-              </div>
+              {spendingLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+                </div>
+              ) : spendingData.breakdown.length === 0 ? (
+                <div className="text-center py-8">
+                  <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-600 mb-4">No spending data yet</p>
+                  <Link to="/payment-history">
+                    <Button className="bg-purple-600 hover:bg-purple-700">
+                      View Payment History
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="h-40 md:h-56 flex items-end justify-center gap-3 md:gap-6 px-2 md:px-4 py-4 md:py-6">
+                  {/* Chart bars - responsive sizing */}
+                  {spendingData.breakdown.map((item) => (
+                    <div key={item.year} className="flex flex-col items-center flex-1 max-w-12 md:max-w-16">
+                      <div className="text-xs font-semibold text-purple-600 mb-1 md:mb-2">{item.formattedAmount}</div>
+                      <div 
+                        className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all duration-300 hover:opacity-90"
+                        style={{ 
+                          height: `${Math.max((item.amount / spendingData.totalSpent) * 100, 10)}%` 
+                        }}
+                      ></div>
+                      <div className="text-xs text-gray-500 mt-1 md:mt-2">{item.year}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
