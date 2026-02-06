@@ -78,3 +78,38 @@ export const useRecentTransactions = (limit: number = 3) => {
     error
   }
 }
+
+/**
+ * Hook for receipts and invoices
+ * Fetches all available receipts from backend
+ */
+export const useReceipts = () => {
+  const [receipts, setReceipts] = useState<Receipt[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchReceipts = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        const data = await getReceipts()
+        setReceipts(data)
+      } catch (err) {
+        setError('Failed to load receipts')
+        console.error('Receipts error:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchReceipts()
+  }, [])
+
+  return {
+    receipts,
+    loading,
+    error
+  }
+}
