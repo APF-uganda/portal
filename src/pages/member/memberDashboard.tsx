@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import {
   User,
@@ -24,44 +24,194 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
 import { useProfile } from "../../hooks/useProfile"
+import axios from "axios"
+import { API_BASE_URL } from "../../config/api"
+
+type MemberDashboardProfile = {
+  display_name: string
+  membership_category: string
+  membership_status: string
+  member_since: string | null
+  next_renewal_date: string | null
+}
+
+type MemberDashboardDocument = {
+  id: number
+  name: string
+  document_type: string
+  uploaded_at: string
+  file_url: string | null
+}
+
+type MemberDashboardActivity = {
+  id: number
+  action: string
+  field_changed: string
+  timestamp: string
+}
+
+type MemberDashboardNotification = {
+  id: number
+  message: string
+  type: string
+  is_read: boolean
+  created_at: string
+  application_id: number | null
+}
+
+type MemberDashboardResponse = {
+  profile: MemberDashboardProfile
+  documents: MemberDashboardDocument[]
+  recent_activity: MemberDashboardActivity[]
+  notifications: MemberDashboardNotification[]
+}
+
+type PaymentHistoryItem = {
+  id: number
+  date: string | null
+  description: string
+  amount: number
+  currency: string
+  status: string
+  reference: string
+}
+
+const getAuthHeaders = (): Record<string, string> => {
+  const token = localStorage.getItem("access_token")
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+  return headers
+}
 
 const MemberDashboard: React.FC = () => {
-  // Calculate next renewal date (one year from now)
-  const getNextRenewalDate = () => {
-    const nextYear = new Date()
-    nextYear.setFullYear(nextYear.getFullYear() + 1)
-    return nextYear.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
   const { profile, loading } = useProfile();
+  const [dashboardData, setDashboardData] = useState<MemberDashboardResponse | null>(null)
+  const [dashboardLoading, setDashboardLoading] = useState(true)
+  const [dashboardError, setDashboardError] = useState<string | null>(null)
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryItem[]>([])
+  const [paymentLoading, setPaymentLoading] = useState(true)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
   
   // Get display name from profile
   const displayName = profile?.full_name || profile?.first_name || profile?.email?.split('@')[0] || 'Member';
+  const memberProfile = dashboardData?.profile
+
+  const formattedMemberSince = useMemo(() => {
+    if (!memberProfile?.member_since) {
+      return "--"
+    }
+    return new Date(memberProfile.member_since).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }, [memberProfile?.member_since])
+
+  const formattedNextRenewal = useMemo(() => {
+    if (!memberProfile?.next_renewal_date) {
+      return "--"
+    }
+    return new Date(memberProfile.next_renewal_date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }, [memberProfile?.next_renewal_date])
+
+  const recentActivity = dashboardData?.recent_activity ?? []
+  const documents = dashboardData?.documents ?? []
+
+  useEffect(() => {
+    let isMounted = true
+    const loadDashboard = async () => {
+      try {
+        setDashboardLoading(true)
+        setDashboardError(null)
+        const response = await axios.get<MemberDashboardResponse>(
+          `${API_BASE_URL}/api/v1/member/dashboard/`,
+          {
+            headers: getAuthHeaders(),
+            timeout: 30000,
+          }
+        )
+        if (isMounted) {
+          setDashboardData(response.data)
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load dashboard"
+        if (isMounted) {
+          setDashboardError(message)
+        }
+      } finally {
+        if (isMounted) {
+          setDashboardLoading(false)
+        }
+      }
+    }
+    loadDashboard()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    const loadPaymentHistory = async () => {
+      try {
+        setPaymentLoading(true)
+        setPaymentError(null)
+        await new Promise((resolve) => setTimeout(resolve, 600))
+        const mockPayments: PaymentHistoryItem[] = [
+          { id: 1, date: "2024-03-15", description: "Annual Subscription", amount: 150000, currency: "UGX", status: "success", reference: "" },
+          { id: 2, date: "2023-03-15", description: "Annual Subscription", amount: 150000, currency: "UGX", status: "success", reference: "" },
+          { id: 3, date: "2022-03-15", description: "Annual Subscription", amount: 150000, currency: "UGX", status: "success", reference: "" },
+          { id: 4, date: "2021-03-15", description: "Annual Subscription", amount: 150000, currency: "UGX", status: "success", reference: "" },
+          { id: 5, date: "2020-03-15", description: "Annual Subscription", amount: 150000, currency: "UGX", status: "success", reference: "" },
+        ]
+        if (isMounted) {
+          setPaymentHistory(mockPayments)
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load payments"
+        if (isMounted) {
+          setPaymentError(message)
+        }
+      } finally {
+        if (isMounted) {
+          setPaymentLoading(false)
+        }
+      }
+    }
+    loadPaymentHistory()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
         {/* Welcome Header */}
         <div className="mb-6 md:mb-8">
-          {loading ? (
+          {loading || dashboardLoading ? (
             <>
               <div className="h-6 md:h-8 bg-gray-200 rounded animate-pulse w-48 md:w-64 mb-2"></div>
               <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-64 md:w-96"></div>
             </>
           ) : (
             <>
-<<<<<<< HEAD
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {displayName}!</h1>
-              {/* <p className="text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p> */}
-=======
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Welcome back, {displayName}!</h1>
-              <p className="text-sm md:text-base text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p>
->>>>>>> cd4c9698adaeb98df9aa2f5398557f3b73e08469
+              <h1 className="text-sm md:text-3xl font-bold text-gray-900 mb-2">Welcome back {displayName}</h1>
+              {/* <p className="text-sm md:text-base text-gray-600">Here's your membership dashboard with financial insights and recent activity.</p> */}
             </>
           )}
+          {dashboardError ? (
+            <p className="text-xs md:text-sm text-red-600 mt-2">{dashboardError}</p>
+          ) : null}
         </div>
 
         {/* Top Row - Responsive Grid */}
@@ -74,28 +224,24 @@ const MemberDashboard: React.FC = () => {
                 <span className="hidden sm:inline">Membership Status</span>
                 <span className="sm:hidden">Status</span>
               </CardTitle>
-              <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs">Active</Badge>
+              <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs">
+                {memberProfile?.membership_status || "--"}
+              </Badge>
             </CardHeader>
-<<<<<<< HEAD
-            <CardContent className="space-y-4">
-              {/* <div className="flex justify-between items-center">
-                <span className="text-gray-600">Category</span>
-                <Badge className="bg-green-100 text-green-700">Premium Member</Badge>
-              </div> */}
-=======
             <CardContent className="space-y-3 md:space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Category</span>
-                <Badge className="bg-green-100 text-green-700 text-xs">Premium Member</Badge>
+                <Badge className="bg-green-100 text-green-700 text-xs">
+                  {memberProfile?.membership_category || "--"}
+                </Badge>
               </div>
->>>>>>> cd4c9698adaeb98df9aa2f5398557f3b73e08469
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Next Renewal</span>
-                <span className="font-semibold text-gray-900 text-sm">{getNextRenewalDate()}</span>
+                <span className="font-semibold text-gray-900 text-sm">{formattedNextRenewal}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Member Since</span>
-                <span className="font-semibold text-gray-900 text-sm">March 15, 2020</span>
+                <span className="font-semibold text-gray-900 text-sm">{formattedMemberSince}</span>
               </div>
               <div className="space-y-2 pt-3 md:pt-4">
                 <Link to="/profile">
@@ -131,42 +277,29 @@ const MemberDashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                    <Edit className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Profile details updated</p>
-                    <p className="text-xs text-gray-500">2 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                    <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Payment of UGX 150,000 processed</p>
-                    <p className="text-xs text-gray-500">1 day ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-400 rounded-lg flex items-center justify-center">
-                    <Download className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Membership certificate downloaded</p>
-                    <p className="text-xs text-gray-500">3 days ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-green-400 rounded-lg flex items-center justify-center">
-                    <Upload className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">New document "Business License" uploaded</p>
-                    <p className="text-xs text-gray-500">5 days ago</p>
-                  </div>
-                </div>
+                {recentActivity.length === 0 ? (
+                  <div className="text-xs md:text-sm text-gray-500">No recent activity.</div>
+                ) : (
+                  recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex items-center gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <Edit className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
+                          {activity.action.replace(/_/g, " ")}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(activity.timestamp).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -182,42 +315,26 @@ const MemberDashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
               <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <User className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
+                {documents.length === 0 ? (
+                  <div className="text-xs md:text-sm text-gray-500">No documents uploaded yet.</div>
+                ) : (
+                  documents.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <FileCheck className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs md:text-sm font-medium text-gray-900 truncate">{doc.name}</p>
+                          <p className="text-xs text-gray-500">
+                            Uploaded: {new Date(doc.uploaded_at).toLocaleDateString("en-US")}
+                          </p>
+                        </div>
+                      </div>
+                      <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">National ID</p>
-                      <p className="text-xs text-gray-500">Uploaded: 2023-01-10</p>
-                    </div>
-                  </div>
-                  <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
-                </div>
-                <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <FileCheck className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">ICPAU Certificate</p>
-                      <p className="text-xs text-gray-500">Uploaded: 2024-03-01</p>
-                    </div>
-                  </div>
-                  <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
-                </div>
-                <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs md:text-sm font-medium text-gray-900 truncate">Business License</p>
-                      <p className="text-xs text-gray-500">Uploaded: 2023-05-20</p>
-                    </div>
-                  </div>
-                  <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
-                </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -228,69 +345,74 @@ const MemberDashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
               <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
-              Payment History
+              Application Payments
             </CardTitle>
+            <p className="text-xs text-gray-500">Derived from successful application payments.</p>
           </CardHeader>
           <CardContent>
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-4 px-4 font-semibold text-gray-600">Date</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-600">Description</th>
-                    <th className="text-left py-4 px-4 font-semibold text-gray-600">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2024-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2023-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2022-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="border-b hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2021-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 text-sm">2020-03-15</td>
-                    <td className="py-4 px-4 text-sm">Annual Subscription</td>
-                    <td className="py-4 px-4 text-sm font-semibold text-purple-600">UGX 150,000</td>
-                  </tr>
-                </tbody>
-              </table>
+              {paymentLoading ? (
+                <div className="p-4 text-sm text-gray-500">Loading payments...</div>
+              ) : paymentError ? (
+                <div className="p-4 text-sm text-red-600">{paymentError}</div>
+              ) : paymentHistory.length === 0 ? (
+                <div className="p-4 text-sm text-gray-500">No payment history available.</div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-gray-200">
+                      <th className="text-left py-4 px-4 font-semibold text-gray-600">Date</th>
+                      <th className="text-left py-4 px-4 font-semibold text-gray-600">Description</th>
+                      <th className="text-left py-4 px-4 font-semibold text-gray-600">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paymentHistory.map((payment) => (
+                      <tr key={payment.id} className="border-b hover:bg-gray-50 transition-colors">
+                        <td className="py-4 px-4 text-sm">
+                          {payment.date
+                            ? new Date(payment.date).toLocaleDateString("en-US")
+                            : "--"}
+                        </td>
+                        <td className="py-4 px-4 text-sm">{payment.description}</td>
+                        <td className="py-4 px-4 text-sm font-semibold text-purple-600">
+                          {payment.currency} {payment.amount.toLocaleString("en-US")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             {/* Mobile Cards */}
             <div className="md:hidden space-y-3">
-              {[
-                { date: '2024-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2023-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2022-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2021-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-                { date: '2020-03-15', description: 'Annual Subscription', amount: 'UGX 150,000' },
-              ].map((payment, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{payment.description}</p>
-                      <p className="text-xs text-gray-500">{payment.date}</p>
+              {paymentLoading ? (
+                <div className="text-sm text-gray-500">Loading payments...</div>
+              ) : paymentError ? (
+                <div className="text-sm text-red-600">{paymentError}</div>
+              ) : paymentHistory.length === 0 ? (
+                <div className="text-sm text-gray-500">No payment history available.</div>
+              ) : (
+                paymentHistory.map((payment) => (
+                  <div key={payment.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{payment.description}</p>
+                        <p className="text-xs text-gray-500">
+                          {payment.date
+                            ? new Date(payment.date).toLocaleDateString("en-US")
+                            : "--"}
+                        </p>
+                      </div>
+                      <p className="text-sm font-semibold text-purple-600">
+                        {payment.currency} {payment.amount.toLocaleString("en-US")}
+                      </p>
                     </div>
-                    <p className="text-sm font-semibold text-purple-600">{payment.amount}</p>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
