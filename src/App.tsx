@@ -33,7 +33,7 @@ import ReportsPage from "./pages/admin/reportsAnalytics";
 import CmsContentPage from "./pages/admin/cmsPage";
 import CommunityForum from "./pages/admin/communityForum";
 import CreatePost from "./pages/admin/createPost";
-import CommunicationDashboard from "./pages/admin/announcements";
+import CommunicationsDashboard from "./pages/admin/announcements";
 import CreateAnnouncement from "./pages/admin/createAnnouncement";
 
 /* Simple auth guard */
@@ -252,7 +252,7 @@ const App: React.FC = () => {
             path="/admin/announcements"
             element={
               <ProtectedRoute role="admin">
-                <CommunicationDashboard />
+                <CommunicationsDashboard />
               </ProtectedRoute>
             }
           />
