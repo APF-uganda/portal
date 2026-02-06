@@ -3,12 +3,14 @@ import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import StatsCard from "../../components/dashboard/StatsCard";
 import ApplicationsTable from "../../components/applications/ApplicationsTable";
+import ApplicationDetailModal from "../../components/applications/ApplicationDetailModal";
 import Footer from "../../components/layout/Footer";
 import { useApplications } from "../../hooks/useApplications";
 import { useAdminActions } from "../../hooks/useAdminActions";
 import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { requireAdmin } from "../../utils/auth";
 import { AuthDebug } from "../../components/debug/AuthDebug";
+import { sendApprovalEmail } from "../../services/emailService";
 
 import {
   MdPendingActions,
@@ -24,6 +26,8 @@ const AdminApprovals = () => {
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false); // track sidebar state
+  const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Check authentication on component mount
   useEffect(() => {
@@ -36,7 +40,29 @@ const AdminApprovals = () => {
   const pendingCount = statistics?.pending_applications ?? applications.filter((app) => app.status === "Pending").length;
   const approvedCount = statistics?.approved_applications ?? applications.filter((app) => app.status === "Approved").length;
   const rejectedCount = statistics?.rejected_applications ?? applications.filter((app) => app.status === "Rejected").length;
-  const paidCount = statistics?.paid_applications ?? applications.filter((app) => app.feeStatus === "Paid").length;
+  
+  // Format revenue for display
+  const formatRevenue = (amount: number): string => {
+    if (amount >= 1000000000) {
+      return `UGX ${(amount / 1000000000).toFixed(2)}B`;
+    } else if (amount >= 1000000) {
+      return `UGX ${(amount / 1000000).toFixed(2)}M`;
+    } else if (amount >= 1000) {
+      return `UGX ${(amount / 1000).toFixed(2)}K`;
+    }
+    return `UGX ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+  
+  const totalRevenue = statistics?.total_revenue ?? 0;
+  const formattedRevenue = formatRevenue(totalRevenue);
+  
+  // Debug logging
+  console.log('Admin Approval Stats:', {
+    statistics,
+    totalRevenue,
+    formattedRevenue,
+    hasTotalRevenue: statistics?.total_revenue !== undefined
+  });
 
   const handleApprove = async (applicationId: number) => {
     clearError();
@@ -46,6 +72,27 @@ const AdminApprovals = () => {
       const result = await approve(applicationId);
       if (result.success) {
         setSuccessMessage("Application approved successfully");
+        
+        // Send approval email
+        const application = applications.find(app => app.id === applicationId);
+        if (application) {
+          try {
+            const emailSent = await sendApprovalEmail({
+              to_email: application.email,
+              user_name: application.name,
+              from_email: 'abnowellah@gmail.com'
+            });
+            
+            if (emailSent) {
+              console.log(' Approval email sent to:', application.email);
+            } else {
+              console.warn(' Failed to send approval email');
+            }
+          } catch (emailError) {
+            console.error(' Error sending approval email:', emailError);
+          }
+        }
+        
         await Promise.all([refetch(), refetchStats()]);
         setTimeout(() => setSuccessMessage(null), 3000);
       }
@@ -93,7 +140,13 @@ const AdminApprovals = () => {
   };
 
   const handleView = (applicationId: number) => {
-    console.log("View application:", applicationId);
+    setSelectedApplicationId(applicationId);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedApplicationId(null);
   };
 
   return (
@@ -173,9 +226,9 @@ const AdminApprovals = () => {
               icon={<MdCancel />}
             />
             <StatsCard
-              title="Payment Received"
-              value={paidCount}
-              change={statistics?.trends.paid_change ?? 0}
+              title="Total Revenue"
+              value={formattedRevenue}
+              change={statistics?.trends.revenue_change ?? 0}
               icon={<MdAttachMoney />}
             />
           </div>
@@ -196,6 +249,15 @@ const AdminApprovals = () => {
         </div>
         <AuthDebug />
       </main>
+
+      {/* Application Detail Modal */}
+      {selectedApplicationId && (
+        <ApplicationDetailModal
+          applicationId={selectedApplicationId}
+          isOpen={isDetailModalOpen}
+          onClose={handleCloseDetailModal}
+        />
+      )}
     </div>
   );
 };

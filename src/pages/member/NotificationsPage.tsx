@@ -6,89 +6,57 @@ import {
   Search,
   CreditCard,
   Server,
-  Rocket,
   Star,
   CheckCircle,
   Shield,
   AlertTriangle,
+  Loader2,
 } from "lucide-react"
 
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
-
-interface NotificationItem {
-  id: string
-  title: string
-  description: string
-  time: string
-  type: 'membership' | 'payment' | 'system' | 'security'
-  isUnread: boolean
-  icon: React.ElementType
-}
+import { useNotifications, useNotificationStats } from "../../hooks/useNotifications"
 
 const NotificationsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all')
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: '2',
-      title: 'Payment Reminder: Invoice #2023001',
-      description: 'Your monthly subscription payment is due tomorrow. Please update your payment method promptly.',
-      time: '09:15 AM',
-      type: 'payment',
-      isUnread: true,
-      icon: CreditCard,
-    },
-    {
-      id: '3',
-      title: 'System Maintenance Scheduled',
-      description: 'Expected downtime for essential updates on 2023-11-20 at 3 AM UTC. Services will resume shortly.',
-      time: '08:00 AM',
-      type: 'system',
-      isUnread: false,
-      icon: Server,
-    },
-    {
-      id: '4',
-      title: 'Exciting New Feature Released!',
-      description: 'Discover the new analytics dashboard, now available to all users for enhanced insights.',
-      time: '07:45 AM',
-      type: 'system',
-      isUnread: false,
-      icon: Rocket,
-    },
-    {
-      id: '5',
-      title: 'Welcome to APF Annual Membership!',
-      description: 'Your membership has been successfully upgraded. Enjoy your new benefits and exclusive access.',
-      time: 'Nov 15, 2:30 PM',
-      type: 'membership',
-      isUnread: false,
-      icon: Star,
-    },
-    {
-      id: '6',
-      title: 'Payment Processed: Invoice #2023002',
-      description: 'Your recent payment for Invoice #2023002 has been successfully processed. Thank you for your continuing experience.',
-      time: 'Nov 14, 11:20 AM',
-      type: 'payment',
-      isUnread: false,
-      icon: CheckCircle,
-    },
-    {
-      id: '7',
-      title: 'Security Alert: Unusual Login Attempt',
-      description: 'We detected an unusual login attempt from an unrecognized device. Please review your account activity.',
-      time: 'Nov 13, 9:45 PM',
-      type: 'security',
-      isUnread: true,
-      icon: Shield,
-    },
-  ])
+  
+  // Get notifications from backend
+  const { notifications, loading, markAsRead, markAllAsRead } = useNotifications(activeFilter)
+  
+  // Get notification statistics
+  const { stats, loading: statsLoading } = useNotificationStats()
 
-  const unreadCount = notifications.filter(n => n.isUnread).length
-  const readCount = notifications.filter(n => !n.isUnread).length
-  const urgentCount = notifications.filter(n => n.type === 'security' && n.isUnread).length
+  // Helper function to get icon based on notification type
+  const getNotificationIcon = (type: string) => {
+    const iconMap: Record<string, React.ElementType> = {
+      'membership': Star,
+      'payment': CreditCard,
+      'system': Server,
+      'security': Shield,
+      'info': Bell,
+      'success': CheckCircle,
+      'warning': AlertTriangle,
+      'error': AlertTriangle,
+    }
+    return iconMap[type] || Bell
+  }
+
+  // Helper function to format notification timestamp
+  const formatNotificationTime = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`
+    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`
+    if (diffDays === 0) return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    if (diffDays < 7) return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -97,38 +65,41 @@ const NotificationsPage: React.FC = () => {
       case 'payment':
         return 'bg-green-100 text-green-600'
       case 'system':
+      case 'info':
         return 'bg-blue-100 text-blue-600'
       case 'security':
+      case 'error':
         return 'bg-red-100 text-red-600'
+      case 'warning':
+        return 'bg-yellow-100 text-yellow-600'
+      case 'success':
+        return 'bg-green-100 text-green-600'
       default:
         return 'bg-gray-100 text-gray-600'
     }
   }
 
-  const toggleNotificationRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, isUnread: !notification.isUnread }
-          : notification
-      )
-    )
+  const toggleNotificationRead = async (id: string) => {
+    await markAsRead(id)
   }
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isUnread: false }))
-    )
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead()
   }
 
-  const filteredNotifications = notifications.filter(notification => {
-    if (activeFilter === 'all') return true
-    if (activeFilter === 'unread') return notification.isUnread
-    return notification.type === activeFilter
+  // Separate notifications into today and this week
+  const todayNotifications = notifications.filter(n => {
+    const date = new Date(n.createdAt)
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
   })
 
-  const todayNotifications = filteredNotifications.slice(0, 4)
-  const weekNotifications = filteredNotifications.slice(4)
+  const weekNotifications = notifications.filter(n => {
+    const date = new Date(n.createdAt)
+    const today = new Date()
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+    return date < today && date >= weekAgo && date.toDateString() !== today.toDateString()
+  })
 
   return (
     <DashboardLayout>
@@ -142,8 +113,9 @@ const NotificationsPage: React.FC = () => {
               Filter
             </Button>
             <Button 
-              onClick={markAllAsRead}
+              onClick={handleMarkAllAsRead}
               className="bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
+              disabled={loading || stats.unread === 0}
             >
               <CheckCheck className="w-4 h-4" />
               Mark All as Read
@@ -159,7 +131,11 @@ const NotificationsPage: React.FC = () => {
                 <Bell className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">{unreadCount}</h3>
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1"></div>
+                ) : (
+                  <h3 className="text-2xl font-bold text-gray-900">{stats.unread}</h3>
+                )}
                 <p className="text-gray-600">Unread Notifications</p>
               </div>
             </CardContent>
@@ -171,7 +147,11 @@ const NotificationsPage: React.FC = () => {
                 <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">{readCount}</h3>
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1"></div>
+                ) : (
+                  <h3 className="text-2xl font-bold text-gray-900">{stats.read}</h3>
+                )}
                 <p className="text-gray-600">Read Notifications</p>
               </div>
             </CardContent>
@@ -183,7 +163,11 @@ const NotificationsPage: React.FC = () => {
                 <AlertTriangle className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">{urgentCount}</h3>
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1"></div>
+                ) : (
+                  <h3 className="text-2xl font-bold text-gray-900">{stats.urgent}</h3>
+                )}
                 <p className="text-gray-600">Urgent Alerts</p>
               </div>
             </CardContent>
@@ -225,55 +209,24 @@ const NotificationsPage: React.FC = () => {
                 <CardTitle className="text-lg font-semibold text-gray-800">Today</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {todayNotifications.map((notification) => {
-                  const Icon = notification.icon
-                  return (
-                    <div
-                      key={notification.id}
-                      className={`flex p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:bg-gray-50 ${
-                        notification.isUnread 
-                          ? 'bg-purple-50/50 border-l-purple-600' 
-                          : 'border-l-transparent'
-                      }`}
-                    >
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0 ${getTypeColor(notification.type)}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900 mb-1">{notification.title}</div>
-                        <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.description}</div>
-                        <div className="text-xs text-gray-500">{notification.time}</div>
-                      </div>
-                      <div className="flex items-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleNotificationRead(notification.id)}
-                          className="text-gray-500 hover:text-purple-600 text-xs"
-                        >
-                          {notification.isUnread ? 'Mark as read' : 'Mark as unread'}
-                        </Button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-
-            {/* This Week's Notifications */}
-            {weekNotifications.length > 0 && (
-              <Card className="bg-white shadow-lg border border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-gray-800">This Week</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {weekNotifications.map((notification) => {
-                    const Icon = notification.icon
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+                  </div>
+                ) : todayNotifications.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-600 text-sm">No notifications today</p>
+                    <p className="text-gray-500 text-xs mt-1">You're all caught up!</p>
+                  </div>
+                ) : (
+                  todayNotifications.map((notification) => {
+                    const Icon = getNotificationIcon(notification.type)
                     return (
                       <div
                         key={notification.id}
                         className={`flex p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:bg-gray-50 ${
-                          notification.isUnread 
+                          !notification.isRead 
                             ? 'bg-purple-50/50 border-l-purple-600' 
                             : 'border-l-transparent'
                         }`}
@@ -283,8 +236,8 @@ const NotificationsPage: React.FC = () => {
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-gray-900 mb-1">{notification.title}</div>
-                          <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.description}</div>
-                          <div className="text-xs text-gray-500">{notification.time}</div>
+                          <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.message}</div>
+                          <div className="text-xs text-gray-500">{formatNotificationTime(notification.createdAt)}</div>
                         </div>
                         <div className="flex items-center">
                           <Button
@@ -293,7 +246,50 @@ const NotificationsPage: React.FC = () => {
                             onClick={() => toggleNotificationRead(notification.id)}
                             className="text-gray-500 hover:text-purple-600 text-xs"
                           >
-                            {notification.isUnread ? 'Mark as read' : 'Mark as unread'}
+                            {!notification.isRead ? 'Mark as read' : 'Mark as unread'}
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </CardContent>
+            </Card>
+
+            {/* This Week's Notifications */}
+            {!loading && weekNotifications.length > 0 && (
+              <Card className="bg-white shadow-lg border border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-800">This Week</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {weekNotifications.map((notification) => {
+                    const Icon = getNotificationIcon(notification.type)
+                    return (
+                      <div
+                        key={notification.id}
+                        className={`flex p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:bg-gray-50 ${
+                          !notification.isRead 
+                            ? 'bg-purple-50/50 border-l-purple-600' 
+                            : 'border-l-transparent'
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0 ${getTypeColor(notification.type)}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900 mb-1">{notification.title}</div>
+                          <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.message}</div>
+                          <div className="text-xs text-gray-500">{formatNotificationTime(notification.createdAt)}</div>
+                        </div>
+                        <div className="flex items-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleNotificationRead(notification.id)}
+                            className="text-gray-500 hover:text-purple-600 text-xs"
+                          >
+                            {!notification.isRead ? 'Mark as read' : 'Mark as unread'}
                           </Button>
                         </div>
                       </div>
@@ -330,22 +326,33 @@ const NotificationsPage: React.FC = () => {
                 
                 {/* Summary Stats */}
                 <div className="pt-6 border-t border-gray-200 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Membership Updates</span>
-                    <span className="font-semibold">5</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Payment Notifications</span>
-                    <span className="font-semibold">8</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">System Alerts</span>
-                    <span className="font-semibold">4</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Security Alerts</span>
-                    <span className="font-semibold">2</span>
-                  </div>
+                  {statsLoading ? (
+                    <>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Membership Updates</span>
+                        <span className="font-semibold">{stats.byType.membership}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Payment Notifications</span>
+                        <span className="font-semibold">{stats.byType.payment}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">System Alerts</span>
+                        <span className="font-semibold">{stats.byType.system}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Security Alerts</span>
+                        <span className="font-semibold">{stats.byType.security}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

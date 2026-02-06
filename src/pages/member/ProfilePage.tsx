@@ -19,7 +19,7 @@ import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useProfile } from '../../hooks/useProfile';
 
 const ProfilePage = () => {
-  const { profile, loading, error, updating, updateProfile } = useProfile();
+  const { profile, loading, error, updating, updateProfile, updatePassword, changingPassword } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [avatarError, setAvatarError] = useState(false);
@@ -108,7 +108,7 @@ const ProfilePage = () => {
     }
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert('New passwords do not match!');
       return;
@@ -117,8 +117,15 @@ const ProfilePage = () => {
       alert('Password must be at least 8 characters long!');
       return;
     }
-    alert('Password changed successfully!');
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const success = await updatePassword({
+      current_password: passwordData.currentPassword,
+      new_password: passwordData.newPassword,
+      confirm_password: passwordData.confirmPassword,
+    });
+    if (success) {
+      alert('Password changed successfully!');
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    }
   };
 
   const handleNotificationChange = (key: string) => {
@@ -459,10 +466,11 @@ const ProfilePage = () => {
 
                     <button
                       onClick={handlePasswordChange}
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-60"
+                      disabled={changingPassword}
                     >
                       <Lock className="w-4 h-4" />
-                      Update Password
+                      {changingPassword ? 'Updating...' : 'Update Password'}
                     </button>
                   </div>
                 </div>

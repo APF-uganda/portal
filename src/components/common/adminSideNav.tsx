@@ -70,7 +70,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, onToggle }) => {
           <NavItem icon={<FaMoneyBill />} label="Payments & Renewals" to="/admin/payments" collapsed={collapsed} />
           <NavItem icon={<MdInsights />} label="Reports & Analytics" to="/admin/reports" collapsed={collapsed} />
           <NavItem icon={<FaComments />} label="Community Forum" to="/admin/communityForum" collapsed={collapsed} />
-          <NavItem icon={<FiBell />} label="Notifications" to="/admin/notifications" collapsed={collapsed} />
+          <NavItem icon={<FiBell />} label="Announcements" to="/admin/announcements" collapsed={collapsed} />
         </nav>
       </div>
 

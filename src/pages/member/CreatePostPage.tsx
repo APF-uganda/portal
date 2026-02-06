@@ -88,15 +88,6 @@ const CreatePostPage = () => {
       }
     >
       <div className="space-y-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <a href="/dashboard" className="hover:text-[#60308C]">Dashboard</a>
-          <span>/</span>
-          <a href="/forum" className="hover:text-[#60308C]">Community Forum</a>
-          <span>/</span>
-          <span className="text-[#60308C] font-medium">Create Post</span>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Create Post Form */}
           <div className="lg:col-span-2">

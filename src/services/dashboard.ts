@@ -16,12 +16,14 @@ export interface DashboardStatistics {
   approved_applications: number;
   rejected_applications: number;
   paid_applications: number;
+  total_revenue: number;
   trends: {
     total_change: number;
     pending_change: number;
     approved_change: number;
     rejected_change: number;
     paid_change: number;
+    revenue_change: number;
   };
 }
 
@@ -97,12 +99,14 @@ export async function fetchDashboardStatistics(): Promise<DashboardStatistics> {
       approved_applications: 0,
       rejected_applications: 0,
       paid_applications: 0,
+      total_revenue: 0,
       trends: {
         total_change: 0,
         pending_change: 0,
         approved_change: 0,
         rejected_change: 0,
         paid_change: 0,
+        revenue_change: 0,
       },
     };
   }
