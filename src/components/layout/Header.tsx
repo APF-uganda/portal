@@ -1,7 +1,8 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { FiBell} from "react-icons/fi";
 import {Search } from "lucide-react";
 import { useProfile } from "../../hooks/useProfile";
+import { announcementsApi } from "../../services/announcementsApi";
 
 type HeaderProps = {
   title: string;
@@ -12,6 +13,29 @@ title
 }) => {
   const { profile, loading } = useProfile();
   const [searchQuery, setSearchQuery] = useState("");
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  // Fetch notification count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const stats = await announcementsApi.getStats();
+        // Count draft + scheduled as pending notifications for admins
+        setNotificationCount(stats.draft + stats.scheduled);
+      } catch (error) {
+        console.error('Failed to fetch notification count:', error);
+      }
+    };
+
+    // Only fetch if user is admin (role = '1')
+    if (profile?.role === '1') {
+      fetchNotificationCount();
+      
+      // Refresh count every 2 minutes
+      const interval = setInterval(fetchNotificationCount, 2 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [profile?.role]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,9 +73,11 @@ title
         {/* Notifications */}
         <button className="relative">
           <FiBell className="text-xl text-gray-600" />
-          <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
-            2
-          </span>
+          {notificationCount > 0 && (
+            <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs px-1 rounded-full min-w-[18px] text-center">
+              {notificationCount > 99 ? '99+' : notificationCount}
+            </span>
+          )}
         </button>
         
         {/* Profile */}
@@ -85,7 +111,7 @@ title
                   {profile?.full_name || profile?.email?.split('@')[0] || 'User'}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {profile?.user_role === '1' ? 'Administrator' : 'Member'}
+                  {profile?.role === '1' ? 'Administrator' : 'Member'}
                 </p>
               </>
             )}
