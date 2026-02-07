@@ -52,10 +52,10 @@ function AdminDashboard(){
    useEffect(() => {
       loadDashboardStats();
       
-      // Auto-refresh every 5 minutes
+      // Auto-refresh every 30 seconds to keep revenue stats current
       const intervalId = setInterval(() => {
         loadDashboardStats(true);
-      }, 5 * 60 * 1000); // 5 minutes
+      }, 30 * 1000); // 30 seconds
 
       return () => clearInterval(intervalId);
    }, []);
@@ -92,7 +92,7 @@ function AdminDashboard(){
       color: "orange" 
     },
     { 
-      title: "Revenue (This Month)", 
+      title: "Total Revenue", 
       value: dashboardStats.revenue.value, 
       trend: dashboardStats.revenue.trend,
       percentage: `${dashboardStats.revenue.trend === 'up' ? '+' : '-'}${dashboardStats.revenue.change}%`, 

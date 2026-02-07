@@ -125,6 +125,7 @@ function ApplyForm() {
         paymentStatus: paymentData.status,
         paymentTransactionReference: paymentData.transactionReference,
         paymentErrorMessage: paymentData.errorMessage,
+        paymentAmount: 50000, // Standard application fee
         
         // Documents with IDs
         documents: documentsData.filter((doc) => doc.file instanceof File),

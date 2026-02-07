@@ -32,7 +32,10 @@ import AdminProfilePage from "./pages/admin/profilePage";
 import ReportsPage from "./pages/admin/reportsAnalytics";
 import CmsContentPage from "./pages/admin/cmsPage";
 import CommunityForum from "./pages/admin/communityForum";
-import CommunicationDashboard from "./pages/admin/announcements";
+import CreatePost from "./pages/admin/createPost";
+import CommunicationsDashboard from "./pages/admin/announcements";
+import CreateAnnouncement from "./pages/admin/createAnnouncement";
+import SearchResults from "./pages/admin/SearchResults";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -74,7 +77,7 @@ const App: React.FC = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/cmspage" element={<CmsContentPage />} />
           <Route path="/communityforum" element={<CommunityForum />} />
-          <Route path="/announcements" element={<CommunicationDashboard />} />
+          <Route path="/announcements" element={<CommunicationsDashboard />} />
 
 
 
@@ -220,6 +223,15 @@ const App: React.FC = () => {
             }
           />
 
+          <Route
+            path="/admin/communityForum/create-post"
+            element={
+              <ProtectedRoute role="admin">
+                <CreatePost />
+              </ProtectedRoute>
+            }
+          />
+
 
 
           <Route
@@ -249,7 +261,25 @@ const App: React.FC = () => {
             path="/admin/announcements"
             element={
               <ProtectedRoute role="admin">
-                <CommunicationDashboard />
+                <CommunicationsDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/create-announcement"
+            element={
+              <ProtectedRoute role="admin">
+                <CreateAnnouncement />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/search"
+            element={
+              <ProtectedRoute role="admin">
+                <SearchResults />
               </ProtectedRoute>
             }
           />

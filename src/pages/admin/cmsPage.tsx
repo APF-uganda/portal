@@ -38,12 +38,12 @@ const CmsContentPage = () => {
                 <h1 className="text-[26px] font-bold text-slate-800 tracking-tight text-[#5C32A3]">CMS Management</h1>
                 <p className="text-slate-500 mt-1">Manage news, events, announcements, and other content across the portal</p>
               </div>
-              <div className="flex gap-3">
-                <button className="bg-[#4B2C82] hover:bg-[#3a2266] text-white nowrap px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-purple-200 transition-all">
-                  <Plus size={20} /> Create New Content
+              <div className="flex gap-3 shrink-0">
+                <button className="bg-[#4B2C82] hover:bg-[#3a2266] text-white whitespace-nowrap px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold shadow-lg shadow-purple-200 transition-all shrink-0">
+                  <Plus size={18} /> Create New Content
                 </button>
-                <button className="bg-white border border-gray-200 text-gray-700 px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold hover:bg-gray-50 transition-all shadow-sm">
-                  <List size={20} /> Bulk Actions
+                <button className="bg-white border border-gray-200 text-gray-700 whitespace-nowrap px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold hover:bg-gray-50 transition-all shadow-sm shrink-0">
+                  <List size={18} /> Bulk Actions
                 </button>
               </div>
             </div>

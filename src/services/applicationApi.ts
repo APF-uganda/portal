@@ -76,6 +76,42 @@ function mapApiApplicationToApplication(app: ApplicationListItem): Application {
 }
 
 /**
+ * Detailed application data returned by the backend detail endpoint
+ */
+export interface ApplicationDetail {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  age_range: string;
+  phone_number: string;
+  address: string;
+  national_id_number: string;
+  icpau_certificate_number: string;
+  payment_method: string;
+  payment_phone?: string;
+  payment_card_number?: string;
+  payment_card_expiry?: string;
+  payment_cardholder_name?: string;
+  payment_status: string;
+  payment_transaction_reference?: string;
+  payment_error_message?: string;
+  status: string;
+  submitted_at: string;
+  updated_at: string;
+  documents: {
+    id: number;
+    file: string;
+    file_name: string;
+    file_size: number;
+    file_type: string;
+    document_type: string;
+    uploaded_at: string;
+  }[];
+}
+
+/**
  * Fetch applications for admin approval dashboard
  */
 export async function fetchApplications(): Promise<Application[]> {
@@ -118,6 +154,49 @@ export async function fetchApplications(): Promise<Application[]> {
       }
     }
     return [];
+  }
+}
+
+/**
+ * Fetch a single application's detailed information
+ * 
+ * @param applicationId - ID of the application to fetch
+ * @returns Promise with application detail or null if not found
+ */
+export async function fetchApplicationDetail(applicationId: number): Promise<ApplicationDetail | null> {
+  try {
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      console.error('No access token found - user not logged in');
+      return null;
+    }
+
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await axios.get<ApplicationDetail>(
+      `${API_BASE_URL}/api/v1/applications/${applicationId}/`,
+      {
+        headers,
+        timeout: 30000,
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch application detail', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Response status:', error.response?.status);
+      console.error('Response data:', error.response?.data);
+      
+      if (error.response?.status === 401) {
+        console.error('Authentication failed - token may be invalid or expired');
+      }
+    }
+    return null;
   }
 }
 
@@ -239,6 +318,11 @@ export async function submitApplication(
     }
     if (applicationData.paymentErrorMessage) {
       formData.append('payment_error_message', applicationData.paymentErrorMessage);
+    }
+    
+    // Add payment amount
+    if (applicationData.paymentAmount !== undefined) {
+      formData.append('payment_amount', applicationData.paymentAmount.toString());
     }
     
     // Add document files with types
