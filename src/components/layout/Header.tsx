@@ -3,6 +3,7 @@ import { FiBell} from "react-icons/fi";
 import {Search } from "lucide-react";
 import { useProfile } from "../../hooks/useProfile";
 import { announcementsApi } from "../../services/announcementsApi";
+import { useNavigate } from "react-router-dom";
 
 type HeaderProps = {
   title: string;
@@ -14,6 +15,7 @@ title
   const { profile, loading } = useProfile();
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationCount, setNotificationCount] = useState(0);
+  const navigate = useNavigate();
 
   // Fetch notification count
   useEffect(() => {
@@ -40,11 +42,14 @@ title
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Implement search functionality
-      console.log("Searching for:", searchQuery);
-      // You can add navigation or search logic here
-      // For example: navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      // Navigate to search results page with query parameter
+      navigate(`/admin/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleNotificationClick = () => {
+    // Navigate to communications/announcements page
+    navigate('/admin/announcements');
   };
 
   return (
@@ -71,7 +76,11 @@ title
           />
         </form>
         {/* Notifications */}
-        <button className="relative">
+        <button 
+          className="relative hover:opacity-80 transition-opacity"
+          onClick={handleNotificationClick}
+          title="View announcements"
+        >
           <FiBell className="text-xl text-gray-600" />
           {notificationCount > 0 && (
             <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs px-1 rounded-full min-w-[18px] text-center">

@@ -35,6 +35,7 @@ import CommunityForum from "./pages/admin/communityForum";
 import CreatePost from "./pages/admin/createPost";
 import CommunicationsDashboard from "./pages/admin/announcements";
 import CreateAnnouncement from "./pages/admin/createAnnouncement";
+import SearchResults from "./pages/admin/SearchResults";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -262,6 +263,15 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute role="admin">
                 <CreateAnnouncement />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/search"
+            element={
+              <ProtectedRoute role="admin">
+                <SearchResults />
               </ProtectedRoute>
             }
           />

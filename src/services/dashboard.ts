@@ -40,6 +40,19 @@ export interface RecentApplication {
 }
 
 /**
+ * Recent payment item for dashboard display
+ */
+export interface RecentPayment {
+  id: number;
+  payment_id: string;
+  member_name: string;
+  amount: number;
+  payment_method: string;
+  status: string;
+  created_at: string;
+}
+
+/**
  * Dashboard stats for UI display
  */
 export interface DashboardStats {
@@ -155,6 +168,27 @@ export async function fetchRecentApplications(limit: number = 5): Promise<Recent
     return response.data;
   } catch (error) {
     console.error('Failed to fetch recent applications:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch recent payments for dashboard display
+ */
+export async function fetchRecentPayments(limit: number = 5): Promise<RecentPayment[]> {
+  try {
+    const response = await axios.get<RecentPayment[]>(
+      `${API_BASE_URL}/api/v1/recent-payments/`,
+      {
+        headers: getAuthHeaders(),
+        params: { limit },
+        timeout: 30000,
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch recent payments:', error);
     return [];
   }
 }
