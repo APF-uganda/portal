@@ -18,12 +18,16 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useForumPosts, useForumCategories, useActiveUsers } from '../../hooks/useForum';
+import { getForumPostViewers } from '../../services/forum.service';
 
 const ForumPage = () => {
   const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState('all');
   const [likedPosts, setLikedPosts] = useState<number[]>([]);
   const [bookmarkedPosts, setBookmarkedPosts] = useState<number[]>([]);
+  const [viewerListLoading, setViewerListLoading] = useState(false);
+  const [viewerListPostId, setViewerListPostId] = useState<number | null>(null);
+  const [viewerList, setViewerList] = useState<Array<{ id: number; full_name?: string; initials?: string; profile_picture_url?: string | null }>>([]);
 
   // Use hooks to fetch data
   const { posts: forumPosts, loading: postsLoading, error: postsError } = useForumPosts(activeCategory, activeFilter);
@@ -40,7 +44,19 @@ const ForumPage = () => {
     { id: 'networking', name: 'Networking', icon: UserPlus, count: 0 }
   ];
 
-  const displayCategories = categories.length > 0 ? categories : defaultCategories;
+  const categoryIconMap: Record<string, any> = {
+    announcements: Megaphone,
+    suggestions: Lightbulb,
+    general: MessageSquare,
+    qa: HelpCircle,
+    tips: Briefcase,
+    networking: UserPlus
+  };
+
+  const displayCategories = (categories.length > 0 ? categories : defaultCategories).map((category) => ({
+    ...category,
+    icon: category.icon || categoryIconMap[category.id] || MessageSquare
+  }));
 
   const handleLike = (postId: number) => {
     if (likedPosts.includes(postId)) {
@@ -57,6 +73,15 @@ const ForumPage = () => {
       setBookmarkedPosts([...bookmarkedPosts, postId]);
     }
   };
+
+  const openViewerList = async (postId: number) => {
+    setViewerListPostId(postId);
+    setViewerListLoading(true);
+    const viewers = await getForumPostViewers(postId);
+    setViewerList(viewers);
+    setViewerListLoading(false);
+  };
+
 
   // Loading state
   if (postsLoading || categoriesLoading || usersLoading) {
@@ -235,8 +260,24 @@ const ForumPage = () => {
                   {/* Post Header */}
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        {post.authorInitials}
+                      <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden relative">
+                        {post.authorProfilePictureUrl ? (
+                          <>
+                            <img
+                              src={post.authorProfilePictureUrl}
+                              alt={post.author}
+                              className="w-full h-full object-cover relative z-10"
+                              onError={(event) => {
+                                event.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center z-0">
+                              {post.authorInitials}
+                            </span>
+                          </>
+                        ) : (
+                          <span>{post.authorInitials}</span>
+                        )}
                       </div>
                       <div>
                         <div className="font-semibold text-gray-900">{post.author}</div>
@@ -271,8 +312,48 @@ const ForumPage = () => {
                       <span>{post.likes} Likes</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-purple-600" />
-                      <span>{post.views} Views</span>
+                      {viewerListPostId === post.id ? (
+                        viewerListLoading ? (
+                          <span className="text-sm text-gray-500">Loading viewers...</span>
+                        ) : viewerList.length === 0 ? (
+                          <span className="text-sm text-gray-500">No viewers yet</span>
+                        ) : (
+                          <div className="flex -space-x-2">
+                            {viewerList.map((viewer) => (
+                              <div
+                                key={viewer.id}
+                                className="w-7 h-7 rounded-full border-2 border-white bg-purple-600 text-white text-[10px] font-semibold flex items-center justify-center overflow-hidden"
+                                title={viewer.full_name || ''}
+                              >
+                                {viewer.profile_picture_url ? (
+                                  <img
+                                    src={viewer.profile_picture_url}
+                                    alt={viewer.full_name || 'Viewer'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <span>{viewer.initials || 'U'}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      ) : post.views > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => openViewerList(post.id)}
+                          className="flex items-center gap-2 hover:text-purple-700 transition-colors"
+                          aria-label="Viewers"
+                        >
+                          <Eye className="w-4 h-4 text-purple-600" />
+                          <span>{post.views} Views</span>
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <Eye className="w-4 h-4 text-purple-600" />
+                          <span>{post.views} Views</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

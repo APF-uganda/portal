@@ -1,9 +1,103 @@
 /**
  * Forum service - handles all forum-related API calls
- * Currently returns empty data - will be connected to backend API
  */
 
+import axios from 'axios'
 import { ForumPost, ForumCategory, ActiveUser, ForumStats } from '../types/forum'
+import { API_BASE_URL } from '../config/api'
+
+type ApiAuthor = {
+  id: number
+  full_name?: string
+  initials?: string
+  profile_picture_url?: string | null
+  email?: string
+  first_name?: string
+  last_name?: string
+}
+
+type ApiCategory = {
+  id: number
+  name: string
+  slug: string
+  post_count?: number
+}
+
+type ApiPost = {
+  id: number
+  title: string
+  content: string
+  author: ApiAuthor
+  viewers?: ApiAuthor[]
+  category?: ApiCategory | null
+  comment_count?: number
+  like_count?: number
+  views_count?: number
+  created_at: string
+  status?: string
+}
+
+const api = axios.create({
+  baseURL: API_BASE_URL
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+const formatRelativeTime = (iso: string) => {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  return date.toLocaleDateString()
+}
+
+const toExcerpt = (content: string, maxLen: number = 160) => {
+  const clean = content?.trim() || ''
+  if (clean.length <= maxLen) return clean
+  return `${clean.slice(0, maxLen - 3)}...`
+}
+
+const mapPost = (post: ApiPost): ForumPost => {
+  const authorName =
+    post.author?.full_name ||
+    [post.author?.first_name, post.author?.last_name].filter(Boolean).join(' ') ||
+    post.author?.email?.split('@')[0] ||
+    'Member'
+
+  return {
+    id: post.id,
+    title: post.title,
+    author: authorName,
+    authorInitials: post.author?.initials || authorName.slice(0, 2).toUpperCase(),
+    authorProfilePictureUrl: post.author?.profile_picture_url || null,
+    viewers: post.viewers || [],
+    time: formatRelativeTime(post.created_at),
+    category: post.category?.name || 'General',
+    excerpt: toExcerpt(post.content),
+    replies: post.comment_count || 0,
+    likes: post.like_count || 0,
+    views: post.views_count || 0,
+    content: post.content,
+    status: (post.status as ForumPost['status']) || 'published'
+  }
+}
 
 /**
  * Get all forum posts
@@ -15,15 +109,29 @@ export const getForumPosts = async (
   _category?: string,
   _filter?: string
 ): Promise<ForumPost[]> => {
-  // TODO: Replace with actual API call
-  // const params = new URLSearchParams()
-  // if (_category) params.append('category', _category)
-  // if (_filter) params.append('filter', _filter)
-  // 
-  // const response = await fetch(`${API_BASE_URL}/forum/posts?${params}`)
-  // return response.json()
-  
-  return []
+  const params: Record<string, string> = {}
+  if (_category) {
+    params.category = _category
+  }
+
+  if (_filter === 'popular') {
+    params.ordering = '-like_count'
+  } else if (_filter === 'recent') {
+    params.ordering = '-created_at'
+  } else {
+    params.ordering = '-created_at'
+  }
+
+  params.status = 'published'
+
+  const response = await api.get<ApiPost[]>('/api/v1/forum/posts/', { params })
+  let posts = response.data.map(mapPost)
+
+  if (_filter === 'unanswered') {
+    posts = posts.filter((post) => post.replies === 0)
+  }
+
+  return posts
 }
 
 /**
@@ -32,11 +140,23 @@ export const getForumPosts = async (
  * @returns Promise with forum post details
  */
 export const getForumPost = async (_postId: number): Promise<ForumPost | null> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/posts/${_postId}`)
-  // return response.json()
-  
-  return null
+  try {
+    const response = await api.get<ApiPost>(`/api/v1/forum/posts/${_postId}/`)
+    return mapPost(response.data)
+  } catch (error) {
+    console.error('Failed to fetch forum post:', error)
+    return null
+  }
+}
+
+export const getForumPostDetail = async (_postId: number): Promise<ApiPost | null> => {
+  try {
+    const response = await api.get<ApiPost>(`/api/v1/forum/posts/${_postId}/`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch forum post detail:', error)
+    return null
+  }
 }
 
 /**
@@ -44,11 +164,15 @@ export const getForumPost = async (_postId: number): Promise<ForumPost | null> =
  * @returns Promise with array of categories
  */
 export const getForumCategories = async (): Promise<ForumCategory[]> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/categories`)
-  // return response.json()
-  
-  return []
+  const response = await api.get<ApiCategory[]>('/api/v1/forum/categories/')
+  return response.data.map((category) => ({
+    id: category.slug,
+    slug: category.slug,
+    rawId: category.id,
+    name: category.name,
+    icon: null,
+    count: category.post_count || 0
+  }))
 }
 
 /**
@@ -56,10 +180,6 @@ export const getForumCategories = async (): Promise<ForumCategory[]> => {
  * @returns Promise with array of active users
  */
 export const getActiveUsers = async (): Promise<ActiveUser[]> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/active-users`)
-  // return response.json()
-  
   return []
 }
 
@@ -68,15 +188,17 @@ export const getActiveUsers = async (): Promise<ActiveUser[]> => {
  * @returns Promise with forum stats
  */
 export const getForumStats = async (): Promise<ForumStats> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/stats`)
-  // return response.json()
-  
+  const response = await api.get<{
+    total_posts: number
+    total_comments: number
+    active_users: number
+  }>('/api/v1/forum/posts/stats/')
+
   return {
-    totalMembers: 0,
-    activeToday: 0,
-    totalPosts: 0,
-    totalReplies: 0
+    totalMembers: response.data.active_users || 0,
+    activeToday: response.data.active_users || 0,
+    totalPosts: response.data.total_posts || 0,
+    totalReplies: response.data.total_comments || 0
   }
 }
 
@@ -86,15 +208,43 @@ export const getForumStats = async (): Promise<ForumStats> => {
  * @returns Promise with created post
  */
 export const createForumPost = async (_postData: any): Promise<ForumPost | null> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/posts`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(_postData)
-  // })
-  // return response.json()
-  
-  return null
+  try {
+    const response = await api.post<ApiPost>('/api/v1/forum/posts/', _postData)
+    return mapPost(response.data)
+  } catch (error) {
+    console.error('Failed to create forum post:', error)
+    return null
+  }
+}
+
+export const updateForumPost = async (_postId: number, _postData: any): Promise<ForumPost | null> => {
+  try {
+    const response = await api.patch<ApiPost>(`/api/v1/forum/posts/${_postId}/`, _postData)
+    return mapPost(response.data)
+  } catch (error) {
+    console.error('Failed to update forum post:', error)
+    return null
+  }
+}
+
+export const deleteForumPost = async (_postId: number): Promise<boolean> => {
+  try {
+    const response = await api.delete(`/api/v1/forum/posts/${_postId}/`)
+    return response.status >= 200 && response.status < 300
+  } catch (error) {
+    console.error('Failed to delete forum post:', error)
+    return false
+  }
+}
+
+export const getForumPostViewers = async (_postId: number): Promise<ApiAuthor[]> => {
+  try {
+    const response = await api.get<ApiAuthor[]>(`/api/v1/forum/posts/${_postId}/viewers/`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch post viewers:', error)
+    return []
+  }
 }
 
 /**
@@ -102,11 +252,8 @@ export const createForumPost = async (_postData: any): Promise<ForumPost | null>
  * @returns Promise with array of user's posts
  */
 export const getUserPosts = async (): Promise<ForumPost[]> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/my-posts`)
-  // return response.json()
-  
-  return []
+  const response = await api.get<ApiPost[]>('/api/v1/forum/posts/my_posts/')
+  return response.data.map(mapPost)
 }
 
 /**
@@ -115,13 +262,13 @@ export const getUserPosts = async (): Promise<ForumPost[]> => {
  * @returns Promise with like result
  */
 export const likePost = async (_postId: number): Promise<boolean> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/posts/${_postId}/like`, {
-  //   method: 'POST'
-  // })
-  // return response.ok
-  
-  return true
+  try {
+    const response = await api.post(`/api/v1/forum/posts/${_postId}/like/`)
+    return response.status >= 200 && response.status < 300
+  } catch (error) {
+    console.error('Failed to like post:', error)
+    return false
+  }
 }
 
 /**
@@ -130,11 +277,5 @@ export const likePost = async (_postId: number): Promise<boolean> => {
  * @returns Promise with bookmark result
  */
 export const bookmarkPost = async (_postId: number): Promise<boolean> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/forum/posts/${_postId}/bookmark`, {
-  //   method: 'POST'
-  // })
-  // return response.ok
-  
-  return true
+  return false
 }

@@ -134,6 +134,14 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/forum/post/:id/edit"
+            element={
+              <ProtectedRoute role="member">
+                <CreatePostPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/forum/my-posts"
             element={
               <ProtectedRoute role="member">

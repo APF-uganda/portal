@@ -15,13 +15,17 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useUserPosts } from '../../hooks/useForum';
+import { deleteForumPost, getForumPostViewers } from '../../services/forum.service';
 
 const MyPostsPage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewerListLoading, setViewerListLoading] = useState(false);
+  const [viewerListPostId, setViewerListPostId] = useState<number | null>(null);
+  const [viewerList, setViewerList] = useState<Array<{ id: number; full_name?: string; initials?: string; profile_picture_url?: string | null }>>([]);
 
   // Use hook to fetch user's posts
-  const { posts: myPosts, loading, error } = useUserPosts();
+  const { posts: myPosts, loading, error, refetch } = useUserPosts();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -62,6 +66,15 @@ const MyPostsPage = () => {
   const totalViews = myPosts.reduce((sum, post) => sum + post.views, 0)
   const totalLikes = myPosts.reduce((sum, post) => sum + post.likes, 0)
   const totalReplies = myPosts.reduce((sum, post) => sum + post.replies, 0)
+
+  const openViewerList = async (postId: number) => {
+    setViewerListPostId(postId);
+    setViewerListLoading(true);
+    const viewers = await getForumPostViewers(postId);
+    setViewerList(viewers);
+    setViewerListLoading(false);
+  };
+
 
   // Loading state
   if (loading) {
@@ -278,7 +291,19 @@ const MyPostsPage = () => {
                         <Edit3 className="w-4 h-4" />
                       </button>
                     </Link>
-                    <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
+                    <button
+                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                      onClick={async () => {
+                        const confirmed = window.confirm('Delete this post? This cannot be undone.');
+                        if (!confirmed) return;
+                        const ok = await deleteForumPost(post.id);
+                        if (ok) {
+                          await refetch();
+                        } else {
+                          alert('Failed to delete post. Please try again.');
+                        }
+                      }}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                     <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -290,8 +315,48 @@ const MyPostsPage = () => {
                 {/* Post Stats */}
                 <div className="flex items-center gap-6 pt-4 border-t border-gray-200">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Eye className="w-4 h-4" />
-                    <span>{post.views} views</span>
+                    {viewerListPostId === post.id ? (
+                      viewerListLoading ? (
+                        <span className="text-sm text-gray-500">Loading viewers...</span>
+                      ) : viewerList.length === 0 ? (
+                        <span className="text-sm text-gray-500">No viewers yet</span>
+                      ) : (
+                        <div className="flex -space-x-2">
+                          {viewerList.map((viewer) => (
+                            <div
+                              key={viewer.id}
+                              className="w-6 h-6 rounded-full border-2 border-white bg-purple-600 text-white text-[10px] font-semibold flex items-center justify-center overflow-hidden"
+                              title={viewer.full_name || ''}
+                            >
+                              {viewer.profile_picture_url ? (
+                                <img
+                                  src={viewer.profile_picture_url}
+                                  alt={viewer.full_name || 'Viewer'}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span>{viewer.initials || 'U'}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    ) : post.views > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => openViewerList(post.id)}
+                        className="flex items-center gap-2 hover:text-purple-700 transition-colors"
+                        aria-label="Viewers"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>{post.views} views</span>
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Eye className="w-4 h-4" />
+                        <span>{post.views} views</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Heart className="w-4 h-4" />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft,
@@ -11,6 +11,7 @@ import {
   ThumbsUp
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { getForumPostDetail } from '../../services/forum.service';
 
 // Import images
 import chairImage from '../../assets/images/landingPage-image/chair.jpg';
@@ -20,284 +21,59 @@ import newsImage from '../../assets/images/landingPage-image/news1.webp';
 
 const PostDetailPage = () => {
   const { id } = useParams();
-  
-  // Mock post database - matches ForumPage posts
-  const postsDatabase = {
-    1: {
-      id: 1,
-      title: 'Understanding Your APF Membership Benefits',
-      subtitle: 'Dive deep into the full spectrum of benefits available with your APF membership. From exclusive resources and networking opportunities to professional development tools, this guide will help you maximize your membership value.',
-      content: `As a member of the Accountancy Practitioners Forum (APF), you have access to a comprehensive suite of benefits designed to support your professional growth and development. This guide will walk you through all the advantages available to you.
+  const [post, setPost] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-## Exclusive Resources and Tools
-
-Your APF membership provides access to a wealth of exclusive resources that can enhance your professional practice:
-
-**Professional Development Library**: Access to over 500 technical publications, research papers, and industry reports that keep you updated on the latest accounting standards and practices.
-
-**CPD Training Programs**: Structured continuing professional development courses that help you maintain your professional certifications and stay current with industry requirements.
-
-**Technical Support Hotline**: Direct access to our team of technical experts who can provide guidance on complex accounting issues and regulatory compliance matters.
-
-## Networking Opportunities
-
-One of the most valuable aspects of APF membership is the networking opportunities available:
-
-**Annual Conference**: Our flagship event brings together over 1,000 accounting professionals for three days of learning, networking, and professional development.
-
-**Regional Chapter Events**: Local meetups and seminars held throughout the year in major cities across the country.
-
-**Online Community Forum**: Connect with fellow practitioners, ask questions, and share insights through our digital platform.
-
-## Career Development Support
-
-APF is committed to supporting your career advancement:
-
-**Job Board Access**: Exclusive access to accounting positions from top firms and organizations.
-
-**Mentorship Program**: Connect with experienced practitioners who can provide guidance and career advice.
-
-**Professional Certification Support**: Resources and study materials for various accounting certifications.
-
-## Conclusion
-
-Your APF membership is an investment in your professional future. Take advantage of these benefits to maximize your potential and advance your career in the accounting profession.`,
-      author: 'Alice Wonderland',
-      authorInitials: 'AW',
-      authorRole: 'Senior Member Relations Manager',
-      category: 'Announcements',
-      createdAt: '2024-01-15T08:30:00Z',
-      readTime: '6 min read',
-      views: 1289,
-      likes: 32,
-      replies: 124
-    },
-    2: {
-      id: 2,
-      title: 'Idea: Dark Mode Option for the APF Portal',
-      subtitle: 'Many modern applications offer a dark mode for better eye comfort, especially during nighttime use. Would the APF team consider implementing a dark mode option for the portal?',
-      content: `As someone who spends long hours working on the APF portal, especially during evening hours, I've been thinking about how we could improve the user experience for members who work late or prefer darker interfaces.
-
-## The Benefits of Dark Mode
-
-Dark mode has become increasingly popular across digital platforms, and for good reason:
-
-**Reduced Eye Strain**: Dark backgrounds with light text can be easier on the eyes, particularly in low-light environments or during extended screen time.
-
-**Battery Conservation**: On devices with OLED screens, dark mode can help conserve battery life by using fewer pixels that emit light.
-
-**Professional Preference**: Many professionals in technical fields prefer dark interfaces as they're often easier to read and less distracting.
-
-## Implementation Considerations
-
-While implementing dark mode might seem straightforward, there are several factors to consider:
-
-**Design Consistency**: Any dark mode implementation should maintain the professional appearance and branding of the APF portal while ensuring all elements remain clearly visible and accessible.
-
-**User Preference Storage**: The system should remember each user's preference and apply it consistently across all portal sections.
-
-**Accessibility Compliance**: Dark mode must meet accessibility standards and provide sufficient contrast ratios for users with visual impairments.
-
-## Proposed Features
-
-Here's what I envision for an APF portal dark mode:
-
-- Toggle switch in user settings or header
-- Automatic switching based on system preferences
-- Consistent styling across all portal sections
-- Maintained readability for all text and data
-
-## Community Feedback
-
-I'd love to hear from other members about this idea. Would you use a dark mode option? What features would be most important to you?
-
-Let's discuss this in the comments below and see if we can build support for this enhancement.`,
-      author: 'Evanescence Star',
-      authorInitials: 'ES',
-      authorRole: 'UX Designer & APF Member',
-      category: 'Suggestions',
-      createdAt: '2024-01-08T16:45:00Z',
-      readTime: '4 min read',
-      views: 2100,
-      likes: 55,
-      replies: 210
-    },
-    3: {
-      id: 3,
-      title: 'Seeking Advice: Best Practices for Project Management',
-      subtitle: 'I\'m new to leading projects within APF and would appreciate advice from experienced members. What are some essential tools or methodologies you recommend for effective project management?',
-      content: `As a newly appointed project lead for several APF initiatives, I'm reaching out to our experienced community for guidance on project management best practices, particularly in the context of professional accounting organizations.
-
-## My Current Challenge
-
-I've recently been tasked with leading multiple projects simultaneously, including:
-
-- Updating our member onboarding process
-- Coordinating the annual conference planning
-- Managing the implementation of new CPD tracking systems
-
-While I have strong technical skills, project management is relatively new to me, and I want to ensure I'm using the most effective approaches.
-
-## Areas Where I Need Guidance
-
-**Project Planning and Scope Management**: How do you effectively define project scope and prevent scope creep while remaining flexible to necessary changes?
-
-**Team Coordination**: What are the best practices for coordinating team members who may be volunteers, part-time contributors, or have varying levels of availability?
-
-**Communication Strategies**: How do you maintain clear communication with stakeholders who have different technical backgrounds and involvement levels?
-
-**Risk Management**: What are common risks in APF-type projects, and how do you proactively address them?
-
-## Tools and Methodologies
-
-I'm particularly interested in hearing about:
-
-- Project management software that works well for professional organizations
-- Methodologies (Agile, Waterfall, hybrid approaches) that you've found effective
-- Communication tools and practices that keep everyone aligned
-- Reporting and tracking methods that provide visibility without being burdensome
-
-## What I've Tried So Far
-
-Currently, I'm using basic spreadsheets and email for coordination, but I suspect there are more efficient approaches. I've been reading about various project management methodologies, but I'd value real-world experience from fellow APF members.
-
-## Request for Mentorship
-
-If any experienced project managers in our community would be willing to provide occasional guidance or mentorship, I would be incredibly grateful. Sometimes having someone to bounce ideas off or review approaches can make all the difference.
-
-Thank you in advance for any advice, recommendations, or insights you can share!`,
-      author: 'Bob The Builder',
-      authorInitials: 'BT',
-      authorRole: 'Project Coordinator',
-      category: 'General Discussion',
-      createdAt: '2024-01-14T11:20:00Z',
-      readTime: '5 min read',
-      views: 954,
-      likes: 18,
-      replies: 87
+  useEffect(() => {
+    const postId = Number(id);
+    if (!Number.isFinite(postId)) {
+      setLoadError('Invalid post id');
+      setLoading(false);
+      return;
     }
-  };
 
-  // Get the specific post based on ID, fallback to post 1 if not found
-  const post = postsDatabase[parseInt(id || '1') as keyof typeof postsDatabase] || postsDatabase[1];
-  
+    const loadPost = async () => {
+      setLoading(true);
+      setLoadError(null);
+      const data = await getForumPostDetail(postId);
+      if (!data) {
+        setLoadError('Failed to load post');
+      } else {
+        setPost(data);
+      }
+      setLoading(false);
+    };
+
+    loadPost();
+  }, [id]);
+
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.likes);
+  const [likeCount, setLikeCount] = useState(0);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
 
-  // Comments database for each post
-  const commentsDatabase = {
-    1: [
-      {
-        id: 1,
-        author: 'Sandra Lyton',
-        authorInitials: 'SL',
-        content: 'This is exactly what I needed! I\'ve been a member for two years but wasn\'t aware of all these benefits. The mentorship program sounds particularly valuable.',
-        createdAt: '2024-01-15T10:20:00Z',
-        likes: 15,
-        isLiked: false,
-        replies: [
-          {
-            id: 11,
-            author: 'Alice Wonderland',
-            authorInitials: 'AW',
-            content: 'I\'m so glad this was helpful! The mentorship program has been a game-changer for many of our members. Feel free to reach out if you need help getting started.',
-            createdAt: '2024-01-15T11:10:00Z',
-            likes: 8,
-            isLiked: false
-          }
-        ]
-      },
-      {
-        id: 2,
-        author: 'Michael Jordan',
-        authorInitials: 'MJ',
-        content: 'The CPD training programs have been invaluable for maintaining my certifications. The quality of content is consistently high.',
-        createdAt: '2024-01-15T14:45:00Z',
-        likes: 12,
-        isLiked: true,
-        replies: []
-      }
-    ],
-    2: [
-      {
-        id: 1,
-        author: 'Bob The Builder',
-        authorInitials: 'BT',
-        content: 'I absolutely support this idea! As someone who works late hours frequently, dark mode would be a huge improvement for eye comfort.',
-        createdAt: '2024-01-08T18:20:00Z',
-        likes: 23,
-        isLiked: false,
-        replies: [
-          {
-            id: 11,
-            author: 'Evanescence Star',
-            authorInitials: 'ES',
-            content: 'Thanks for the support! It\'s great to hear from other members who would benefit from this feature.',
-            createdAt: '2024-01-08T19:15:00Z',
-            likes: 7,
-            isLiked: false
-          }
-        ]
-      },
-      {
-        id: 2,
-        author: 'Alice Wonderland',
-        authorInitials: 'AW',
-        content: 'This is a fantastic suggestion! From a UX perspective, offering both light and dark modes is becoming a standard expectation. I\'d love to see this implemented.',
-        createdAt: '2024-01-09T09:30:00Z',
-        likes: 18,
-        isLiked: true,
-        replies: []
-      },
-      {
-        id: 3,
-        author: 'Sandra Lyton',
-        authorInitials: 'SL',
-        content: 'Count me in as another supporter! I use dark mode on all my other professional tools, and it would be great to have consistency across platforms.',
-        createdAt: '2024-01-09T15:45:00Z',
-        likes: 14,
-        isLiked: false,
-        replies: []
-      }
-    ],
-    3: [
-      {
-        id: 1,
-        author: 'Alice Wonderland',
-        authorInitials: 'AW',
-        content: 'Great question! I\'ve been managing projects for APF for several years. I\'d recommend starting with a hybrid approach - use Agile principles for flexibility but maintain some structure for stakeholder communication.',
-        createdAt: '2024-01-14T13:20:00Z',
-        likes: 25,
-        isLiked: false,
-        replies: [
-          {
-            id: 11,
-            author: 'Bob The Builder',
-            authorInitials: 'BT',
-            content: 'Thank you Alice! That hybrid approach sounds practical. Do you have any specific tools you\'d recommend for tracking progress?',
-            createdAt: '2024-01-14T14:10:00Z',
-            likes: 8,
-            isLiked: false
-          }
-        ]
-      },
-      {
-        id: 2,
-        author: 'Michael Jordan',
-        authorInitials: 'MJ',
-        content: 'For APF projects, I\'ve found that Trello works well for smaller teams, while Asana is better for larger, more complex initiatives. The key is keeping stakeholders informed without overwhelming them with details.',
-        createdAt: '2024-01-14T16:45:00Z',
-        likes: 19,
-        isLiked: true,
-        replies: []
-      }
-    ]
+  type Reply = {
+    id: number;
+    author: string;
+    authorInitials: string;
+    content: string;
+    createdAt: string;
+    likes: number;
   };
 
-  const comments = commentsDatabase[post.id as keyof typeof commentsDatabase] || [];
+  type Comment = {
+    id: number;
+    author: string;
+    authorInitials: string;
+    content: string;
+    createdAt: string;
+    likes: number;
+    replies?: Reply[];
+  };
+
+  const comments: Comment[] = [];
 
   // Related content
   const relatedPosts = [
@@ -325,8 +101,7 @@ Thank you in advance for any advice, recommendations, or insights you can share!
       category: 'Professional Development',
       image: chairImage
     }
-  ].filter(relatedPost => relatedPost.id !== post.id); // Don't show current post in related
-
+  ].filter(relatedPost => relatedPost.id !== post?.id); 
   const handleLike = () => {
     if (isLiked) {
       setIsLiked(false);
@@ -366,6 +141,17 @@ Thank you in advance for any advice, recommendations, or insights you can share!
     return date.toLocaleDateString();
   };
 
+  const contentLines = useMemo(() => {
+    if (!post?.content) return [];
+    return String(post.content).split('\n');
+  }, [post]);
+
+  useEffect(() => {
+    if (post?.like_count) {
+      setLikeCount(post.like_count);
+    }
+  }, [post]);
+
   return (
     <DashboardLayout
       headerContent={
@@ -379,6 +165,19 @@ Thank you in advance for any advice, recommendations, or insights you can share!
       }
     >
       <div className="max-w-7xl mx-auto">
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-600">
+            Loading post...
+          </div>
+        ) : loadError ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-red-600">
+            {loadError}
+          </div>
+        ) : !post ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-600">
+            Post not found.
+          </div>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
@@ -387,7 +186,7 @@ Thank you in advance for any advice, recommendations, or insights you can share!
               {/* Category Badge */}
               <div className="p-6 pb-4">
                 <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full mb-4">
-                  {post.category}
+                  {post.category?.name || 'General'}
                 </span>
                 
                 {/* Title */}
@@ -396,29 +195,35 @@ Thank you in advance for any advice, recommendations, or insights you can share!
                 </h1>
                 
                 {/* Subtitle */}
-                <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                  {post.subtitle}
-                </p>
+                {post.content && (
+                  <p className="text-lg text-gray-600 leading-relaxed mb-6">
+                    {String(post.content).split('\n')[0]}
+                  </p>
+                )}
 
                 {/* Author and Meta */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-[#60308C] rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                      {post.authorInitials}
+                      {post.author?.initials || 'U'}
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900">{post.author}</div>
-                      <div className="text-sm text-gray-500">{post.authorRole}</div>
+                      <div className="font-semibold text-gray-900">
+                        {post.author?.full_name || post.author?.email || 'Member'}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {formatRelativeTime(post.created_at)}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      <span>{post.readTime}</span>
+                      <span>{formatRelativeTime(post.created_at)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Eye className="w-4 h-4" />
-                      <span>{post.views}</span>
+                      <span>{post.views_count ?? 0}</span>
                     </div>
                   </div>
                 </div>
@@ -438,7 +243,7 @@ Thank you in advance for any advice, recommendations, or insights you can share!
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
                     <MessageSquare className="w-4 h-4" />
-                    <span>{comments.length}</span>
+                    <span>{post.comment_count ?? comments.length}</span>
                   </button>
                   <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
                     <Share2 className="w-4 h-4" />
@@ -450,7 +255,7 @@ Thank you in advance for any advice, recommendations, or insights you can share!
               {/* Post Content */}
               <div className="p-6 pt-0">
                 <div className="prose prose-lg max-w-none">
-                  {post.content.split('\n').map((paragraph, index) => {
+                  {contentLines.map((paragraph, index) => {
                     if (paragraph.startsWith('## ')) {
                       return <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4">{paragraph.replace('## ', '')}</h2>;
                     }
@@ -608,8 +413,8 @@ Thank you in advance for any advice, recommendations, or insights you can share!
                   "{post.title}"
                 </p>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <div>Category: {post.category}</div>
-                  <div>Author: {post.author}</div>
+                  <div>Category: {post.category?.name || 'General'}</div>
+                  <div>Author: {post.author?.full_name || post.author?.email || 'Member'}</div>
                 </div>
               </div>
 
@@ -640,7 +445,7 @@ Thank you in advance for any advice, recommendations, or insights you can share!
                       <MessageSquare className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{comments.length}</div>
+                      <div className="font-medium text-gray-900">{post.comment_count ?? comments.length}</div>
                       <div className="text-xs text-gray-500">Comments</div>
                     </div>
                   </div>
@@ -688,6 +493,7 @@ Thank you in advance for any advice, recommendations, or insights you can share!
             </div>
           </div>
         </div>
+        )}
       </div>
     </DashboardLayout>
   );

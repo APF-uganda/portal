@@ -28,6 +28,7 @@ export interface MemberDashboardActivity {
   action: string;
   field_changed: string;
   timestamp: string;
+  message: string;
 }
 
 export interface MemberDashboardNotification {

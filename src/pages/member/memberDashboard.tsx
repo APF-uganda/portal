@@ -97,23 +97,10 @@ const MemberDashboard: React.FC = () => {
     }
   };
 
-  const formatActivityMessage = (action: string) => {
-    const actionLabels: Record<string, string> = {
-      created: 'Profile created',
-      updated: 'Profile updated',
-      picture_uploaded: 'Profile picture uploaded',
-      picture_removed: 'Profile picture removed',
-      privacy_changed: 'Privacy settings updated',
-      notifications_changed: 'Notification preferences updated',
-    };
-
-    return actionLabels[action] || 'Account activity';
-  };
-
   const activities = recentActivity.map((activity) => ({
     id: String(activity.id),
     type: getActivityType(activity.action),
-    message: formatActivityMessage(activity.action),
+    message: activity.message || 'Account activity',
     createdAt: activity.timestamp,
   }));
 

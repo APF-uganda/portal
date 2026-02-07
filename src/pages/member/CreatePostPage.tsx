@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { 
   ArrowLeft,
   Bold,
@@ -16,22 +16,57 @@ import {
   Save
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { useForumCategories } from '../../hooks/useForum';
+import { createForumPost, getForumPostDetail, updateForumPost } from '../../services/forum.service';
 
 const CreatePostPage = () => {
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
   const [postTitle, setPostTitle] = useState('');
   const [postCategory, setPostCategory] = useState('');
   const [postContent, setPostContent] = useState('');
   const [tags, setTags] = useState(['#discussion', '@john.doe']);
   const [tagInput, setTagInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
 
-  const categories = [
-    { value: 'investing', label: 'Investing Strategies' },
-    { value: 'budgeting', label: 'Budgeting & Savings' },
-    { value: 'retirement', label: 'Retirement Planning' },
-    { value: 'taxes', label: 'Tax Planning' },
-    { value: 'credit', label: 'Credit & Loans' },
-    { value: 'market', label: 'Market Insights' }
-  ];
+  const { categories: fetchedCategories, loading: categoriesLoading } = useForumCategories();
+
+  const categories = useMemo(() => {
+    if (fetchedCategories.length === 0) {
+      return [
+        { value: 'announcements', label: 'Announcements' },
+        { value: 'suggestions', label: 'Suggestions' },
+        { value: 'general', label: 'General Discussion' },
+        { value: 'qa', label: 'Q&A Support' },
+        { value: 'tips', label: 'Professional Tips' },
+        { value: 'networking', label: 'Networking' }
+      ];
+    }
+    return fetchedCategories.map((category) => ({
+      value: category.id,
+      label: category.name
+    }));
+  }, [fetchedCategories]);
+
+  useEffect(() => {
+    if (!isEditMode) return;
+    const postId = Number(id);
+    if (!Number.isFinite(postId)) return;
+
+    const loadPost = async () => {
+      setIsLoadingPost(true);
+      const post = await getForumPostDetail(postId);
+      setIsLoadingPost(false);
+
+      if (!post) return;
+      setPostTitle(post.title || '');
+      setPostContent(post.content || '');
+      setPostCategory(post.category?.slug || '');
+    };
+
+    loadPost();
+  }, [id, isEditMode]);
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if ((e.key === 'Enter' || e.key === ',') && tagInput.trim()) {
@@ -63,15 +98,55 @@ const CreatePostPage = () => {
     return true;
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (validateForm()) {
-      alert('Post published successfully!');
+      setIsSubmitting(true);
+      const selectedCategory = fetchedCategories.find((category) => category.id === postCategory);
+      const payload = {
+        title: postTitle,
+        content: postContent,
+        category_id: selectedCategory?.rawId ?? undefined,
+        status: 'published'
+      };
+      const response = isEditMode && id
+        ? await updateForumPost(Number(id), payload)
+        : await createForumPost(payload);
+      setIsSubmitting(false);
+
+      if (response) {
+        alert(isEditMode ? 'Post updated successfully!' : 'Post published successfully!');
+        if (!isEditMode) {
+          setPostTitle('');
+          setPostCategory('');
+          setPostContent('');
+          setTags([]);
+        }
+      } else {
+        alert(isEditMode ? 'Failed to update post. Please try again.' : 'Failed to publish post. Please try again.');
+      }
     }
   };
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     if (validateForm()) {
-      alert('Post saved as draft successfully!');
+      setIsSubmitting(true);
+      const selectedCategory = fetchedCategories.find((category) => category.id === postCategory);
+      const payload = {
+        title: postTitle,
+        content: postContent,
+        category_id: selectedCategory?.rawId ?? undefined,
+        status: 'draft'
+      };
+      const response = isEditMode && id
+        ? await updateForumPost(Number(id), payload)
+        : await createForumPost(payload);
+      setIsSubmitting(false);
+
+      if (response) {
+        alert(isEditMode ? 'Draft updated successfully!' : 'Post saved as draft successfully!');
+      } else {
+        alert(isEditMode ? 'Failed to update draft. Please try again.' : 'Failed to save draft. Please try again.');
+      }
     }
   };
 
@@ -93,7 +168,9 @@ const CreatePostPage = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Create New Post</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {isEditMode ? 'Edit Post' : 'Create New Post'}
+                </h2>
               </div>
 
               <form className="space-y-6">
@@ -107,6 +184,7 @@ const CreatePostPage = () => {
                     value={postTitle}
                     onChange={(e) => setPostTitle(e.target.value)}
                     placeholder="Enter a descriptive title for your post"
+                    disabled={isSubmitting || isLoadingPost}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:bg-white"
                   />
                 </div>
@@ -119,6 +197,7 @@ const CreatePostPage = () => {
                   <select
                     value={postCategory}
                     onChange={(e) => setPostCategory(e.target.value)}
+                    disabled={categoriesLoading || isSubmitting || isLoadingPost}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:bg-white"
                   >
                     <option value="">Select a category</option>
@@ -195,6 +274,7 @@ const CreatePostPage = () => {
                     onChange={(e) => setPostContent(e.target.value)}
                     placeholder="Start writing your post content here..."
                     rows={12}
+                    disabled={isSubmitting || isLoadingPost}
                     className="w-full px-5 py-4 border border-gray-200 rounded-b-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-vertical"
                   />
                 </div>
@@ -216,24 +296,27 @@ const CreatePostPage = () => {
                   <button
                     type="button"
                     className="px-8 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleSaveDraft}
-                    className="flex items-center gap-2 px-8 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 px-8 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60"
+                    disabled={isSubmitting}
                   >
                     <Save className="w-4 h-4" />
-                    Save as Draft
+                    {isSubmitting ? 'Saving...' : isEditMode ? 'Update Draft' : 'Save as Draft'}
                   </button>
                   <button
                     type="button"
                     onClick={handlePublish}
-                    className="flex items-center gap-2 px-8 py-3 bg-[#60308C] text-white rounded-lg hover:bg-[#60308C]/90 transition-colors"
+                    className="flex items-center gap-2 px-8 py-3 bg-[#60308C] text-white rounded-lg hover:bg-[#60308C]/90 transition-colors disabled:opacity-60"
+                    disabled={isSubmitting}
                   >
                     <Send className="w-4 h-4" />
-                    Publish Post
+                    {isSubmitting ? 'Publishing...' : isEditMode ? 'Update Post' : 'Publish Post'}
                   </button>
                 </div>
               </form>
