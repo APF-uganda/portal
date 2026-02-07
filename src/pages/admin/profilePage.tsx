@@ -19,7 +19,7 @@ const AdminProfilePage = () => {
     updating,
     uploadingPicture,
     changingPassword,
-    refetchProfile:  _refetchProfile,
+    refetchProfile,
     updateProfile,
     uploadPicture,
     deletePicture,
@@ -34,6 +34,12 @@ const AdminProfilePage = () => {
     }
   }, []);
 
+  // Add a manual refresh handler for debugging
+  const handleRefresh = async () => {
+    console.log('[Profile] Manual refresh triggered');
+    await refetchProfile();
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
@@ -45,9 +51,18 @@ const AdminProfilePage = () => {
           <div className="max-w-[1400px] mx-auto space-y-10">
             
             {/* Page Header */}
-            <div>
-              <h1 className="text-[26px] font-bold text-slate-800 tracking-tight text-[#5C32A3]">My Profile</h1>
-              <p className="text-slate-500 mt-1">Manage your personal and professional information. Keep your profile updated to ensure seamless communication.</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-[26px] font-bold text-slate-800 tracking-tight text-[#5C32A3]">My Profile</h1>
+                <p className="text-slate-500 mt-1">Manage your personal and professional information. Keep your profile updated to ensure seamless communication.</p>
+              </div>
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
+              >
+                {loading ? 'Refreshing...' : 'Refresh Profile'}
+              </button>
             </div>
 
             {/* Error Message */}

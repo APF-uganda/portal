@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Pencil, Mail, Phone, Upload, Trash2, User } from 'lucide-react';
 import { UserProfile } from '../../services/profileApi';
 
@@ -26,6 +26,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showPictureMenu, setShowPictureMenu] = useState(false);
+
+  // Log when profile changes
+  useEffect(() => {
+    console.log('[ProfileHeader] Profile updated:', profile ? {
+      full_name: profile.full_name,
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      email: profile.email,
+    } : 'null');
+  }, [profile]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

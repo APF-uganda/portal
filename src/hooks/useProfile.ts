@@ -56,6 +56,9 @@ interface UseProfileReturn {
   initials: string;
   profilePictureUrl: string | null;
   isProfileComplete: boolean;
+  
+  // Version tracking for re-renders
+  profileVersion: number;
 }
 
 const PROFILE_STORAGE_KEY = 'user_profile';
@@ -93,6 +96,7 @@ export const useProfile = (): UseProfileReturn => {
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileVersion, setProfileVersion] = useState(0);
 
   // Load profile data
   const loadProfile = useCallback(async () => {
@@ -100,9 +104,22 @@ export const useProfile = (): UseProfileReturn => {
       setLoading(true);
       setError(null);
       
+      console.log('[Profile] Fetching profile from API...');
       const profileData = await fetchUserProfile();
+      console.log('[Profile] Received profile data:', {
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        phone_number: profileData.phone_number,
+        updated_at: profileData.updated_at,
+        full_data: profileData
+      });
+      
       setProfile(profileData);
       saveProfileToStorage(profileData);
+      setProfileVersion(prev => prev + 1); // Increment version to trigger re-renders
+      
+      console.log('[Profile] Profile updated in state and localStorage');
+      console.log('[Profile] New profile version:', profileVersion + 1);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
       setError(errorMessage);
@@ -110,7 +127,7 @@ export const useProfile = (): UseProfileReturn => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [profileVersion]);
 
   // Load completion status
   const loadCompletionStatus = useCallback(async () => {
@@ -126,12 +143,32 @@ export const useProfile = (): UseProfileReturn => {
   // Update profile
   const updateProfile = useCallback(async (data: ProfileUpdateData): Promise<boolean> => {
     try {
+      console.log('[Profile] Starting update with data:', data);
+      
       setUpdating(true);
       setError(null);
       
       const updatedProfile = await updateUserProfile(data);
+      console.log('[Profile] Update successful, received from API:', {
+        email: updatedProfile.email,
+        first_name: updatedProfile.first_name,
+        last_name: updatedProfile.last_name,
+        phone_number: updatedProfile.phone_number,
+        updated_at: updatedProfile.updated_at,
+        full_response: updatedProfile
+      });
+      
+      // Use the data from the API response
       setProfile(updatedProfile);
       saveProfileToStorage(updatedProfile);
+      setProfileVersion(prev => prev + 1); // Increment version to trigger re-renders
+      
+      console.log('[Profile] Profile state updated with fresh data from API');
+      console.log('[Profile] New profile state:', updatedProfile);
+      
+      // Auto-refresh after successful update to ensure consistency
+      console.log('[Profile] Auto-refreshing after update...');
+      await loadProfile();
       
       // Reload completion status after update
       await loadCompletionStatus();
@@ -139,13 +176,13 @@ export const useProfile = (): UseProfileReturn => {
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
+      console.error('[Profile] Update failed:', err);
       setError(errorMessage);
-      console.error('Error updating profile:', err);
       return false;
     } finally {
       setUpdating(false);
     }
-  }, [loadCompletionStatus]);
+  }, [loadCompletionStatus, loadProfile]);
 
   // Upload profile picture
   const uploadPicture = useCallback(async (file: File): Promise<boolean> => {
@@ -160,18 +197,10 @@ export const useProfile = (): UseProfileReturn => {
       setUploadingPicture(true);
       setError(null);
       
-      const result = await uploadProfilePicture(file);
+      await uploadProfilePicture(file);
       
-      // Update profile with new picture URL
-      if (profile) {
-        const nextProfile = {
-          ...profile,
-          profile_picture_url: result.profile_picture_url,
-          initials: result.initials
-        };
-        setProfile(nextProfile);
-        saveProfileToStorage(nextProfile);
-      }
+      // Refetch the full profile to ensure consistency
+      await loadProfile();
       
       // Reload completion status
       await loadCompletionStatus();
@@ -185,7 +214,7 @@ export const useProfile = (): UseProfileReturn => {
     } finally {
       setUploadingPicture(false);
     }
-  }, [profile, loadCompletionStatus]);
+  }, [loadProfile, loadCompletionStatus]);
 
   // Remove profile picture
   const removePicture = useCallback(async (): Promise<boolean> => {
@@ -193,18 +222,10 @@ export const useProfile = (): UseProfileReturn => {
       setUploadingPicture(true);
       setError(null);
       
-      const result = await removeProfilePicture();
+      await removeProfilePicture();
       
-      // Update profile to remove picture
-      if (profile) {
-        const nextProfile = {
-          ...profile,
-          profile_picture_url: null,
-          initials: result.initials
-        };
-        setProfile(nextProfile);
-        saveProfileToStorage(nextProfile);
-      }
+      // Refetch the full profile to ensure consistency
+      await loadProfile();
       
       return true;
     } catch (err) {
@@ -215,7 +236,7 @@ export const useProfile = (): UseProfileReturn => {
     } finally {
       setUploadingPicture(false);
     }
-  }, [profile]);
+  }, [loadProfile]);
 
   // Update privacy settings
   const updatePrivacy = useCallback(async (settings: PrivacySettings): Promise<boolean> => {
@@ -307,17 +328,19 @@ export const useProfile = (): UseProfileReturn => {
     setError(null);
   }, []);
 
-  // Load profile on mount
+  // Load profile on mount ONLY
   useEffect(() => {
     loadProfile();
-  }, [loadProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - run only once on mount
 
   // Load completion status when profile is loaded
   useEffect(() => {
     if (profile) {
       loadCompletionStatus();
     }
-  }, [profile, loadCompletionStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.email]); // Only re-run if the user changes
 
   // Computed values
   const displayName = profile?.full_name || profile?.email?.split('@')[0] || 'User';
@@ -361,5 +384,8 @@ export const useProfile = (): UseProfileReturn => {
     initials,
     profilePictureUrl,
     isProfileComplete,
+    
+    // Version tracking
+    profileVersion,
   };
 };
