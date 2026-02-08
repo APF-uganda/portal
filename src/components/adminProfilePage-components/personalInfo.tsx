@@ -25,6 +25,13 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
   // Update form data when profile changes
   useEffect(() => {
+    console.log('[PersonalInfo] Profile prop changed:', profile ? {
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      phone_number: profile.phone_number,
+      updated_at: profile.updated_at,
+    } : 'null');
+    
     if (profile) {
       const newFormData = {
         first_name: profile.first_name || '',
@@ -34,6 +41,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       };
       setFormData(newFormData);
       setHasChanges(false);
+      
+      console.log('[PersonalInfo] Form data updated:', newFormData);
     }
   }, [profile]);
 
@@ -59,12 +68,28 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasChanges || updating) return;
+    if (!hasChanges || updating) {
+      console.log('[PersonalInfo] Submit blocked:', { hasChanges, updating });
+      return;
+    }
+
+    console.log('[PersonalInfo] Submitting update:', formData);
+    console.log('[PersonalInfo] Current profile:', profile ? {
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      phone_number: profile.phone_number,
+      updated_at: profile.updated_at,
+    } : 'null');
 
     const success = await onUpdate(formData);
+    console.log('[PersonalInfo] Update result:', success);
+    
     if (success) {
+      console.log('[PersonalInfo] Update successful, resetting form state');
       setHasChanges(false);
       setIsEditing(false);
+    } else {
+      console.log('[PersonalInfo] Update failed');
     }
   };
 

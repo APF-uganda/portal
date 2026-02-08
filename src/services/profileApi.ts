@@ -202,7 +202,7 @@ function getMultipartHeaders(): Record<string, string> {
  */
 function handleApiError(error: unknown): never {
   if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError;
+    const axiosError = error as AxiosError<any>;
     
     if (axiosError.response?.status === 401) {
       // Token expired or invalid
@@ -212,7 +212,42 @@ function handleApiError(error: unknown): never {
       window.location.href = '/login';
     }
     
-    console.error('API Error:', axiosError.response?.data || axiosError.message);
+    // Extract error message from response
+    let errorMessage = 'An error occurred';
+    
+    if (axiosError.response?.data) {
+      const data = axiosError.response.data;
+      
+      // Check for various error formats
+      if (typeof data === 'string') {
+        errorMessage = data;
+      } else if (data.error) {
+        errorMessage = data.error;
+      } else if (data.message) {
+        errorMessage = data.message;
+      } else if (data.detail) {
+        errorMessage = data.detail;
+      } else if (data.errors) {
+        // Handle validation errors
+        const errors = Object.entries(data.errors)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('; ');
+        errorMessage = errors || 'Validation error';
+      }
+    } else if (axiosError.message) {
+      errorMessage = axiosError.message;
+    }
+    
+    console.error('API Error:', {
+      status: axiosError.response?.status,
+      data: axiosError.response?.data,
+      message: errorMessage
+    });
+    
+    // Throw a new error with the extracted message
+    const enhancedError = new Error(errorMessage);
+    (enhancedError as any).response = axiosError.response;
+    throw enhancedError;
   }
   
   throw error;

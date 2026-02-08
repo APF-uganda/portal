@@ -28,6 +28,12 @@ export const ProfessionalInfo: React.FC<ProfessionalInfoProps> = ({
 
   // Update form data when profile changes
   useEffect(() => {
+    console.log('[ProfessionalInfo] Profile prop changed:', profile ? {
+      job_title: profile.job_title,
+      organization: profile.organization,
+      updated_at: profile.updated_at,
+    } : 'null');
+    
     if (profile) {
       const newFormData = {
         job_title: profile.job_title || '',
