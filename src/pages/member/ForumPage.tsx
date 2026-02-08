@@ -191,7 +191,17 @@ const ForumPage = () => {
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 text-sm">{user.name}</div>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <div className={`w-2 h-2 rounded-full ${user.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              user.status === 'online'
+                                ? 'bg-green-500'
+                                : user.status === 'away'
+                                ? 'bg-yellow-500'
+                                : 'bg-gray-400'
+                            }`}
+                          ></div>
+                          <span className="capitalize">{user.status}</span>
+                          <span>•</span>
                           <span>{user.lastSeen}</span>
                         </div>
                       </div>

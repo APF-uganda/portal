@@ -9,13 +9,13 @@ import {
   Trash2,
   Search,
   Calendar,
-  MoreVertical,
   ChevronLeft,
-  Loader2
+  Loader2,
+  Send
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useUserPosts } from '../../hooks/useForum';
-import { deleteForumPost, getForumPostViewers } from '../../services/forum.service';
+import { deleteForumPost, getForumPostViewers, getForumComments, updateForumPost } from '../../services/forum.service';
 
 const MyPostsPage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
@@ -23,6 +23,16 @@ const MyPostsPage = () => {
   const [viewerListLoading, setViewerListLoading] = useState(false);
   const [viewerListPostId, setViewerListPostId] = useState<number | null>(null);
   const [viewerList, setViewerList] = useState<Array<{ id: number; full_name?: string; initials?: string; profile_picture_url?: string | null }>>([]);
+  const [commentsPostId, setCommentsPostId] = useState<number | null>(null);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [comments, setComments] = useState<Array<{
+    id: number;
+    authorName: string;
+    authorInitials: string;
+    content: string;
+    createdAt: string;
+    replyCount: number;
+  }>>([]);
 
   // Use hook to fetch user's posts
   const { posts: myPosts, loading, error, refetch } = useUserPosts();
@@ -67,12 +77,48 @@ const MyPostsPage = () => {
   const totalLikes = myPosts.reduce((sum, post) => sum + post.likes, 0)
   const totalReplies = myPosts.reduce((sum, post) => sum + post.replies, 0)
 
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    if (Number.isNaN(date.getTime())) return ''
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString()
+  }
+
   const openViewerList = async (postId: number) => {
     setViewerListPostId(postId);
     setViewerListLoading(true);
     const viewers = await getForumPostViewers(postId);
     setViewerList(viewers);
     setViewerListLoading(false);
+  };
+
+  const toggleComments = async (postId: number) => {
+    if (commentsPostId === postId) {
+      setCommentsPostId(null);
+      setComments([]);
+      return;
+    }
+    setCommentsPostId(postId);
+    setCommentsLoading(true);
+    const data = await getForumComments(postId);
+    const mapped = data.map((comment) => ({
+      id: comment.id,
+      authorName: comment.author?.full_name || comment.author?.email || 'Member',
+      authorInitials: comment.author?.initials || 'U',
+      content: comment.content,
+      createdAt: comment.created_at,
+      replyCount: comment.reply_count
+    }));
+    setComments(mapped);
+    setCommentsLoading(false);
   };
 
 
@@ -262,7 +308,7 @@ const MyPostsPage = () => {
             {filteredPosts.map((post) => (
               <div key={post.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                 {/* Post Header */}
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-4 group">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <Link to={`/forum/post/${post.id}`}>
@@ -285,7 +331,23 @@ const MyPostsPage = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {post.status === 'draft' && (
+                      <button
+                        className="p-2 text-gray-400 hover:text-purple-600 transition-colors"
+                        title="Submit draft"
+                        onClick={async () => {
+                          const ok = await updateForumPost(post.id, { status: 'published' });
+                          if (ok) {
+                            await refetch();
+                          } else {
+                            alert('Failed to publish draft. Please try again.');
+                          }
+                        }}
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    )}
                     <Link to={`/forum/post/${post.id}/edit`}>
                       <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
                         <Edit3 className="w-4 h-4" />
@@ -305,9 +367,6 @@ const MyPostsPage = () => {
                       }}
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                      <MoreVertical className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -362,11 +421,45 @@ const MyPostsPage = () => {
                     <Heart className="w-4 h-4" />
                     <span>{post.likes} likes</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <button
+                    type="button"
+                    onClick={() => toggleComments(post.id)}
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-purple-700 transition-colors"
+                  >
                     <MessageSquare className="w-4 h-4" />
                     <span>{post.replies} replies</span>
-                  </div>
+                  </button>
                 </div>
+
+                {commentsPostId === post.id && (
+                  <div className="mt-4 border-t border-gray-100 pt-4 space-y-4">
+                    {commentsLoading ? (
+                      <div className="text-sm text-gray-500">Loading comments...</div>
+                    ) : comments.length === 0 ? (
+                      <div className="text-sm text-gray-500">No comments yet</div>
+                    ) : (
+                      comments.map((comment) => (
+                        <div key={comment.id} className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-[#60308C] rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                            {comment.authorInitials}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="font-medium text-gray-900 text-sm">{comment.authorName}</div>
+                              <div className="text-xs text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
+                            </div>
+                            <div className="text-sm text-gray-700">{comment.content}</div>
+                            {comment.replyCount > 0 && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                {comment.replyCount} replies
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
