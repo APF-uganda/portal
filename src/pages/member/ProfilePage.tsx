@@ -33,7 +33,12 @@ const ProfilePage = () => {
     email: '',
     phone_number: '',
     address_line_1: '',
-    bio: ''
+    bio: '',
+    job_title: '',
+    organization: '',
+    department: '',
+    years_of_experience: '',
+    specializations: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -60,7 +65,12 @@ const ProfilePage = () => {
       email: profile.email || '',
       phone_number: profile.phone_number || '',
       address_line_1: profile.address_line_1 || '',
-      bio: profile.bio || ''
+      bio: profile.bio || '',
+      job_title: profile.job_title || '',
+      organization: profile.organization || '',
+      department: profile.department || '',
+      years_of_experience: profile.years_of_experience?.toString() || '',
+      specializations: profile.specializations || ''
     });
   }, [profile]);
 
@@ -95,13 +105,24 @@ const ProfilePage = () => {
     : 'N/A';
 
   const handleSaveProfile = async () => {
-    const success = await updateProfile({
+    const updateData: any = {
       first_name: formData.first_name,
       last_name: formData.last_name,
       phone_number: formData.phone_number,
       address_line_1: formData.address_line_1,
-      bio: formData.bio
-    });
+      bio: formData.bio,
+      job_title: formData.job_title,
+      organization: formData.organization,
+      department: formData.department,
+      specializations: formData.specializations
+    };
+
+    // Convert years_of_experience to number if provided
+    if (formData.years_of_experience) {
+      updateData.years_of_experience = parseInt(formData.years_of_experience);
+    }
+
+    const success = await updateProfile(updateData);
 
     if (success) {
       setIsEditing(false);
@@ -325,6 +346,16 @@ const ProfilePage = () => {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date of Birth
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <p className="text-gray-900 py-2">{profile?.date_of_birth || 'Not provided'}</p>
+                    </div>
+                  </div>
+
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Address
@@ -387,6 +418,96 @@ const ProfilePage = () => {
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <p className="text-gray-900 py-2">{joinDate}</p>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Info */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Professional Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Job Title
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={formData.job_title}
+                          onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
+                          placeholder="Senior Accountant"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      ) : (
+                        <p className="text-gray-900 py-2">{profile?.job_title || 'Not provided'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Organization
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={formData.organization}
+                          onChange={(e) => setFormData(prev => ({ ...prev, organization: e.target.value }))}
+                          placeholder="APF Audit"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      ) : (
+                        <p className="text-gray-900 py-2">{profile?.organization || 'Not provided'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Department
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={formData.department}
+                          onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                          placeholder="Audit Department"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      ) : (
+                        <p className="text-gray-900 py-2">{profile?.department || 'Not provided'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Years of Experience
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={formData.years_of_experience}
+                          onChange={(e) => setFormData(prev => ({ ...prev, years_of_experience: e.target.value }))}
+                          placeholder="5"
+                          min="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      ) : (
+                        <p className="text-gray-900 py-2">
+                          {profile?.years_of_experience ? `${profile.years_of_experience} years` : 'Not provided'}
+                        </p>
+                      )}
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Specializations
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={formData.specializations}
+                          onChange={(e) => setFormData(prev => ({ ...prev, specializations: e.target.value }))}
+                          placeholder="Audit, Tax, Financial Advisory"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      ) : (
+                        <p className="text-gray-900 py-2">{profile?.specializations || 'Not provided'}</p>
+                      )}
                     </div>
                   </div>
                 </div>
