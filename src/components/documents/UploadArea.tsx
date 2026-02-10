@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { CloudUpload, FolderOpen, CheckCircle, Loader2, Info } from "lucide-react"
 import { Button } from "../ui/button"
+import { toastMessages } from "../../utils/toast-helpers"
 
 interface UploadAreaProps {
   onUpload: (file: File) => Promise<boolean>
@@ -23,7 +24,7 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
     const fileSize = (file.size / (1024 * 1024)).toFixed(2)
 
     if (parseFloat(fileSize) > maxSizeMB) {
-      alert(`File size exceeds ${maxSizeMB}MB limit. Please select a smaller file.`)
+      toastMessages.document.sizeLimitExceeded(maxSizeMB)
       return
     }
 
@@ -38,7 +39,7 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
       }, 3000)
     } else {
       setUploadStatus('idle')
-      alert('Upload failed. Please try again.')
+      toastMessages.document.uploadFailed()
     }
   }
 

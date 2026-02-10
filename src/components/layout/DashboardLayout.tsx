@@ -1,9 +1,12 @@
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import {
   Bell,
   ChevronDown,
   Menu,
+  User,
+  LogOut,
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 import MemberSideNav from "../common/memberSideNav"
 import { useProfile } from "../../hooks/useProfile"
@@ -19,10 +22,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const { profile, loading } = useProfile()
+  const navigate = useNavigate()
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const displayName = profile?.full_name || profile?.email?.split('@')[0] || 'User'
   const initials = profile?.initials || 'U'
+  const membershipType = profile?.user_role === '1' ? 'Administrator' : 'Member'
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -30,6 +37,40 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen)
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isProfileDropdownOpen])
+
+  const handleLogout = () => {
+    // Clear auth token
+    localStorage.removeItem('token')
+    localStorage.removeItem('refresh_token')
+    // Redirect to login
+    navigate('/login')
+  }
+
+  const handleProfileClick = () => {
+    setIsProfileDropdownOpen(false)
+    navigate('/profile')
   }
 
   return (
@@ -65,29 +106,100 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
 
             <div className="flex items-center space-x-2 md:space-x-4">
-              <Bell className="w-5 h-5 text-gray-400" />
-              <div className="flex items-center space-x-2">
-                {loading ? (
-                  <div className="w-7 h-7 md:w-8 md:h-8 bg-gray-200 rounded-full animate-pulse"></div>
-                ) : profile?.profile_picture_url ? (
-                  <img
-                    src={profile.profile_picture_url}
-                    alt={displayName}
-                    className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-7 h-7 md:w-8 md:h-8 bg-[#60308C] rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs md:text-sm font-medium">
-                      {initials}
-                    </span>
+              <button
+                onClick={() => navigate('/notifications')}
+                className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5 text-gray-400" />
+                {/* Notification badge - can be made dynamic later */}
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+
+              {/* Profile Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={toggleProfileDropdown}
+                  className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  {loading ? (
+                    <div className="w-7 h-7 md:w-8 md:h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                  ) : profile?.profile_picture_url ? (
+                    <img
+                      src={profile.profile_picture_url}
+                      alt={displayName}
+                      className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 md:w-8 md:h-8 bg-[#60308C] rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs md:text-sm font-medium">
+                        {initials}
+                      </span>
+                    </div>
+                  )}
+                  {loading ? (
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse hidden sm:block"></div>
+                  ) : (
+                    <span className="font-medium text-sm md:text-base hidden sm:block">{displayName}</span>
+                  )}
+                  <ChevronDown className={`w-4 h-4 text-gray-400 hidden sm:block transition-transform ${
+                    isProfileDropdownOpen ? 'rotate-180' : ''
+                  }`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    {/* User Info Section */}
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <div className="flex items-center space-x-3">
+                        {profile?.profile_picture_url ? (
+                          <img
+                            src={profile.profile_picture_url}
+                            alt={displayName}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-[#60308C] rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm font-medium">
+                              {initials}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {profile?.email}
+                          </p>
+                          <p className="text-xs text-purple-600 font-medium mt-0.5">
+                            {membershipType}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="py-1">
+                      <button
+                        onClick={handleProfileClick}
+                        className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span>View Profile</span>
+                      </button>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
                   </div>
                 )}
-                {loading ? (
-                  <div className="h-4 w-20 bg-gray-200 rounded animate-pulse hidden sm:block"></div>
-                ) : (
-                  <span className="font-medium text-sm md:text-base hidden sm:block">{displayName}</span>
-                )}
-                <ChevronDown className="w-4 h-4 text-gray-400 hidden sm:block" />
               </div>
             </div>
           </div>

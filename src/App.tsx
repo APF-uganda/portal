@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from './components/ui/toaster';
 // ... other imports ...
 
 /* Public pages */
@@ -290,6 +291,7 @@ const App: React.FC = () => {
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Toaster />
       </div>
     </Router>
   );

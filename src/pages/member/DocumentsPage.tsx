@@ -7,12 +7,14 @@ import { useDocuments } from "../../hooks/useDocuments"
 import { Document } from "../../mocks/documents.mock"
 import { DocumentCard } from "../../components/documents/DocumentCard"
 import { UploadArea } from "../../components/documents/UploadArea"
+import { toastMessages, showInfo } from "../../utils/toast-helpers"
 
 const DocumentsPage: React.FC = () => {
   const { documents, loading, uploadDocument, replaceDocument } = useDocuments()
 
   const handleViewDocument = (doc: Document) => {
-    alert(`Opening ${doc.name} in preview mode...\nFile: ${doc.fileUrl}`)
+    showInfo(`Opening ${doc.name} in preview mode...`, 'Document Preview')
+    // TODO: Implement actual document preview
   }
 
   const handleReuploadDocument = (doc: Document) => {
@@ -24,7 +26,7 @@ const DocumentsPage: React.FC = () => {
       if (target.files && target.files[0]) {
         const success = await replaceDocument(doc.id, target.files[0])
         if (success) {
-          alert(`${doc.name} has been re-uploaded successfully! It will now be reviewed by admin.`)
+          toastMessages.document.replaced(doc.name)
         }
       }
     }
@@ -34,7 +36,7 @@ const DocumentsPage: React.FC = () => {
   const handleUploadNewDocument = async (file: File): Promise<boolean> => {
     const success = await uploadDocument(file, 'USER')
     if (success) {
-      alert('Document uploaded successfully! It will now be reviewed by admin.')
+      toastMessages.document.uploaded()
     }
     return success
   }
