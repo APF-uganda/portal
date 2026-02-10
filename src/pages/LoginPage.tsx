@@ -92,7 +92,7 @@ function LoginPage() {
 
         {/* RIGHT SIDE */}
         <div className="bg-white px-10 py-14 flex flex-col justify-center">
-          <h2 className="text-2xl font-semibold text-gray-900">Member Login</h2>
+          <h2 className="text-2xl font-semibold text-gray-900"> Login</h2>
           <span className="text-gray-500 mt-1 mb-8">
             Sign in to access your APF portal
           </span>
