@@ -13,6 +13,7 @@ import {
   Loader2,
   Send
 } from 'lucide-react';
+import { toastMessages } from '../../utils/toast-helpers';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useUserPosts } from '../../hooks/useForum';
 import { deleteForumPost, getForumPostViewers, getForumComments, updateForumPost } from '../../services/forum.service';
@@ -341,7 +342,7 @@ const MyPostsPage = () => {
                           if (ok) {
                             await refetch();
                           } else {
-                            alert('Failed to publish draft. Please try again.');
+                            toastMessages.post.publishFailed();
                           }
                         }}
                       >
@@ -362,7 +363,7 @@ const MyPostsPage = () => {
                         if (ok) {
                           await refetch();
                         } else {
-                          alert('Failed to delete post. Please try again.');
+                          toastMessages.post.deleteFailed();
                         }
                       }}
                     >

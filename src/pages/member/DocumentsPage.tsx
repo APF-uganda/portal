@@ -7,13 +7,14 @@ import { useDocuments } from "../../hooks/useDocuments"
 import { Document } from "../../types/documents"
 import { DocumentCard } from "../../components/documents/DocumentCard"
 import { UploadArea } from "../../components/documents/UploadArea"
+import { toastMessages, showInfo } from "../../utils/toast-helpers"
 
 const DocumentsPage: React.FC = () => {
   const { documents, loading, uploadDocument, replaceDocument } = useDocuments()
 
   const handleViewDocument = (doc: Document) => {
     if (!doc.fileUrl) {
-      alert('No file available for this document yet.')
+      showInfo('No file available for this document yet.', 'Document Preview')
       return
     }
     window.open(doc.fileUrl, '_blank', 'noopener,noreferrer')
@@ -28,7 +29,7 @@ const DocumentsPage: React.FC = () => {
       if (target.files && target.files[0]) {
         const success = await replaceDocument(doc.id, target.files[0])
         if (success) {
-          alert(`${doc.name} has been re-uploaded successfully! It will now be reviewed by admin.`)
+          toastMessages.document.replaced(doc.name)
         }
       }
     }
@@ -40,7 +41,7 @@ const DocumentsPage: React.FC = () => {
   ): Promise<boolean> => {
     const success = await uploadDocument(file)
     if (success) {
-      alert('Document uploaded successfully! It will now be reviewed by admin.')
+      toastMessages.document.uploaded()
     }
     return success
   }

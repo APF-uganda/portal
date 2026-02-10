@@ -128,20 +128,36 @@ try {
 
   const handleResendOTP = async () => {
     setError('')
+    setIsVerifying(true)
     
     try {
-      // Re-login to get a new OTP
-      const loginEmail = sessionStorage.getItem('login_email')
-      if (!loginEmail) {
-        navigate('/login')
-        return
-      }
+      const response = await fetch(`${API_V1_BASE_URL}/auth/resend-login-otp/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+        }),
+      })
 
-      alert('Please login again to receive a new OTP code')
-      navigate('/login')
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Clear the current OTP input
+        setCode(['', '', '', '', '', ''])
+        inputRefs.current[0]?.focus()
+        
+        // Show success message
+        alert('New OTP code has been sent to your email!')
+      } else {
+        setError(data.error?.message || 'Failed to resend OTP. Please try again.')
+      }
     } catch (err) {
       console.error('Resend OTP error:', err)
       setError('Unable to resend OTP. Please try again.')
+    } finally {
+      setIsVerifying(false)
     }
   }
 
