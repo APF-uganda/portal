@@ -4,13 +4,14 @@
  */
 
 export type NotificationType = 
+  | 'announcement'
+  | 'system'
   | 'info'
   | 'success'
   | 'warning'
   | 'error'
   | 'membership'
   | 'payment'
-  | 'system'
   | 'security'
 
 export interface Notification {
@@ -20,6 +21,7 @@ export interface Notification {
   type: NotificationType
   isRead: boolean
   createdAt: string // ISO 8601 format
+  readAt?: string
   metadata?: {
     category?: string
     priority?: 'low' | 'medium' | 'high' | 'urgent'
@@ -34,9 +36,10 @@ export interface NotificationStats {
   read: number
   urgent: number
   byType: {
+    announcement: number
+    system: number
     membership: number
     payment: number
-    system: number
     security: number
   }
 }

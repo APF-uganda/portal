@@ -108,9 +108,10 @@ export const useNotificationStats = () => {
     read: 0,
     urgent: 0,
     byType: {
+      announcement: 0,
+      system: 0,
       membership: 0,
       payment: 0,
-      system: 0,
       security: 0
     }
   })

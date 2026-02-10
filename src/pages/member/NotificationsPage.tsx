@@ -30,6 +30,7 @@ const NotificationsPage: React.FC = () => {
   // Helper function to get icon based on notification type
   const getNotificationIcon = (type: string) => {
     const iconMap: Record<string, React.ElementType> = {
+      'announcement': Bell,
       'membership': Star,
       'payment': CreditCard,
       'system': Server,
@@ -60,6 +61,8 @@ const NotificationsPage: React.FC = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
+      case 'announcement':
+        return 'bg-purple-100 text-purple-600'
       case 'membership':
         return 'bg-purple-100 text-purple-600'
       case 'payment':
@@ -332,24 +335,29 @@ const NotificationsPage: React.FC = () => {
                       <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
                       <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
                       <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
                     </>
                   ) : (
                     <>
                       <div className="flex justify-between">
+                        <span className="text-gray-600">Announcements</span>
+                        <span className="font-semibold">{stats.byType.announcement || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-gray-600">Membership Updates</span>
-                        <span className="font-semibold">{stats.byType.membership}</span>
+                        <span className="font-semibold">{stats.byType.membership || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Payment Notifications</span>
-                        <span className="font-semibold">{stats.byType.payment}</span>
+                        <span className="font-semibold">{stats.byType.payment || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">System Alerts</span>
-                        <span className="font-semibold">{stats.byType.system}</span>
+                        <span className="font-semibold">{stats.byType.system || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Security Alerts</span>
-                        <span className="font-semibold">{stats.byType.security}</span>
+                        <span className="font-semibold">{stats.byType.security || 0}</span>
                       </div>
                     </>
                   )}

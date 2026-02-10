@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
-import { Document, isExpired } from "../../mocks/documents.mock"
+import { Document, isExpired } from "../../types/documents"
 
 interface DocumentCardProps {
   document: Document

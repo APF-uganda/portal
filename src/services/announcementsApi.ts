@@ -4,7 +4,7 @@ export interface Announcement {
   id: number;
   title: string;
   content: string;
-  audience: 'all_users' | 'members' | 'applicants' | 'admins';
+  audience: 'all_users' | 'members' | 'applicants' | 'admins' | 'expired_members';
   channel: 'email' | 'in_app' | 'both';
   status: 'draft' | 'scheduled' | 'sent';
   created_by: number;
