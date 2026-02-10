@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Document, isExpired } from '../mocks/documents.mock'
+import { Document, isExpired } from '../types/documents'
 import { getDocuments, uploadDocument as uploadDocumentService, replaceDocument as replaceDocumentService } from '../services/documents.service'
 
 /**
@@ -47,9 +47,11 @@ export const useDocuments = () => {
   /**
    * Upload a new document
    */
-  const uploadDocument = async (file: File, documentType: 'SYSTEM' | 'USER'): Promise<boolean> => {
+  const uploadDocument = async (
+    file: File
+  ): Promise<boolean> => {
     try {
-      const success = await uploadDocumentService(file, documentType)
+      const success = await uploadDocumentService(file)
       
       if (success) {
         // Refresh documents after upload

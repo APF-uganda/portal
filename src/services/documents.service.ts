@@ -1,20 +1,31 @@
 /**
  * Documents service - handles all document-related API calls
- * Currently returns empty data - will be connected to backend API
  */
 
-import { Document } from '../mocks/documents.mock'
+import { API_V1_BASE_URL } from '../config/api'
+import { Document } from '../types/documents'
+
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('access_token')
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  return headers
+}
 
 /**
  * Get all documents for the current user
  * @returns Promise with array of documents
  */
 export const getDocuments = async (): Promise<Document[]> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/documents`)
-  // return response.json()
-  
-  return []
+  const response = await fetch(`${API_V1_BASE_URL}/documents/`, {
+    headers: getAuthHeaders(),
+  })
+  if (!response.ok) {
+    return []
+  }
+  return response.json()
 }
 
 /**
@@ -23,11 +34,13 @@ export const getDocuments = async (): Promise<Document[]> => {
  * @returns Promise with filtered documents
  */
 export const getDocumentsByType = async (_type: 'SYSTEM' | 'USER'): Promise<Document[]> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/documents?type=${_type}`)
-  // return response.json()
-  
-  return []
+  const response = await fetch(`${API_V1_BASE_URL}/documents/?type=${_type}`, {
+    headers: getAuthHeaders(),
+  })
+  if (!response.ok) {
+    return []
+  }
+  return response.json()
 }
 
 /**
@@ -36,21 +49,17 @@ export const getDocumentsByType = async (_type: 'SYSTEM' | 'USER'): Promise<Docu
  * @param _documentType - Type of document (SYSTEM or USER)
  * @returns Promise with upload result
  */
-export const uploadDocument = async (_file: File, _documentType: 'SYSTEM' | 'USER'): Promise<boolean> => {
-  // TODO: Replace with actual API call
-  // const formData = new FormData()
-  // formData.append('file', _file)
-  // formData.append('type', _documentType)
-  // 
-  // const response = await fetch(`${API_BASE_URL}/documents/upload`, {
-  //   method: 'POST',
-  //   body: formData
-  // })
-  // return response.ok
-  
-  // Simulate upload delay
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  return true
+export const uploadDocument = async (_file: File): Promise<boolean> => {
+  const formData = new FormData()
+  formData.append('file', _file)
+
+  const response = await fetch(`${API_V1_BASE_URL}/documents/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  })
+
+  return response.ok
 }
 
 /**
@@ -60,19 +69,16 @@ export const uploadDocument = async (_file: File, _documentType: 'SYSTEM' | 'USE
  * @returns Promise with replacement result
  */
 export const replaceDocument = async (_documentId: string, _file: File): Promise<boolean> => {
-  // TODO: Replace with actual API call
-  // const formData = new FormData()
-  // formData.append('file', _file)
-  // 
-  // const response = await fetch(`${API_BASE_URL}/documents/${_documentId}/replace`, {
-  //   method: 'PUT',
-  //   body: formData
-  // })
-  // return response.ok
-  
-  // Simulate upload delay
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  return true
+  const formData = new FormData()
+  formData.append('file', _file)
+
+  const response = await fetch(`${API_V1_BASE_URL}/documents/${_documentId}/replace/`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: formData,
+  })
+
+  return response.ok
 }
 
 /**
@@ -81,11 +87,10 @@ export const replaceDocument = async (_documentId: string, _file: File): Promise
  * @returns Promise with deletion result
  */
 export const deleteDocument = async (_documentId: string): Promise<boolean> => {
-  // TODO: Replace with actual API call
-  // const response = await fetch(`${API_BASE_URL}/documents/${_documentId}`, {
-  //   method: 'DELETE'
-  // })
-  // return response.ok
-  
-  return true
+  const response = await fetch(`${API_V1_BASE_URL}/documents/${_documentId}/`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  })
+
+  return response.ok
 }

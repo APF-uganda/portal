@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { CloudUpload, FolderOpen, CheckCircle, Loader2, Info } from "lucide-react"
 import { Button } from "../ui/button"
-
 interface UploadAreaProps {
   onUpload: (file: File) => Promise<boolean>
   maxSizeMB?: number
