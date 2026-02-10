@@ -93,7 +93,7 @@ function Navbar() {
 
           <Link to="/login">
             <button className="bg-[#5F1C9F] rounded-full px-6 py-2 font-medium text-white shadow hover:-translate-y-0.5 transition-all">
-              Members Login
+             Login
             </button>
           </Link>
         </div>
