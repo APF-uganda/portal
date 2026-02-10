@@ -4,7 +4,7 @@ import {
     FiCheck,
     FiX,
     FiDownload,
-    FiPlus,
+   
     FiRotateCcw,
     FiLoader,
 } from "react-icons/fi";
@@ -162,10 +162,7 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
                         )}
                         {isExporting ? 'Exporting...' : 'Export'}
                     </button>
-                    <button className="flex items-center gap-1 text-sm text-white bg-[#5F2F8B] hover:bg-purple-800 px-3 py-1 pl-2 pr-4 rounded-xl">
-                        <FiPlus className="text-base" />
-                        New Application
-                    </button>
+                    
                 </div>
             </div>
 

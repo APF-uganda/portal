@@ -4,7 +4,7 @@ import { Calendar, ShieldCheck, FileText, Upload } from "lucide-react"
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
 import { useDocuments } from "../../hooks/useDocuments"
-import { Document } from "../../mocks/documents.mock"
+import { Document } from "../../types/documents"
 import { DocumentCard } from "../../components/documents/DocumentCard"
 import { UploadArea } from "../../components/documents/UploadArea"
 
@@ -12,7 +12,11 @@ const DocumentsPage: React.FC = () => {
   const { documents, loading, uploadDocument, replaceDocument } = useDocuments()
 
   const handleViewDocument = (doc: Document) => {
-    alert(`Opening ${doc.name} in preview mode...\nFile: ${doc.fileUrl}`)
+    if (!doc.fileUrl) {
+      alert('No file available for this document yet.')
+      return
+    }
+    window.open(doc.fileUrl, '_blank', 'noopener,noreferrer')
   }
 
   const handleReuploadDocument = (doc: Document) => {
@@ -31,8 +35,10 @@ const DocumentsPage: React.FC = () => {
     input.click()
   }
 
-  const handleUploadNewDocument = async (file: File): Promise<boolean> => {
-    const success = await uploadDocument(file, 'USER')
+  const handleUploadNewDocument = async (
+    file: File
+  ): Promise<boolean> => {
+    const success = await uploadDocument(file)
     if (success) {
       alert('Document uploaded successfully! It will now be reviewed by admin.')
     }
@@ -66,28 +72,20 @@ const DocumentsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* ================= SECTION 1: APPROVED DOCUMENTS (System Required) ================= */}
+        {/* ================= SECTION 1: UPLOAD NEW DOCUMENT ================= */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Upload className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Approved Documents</h2>
-              <p className="text-sm text-gray-600">System-required documents for membership verification</p>
+              <h2 className="text-xl font-semibold text-gray-900">Upload New Document</h2>
+              <p className="text-sm text-gray-600">Add additional certificates or qualifications for admin review</p>
             </div>
           </div>
 
-          {/* Grid of approved/system documents */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {documents.system.map((doc) => (
-              <DocumentCard
-                key={doc.id}
-                document={doc}
-                onView={handleViewDocument}
-                onReupload={handleReuploadDocument}
-              />
-            ))}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <UploadArea onUpload={handleUploadNewDocument} />
           </div>
         </div>
 
@@ -99,7 +97,7 @@ const DocumentsPage: React.FC = () => {
                 <FileText className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Other Documents</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Documents Pending Review</h2>
                 <p className="text-sm text-gray-600">Additional certificates and qualifications (require admin review)</p>
               </div>
             </div>
@@ -126,20 +124,28 @@ const DocumentsPage: React.FC = () => {
           )}
         </div>
 
-        {/* ================= SECTION 3: UPLOAD NEW DOCUMENT ================= */}
+        {/* ================= SECTION 3: APPROVED DOCUMENTS (System Required) ================= */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Upload className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Upload New Document</h2>
-              <p className="text-sm text-gray-600">Add additional certificates or qualifications for admin review</p>
+              <h2 className="text-xl font-semibold text-gray-900">Approved Documents</h2>
+              <p className="text-sm text-gray-600">System-required documents for membership verification</p>
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <UploadArea onUpload={handleUploadNewDocument} />
+          {/* Grid of approved/system documents */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {documents.system.map((doc) => (
+              <DocumentCard
+                key={doc.id}
+                document={doc}
+                onView={handleViewDocument}
+                onReupload={handleReuploadDocument}
+              />
+            ))}
           </div>
         </div>
       </div>
