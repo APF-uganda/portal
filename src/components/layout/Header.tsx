@@ -1,9 +1,5 @@
-import { FC, useState, useEffect } from "react";
-import { FiBell} from "react-icons/fi";
-import {Search } from "lucide-react";
+import { FC } from "react";
 import { useProfile } from "../../hooks/useProfile";
-import { announcementsApi } from "../../services/announcementsApi";
-import { useNavigate } from "react-router-dom";
 
 type HeaderProps = {
   title: string;
@@ -13,44 +9,6 @@ const Header: FC <HeaderProps> = ({
 title
 }) => {
   const { profile, loading } = useProfile();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [notificationCount, setNotificationCount] = useState(0);
-  const navigate = useNavigate();
-
-  // Fetch notification count
-  useEffect(() => {
-    const fetchNotificationCount = async () => {
-      try {
-        const stats = await announcementsApi.getStats();
-        // Count draft + scheduled as pending notifications for admins
-        setNotificationCount(stats.draft + stats.scheduled);
-      } catch (error) {
-        console.error('Failed to fetch notification count:', error);
-      }
-    };
-
-    // Only fetch if user is admin (user_role = '1')
-    if (profile?.user_role === '1') {
-      fetchNotificationCount();
-      
-      // Refresh count every 2 minutes
-      const interval = setInterval(fetchNotificationCount, 2 * 60 * 1000);
-      return () => clearInterval(interval);
-    }
-  }, [profile?.user_role]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Navigate to search results page with query parameter
-      navigate(`/admin/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
-  const handleNotificationClick = () => {
-    // Navigate to communications/announcements page
-    navigate('/admin/announcements');
-  };
 
   return (
     <header className="flex items-center justify-between bg-white shadow px-6 py-3 h-20 rounded-md">
