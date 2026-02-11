@@ -6,10 +6,11 @@
 
 import emailjs from '@emailjs/browser';
 
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_vjzvr2e';
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'bnnAdDByZZy8gxYSF';
-const EMAILJS_TEMPLATE_ID_OTP = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_OTP || 'template_5ea6jqe';
-const EMAILJS_TEMPLATE_ID_APPROVAL = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_APPROVAL || 'template_approval';
+const EMAILJS_SERVICE_ID ='service_vjzvr2e';
+const EMAILJS_PUBLIC_KEY ='bnnAdDByZZy8gxYSF';
+const EMAILJS_TEMPLATE_ID_OTP ='template_5ea6jqe';
+const EMAILJS_TEMPLATE_ID_APPROVAL ='template_approval';
+
 
 // Check if we're in development mode
 const IS_DEVELOPMENT = import.meta.env.DEV || import.meta.env.MODE === 'development';
@@ -45,13 +46,13 @@ export const sendOTPEmail = async (params: SendOTPEmailParams): Promise<boolean>
 
     // In development mode, just log to console
     if (IS_DEVELOPMENT) {
-      console.log('📧 [DEV MODE] OTP Email (not sent via EmailJS):');
+      console.log('[DEV MODE] OTP Email (not sent via EmailJS):');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('To:', templateParams.to_email);
       console.log('User:', templateParams.user_name);
       console.log('OTP Code:', templateParams.otp_code);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ Email logged to console (development mode)');
+      console.log(' Email logged to console (development mode)');
       return true;
     }
 
@@ -63,14 +64,14 @@ export const sendOTPEmail = async (params: SendOTPEmailParams): Promise<boolean>
     );
 
     if (response.status === 200) {
-      console.log('✅ OTP email sent successfully via EmailJS');
+      console.log('OTP email sent successfully via EmailJS');
       return true;
     } else {
-      console.error('❌ EmailJS error:', response);
+      console.error(' EmailJS error:', response);
       return false;
     }
   } catch (error) {
-    console.error('❌ Error sending OTP email:', error);
+    console.error('Error sending OTP email:', error);
     return false;
   }
 };
@@ -84,20 +85,20 @@ export const sendApprovalEmail = async (params: SendApprovalEmailParams): Promis
     const templateParams = {
       to_email: params.to_email,
       user_name: params.user_name,
-      from_email: params.from_email || 'abnowellah@gmail.com',
-      reply_to: 'abnowellah@gmail.com',
+      from_email:'abnowellah@gmail.com',
+      reply_to: 'noreply@apf-uganda.com',
     };
 
     // In development mode, just log to console
     if (IS_DEVELOPMENT) {
-      console.log('📧 [DEV MODE] Approval Email (not sent via EmailJS):');
+      console.log('[DEV MODE] Approval Email (not sent via EmailJS):');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('To:', templateParams.to_email);
       console.log('User:', templateParams.user_name);
       console.log('From:', templateParams.from_email);
       console.log('Reply To:', templateParams.reply_to);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ Email logged to console (development mode)');
+      console.log('Email logged to console (development mode)');
       return true;
     }
 
@@ -109,14 +110,14 @@ export const sendApprovalEmail = async (params: SendApprovalEmailParams): Promis
     );
 
     if (response.status === 200) {
-      console.log('✅ Approval email sent successfully via EmailJS');
+      console.log(' Approval email sent successfully via EmailJS');
       return true;
     } else {
-      console.error('❌ EmailJS error:', response);
+      console.error(' EmailJS error:', response);
       return false;
     }
   } catch (error) {
-    console.error('❌ Error sending approval email:', error);
+    console.error(' Error sending approval email:', error);
     return false;
   }
 };

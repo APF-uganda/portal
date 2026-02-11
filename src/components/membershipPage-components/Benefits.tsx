@@ -16,31 +16,73 @@ interface Benefit {
 const benefits: Benefit[] = [
   {
     id: "b1",
-    title: "Professional Recognition",
+    title: "Specialized Training",
     description:
-      "Be part of a recognized professional forum that promotes accountability, standards, and credibility in accounting practice.",
+      "Access to high-level Continuing Professional Development (CPD) tailored specifically for practice owners and audit partners (e.g., Quality Management Standards, IFRS updates, and Anti-Money Laundering compliance).",
     image: image1,
   },
   {
     id: "b2",
-    title: "Networking & Collaboration",
+    title: "Practice Enablers",
     description:
-      "Connect with fellow practitioners, attend events, and collaborate across the profession.",
+      "Subsidized access to 'practice-in-a-box' tools, including audit software, tax management systems, and AI-driven accounting licenses to modernize your firm's operations.",
     image: image2,
   },
   {
     id: "b3",
-    title: "Access to Resources & Knowledge",
+    title: "Mentorship & Peer Review",
     description:
-      "Gain access to guidelines, tools, CPD resources, and professional updates.",
+      "A structured framework where seasoned practitioners guide newer firms through ICPAU quality assurance reviews and practice management challenges.",
     image: image3,
   },
   {
     id: "b4",
-    title: "Professional Development",
+    title: "Direct Advocacy",
     description:
-      "Enhance your skills through structured CPD programs and professional learning opportunities.",
+      "A seat at the table in high-level policy dialogues with regulators (ICPAU, URSB, URA) to ensure the interests of practicing accountants are protected in national legislation.",
     image: image4,
+  },
+  {
+    id: "b5",
+    title: "Collective Voice",
+    description:
+      "Participation in the APF Knowledge Hub, contributing to periodic publications and position papers that shape the future of the profession in Uganda.",
+    image: image1,
+  },
+  {
+    id: "b6",
+    title: "Exclusive Forums",
+    description:
+      "Invitations to quarterly 'Partners-Only' roundtables and social events designed to foster collaboration and multi-firm partnerships for large-scale assignments.",
+    image: image2,
+  },
+  {
+    id: "b7",
+    title: "Sector Bridges",
+    description:
+      "Facilitated networking with leaders in the banking, insurance, and manufacturing sectors to promote the value of independent audit and advisory services.",
+    image: image3,
+  },
+  {
+    id: "b8",
+    title: "Leadership Track",
+    description:
+      "Opportunities to serve on APF specialized committees or the Executive Board, enhancing your professional profile and influence within the national accountancy ecosystem.",
+    image: image4,
+  },
+  {
+    id: "b9",
+    title: "Professional Endorsement",
+    description:
+      "Right to display the 'APF Member' logo on firm stationery and websites, signaling a commitment to the highest standards of governance and innovation.",
+    image: image1,
+  },
+  {
+    id: "b10",
+    title: "Awards & Spotlights",
+    description:
+      "Eligibility for annual awards recognizing 'Innovative Practice of the Year' or 'Excellence in Advocacy,' providing public visibility for your firm's achievements.",
+    image: image2,
   },
 ];
 
@@ -57,15 +99,19 @@ function Benefits(): JSX.Element {
   const cardWidth = isMobile ? CARD_WIDTH_MOBILE : CARD_WIDTH_DESKTOP;
 
   const maxIndex = Math.max(0, benefits.length - visibleCards);
+  // Calculate number of pages based on visible cards
+  const totalPages = Math.ceil(benefits.length / visibleCards);
   const [index, setIndex] = useState(0);
+  // Calculate current page based on index
+  const currentPage = Math.floor(index / visibleCards);
 
   const prev = useCallback(() => {
-    setIndex((i) => Math.max(i - 1, 0));
-  }, []);
+    setIndex((i) => Math.max(i - visibleCards, 0));
+  }, [visibleCards]);
 
   const next = useCallback(() => {
-    setIndex((i) => Math.min(i + 1, maxIndex));
-  }, [maxIndex]);
+    setIndex((i) => Math.min(i + visibleCards, maxIndex));
+  }, [maxIndex, visibleCards]);
 
   return (
     <section className="bg-white py-16">
@@ -176,11 +222,11 @@ function Benefits(): JSX.Element {
 
       {/* DOTS */}
       <div className="flex justify-center mt-8 gap-2">
-        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+        {Array.from({ length: totalPages }).map((_, i) => (
           <span
             key={i}
             className={`w-2 h-2 rounded-full transition-colors
-              ${i === index ? "bg-purple-600" : "bg-slate-300"}
+              ${i === currentPage ? "bg-purple-600" : "bg-slate-300"}
             `}
           />
         ))}
