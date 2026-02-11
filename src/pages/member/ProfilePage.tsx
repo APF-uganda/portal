@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useProfile } from '../../hooks/useProfile';
+import { toastMessages } from '../../utils/toast-helpers';
 
 const ProfilePage = () => {
   const { profile, loading, error, updating, updateProfile, updatePassword, changingPassword } = useProfile();
@@ -131,11 +132,11 @@ const ProfilePage = () => {
 
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('New passwords do not match!');
+      toastMessages.profile.passwordMismatch();
       return;
     }
     if (passwordData.newPassword.length < 8) {
-      alert('Password must be at least 8 characters long!');
+      toastMessages.profile.passwordTooShort();
       return;
     }
     const success = await updatePassword({
@@ -144,7 +145,7 @@ const ProfilePage = () => {
       confirm_password: passwordData.confirmPassword,
     });
     if (success) {
-      alert('Password changed successfully!');
+      toastMessages.profile.passwordChanged();
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     }
   };

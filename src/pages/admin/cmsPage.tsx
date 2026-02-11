@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 
 
 import Sidebar from "../../components/common/adminSideNav";
@@ -15,7 +15,7 @@ import { AnalyticsCard } from '../../components/cms-components/analyticsCard';
 
 const CmsContentPage = () => {
   const [collapsed, setCollapsed] = useState(false);
-
+  const navigate = useNavigate();
   return (
     <div className="flex min-h-screen">
     
@@ -39,7 +39,10 @@ const CmsContentPage = () => {
                 <p className="text-slate-500 mt-1">Manage news, events, announcements, and other content across the portal</p>
               </div>
               <div className="flex gap-3 shrink-0">
-                <button className="bg-[#4B2C82] hover:bg-[#3a2266] text-white whitespace-nowrap px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold shadow-lg shadow-purple-200 transition-all shrink-0">
+                <button 
+                onClick={() => navigate('/admin/NewsMgt')}
+                className="bg-[#4B2C82] hover:bg-[#3a2266] text-white whitespace-nowrap px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold shadow-lg shadow-purple-200 transition-all shrink-0">
+                
                   <Plus size={18} /> Create New Content
                 </button>
                 <button className="bg-white border border-gray-200 text-gray-700 whitespace-nowrap px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold hover:bg-gray-50 transition-all shadow-sm shrink-0">

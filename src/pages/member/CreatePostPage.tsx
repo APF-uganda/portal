@@ -18,6 +18,7 @@ import {
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useForumCategories } from '../../hooks/useForum';
 import { createForumPost, getForumPostDetail, updateForumPost } from '../../services/forum.service';
+import { toastMessages } from '../../utils/toast-helpers';
 
 const CreatePostPage = () => {
   const { id } = useParams();
@@ -84,15 +85,15 @@ const CreatePostPage = () => {
 
   const validateForm = () => {
     if (!postTitle.trim()) {
-      alert('Please enter a post title');
+      toastMessages.validation.titleRequired();
       return false;
     }
     if (!postCategory) {
-      alert('Please select a category');
+      toastMessages.validation.categoryRequired();
       return false;
     }
     if (!postContent.trim()) {
-      alert('Please enter post content');
+      toastMessages.validation.contentRequired();
       return false;
     }
     return true;
@@ -114,7 +115,7 @@ const CreatePostPage = () => {
       setIsSubmitting(false);
 
       if (response) {
-        alert(isEditMode ? 'Post updated successfully!' : 'Post published successfully!');
+        isEditMode ? toastMessages.post.updated() : toastMessages.post.published();
         if (!isEditMode) {
           setPostTitle('');
           setPostCategory('');
@@ -122,7 +123,7 @@ const CreatePostPage = () => {
           setTags([]);
         }
       } else {
-        alert(isEditMode ? 'Failed to update post. Please try again.' : 'Failed to publish post. Please try again.');
+        isEditMode ? toastMessages.post.updateFailed() : toastMessages.post.publishFailed();
       }
     }
   };
@@ -143,9 +144,9 @@ const CreatePostPage = () => {
       setIsSubmitting(false);
 
       if (response) {
-        alert(isEditMode ? 'Draft updated successfully!' : 'Post saved as draft successfully!');
+        isEditMode ? toastMessages.post.draftUpdated() : toastMessages.post.savedAsDraft();
       } else {
-        alert(isEditMode ? 'Failed to update draft. Please try again.' : 'Failed to save draft. Please try again.');
+        isEditMode ? toastMessages.post.updateFailed() : toastMessages.post.saveDraftFailed();
       }
     }
   };
