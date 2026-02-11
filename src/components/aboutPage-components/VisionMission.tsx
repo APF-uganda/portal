@@ -32,8 +32,7 @@ function VisionMission() {
             <div className="mt-auto mb-14">
               <h4 className="text-3xl font-bold mb-6 tracking-tight">Our Vision</h4>
               <p className="leading-relaxed text-[1rem] text-white/90">
-                To be the leading practitioner-led platform advancing a strong,
-                ethical, and innovative accountancy profession in Uganda and beyond.
+                To be the unified voice and transformative hub for accountancy practitioners in Uganda, elevating the profession’s impact on Uganda’s economy and beyond.
               </p>
             </div>
           </div>
@@ -51,9 +50,7 @@ function VisionMission() {
             <div className="mt-auto mb-4">
               <h4 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Our Mission</h4>
               <p className="text-black-600 leading-relaxed text-[1rem]">
-                To support accounting professionals through collaboration, continuous
-                learning, professional engagement, and advocacy, while upholding ethical
-                standards and strengthening the accounting profession in Uganda.
+                Our mission is to elevate the accounting profession in Uganda through strategic advocacy, continuous knowledge sharing, and the deployment of cutting-edge practice enablers, ensuring our members lead with integrity and innovation in a global market.
               </p>
             </div>
           </div>
