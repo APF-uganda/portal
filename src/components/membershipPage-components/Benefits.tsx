@@ -99,7 +99,11 @@ function Benefits(): JSX.Element {
   const cardWidth = isMobile ? CARD_WIDTH_MOBILE : CARD_WIDTH_DESKTOP;
 
   const maxIndex = Math.max(0, benefits.length - visibleCards);
+  // Calculate number of pages based on visible cards
+  const totalPages = Math.ceil(benefits.length / visibleCards);
   const [index, setIndex] = useState(0);
+  // Calculate current page based on index
+  const currentPage = Math.floor(index / visibleCards);
 
   const prev = useCallback(() => {
     setIndex((i) => Math.max(i - visibleCards, 0));
@@ -218,11 +222,11 @@ function Benefits(): JSX.Element {
 
       {/* DOTS */}
       <div className="flex justify-center mt-8 gap-2">
-        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+        {Array.from({ length: totalPages }).map((_, i) => (
           <span
             key={i}
             className={`w-2 h-2 rounded-full transition-colors
-              ${i === index ? "bg-purple-600" : "bg-slate-300"}
+              ${i === currentPage ? "bg-purple-600" : "bg-slate-300"}
             `}
           />
         ))}
