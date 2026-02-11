@@ -91,7 +91,7 @@ export const PostTable = ({ posts, onDeletePost, loading = false }: PostTablePro
             {posts.map((post) => (
               <tr key={post.id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-5 max-w-[280px]">
-                  <div className="font-bold text-gray-800 text-sm leading-tight line-clamp-2 mb-1">
+                    <div className="font-bold text-gray-800 text-sm leading-tight line-clamp-2 mb-1">
                     {post.title}
                   </div>
                   <div className="text-[11px] text-gray-400 whitespace-nowrap">
