@@ -50,7 +50,7 @@ function VisionMission() {
             <div className="mt-auto mb-4">
               <h4 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Our Mission</h4>
               <p className="text-black-600 leading-relaxed text-[1rem]">
-                Our mission is to elevate the accounting profession in Uganda through strategic advocacy, continuous knowledge sharing, and the deployment of cutting-edge practice enablers, ensuring our members lead with integrity and innovation in a global market.
+                To elevate the accounting profession in Uganda through strategic advocacy, continuous knowledge sharing, and the deployment of cutting-edge practice enablers, ensuring our members lead with integrity and innovation in a global market.
               </p>
             </div>
           </div>

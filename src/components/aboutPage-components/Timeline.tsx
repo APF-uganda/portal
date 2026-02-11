@@ -10,21 +10,21 @@ interface TimelineEvent {
 const Timeline: React.FC = () => {
     const events: TimelineEvent[] = [
         {
-            year: '2005',
-            title: 'Inaugural Meeting and Formation',
-            description: 'The Accountancy Practitioners Forum was officially established, bringing together key stakeholders to address emerging issues in the Ugandan accounting landscape.',
+            year: 'June 13, 2025',
+            title: 'Foundation Established',
+            description: 'The founding members laid the structural and governance foundation of APF through the signing of the Memorandum of Association.',
             color: 'black'
         },
         {
-            year: '2010',
-            title: 'First Annual Conference',
-            description: "Hosted a landmark conference, attracting professionals from across the region to discuss 'Innovations in African Accountancy', setting a precedent for future events.",
+            year: 'June 20, 2025',
+            title: 'Legal Recognition Achieved',
+            description: 'APF was officially incorporated by the Uganda Registration Services Bureau (URSB) as a Company Limited by Guarantee under the Companies Act of Uganda.',
             color: '#DFBAE3'
         },
         {
-            year: '2015',
-            title: 'Launch of CPD Accreditation',
-            description: 'Introduced a robust Continuous Professional Development program, ensuring members maintain and enhance their skills in line with global best practices.',
+            year: 'June 20, 2025',
+            title: 'Governance Framework Formalized',
+            description: 'The Memorandum and Articles of Association were registered, defining the organization\'s purpose, leadership structure, and membership standards.',
             color: '#9E4FDE'
         }
     ];
@@ -80,8 +80,8 @@ const Timeline: React.FC = () => {
                                 {/* Year */}
                                 <div className="text-center mb-6">
                                     <h3
-                                        className={`text-3xl font-bold text-purple-600 ${event.year === '2005' ? 'translate-y-9' : ''
-                                            } ${event.year === '2010' ? 'translate-y-7' : ''} ${event.year === '2015' ? 'translate-y-6' : ''
+                                        className={`text-3xl font-bold text-purple-600 ${index === 0 ? 'translate-y-9' : ''
+                                            } ${index === 1 ? 'translate-y-7' : ''} ${index === 2 ? 'translate-y-6' : ''
                                             }`}
                                     >
                                         {event.year}
@@ -93,8 +93,8 @@ const Timeline: React.FC = () => {
                                     <div
                                         className={`${getCircleClasses(event.color)} ${getCircleSize(
                                             event.color
-                                        )} rounded-full ${event.year === '2005' ? 'translate-y-9' : ''
-                                            } ${event.year === '2010' ? 'translate-y-[8px]' : ''} ${event.year === '2015' ? 'translate-y-6' : ''
+                                        )} rounded-full ${index === 0 ? 'translate-y-9' : ''
+                                            } ${index === 1 ? 'translate-y-[8px]' : ''} ${index === 2 ? 'translate-y-6' : ''
                                             }`}
                                     ></div>
                                 </div>
