@@ -1,34 +1,110 @@
 
-export interface EmailData {
-    memberName: string;
-    memberId: string;
-    portalLink: string;
-    dashboardLink: string;
-  }
-  
-  export const APF_APPROVAL_EMAIL = (data: EmailData): string => {
-    return `
-  Subject: Welcome to the APF: Your Membership Application has been Approved
-  
-  Dear ${data.memberName},
-  
-  On behalf of the Accountancy Practitioner Forum (APF), I am pleased to inform you that your request to join our organization has been officially approved.
-  
-  We are thrilled to have you as part of a community dedicated to excellence in accountancy practice. As a member, you now have access to your Member Dashboard.
-  
-  Your Membership Details:
-      Member ID: ${data.memberId}
-      Member Portal: ${data.portalLink}
-      Initial Setup: Please log in to the ${data.dashboardLink} to complete your practitioner profile.
-  
 
+export interface MemberApprovalData {
+  member_name: string;
+  member_email: string;
+  loginUrl: string;
+}
 
-  
-  Welcome to the APF!
-  
-  Best regards,
-  
-  Membership Committee
-  Accountancy Practitioners Forum (APF)
-    `.trim();
-  };
+export const getMemberApprovalEmail = (data: MemberApprovalData): string => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4F46E5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        .status-badge {
+            background-color: #4F46E5;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #4F46E5;
+            color: white !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info-box {
+            background-color: #EEF2FF;
+            border-left: 4px solid #4F46E5;
+            padding: 12px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>APF Portal</h1>
+    </div>
+    <div class="content">
+        <h2>Hello ${data.member_name},</h2>
+       
+        <p>We are pleased to inform you that your request to join the <strong>Accountancy Practitioner Forum</strong> has been approved.</p>
+       
+        <div class="status-badge">
+            Membership Approved
+        </div>
+       
+        <p>Your account is now active. You can log in to the portal using your registered email address:</p>
+       
+        <div class="info-box">
+            <strong>Registered Email:</strong> ${data.member_email}
+        </div>
+       
+        <p>You now have full access to our practitioner toolkits, technical updates, and exclusive networking forums.</p>
+       
+        <div style="text-align: center;">
+            <a href="${data.loginUrl}" class="cta-button">Login to My Portal</a>
+        </div>
+       
+        <p>If you have any questions about your membership benefits, please contact our support team.</p>
+       
+        <p>Best regards,<br>
+        <strong>APF Portal Team</strong></p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message from APF Portal. Please do not reply to this email.</p>
+        <p>&copy; 2026 Accountancy Practitioners Forum. All rights reserved.</p>
+    </div>
+</body>
+</html>
+  `.trim();
+};
