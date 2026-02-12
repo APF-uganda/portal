@@ -1,3 +1,4 @@
+
 export type ArticleStatus = 'Published' | 'Draft' | 'Scheduled';
 export type Category = 'News' | 'Update' | 'Announcement';
 

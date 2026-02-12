@@ -22,7 +22,7 @@ export const StatCard = ({ title, value, change, isUp, Icon }: StatCardProps) =>
       <span className={isUp ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
         {isUp ? '↑' : '↓'} {change}
       </span>
-      <span className="text-gray-400">from last month</span>
+      <span className="text-gray-400">vs last month</span>
     </div>
   </div>
 );
