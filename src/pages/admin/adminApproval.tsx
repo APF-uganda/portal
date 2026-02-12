@@ -29,19 +29,19 @@ const AdminApprovals = () => {
     const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-    // Check authentication on component mount
+ 
     useEffect(() => {
         if (!requireAdmin()) {
             return; // Will redirect to login
         }
     }, []);
 
-    // Use statistics from API if available, otherwise fall back to local calculations
+    
     const pendingCount = statistics?.pending_applications ?? applications.filter((app) => app.status === "Pending").length;
     const approvedCount = statistics?.approved_applications ?? applications.filter((app) => app.status === "Approved").length;
     const rejectedCount = statistics?.rejected_applications ?? applications.filter((app) => app.status === "Rejected").length;
 
-    // Format revenue for display
+    
     const formatRevenue = (amount: number): string => {
         if (amount >= 1000000000) {
             return `UGX ${(amount / 1000000000).toFixed(2)}B`;
@@ -56,7 +56,7 @@ const AdminApprovals = () => {
     const totalRevenue = statistics?.total_revenue ?? 0;
     const formattedRevenue = formatRevenue(totalRevenue);
 
-    // Debug logging
+    
     console.log('Admin Approval Stats:', {
         statistics,
         totalRevenue,
@@ -64,11 +64,11 @@ const AdminApprovals = () => {
         hasTotalRevenue: statistics?.total_revenue !== undefined
     });
 
-    // Force refresh of statistics periodically to ensure revenue is current
+    
     useEffect(() => {
         const interval = setInterval(() => {
             refetchStats();
-        }, 30000); // Refresh stats every 30 seconds
+        }, 30000); 
 
         return () => clearInterval(interval);
     }, [refetchStats]);
@@ -82,7 +82,7 @@ const AdminApprovals = () => {
             if (result.success) {
                 setSuccessMessage("Application approved successfully");
 
-                // Send approval email
+               
                 const application = applications.find(app => app.id === applicationId);
                 if (application) {
                     try {
@@ -103,11 +103,11 @@ const AdminApprovals = () => {
                 }
             }
 
-            // Refetch all data to ensure revenue stats are updated immediately
+            
             await Promise.all([refetch(), refetchStats()]);
-            // Also force an immediate refetch to ensure revenue is current
+            
             setTimeout(() => {
-                refetchStats();  // Additional refresh to get latest revenue
+                refetchStats();  
                 setSuccessMessage(null);
             }, 3000);
         } catch (error) {
@@ -125,11 +125,11 @@ const handleReject = async (applicationId: number) => {
         const result = await reject(applicationId);
         if (result.success) {
             setSuccessMessage("Application rejected successfully");
-            // Refetch all data to ensure revenue stats are updated immediately
+            
             await Promise.all([refetch(), refetchStats()]);
-            // Also force an immediate refetch to ensure revenue is current
+           
             setTimeout(() => {
-                refetchStats();  // Additional refresh to get latest revenue
+                refetchStats();  
                 setSuccessMessage(null);
             }, 3000);
         }
@@ -148,11 +148,11 @@ const handleRetry = async (applicationId: number) => {
         const result = await retry(applicationId);
         if (result.success) {
             setSuccessMessage("Application reset to pending successfully");
-            // Refetch all data to ensure revenue stats are updated immediately
+            
             await Promise.all([refetch(), refetchStats()]);
-            // Also force an immediate refetch to ensure revenue is current
+            
             setTimeout(() => {
-                refetchStats();  // Additional refresh to get latest revenue
+                refetchStats();  
                 setSuccessMessage(null);
             }, 3000);
         }
@@ -178,14 +178,14 @@ return (
         {/* Sidebar */}
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-        {/* Content wrapper shifts based on sidebar width */}
+        
         <main
             className={`flex-1 bg-gray-50 p-0 overflow-y-auto transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"
                 } flex flex-col min-h-screen`}
         >
             <Header title="Application Approval" />
 
-            {/* Success/Error Messages */}
+            
             {(successMessage || actionError || fetchError || statsError) && (
                 <div className="mx-6 mt-4">
                     {successMessage && (
@@ -227,7 +227,7 @@ return (
                 </div>
             )}
 
-            {/* Main Content - Flex grow to push footer down */}
+            
             <div className="flex-1 bg-[#F4F2FE] p-6 rounded-lg mb-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <StatsCard
@@ -266,7 +266,7 @@ return (
                 />
             </div>
 
-            {/* Sticky Footer */}
+            
             <div className="mt-auto">
                 <Footer />
             </div>
@@ -274,13 +274,16 @@ return (
         </main>
 
         {/* Application Detail Modal */}
-        {selectedApplicationId && (
-            <ApplicationDetailModal
-                applicationId={selectedApplicationId}
-                isOpen={isDetailModalOpen}
-                onClose={handleCloseDetailModal}
-            />
-        )}
+{selectedApplicationId && (
+    <ApplicationDetailModal
+        applicationId={selectedApplicationId}
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetailModal}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onRetry={handleRetry}
+    /> 
+)}
     </div>
 );
 };
