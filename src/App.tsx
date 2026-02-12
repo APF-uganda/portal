@@ -243,6 +243,16 @@ const App: React.FC = () => {
           />
 
 
+<Route
+            path="/admin/manageusers"
+            element={
+              <ProtectedRoute role="admin">
+                <ManageUsers />
+              </ProtectedRoute>
+            }
+          />
+
+
 
 
 
