@@ -16,6 +16,7 @@ import OtpPage from "./pages/otpPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
+
 /* Member dashboard */
 import MemberDashboard from "./pages/member/memberDashboard";
 import DocumentsPage from "./pages/member/DocumentsPage";
@@ -41,6 +42,7 @@ import CommunicationsDashboard from "./pages/admin/announcements";
 import CreateAnnouncement from "./pages/admin/createAnnouncement";
 import SearchResults from "./pages/admin/SearchResults";
 import NewsManagement from "./pages/admin/newsMgt";
+import ManageUsers from "./pages/admin/manageusers";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -84,6 +86,7 @@ const App: React.FC = () => {
           <Route path="/communityforum" element={<CommunityForum />} />
           <Route path="/announcements" element={<CommunicationsDashboard />} />
             <Route path="/newsMgt" element={<NewsManagement />} />
+            <Route path="/manageUsers" element={<ManageUsers />} />
 
 
 
