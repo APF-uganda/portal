@@ -1,4 +1,3 @@
-
 export type ArticleStatus = 'Published' | 'Draft' | 'Scheduled';
 export type Category = 'News' | 'Update' | 'Announcement';
 
@@ -10,4 +9,5 @@ export interface NewsArticle {
   status: ArticleStatus;
   publishDate: string | null;
   views: string;
+  imageUrl?: string; 
 }
