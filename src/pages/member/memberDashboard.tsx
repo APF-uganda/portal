@@ -432,12 +432,12 @@ const MemberDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Recent Notes Card */}
+          {/* Recent Notifications Card */}
           <Card className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 md:pb-4">
               <CardTitle className="text-base md:text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <StickyNote className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
-                Recent Notes
+                Recent Notifications
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 md:space-y-3">
