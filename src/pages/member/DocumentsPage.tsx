@@ -10,7 +10,7 @@ import { UploadArea } from "../../components/documents/UploadArea"
 import { toastMessages, showInfo } from "../../utils/toast-helpers"
 
 const DocumentsPage: React.FC = () => {
-  const { documents, loading, uploadDocument, replaceDocument } = useDocuments()
+  const { documents, loading, uploadDocument, replaceDocument, downloadDocument } = useDocuments()
 
   const handleViewDocument = (doc: Document) => {
     if (!doc.fileUrl) {
@@ -18,6 +18,15 @@ const DocumentsPage: React.FC = () => {
       return
     }
     window.open(doc.fileUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleDownloadDocument = async (doc: Document) => {
+    const success = await downloadDocument(doc.id, doc.name)
+    if (success) {
+      toastMessages.document.downloaded(doc.name)
+    } else {
+      showInfo('Failed to download document. Please try again.', 'Download Error')
+    }
   }
 
   const handleReuploadDocument = (doc: Document) => {
@@ -59,7 +68,7 @@ const DocumentsPage: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* ================= HEADER ================= */}
+        {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Documents & Certificates</h1>
@@ -73,7 +82,7 @@ const DocumentsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* ================= SECTION 1: UPLOAD NEW DOCUMENT ================= */}
+        {/*SECTION 1: UPLOAD NEW DOCUMENT */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -90,7 +99,7 @@ const DocumentsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* ================= SECTION 2: OTHER DOCUMENTS (User Uploads) ================= */}
+        {/* SECTION 2: OTHER DOCUMENTS (User Uploads) */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -112,6 +121,7 @@ const DocumentsPage: React.FC = () => {
                   key={doc.id}
                   document={doc}
                   onView={handleViewDocument}
+                  onDownload={handleDownloadDocument}
                   onReupload={doc.status === 'rejected' ? handleReuploadDocument : undefined}
                 />
               ))}
@@ -125,7 +135,7 @@ const DocumentsPage: React.FC = () => {
           )}
         </div>
 
-        {/* ================= SECTION 3: APPROVED DOCUMENTS (System Required) ================= */}
+        {/* SECTION 3: APPROVED DOCUMENTS (System Required) */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -144,6 +154,7 @@ const DocumentsPage: React.FC = () => {
                 key={doc.id}
                 document={doc}
                 onView={handleViewDocument}
+                onDownload={handleDownloadDocument}
                 onReupload={handleReuploadDocument}
               />
             ))}

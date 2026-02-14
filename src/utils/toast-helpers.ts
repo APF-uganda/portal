@@ -66,6 +66,7 @@ export const toastMessages = {
   document: {
     uploaded: () => showSuccess('Document uploaded successfully! It will now be reviewed by admin'),
     replaced: (name: string) => showSuccess(`${name} has been re-uploaded successfully! It will now be reviewed by admin`),
+    downloaded: (name: string) => showSuccess(`${name} downloaded successfully`),
     uploadFailed: () => showError('Upload failed. Please try again'),
     sizeLimitExceeded: (maxSize: number) => showError(`File size exceeds ${maxSize}MB limit. Please select a smaller file`),
     deleted: () => showSuccess('Document deleted successfully'),

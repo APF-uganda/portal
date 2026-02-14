@@ -94,3 +94,44 @@ export const deleteDocument = async (_documentId: string): Promise<boolean> => {
 
   return response.ok
 }
+
+/**
+ * Download a document
+ * @param documentId - ID of document to download
+ * @param fileName - Name to save the file as
+ * @returns Promise with download result
+ */
+export const downloadDocument = async (documentId: string, fileName: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_V1_BASE_URL}/documents/${documentId}/download/`, {
+      headers: getAuthHeaders(),
+    })
+
+    if (!response.ok) {
+      return false
+    }
+
+    // Get the blob from response
+    const blob = await response.blob()
+    
+    // Create a temporary URL for the blob
+    const url = window.URL.createObjectURL(blob)
+    
+    // Create a temporary anchor element and trigger download
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    
+    // Clean up
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    return true
+  } catch (error) {
+    console.error('Download error:', error)
+    return false
+  }
+}
+
