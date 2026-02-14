@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { User } from '../../components/manageusers-components/users';
+import  { useState } from 'react';
 import StatCard from '../../components/manageusers-components/stats';
 
 
@@ -7,61 +6,49 @@ import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
+
+import { useUserManagement } from '../../hooks/userMgt';
+
 const ManageUsers = () => {
-  
   const [collapsed, setCollapsed] = useState(false);
   
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // API Integration Point
-        // const response = await fetch('your-api-url/users');
-        // const data = await response.json();
-        // setUsers(data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-    fetchUsers();
-  }, []);
-
-  const handleSuspend = (id: string) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: 'Suspended' } : u));
-  };
+  // Use the hook to get data, loading state, and action handlers
+  const { users, loading, error, handleToggleStatus } = useUserManagement();
 
   return (
     <div className="flex min-h-screen">
-      
+      {/* Side Navigation */}
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      
       <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
         
-       
+        {/* Header Component */}
         <Header title="User Management" />
 
-       
+        {/* Main Content Area */}
         <div className="flex-1 bg-[#F4F2FE] p-8 space-y-10">
           <div className="max-w-[1400px] mx-auto space-y-10">
             
-          
+            {/* Title Section */}
             <div>
               <h1 className="text-[26px] font-bold text-slate-800 tracking-tight">Manage Members</h1>
               <p className="text-slate-500 mt-1">Review member status, handle renewals, and manage account access.</p>
             </div>
 
-          
+            
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+                <strong>Error:</strong> {error}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <StatCard title="Total Users" value={users.length} color="border-blue-500" />
               <StatCard title="Pending Renewals" value={users.filter(u => u.status === 'Pending').length} color="border-yellow-500" />
               <StatCard title="Expired Users" value={users.filter(u => u.status === 'Expired').length} color="border-red-500" />
             </div>
 
-            {/* Users Table  */}
+            {/* Users Table Card */}
             <div className="bg-white rounded-[20px] shadow-sm border border-gray-100 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full leading-normal">
@@ -77,11 +64,18 @@ const ManageUsers = () => {
                   <tbody className="divide-y divide-gray-50">
                     {loading ? (
                        <tr>
-                         <td colSpan={5} className="text-center py-10 text-gray-400">Loading users...</td>
+                         <td colSpan={5} className="text-center py-12">
+                           <div className="flex flex-col items-center space-y-2">
+                             <div className="w-6 h-6 border-2 border-[#5E2590] border-t-transparent rounded-full animate-spin"></div>
+                             <span className="text-gray-400 text-sm font-medium">Loading user data...</span>
+                           </div>
+                         </td>
                        </tr>
                     ) : users.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-10 text-gray-400">No users found.</td>
+                        <td colSpan={5} className="text-center py-12 text-gray-400 font-medium">
+                          No users found in the system.
+                        </td>
                       </tr>
                     ) : (
                       users.map((user) => (
@@ -91,18 +85,24 @@ const ManageUsers = () => {
                           <td className="px-6 py-4 text-sm">
                             <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider
                               ${user.status === 'Active' ? 'bg-green-100 text-green-700' : 
-                                user.status === 'Suspended' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-700'}`}>
+                                user.status === 'Suspended' ? 'bg-orange-100 text-orange-700' : 
+                                user.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'}`}>
                               {user.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{user.renewalDate}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{user.renewalDate || 'N/A'}</td>
                           <td className="px-6 py-4 text-sm text-right">
+                            {/* Logic to show Suspend or Reactivate based on backend data */}
                             <button 
-                              onClick={() => handleSuspend(user.id)}
-                              className="text-[#5E2590] hover:text-red-600 font-bold transition-colors whitespace-nowrap"
-                              disabled={user.status === 'Suspended'}
+                              onClick={() => handleToggleStatus(user.id, user.status)}
+                              className={`font-bold transition-colors whitespace-nowrap text-sm px-4 py-2 rounded-lg hover:bg-gray-100 ${
+                                user.status === 'Suspended' 
+                                ? 'text-green-600' 
+                                : 'text-[#5E2590] hover:text-red-600'
+                              }`}
                             >
-                              {user.status === 'Suspended' ? 'Suspended' : 'Suspend Account'}
+                              {user.status === 'Suspended' ? 'Reactivate Account' : 'Suspend Account'}
                             </button>
                           </td>
                         </tr>
@@ -115,7 +115,7 @@ const ManageUsers = () => {
           </div>
         </div>
         
-    
+        {/* Footer Component */}
         <Footer />
       </main>
     </div>
