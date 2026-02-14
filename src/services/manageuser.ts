@@ -2,54 +2,45 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import { User } from '../components/manageusers-components/users';
 
-function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  };
-}
+const getHeaders = () => ({
+  'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+  'Content-Type': 'application/json'
+});
 
 export const userManagementApi = {
-  
   fetchMembers: async (): Promise<User[]> => {
     const response = await axios.get(`${API_BASE_URL}/api/v1/admin-management/members/`, {
-      headers: getAuthHeaders(),
-      timeout: 30000,
+      headers: getHeaders()
     });
 
    
-    console.log("Raw API Response:", response.data);
-
-    
-    const rawData = Array.isArray(response.data) 
-      ? response.data 
-      : (response.data.results || []);
+    const rawData = response.data.results || [];
 
     return rawData.map((member: any) => ({
       id: member.id.toString(),
-    
-      name: (member.first_name || member.last_name) 
-        ? `${member.first_name || ''} ${member.last_name || ''}`.trim() 
-        : (member.username || member.email || "Unknown Member"),
+     
+      name: member.full_name || member.email || "Unknown Member",
       email: member.email,
      
-      status: member.status || 'Active', 
-      renewalDate: member.renewal_date || 'N/A',
+      status: member.membership_status === 'SUSPENDED' ? 'Suspended' : 'Active',
+   
+      renewalDate: member.subscription_due_date || 'N/A',
     }));
   },
 
   suspendMember: async (id: string) => {
-    
-    return axios.post(`${API_BASE_URL}/api/v1/admin-management/members/${id}/suspend/`, {}, {
-      headers: getAuthHeaders(),
-    });
+    return axios.patch(
+      `${API_BASE_URL}/api/v1/admin-management/members/${id}/suspend/`, 
+      { reason: "Administrative suspension" }, 
+      { headers: getHeaders() }
+    );
   },
 
   reactivateMember: async (id: string) => {
-  
-    return axios.post(`${API_BASE_URL}/api/v1/admin-management/members/${id}/reactivate/`, {}, {
-      headers: getAuthHeaders(),
-    });
+    return axios.patch(
+      `${API_BASE_URL}/api/v1/admin-management/members/${id}/reactivate/`, 
+      {}, 
+      { headers: getHeaders() }
+    );
   }
 };
