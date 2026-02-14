@@ -43,6 +43,7 @@ import CreateAnnouncement from "./pages/admin/createAnnouncement";
 import SearchResults from "./pages/admin/SearchResults";
 import NewsManagement from "./pages/admin/newsMgt";
 import ManageUsers from "./pages/admin/manageusers";
+import EventCreatePage from "./pages/admin/eventMgt";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -87,6 +88,7 @@ const App: React.FC = () => {
           <Route path="/announcements" element={<CommunicationsDashboard />} />
             <Route path="/newsMgt" element={<NewsManagement />} />
             <Route path="/manageUsers" element={<ManageUsers />} />
+            <Route path="/eventMgt" element={<EventCreatePage />} />
 
 
 
@@ -211,6 +213,16 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+<Route
+            path="/admin/eventMgt"
+            element={
+              <ProtectedRoute role="admin">
+                <EventCreatePage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/admin/approval"
             element={

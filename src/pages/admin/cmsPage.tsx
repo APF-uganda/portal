@@ -80,7 +80,7 @@ const CmsContentPage = () => {
                       </div>
                     </button>
                     <button 
-                      onClick={() => navigate('/admin/EventMgt')}
+                      onClick={() => navigate('/admin/eventMgt')}
                       className="w-full flex items-center gap-3 p-3 hover:bg-amber-50 rounded-xl transition-colors text-left"
                     >
                       <div className="p-2 bg-amber-100 text-amber-600 rounded-lg"><Calendar size={16}/></div>
