@@ -34,7 +34,7 @@ const PageCard = ({ title, icon, desc, onClick }: any) => (
       <h3 className="font-bold text-slate-800 text-sm tracking-tight group-hover:text-[#5C32A3] transition-colors">{title}</h3>
       <p className="text-[11px] text-slate-400 font-medium mt-1 leading-tight">{desc}</p>
     </div>
-    {/* Subtle background decoration */}
+    
     <div className="absolute -right-4 -bottom-4 text-slate-50 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
         {icon}
     </div>
@@ -56,11 +56,12 @@ const CmsContentPage = () => {
         <div className="flex-1 p-8">
           <div className="max-w-[1200px] mx-auto space-y-12">
             
-            {/* Minimal Header */}
+          
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div>
                 <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Portal Management</h1>
-                <p className="text-slate-500 mt-1 text-sm">Visual editor and content management for the APF platform.</p>
+                <p className="text-slate-500 mt-1 text-sm">Content management for the APF public website
+                  .</p>
               </div>
               
               <div className="relative">

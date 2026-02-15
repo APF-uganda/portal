@@ -44,6 +44,7 @@ import SearchResults from "./pages/admin/SearchResults";
 import NewsManagement from "./pages/admin/newsMgt";
 import ManageUsers from "./pages/admin/manageusers";
 import EventCreatePage from "./pages/admin/eventMgt";
+import ManagePayments from "./pages/admin/payments";
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -265,7 +266,14 @@ const App: React.FC = () => {
           />
 
 
-
+<Route
+            path="/admin/payments"
+            element={
+              <ProtectedRoute role="admin">
+                <ManagePayments />
+              </ProtectedRoute>
+            }
+          />
 
 
 <Route
