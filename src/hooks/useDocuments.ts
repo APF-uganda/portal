@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Document, isExpired } from '../types/documents'
-import { getDocuments, uploadDocument as uploadDocumentService, replaceDocument as replaceDocumentService } from '../services/documents.service'
+import { getDocuments, uploadDocument as uploadDocumentService, replaceDocument as replaceDocumentService, downloadDocument as downloadDocumentService } from '../services/documents.service'
 
 /**
  * Custom hook for document management
@@ -99,6 +99,18 @@ export const useDocuments = () => {
   }
 
   /**
+   * Download a document
+   */
+  const downloadDocument = async (documentId: string, fileName: string): Promise<boolean> => {
+    try {
+      return await downloadDocumentService(documentId, fileName)
+    } catch (error) {
+      console.error('Download failed:', error)
+      return false
+    }
+  }
+
+  /**
    * Check if a document needs re-upload
    */
   const needsReupload = (doc: Document): boolean => {
@@ -111,6 +123,7 @@ export const useDocuments = () => {
     error,
     uploadDocument,
     replaceDocument,
+    downloadDocument,
     needsReupload,
     isExpired
   }

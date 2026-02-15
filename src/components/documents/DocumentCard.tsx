@@ -5,7 +5,8 @@ import {
   XCircle, 
   AlertTriangle,
   Eye,
-  Upload
+  Upload,
+  Download
 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
@@ -15,12 +16,14 @@ interface DocumentCardProps {
   document: Document
   onView?: (doc: Document) => void
   onReupload?: (doc: Document) => void
+  onDownload?: (doc: Document) => void
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({ 
   document, 
   onView, 
-  onReupload 
+  onReupload,
+  onDownload
 }) => {
   const expired = isExpired(document.expiryDate)
   const status = expired ? 'expired' : document.status
@@ -109,6 +112,18 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           >
             <Eye className="w-4 h-4" />
             View
+          </Button>
+        )}
+        
+        {onDownload && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => onDownload(document)}
+            className="flex-1 flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Download
           </Button>
         )}
         
