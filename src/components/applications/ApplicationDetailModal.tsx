@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, User, Mail, Phone,  FileText, Eye, Check, Loader2, RotateCcw, Building2, CreditCard } from 'lucide-react';
+import { X, User,  Phone,  FileText, Eye, Check, Loader2, RotateCcw, Building2, CreditCard } from 'lucide-react';
 
 interface Application {
   id: number;
@@ -144,39 +144,67 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                 </div>
 
                 {/* Personal Information */}
-                <div>
-                  <h4 className="text-lg font-semibold text-[#5C32A3] mb-3 flex items-center">
-                    <User className="mr-2" size={20} />
-                    Personal & Identification
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">
-                    <div>
-                      <label className="text-xs font-bold text-gray-400 uppercase">Full Name</label>
-                      <p className="text-gray-900 font-medium">{application.firstName} {application.lastName}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-400 uppercase">Age Range</label>
-                      <p className="text-gray-900">{application.age_range || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-400 uppercase">National ID (NIN)</label>
-                      <p className="text-gray-900 flex items-center gap-1 font-mono"><CreditCard size={14}/> {application.nationalIdNumber}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-400 uppercase">Phone Number</label>
-                      <p className="text-gray-900 flex items-center gap-1"><Phone size={14}/> {application.phoneNumber}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-400 uppercase">Email Address</label>
-                      <p className="text-gray-900 flex items-center gap-1"><Mail size={14}/> {application.email}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-400 uppercase">Residential Address</label>
-                      <p className="text-gray-900">{application.address}</p>
-                    </div>
-                  </div>
-                </div>
+<div>
+  <h4 className="text-lg font-semibold text-[#5C32A3] mb-3 flex items-center">
+    <User className="mr-2" size={20} />
+    Personal & Identification
+  </h4>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">
+    <div>
+      <label className="text-xs font-bold text-gray-400 uppercase">Full Name</label>
+      <p className="text-gray-900 font-medium">
+        {application.firstName || (application as any).first_name} {application.lastName || (application as any).last_name}
+      </p>
+    </div>
+    <div>
+      <label className="text-xs font-bold text-gray-400 uppercase">Age Range</label>
+      <p className="text-gray-900">
+        {/* Checks for age_range  */}
+        {application.age_range || (application as any).ageRange || 'N/A'}
+      </p>
+    </div>
+    <div>
+      <label className="text-xs font-bold text-gray-400 uppercase">National ID (NIN)</label>
+      <p className="text-gray-900 flex items-center gap-1 font-mono">
+        <CreditCard size={14}/> {application.nationalIdNumber || (application as any).national_id_number || 'Not Provided'}
+      </p>
+    </div>
+    <div>
+      <label className="text-xs font-bold text-gray-400 uppercase">Phone Number</label>
+      <p className="text-gray-900 flex items-center gap-1">
+        <Phone size={14}/> {application.phoneNumber || (application as any).phone_number || 'N/A'}
+      </p>
+    </div>
+    <div className="md:col-span-2">
+      <label className="text-xs font-bold text-gray-400 uppercase">Residential Address</label>
+      <p className="text-gray-900">
+        {application.address || (application as any).residential_address || 'N/A'}
+      </p>
+    </div>
+  </div>
+</div>
 
+{/* Professional Information */}
+<div>
+  <h4 className="text-lg font-semibold text-[#5C32A3] mb-3 flex items-center">
+    <Building2 className="mr-2" size={20} />
+    Professional Details
+  </h4>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">
+    <div>
+      <label className="text-xs font-bold text-gray-400 uppercase">ICPAU Certificate Number</label>
+      <p className="text-gray-900 font-bold text-[#5C32A3]">
+        {application.icpauCertificateNumber || (application as any).icpau_certificate_number || 'N/A'}
+      </p>
+    </div>
+    <div>
+      <label className="text-xs font-bold text-gray-400 uppercase">Current Organization</label>
+      <p className="text-gray-900">
+        {application.organization || (application as any).employer_name || 'N/A'}
+      </p>
+    </div>
+  </div>
+</div>
                 {/* Professional Information */}
                 <div>
                   <h4 className="text-lg font-semibold text-[#5C32A3] mb-3 flex items-center">
