@@ -1,24 +1,17 @@
 import { useEffect, useState } from 'react';
-import { X, User, Mail, Phone, Calendar, FileText, Download, Check, Loader2, RotateCcw } from 'lucide-react';
+import { X, User, Mail, Phone,  FileText, Eye, Check, Loader2, RotateCcw, Building2, CreditCard } from 'lucide-react';
 
 interface Application {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone_number: string;
-  date_of_birth: string;
+  phoneNumber: string;
+  age_range: string;
   address: string;
-  city: string;
-  country: string;
-  postal_code: string;
-  qualification: string;
-  institution: string;
-  graduation_year: string;
-  professional_body: string;
-  membership_number: string;
-  years_of_experience: string;
-  current_employer: string;
-  job_title: string;
+  nationalIdNumber: string;
+  icpauCertificateNumber: string;
+  organization: string;
   status: string;
   submitted_at: string;
   documents?: Array<{
@@ -86,7 +79,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
     setSubmitting(true);
     try {
       await action(application.id);
-      await fetchApplicationDetails(); // Refresh UI with new status
+      await fetchApplicationDetails(); 
     } catch (err) {
       alert("Action failed. Please try again.");
     } finally {
@@ -105,7 +98,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'approved': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -121,7 +114,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           {/* Header */}
           <div className="bg-[#5C32A3] px-6 py-4 flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-white">Application Details</h3>
+            <h3 className="text-xl font-semibold text-white">Member Application Details</h3>
             <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors">
               <X size={24} />
             </button>
@@ -137,93 +130,98 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
             ) : application ? (
               <div className="space-y-6">
-                {/* Status Badge */}
-                <div className="flex justify-between items-center">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(application.status)}`}>
-                    {application.status}
-                  </span>
-                  <span className="text-sm text-gray-500">Submitted: {formatDate(application.submitted_at)}</span>
+                {/* Status Indicator */}
+                <div className="flex justify-between items-center border-b pb-4">
+                  <div>
+                    <span className={`px-4 py-1 rounded-full text-sm font-bold uppercase ${getStatusColor(application.status)}`}>
+                      {application.status}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500 uppercase font-bold">Submission Date</p>
+                    <p className="text-sm text-gray-900">{formatDate(application.submitted_at)}</p>
+                  </div>
                 </div>
 
                 {/* Personal Information */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    <User className="mr-2 text-[#5C32A3]" size={20} />
-                    Personal Information
+                  <h4 className="text-lg font-semibold text-[#5C32A3] mb-3 flex items-center">
+                    <User className="mr-2" size={20} />
+                    Personal & Identification
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Full Name</label>
-                      <p className="text-gray-900">{application.name}</p>
+                      <label className="text-xs font-bold text-gray-400 uppercase">Full Name</label>
+                      <p className="text-gray-900 font-medium">{application.firstName} {application.lastName}</p>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Email</label>
+                      <label className="text-xs font-bold text-gray-400 uppercase">Age Range</label>
+                      <p className="text-gray-900">{application.age_range || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 uppercase">National ID (NIN)</label>
+                      <p className="text-gray-900 flex items-center gap-1 font-mono"><CreditCard size={14}/> {application.nationalIdNumber}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 uppercase">Phone Number</label>
+                      <p className="text-gray-900 flex items-center gap-1"><Phone size={14}/> {application.phoneNumber}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 uppercase">Email Address</label>
                       <p className="text-gray-900 flex items-center gap-1"><Mail size={14}/> {application.email}</p>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Phone</label>
-                      <p className="text-gray-900 flex items-center gap-1"><Phone size={14}/> {application.phone_number}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Date of Birth</label>
-                      <p className="text-gray-900 flex items-center gap-1"><Calendar size={14}/> {formatDate(application.date_of_birth)}</p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Address</label>
-                      <p className="text-gray-900">{application.address}, {application.city}, {application.country} {application.postal_code}</p>
+                      <label className="text-xs font-bold text-gray-400 uppercase">Residential Address</label>
+                      <p className="text-gray-900">{application.address}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Education */}
+                {/* Professional Information */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    <FileText className="mr-2 text-[#5C32A3]" size={20} />
-                    Educational Background
+                  <h4 className="text-lg font-semibold text-[#5C32A3] mb-3 flex items-center">
+                    <Building2 className="mr-2" size={20} />
+                    Professional Details
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Qualification</label>
-                      <p className="text-gray-900">{application.qualification}</p>
+                      <label className="text-xs font-bold text-gray-400 uppercase">ICPAU Certificate Number</label>
+                      <p className="text-gray-900 font-bold text-[#5C32A3]">{application.icpauCertificateNumber}</p>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Institution</label>
-                      <p className="text-gray-900">{application.institution}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Professional */}
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Professional Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Current Employer</label>
-                      <p className="text-gray-900">{application.current_employer}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Job Title</label>
-                      <p className="text-gray-900">{application.job_title}</p>
+                      <label className="text-xs font-bold text-gray-400 uppercase">Current Organization</label>
+                      <p className="text-gray-900">{application.organization}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Documents */}
+                {/* Documents Section */}
                 {application.documents && application.documents.length > 0 && (
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Documents</h4>
-                    <div className="space-y-2">
+                    <h4 className="text-lg font-semibold text-[#5C32A3] mb-3 flex items-center">
+                      <FileText className="mr-2" size={20} />
+                      Attached Documents
+                    </h4>
+                    <div className="grid grid-cols-1 gap-2">
                       {application.documents.map((doc) => (
-                        <div key={doc.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <div key={doc.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-[#5C32A3] transition-colors">
                           <div className="flex items-center">
-                            <FileText size={20} className="text-gray-400 mr-3" />
+                            <div className="bg-[#F4F2FE] p-2 rounded-lg mr-3 text-[#5C32A3]">
+                              <FileText size={20} />
+                            </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{doc.file_name}</p>
-                              <p className="text-xs text-gray-500 uppercase">{doc.document_type}</p>
+                              <p className="text-sm font-bold text-gray-900">{doc.file_name}</p>
+                              <p className="text-[10px] text-gray-400 uppercase tracking-wider">{doc.document_type}</p>
                             </div>
                           </div>
-                          <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-[#5C32A3] hover:underline flex items-center gap-1 text-sm font-medium">
-                            <Download size={16} /> Download
+                          
+                          <a 
+                            href={doc.file_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center gap-1 text-xs font-bold text-[#5C32A3] bg-[#F4F2FE] px-3 py-1.5 rounded-lg hover:bg-[#5C32A3] hover:text-white transition-all"
+                          >
+                            <Eye size={14} /> View File
                           </a>
                         </div>
                       ))}
@@ -234,9 +232,12 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
             ) : null}
           </div>
 
-          {/* Action Footer */}
-          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t">
-            <button onClick={onClose} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          {/* Footer Actions */}
+          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t rounded-b-lg">
+            <button 
+              onClick={onClose} 
+              className="px-6 py-2 bg-white border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+            >
               Close
             </button>
 
@@ -247,7 +248,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                     <button
                       onClick={() => handleAction(onReject)}
                       disabled={submitting}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                      className="flex items-center gap-2 px-6 py-2 bg-white border-2 border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-50 disabled:opacity-50"
                     >
                       {submitting ? <Loader2 className="animate-spin" size={18} /> : <X size={18} />}
                       Reject
@@ -255,10 +256,10 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                     <button
                       onClick={() => handleAction(onApprove)}
                       disabled={submitting}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#5C32A3] text-white rounded-lg hover:bg-[#4A2882] disabled:opacity-50 shadow-sm"
+                      className="flex items-center gap-2 px-6 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] disabled:opacity-50 shadow-md transition-all active:scale-95"
                     >
                       {submitting ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
-                      Approve
+                      Approve Member
                     </button>
                   </>
                 )}
@@ -266,10 +267,10 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                   <button
                     onClick={() => handleAction(onRetry)}
                     disabled={submitting}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100"
+                    className="flex items-center gap-2 px-6 py-2 bg-[#F4F2FE] text-[#5C32A3] border-2 border-[#5C32A3] font-bold rounded-xl hover:bg-[#5C32A3] hover:text-white transition-all"
                   >
                     {submitting ? <Loader2 className="animate-spin" size={18} /> : <RotateCcw size={18} />}
-                    Reset to Pending
+                    Reconsider Application
                   </button>
                 )}
               </div>
