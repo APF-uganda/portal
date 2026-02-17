@@ -81,14 +81,14 @@ const CmsContentPage = () => {
                       <button onClick={() => navigate('/admin/NewsMgt')} className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg transition-colors text-left group">
                         <div className="p-2 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-600 group-hover:text-white transition-colors"><Newspaper size={18}/></div>
                         <div>
-                          <p className="text-xs font-bold text-slate-800 tracking-tight">News & Insights</p>
+                          <p className="text-xs font-bold text-slate-800 tracking-tight">News </p>
                           <p className="text-[10px] text-slate-400 font-semibold uppercase">Articles & Reports</p>
                         </div>
                       </button>
                       <button onClick={() => navigate('/admin/eventMgt')} className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg transition-colors text-left group">
                         <div className="p-2 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-600 group-hover:text-white transition-colors"><Calendar size={18}/></div>
                         <div>
-                          <p className="text-xs font-bold text-slate-800 tracking-tight">Event Listing</p>
+                          <p className="text-xs font-bold text-slate-800 tracking-tight">Event </p>
                           <p className="text-[10px] text-slate-400 font-semibold uppercase">Schedule & Booking</p>
                         </div>
                       </button>
@@ -120,7 +120,7 @@ const CmsContentPage = () => {
                   title="Membership" 
                   icon={<Users size={22}/>} 
                   desc="Tiers, benefits, and registration workflow" 
-                  onClick={() => navigate('/admin/edit-page/membership')} 
+                  onClick={() => navigate('/editMembership')} 
                 />
                  <PageCard 
                   title="Insights" 
@@ -132,7 +132,7 @@ const CmsContentPage = () => {
                   title="About Us" 
                   icon={<Info size={22}/>} 
                   desc="Our history, mission, and leadership team" 
-                  onClick={() => navigate('/admin/edit-page/about')} 
+                  onClick={() => navigate('/editAbout')} 
                 />
                 <PageCard 
                   title="Contact Us" 

@@ -47,6 +47,8 @@ import NewsManagement from "./pages/admin/newsMgt";
 import ManageUsers from "./pages/admin/manageusers";
 import EventCreatePage from "./pages/admin/eventMgt";
 import ManagePayments from "./pages/admin/payments";
+import MembershipEditor from './components/admincms/editMembership';
+import AboutPageEditor from './components/admincms/editAbout';
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -94,6 +96,8 @@ const App: React.FC = () => {
             <Route path="/newsMgt" element={<NewsManagement />} />
             <Route path="/manageUsers" element={<ManageUsers />} />
             <Route path="/eventMgt" element={<EventCreatePage />} />
+            <Route path="/editMembership" element={<MembershipEditor />} />
+            <Route path="/editAbout" element={<AboutPageEditor />} />
 
 
 
