@@ -1,5 +1,6 @@
 // eventsData.ts
 export type Event = {
+  id: string
   title: string
   date: string
   time: string
@@ -10,6 +11,7 @@ export type Event = {
 
 export const baseEvents: Event[] = [
   {
+    id: "1",
     title: "Annual APF Conference 2026: Digital Transformation in Accounting",
     date: "October 15, 2026",
     time: "9:00 AM – 5:00 PM",
@@ -18,6 +20,7 @@ export const baseEvents: Event[] = [
     image: "/images/annual.png",
   },
   {
+    id: "2",
     title: "Tax Updates Workshop 2026",
     date: "February 12, 2026",
     time: "9:00 AM – 5:00 PM",
@@ -27,6 +30,7 @@ export const baseEvents: Event[] = [
   },
   
   {
+    id: "3",
     title: "Annual Ethics in Accounting Seminar",
     date: "October 18, 2026",
     time: "9:00 AM – 5:00 PM",
@@ -36,6 +40,7 @@ export const baseEvents: Event[] = [
     image: "/images/Ethics.jpg",
   },
   {
+    id: "4",
     title: "Annual Digital Transformation Forum",
     date: "October 16, 2026",
     time: "9:00 AM – 5:00 PM",
@@ -45,6 +50,7 @@ export const baseEvents: Event[] = [
     image: "/images/Digital.jpg",
   },
    {
+    id: "5",
     title: "Annual APF Conference 2026: Digital Transformation in Accounting",
     date: "October 15, 2025",
     time: "9:00 AM – 5:00 PM",
@@ -53,6 +59,7 @@ export const baseEvents: Event[] = [
     image: "/images/annual.png",
   },
   {
+    id: "6",
     title: "Tax Updates Workshop 2026",
     date: "February 12, 2025",
     time: "9:00 AM – 5:00 PM",
@@ -62,6 +69,7 @@ export const baseEvents: Event[] = [
   },
   
   {
+    id: "7",
     title: "Annual Ethics in Accounting Seminar",
     date: "October 18, 2025",
     time: "9:00 AM – 5:00 PM",
@@ -71,6 +79,7 @@ export const baseEvents: Event[] = [
     image: "/images/Ethics.jpg",
   },
   {
+    id: "8",
     title: "Annual Digital Transformation Forum",
     date: "October 16, 2025",
     time: "9:00 AM – 5:00 PM",
