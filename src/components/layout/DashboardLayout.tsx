@@ -5,6 +5,7 @@ import {
   Menu,
   User,
   LogOut,
+  Globe,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
@@ -71,6 +72,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const handleProfileClick = () => {
     setIsProfileDropdownOpen(false)
     navigate('/profile')
+  }
+
+  const handleBackToWebsite = () => {
+    setIsProfileDropdownOpen(false)
+    navigate('/')
   }
 
   return (
@@ -188,6 +194,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       >
                         <User className="w-4 h-4 text-gray-400" />
                         <span>View Profile</span>
+                      </button>
+
+                      <button
+                        onClick={handleBackToWebsite}
+                        className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <Globe className="w-4 h-4 text-gray-400" />
+                        <span>Back to Website</span>
                       </button>
 
                       <button

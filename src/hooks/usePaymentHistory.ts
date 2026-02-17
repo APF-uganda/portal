@@ -53,29 +53,30 @@ export const useRecentTransactions = (limit: number = 3) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        const data = await getRecentTransactions(limit)
-        setTransactions(data)
-      } catch (err) {
-        setError('Failed to load recent transactions')
-        console.error('Recent transactions error:', err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const data = await getRecentTransactions(limit)
+      setTransactions(data)
+    } catch (err) {
+      setError('Failed to load recent transactions')
+      console.error('Recent transactions error:', err)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchData()
   }, [limit])
 
   return {
     transactions,
     loading,
-    error
+    error,
+    refetch: fetchData
   }
 }
 

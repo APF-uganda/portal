@@ -90,7 +90,7 @@ const NotificationsPage: React.FC = () => {
     await markAllAsRead()
   }
 
-  // Separate notifications into today and this week
+  // Separate notifications into today, this week, and older
   const todayNotifications = notifications.filter(n => {
     const date = new Date(n.createdAt)
     const today = new Date()
@@ -102,6 +102,13 @@ const NotificationsPage: React.FC = () => {
     const today = new Date()
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
     return date < today && date >= weekAgo && date.toDateString() !== today.toDateString()
+  })
+
+  const olderNotifications = notifications.filter(n => {
+    const date = new Date(n.createdAt)
+    const today = new Date()
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+    return date < weekAgo
   })
 
   return (
@@ -267,6 +274,49 @@ const NotificationsPage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {weekNotifications.map((notification) => {
+                    const Icon = getNotificationIcon(notification.type)
+                    return (
+                      <div
+                        key={notification.id}
+                        className={`flex p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:bg-gray-50 ${
+                          !notification.isRead 
+                            ? 'bg-purple-50/50 border-l-purple-600' 
+                            : 'border-l-transparent'
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0 ${getTypeColor(notification.type)}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900 mb-1">{notification.title}</div>
+                          <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.message}</div>
+                          <div className="text-xs text-gray-500">{formatNotificationTime(notification.createdAt)}</div>
+                        </div>
+                        <div className="flex items-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleNotificationRead(notification.id)}
+                            className="text-gray-500 hover:text-purple-600 text-xs"
+                          >
+                            {!notification.isRead ? 'Mark as read' : 'Mark as unread'}
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Older Notifications */}
+            {!loading && olderNotifications.length > 0 && (
+              <Card className="bg-white shadow-lg border border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-800">Older</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {olderNotifications.map((notification) => {
                     const Icon = getNotificationIcon(notification.type)
                     return (
                       <div

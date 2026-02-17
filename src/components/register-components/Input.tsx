@@ -8,6 +8,7 @@ type InputProps = {
   error?: string;
   name?: string;
   required?: boolean;
+  disabled?: boolean;
 };
 
 function Input({ 
@@ -19,7 +20,8 @@ function Input({
   onBlur,
   error,
   name,
-  required = false
+  required = false,
+  disabled = false
 }: InputProps) {
   // Generate a unique ID for the input
   const inputId = name || label.toLowerCase().replace(/\s+/g, '-');
@@ -38,12 +40,15 @@ function Input({
         onChange={onChange}
         onBlur={onBlur}
         name={name}
+        disabled={disabled}
         className={`w-full rounded-md border px-3 py-3 text-sm sm:py-2 touch-manipulation
                    focus:outline-none focus:ring-2 focus:ring-purple-500
+                   disabled:bg-gray-100 disabled:cursor-not-allowed
                    ${error ? 'border-red-500' : 'border-gray-300'}`}
+        style={{ fontSize: '16px' }}
       />
       {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
+        <p className="text-sm text-red-500 mt-1">{error}</p>
       )}
     </div>
   );
