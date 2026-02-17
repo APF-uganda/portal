@@ -24,13 +24,18 @@ import { Badge } from "../../components/ui/badge"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
 import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/receiptGenerator"
 import { useRecentTransactions, useReceipts } from "../../hooks/usePaymentHistory"
+import PaymentModal from "../../components/payment-components/PaymentModal"
+import { PaymentProvider } from "../../types/payment"
 
 const PaymentsPage: React.FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mtn')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('mtn')
+  const [paymentAmount] = useState(150000)
 
   // Get recent transactions from payment history (shared data source)
-  const { transactions: recentTransactions, loading: transactionsLoading } = useRecentTransactions(3)
+  const { transactions: recentTransactions, loading: transactionsLoading, refetch: refetchTransactions } = useRecentTransactions(3)
 
   // Get receipts from backend
   const { receipts, loading: receiptsLoading } = useReceipts()
@@ -65,12 +70,26 @@ const PaymentsPage: React.FC = () => {
 
   const handleProceedPayment = () => {
     setIsProcessing(true)
-    const selectedMethod = paymentMethods.find(m => m.id === selectedPaymentMethod)
     
-    setTimeout(() => {
-      alert(`Redirecting to secure payment gateway with ${selectedMethod?.name}...`)
-      setIsProcessing(false)
-    }, 1500)
+    // Set the selected provider and open modal
+    setSelectedProvider(selectedPaymentMethod as PaymentProvider)
+    setIsModalOpen(true)
+    setIsProcessing(false)
+  }
+
+  const handlePaymentSuccess = () => {
+    // Refresh payment history after successful payment
+    refetchTransactions()
+    
+    // Close modal after success
+    setIsModalOpen(false)
+    
+    // Show success notification
+    showNotification('Payment completed successfully!', 'success')
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false)
   }
 
   const handleDownloadReceipt = async (receipt: any) => {
@@ -387,6 +406,15 @@ const PaymentsPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        provider={selectedProvider}
+        amount={paymentAmount}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </DashboardLayout>
   )
 }
