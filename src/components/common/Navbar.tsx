@@ -9,6 +9,22 @@ function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const location = useLocation()
 
+  // Check if user is logged in
+  const isLoggedIn = !!localStorage.getItem('access_token')
+  const userStr = localStorage.getItem('user')
+  let userRole = 'member'
+  
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr)
+      userRole = user.role === '1' || user.role === 1 ? 'admin' : 'member'
+    } catch (e) {
+      console.error('Failed to parse user data:', e)
+    }
+  }
+
+  const dashboardPath = userRole === 'admin' ? '/admin/dashboard' : '/dashboard'
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 500)
@@ -91,11 +107,19 @@ function Navbar() {
             </button>
           </Link>
 
-          <Link to="/login">
-            <button className="bg-[#5F1C9F] rounded-full px-6 py-2 font-medium text-white shadow hover:-translate-y-0.5 transition-all">
-             Login
-            </button>
-          </Link>
+          {isLoggedIn ? (
+            <Link to={dashboardPath}>
+              <button className="bg-[#5F1C9F] rounded-full px-6 py-2 font-medium text-white shadow hover:-translate-y-0.5 transition-all">
+                My Dashboard
+              </button>
+            </Link>
+          ) : (
+            <Link to="/login">
+              <button className="bg-[#5F1C9F] rounded-full px-6 py-2 font-medium text-white shadow hover:-translate-y-0.5 transition-all">
+                Login
+              </button>
+            </Link>
+          )}
         </div>
 
         {/* MOBILE MENU BUTTON */}
@@ -154,11 +178,19 @@ function Navbar() {
                   </button>
                 </Link>
 
-                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow transition hover:-translate-y-0.5">
-                    Members Login
-                  </button>
-                </Link>
+                {isLoggedIn ? (
+                  <Link to={dashboardPath} onClick={() => setIsMenuOpen(false)}>
+                    <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow transition hover:-translate-y-0.5">
+                      My Dashboard
+                    </button>
+                  </Link>
+                ) : (
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                    <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow transition hover:-translate-y-0.5">
+                      Members Login
+                    </button>
+                  </Link>
+                )}
               </div>
             </div>
           </aside>
