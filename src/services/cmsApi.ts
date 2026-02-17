@@ -564,7 +564,8 @@ export const getHomepage = async (): Promise<Homepage | null> => {
     if (!response.ok) throw new Error('Failed to fetch homepage');
     
     const data = await response.json();
-    const homepage = adaptStrapiSingle(data);
+    const homepage = adaptStrapiSingle<Homepage>(data);
+
     
     if (!homepage) return null;
 
@@ -606,7 +607,8 @@ export const getAboutPage = async (): Promise<AboutPage | null> => {
     if (!response.ok) throw new Error('Failed to fetch about page');
     
     const data = await response.json();
-    const aboutPage = adaptStrapiSingle(data);
+    const aboutPage = adaptStrapiSingle<AboutPage>(data);
+
     
     if (!aboutPage) return null;
 
@@ -643,7 +645,8 @@ export const getMembershipPage = async (): Promise<MembershipPage | null> => {
     if (!response.ok) throw new Error('Failed to fetch membership page');
     
     const data = await response.json();
-    const membershipPage = adaptStrapiSingle(data);
+    const membershipPage = adaptStrapiSingle<MembershipPage>(data);
+
     
     if (!membershipPage) return null;
 
@@ -699,7 +702,8 @@ export const getSiteSettings = async (): Promise<SiteSettings | null> => {
     if (!response.ok) throw new Error('Failed to fetch site settings');
     
     const data = await response.json();
-    const settings = adaptStrapiSingle(data);
+    const settings = adaptStrapiSingle<SiteSettings>(data);
+
     
     if (!settings) return null;
 

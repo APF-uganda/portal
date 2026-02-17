@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState} from 'react';
 import { 
   Save, ArrowLeft, Image as ImageIcon, X, 
-  Plus, Type, Video, Paperclip, Trash2, 
+ Type, Video, Paperclip, Trash2, 
   MoveUp, MoveDown, UploadCloud 
 } from 'lucide-react';
 import { NewsArticle, ContentBlock, BlockType, Category, ArticleStatus } from './newstypes';

@@ -3,14 +3,14 @@
  * Handles all CMS content fetching from Strapi
  */
 
-import { CMS_API_URL } from '../config/api';
-import {
-  adaptStrapiCollection,
-  adaptStrapiSingle,
-  extractMediaUrl,
-  extractRelation,
-  buildStrapiQuery,
-} from './strapiAdapter';
+// import { CMS_API_URL } from '../config/api';
+// import {
+//   adaptStrapiCollection,
+//   adaptStrapiSingle,
+//   extractMediaUrl,
+//   extractRelation,
+//   buildStrapiQuery,
+// } from './strapiAdapter';
 
 // Type definitions matching frontend expectations
 export interface Event {
@@ -22,4 +22,5 @@ export interface Event {
   description: string;
   image: string;
   slug?: string;
-  content?: st
+  content?: string;
+}

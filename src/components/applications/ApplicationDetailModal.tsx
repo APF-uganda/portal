@@ -30,7 +30,7 @@ interface ApplicationDetailModalProps {
   onClose: () => void;
   onApprove?: (id: number) => Promise<void>;
   onReject?: (id: number) => Promise<void>;
-  onRetry?: (id: number) => Promise<void>;
+  // onRetry?: (id: number) => Promise<void>;
 }
 
 const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
@@ -39,7 +39,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   onClose,
   onApprove,
   onReject,
-  onRetry
+  // onRetry
 }) => {
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
