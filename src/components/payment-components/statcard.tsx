@@ -1,4 +1,3 @@
-import React from 'react';
 import { ArrowUpRight, ArrowDownRight, LucideIcon } from 'lucide-react';
 
 interface StatCardProps {

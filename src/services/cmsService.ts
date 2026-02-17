@@ -1,18 +1,9 @@
 /**
- * CMS Service - Strapi API Integration
- * Handles all CMS content fetching from Strapi
+ * CMS Service - Placeholder for future CMS integration
+ * This file is reserved for frontend team to configure CMS integration
  */
 
-import { CMS_API_URL } from '../config/api';
-import {
-  adaptStrapiCollection,
-  adaptStrapiSingle,
-  extractMediaUrl,
-  extractRelation,
-  buildStrapiQuery,
-} from './strapiAdapter';
-
-// Type definitions matching frontend expectations
+// Placeholder type definitions
 export interface Event {
   id: number;
   title: string;
@@ -22,4 +13,7 @@ export interface Event {
   description: string;
   image: string;
   slug?: string;
-  content?: st
+  content?: string;
+}
+
+// Additional CMS service functions will be implemented 
