@@ -1,4 +1,3 @@
-
 import { Type, AlignLeft, ImageIcon, Link as LinkIcon } from 'lucide-react';
 
 interface Field {
