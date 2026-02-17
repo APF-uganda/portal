@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Mail, Building, Phone, MapPin, Calendar, CheckCircle, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle, ArrowLeft } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { baseEvents } from '../components/EventComponents/eventsData';
