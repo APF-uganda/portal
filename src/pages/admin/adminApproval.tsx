@@ -68,7 +68,7 @@ const AdminApprovals = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             refetchStats();
-        }, 30000); 
+        }, 300000); // Refresh every 5 minutes (300000ms)
 
         return () => clearInterval(interval);
     }, [refetchStats]);
@@ -126,10 +126,10 @@ const handleReject = async (applicationId: number) => {
         if (result.success) {
             setSuccessMessage("Application rejected successfully");
             
-            await Promise.all([refetch(), refetchStats()]);
-           
+            // Refresh only stats after action
+            await refetchStats();
+            
             setTimeout(() => {
-                refetchStats();  
                 setSuccessMessage(null);
             }, 3000);
         }

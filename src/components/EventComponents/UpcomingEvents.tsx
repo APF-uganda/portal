@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import EventCard from "../common/EventCard";
-import { baseEvents } from "./eventsData"; 
+import { baseEvents } from "./eventsData";
+import { EventRegistrationForm } from "../../pages/eventRegistration";
 
 const UpcomingEvents = () => {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const today = new Date();
   const upcomingEvents = baseEvents.filter(
     (event) => new Date(event.date) >= today
@@ -82,6 +84,7 @@ const UpcomingEvents = () => {
                 <EventCard
                   {...event}
                   onRegister={() => handleRegister(event)}
+                  onRegister={() => setSelectedEvent(event)}
                 />
               </div>
             ))}
@@ -92,6 +95,12 @@ const UpcomingEvents = () => {
           </button>
         </div>
 
+        {upcomingEvents.length === 0 && (
+          <div className="text-center py-8 text-gray-600">
+            No upcoming events at the moment. Check back soon!
+          </div>
+        )}
+
         {/* Mobile Progress Dots */}
         <div className="flex justify-center mt-6 gap-2 md:hidden">
           {upcomingEvents.map((_, index) => (
@@ -99,6 +108,19 @@ const UpcomingEvents = () => {
           ))}
         </div>
       </div>
+
+      {/* Modal Overlay: Shows the form when an event is selected */}
+      {selectedEvent && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-lg relative animate-in zoom-in-95 duration-200">
+            <EventRegistrationForm 
+              eventTitle={selectedEvent.title} 
+              eventId={selectedEvent.id} 
+              onClose={() => setSelectedEvent(null)} 
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 };

@@ -9,7 +9,7 @@ import emailjs from '@emailjs/browser';
 const EMAILJS_SERVICE_ID ='service_vjzvr2e';
 const EMAILJS_PUBLIC_KEY ='bnnAdDByZZy8gxYSF';
 const EMAILJS_TEMPLATE_ID_OTP ='template_5ea6jqe';
-const EMAILJS_TEMPLATE_ID_APPROVAL ='template_approval';
+const EMAILJS_TEMPLATE_ID_APPROVAL ='template_hdunzl7';
 
 
 // Check if we're in development mode

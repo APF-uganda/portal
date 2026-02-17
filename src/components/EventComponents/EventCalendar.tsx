@@ -1,14 +1,7 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
-import { baseEvents } from "./eventsData"
-
-type Event = {
-  title: string
-  date: string
-  time: string
-  location: string
-  description: string
-}
+import { useEvents } from "../../hooks/useCMS"
+import type { Event } from "../../services/cmsApi"
 
 // Utility: check if event has expired
 const isExpired = (dateStr: string) => {
@@ -16,14 +9,6 @@ const isExpired = (dateStr: string) => {
   const now = new Date()
   return eventDate < now
 }
-
-// Convert baseEvents into a lookup map keyed by YYYY-MM-DD
-const eventsMap: Record<string, Event> = baseEvents.reduce((acc, event) => {
-  const fullDate = new Date(event.date)
-  const key = `${fullDate.getFullYear()}-${String(fullDate.getMonth() + 1).padStart(2, "0")}-${String(fullDate.getDate()).padStart(2, "0")}`
-  acc[key] = event
-  return acc
-}, {} as Record<string, Event>)
 
 const generateCalendar = (year: number, month: number): (string | null)[] => {
   const firstDay = new Date(year, month, 1).getDay()
@@ -40,6 +25,19 @@ const EventCalendar = () => {
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [selectedDate, setSelectedDate] = useState("")
+  
+  // Fetch events from CMS
+  const { events, loading } = useEvents()
+  
+  // Convert events into a lookup map keyed by YYYY-MM-DD
+  const eventsMap: Record<string, Event> = useMemo(() => {
+    return events.reduce((acc, event) => {
+      const fullDate = new Date(event.date)
+      const key = `${fullDate.getFullYear()}-${String(fullDate.getMonth() + 1).padStart(2, "0")}-${String(fullDate.getDate()).padStart(2, "0")}`
+      acc[key] = event
+      return acc
+    }, {} as Record<string, Event>)
+  }, [events])
 
   const calendarDates = generateCalendar(year, month)
   const selectedEvent = eventsMap[selectedDate]
@@ -75,8 +73,15 @@ const EventCalendar = () => {
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
           Our Event Calendar
         </h2>
+        
+        {loading && (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#7E49B3]"></div>
+            <p className="mt-2 text-gray-600">Loading events...</p>
+          </div>
+        )}
 
-        <div className="flex flex-col md:flex-row gap-8">
+        {!loading && <div className="flex flex-col md:flex-row gap-8">
           {/* Calendar */}
           <div className="flex-1 bg-white rounded-xl shadow p-6">
             <div className="flex justify-between items-center mb-4">
@@ -169,7 +174,7 @@ const EventCalendar = () => {
               <p className="text-gray-500">Select a date to view event details.</p>
             )}
           </div>
-        </div>
+        </div>}
       </div>
     </section>
   )
