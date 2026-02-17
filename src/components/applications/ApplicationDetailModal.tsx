@@ -39,7 +39,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   onClose,
   onApprove,
   onReject,
-  onRetry
+ 
 }) => {
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
