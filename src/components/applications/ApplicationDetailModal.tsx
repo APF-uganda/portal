@@ -1,30 +1,25 @@
 import { useEffect, useState } from 'react';
-import { X, User, Mail, Phone, Calendar, FileText, Download, Check, Loader2, RotateCcw } from 'lucide-react';
+import { X, User,  FileText, Eye,  Loader2,  Download,  } from 'lucide-react';
 
 interface Application {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone_number: string;
-  date_of_birth: string;
+  phoneNumber: string;
+  age_range: string;
   address: string;
-  city: string;
-  country: string;
-  postal_code: string;
-  qualification: string;
-  institution: string;
-  graduation_year: string;
-  professional_body: string;
-  membership_number: string;
-  years_of_experience: string;
-  current_employer: string;
-  job_title: string;
+  nationalIdNumber: string;
+  icpauCertificateNumber: string;
+  organization: string;
   status: string;
   submitted_at: string;
   documents?: Array<{
     id: number;
     file_name: string;
-    file_url: string;
+    file_url?: string;
+    file?: string;
+    document?: string;
     document_type: string;
   }>;
 }
@@ -50,11 +45,21 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen && applicationId) {
       fetchApplicationDetails();
     }
+    
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
   }, [isOpen, applicationId]);
 
   const fetchApplicationDetails = async () => {
@@ -81,12 +86,53 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
     }
   };
 
+  // SECURE FETCH LOGIC
+  const handleViewDocument = async (doc: any) => {
+    setIsPreviewLoading(doc.id);
+    const path = doc.file_url || doc.file || doc.document;
+    if (!path) {
+      alert("No file path found for this document.");
+      setIsPreviewLoading(null);
+      return;
+    }
+
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    const finalUrl = path.startsWith('http') ? path : `${cleanBase}${cleanPath}`;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(finalUrl, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+      const blob = await response.blob();
+      
+      
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+      setPreviewUrl(objectUrl);
+    } catch (err) {
+      console.error("Authenticated fetch failed:", err);
+      
+      window.open(finalUrl, '_blank');
+    } finally {
+      setIsPreviewLoading(null);
+    }
+  };
+
   const handleAction = async (action?: (id: number) => Promise<void>) => {
     if (!action || !application) return;
     setSubmitting(true);
     try {
       await action(application.id);
-      await fetchApplicationDetails(); // Refresh UI with new status
+      await fetchApplicationDetails(); 
     } catch (err) {
       alert("Action failed. Please try again.");
     } finally {
@@ -98,14 +144,12 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      year: 'numeric', month: 'long', day: 'numeric',
     });
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'approved': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -121,14 +165,13 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           {/* Header */}
           <div className="bg-[#5C32A3] px-6 py-4 flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-white">Application Details</h3>
+            <h3 className="text-xl font-semibold text-white">Member Application Details</h3>
             <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors">
               <X size={24} />
             </button>
           </div>
 
-          {/* Content */}
-          <div className="bg-white px-6 py-4 max-h-[70vh] overflow-y-auto">
+          <div className="bg-white px-6 py-4 max-h-[75vh] overflow-y-auto">
             {loading ? (
               <div className="flex justify-center items-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5C32A3]"></div>
@@ -137,94 +180,69 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
             ) : application ? (
               <div className="space-y-6">
-                {/* Status Badge */}
-                <div className="flex justify-between items-center">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(application.status)}`}>
+                {/* Status Bar */}
+                <div className="flex justify-between items-center border-b pb-4">
+                  <span className={`px-4 py-1 rounded-full text-sm font-bold uppercase ${getStatusColor(application.status)}`}>
                     {application.status}
                   </span>
-                  <span className="text-sm text-gray-500">Submitted: {formatDate(application.submitted_at)}</span>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400 uppercase font-bold">Submitted</p>
+                    <p className="text-sm text-gray-900">{formatDate(application.submitted_at)}</p>
+                  </div>
                 </div>
 
                 {/* Personal Information */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    <User className="mr-2 text-[#5C32A3]" size={20} />
-                    Personal Information
+                  <h4 className="text-md font-bold text-[#5C32A3] mb-3 flex items-center gap-2">
+                    <User size={18} /> Personal Information
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Full Name</label>
-                      <p className="text-gray-900">{application.name}</p>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Name</label>
+                      <p className="text-gray-900 font-medium">
+                        {application.firstName || (application as any).first_name} {application.lastName || (application as any).last_name}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Email</label>
-                      <p className="text-gray-900 flex items-center gap-1"><Mail size={14}/> {application.email}</p>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Phone</label>
+                      <p className="text-gray-900">{application.phoneNumber || (application as any).phone_number || 'N/A'}</p>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Phone</label>
-                      <p className="text-gray-900 flex items-center gap-1"><Phone size={14}/> {application.phone_number}</p>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">National ID</label>
+                      <p className="text-gray-900 font-mono text-sm">{application.nationalIdNumber || (application as any).national_id_number || 'N/A'}</p>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Date of Birth</label>
-                      <p className="text-gray-900 flex items-center gap-1"><Calendar size={14}/> {formatDate(application.date_of_birth)}</p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Address</label>
-                      <p className="text-gray-900">{application.address}, {application.city}, {application.country} {application.postal_code}</p>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Organization</label>
+                      <p className="text-gray-900">{application.organization || (application as any).employer_name || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Education */}
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    <FileText className="mr-2 text-[#5C32A3]" size={20} />
-                    Educational Background
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Qualification</label>
-                      <p className="text-gray-900">{application.qualification}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Institution</label>
-                      <p className="text-gray-900">{application.institution}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Professional */}
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Professional Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Current Employer</label>
-                      <p className="text-gray-900">{application.current_employer}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase">Job Title</label>
-                      <p className="text-gray-900">{application.job_title}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Documents */}
+                {/* Documents Section */}
                 {application.documents && application.documents.length > 0 && (
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Documents</h4>
+                    <h4 className="text-md font-bold text-[#5C32A3] mb-3 flex items-center gap-2">
+                      <FileText size={18} /> Documents
+                    </h4>
                     <div className="space-y-2">
                       {application.documents.map((doc) => (
-                        <div key={doc.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
-                          <div className="flex items-center">
-                            <FileText size={20} className="text-gray-400 mr-3" />
+                        <div key={doc.id} className="flex items-center justify-between bg-white border p-3 rounded-lg hover:border-[#5C32A3] transition-all shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <FileText className="text-gray-400" size={20} />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{doc.file_name}</p>
-                              <p className="text-xs text-gray-500 uppercase">{doc.document_type}</p>
+                              <p className="text-sm font-bold text-gray-800">{doc.file_name || 'Document'}</p>
+                              <p className="text-[10px] text-gray-400 uppercase">{doc.document_type}</p>
                             </div>
                           </div>
-                          <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-[#5C32A3] hover:underline flex items-center gap-1 text-sm font-medium">
-                            <Download size={16} /> Download
-                          </a>
+                          <button 
+                            type="button"
+                            onClick={() => handleViewDocument(doc)}
+                            disabled={isPreviewLoading !== null}
+                            className="flex items-center gap-1 text-xs font-bold text-[#5C32A3] bg-[#F4F2FE] px-4 py-2 rounded-lg hover:bg-[#5C32A3] hover:text-white transition-all disabled:opacity-50"
+                          >
+                            {isPreviewLoading === doc.id ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
+                            View
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -234,49 +252,65 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
             ) : null}
           </div>
 
-          {/* Action Footer */}
           <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t">
-            <button onClick={onClose} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <button onClick={onClose} className="px-6 py-2 bg-white border text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition-all">
               Close
             </button>
-
-            {application && !loading && (
+            {application && !loading && application.status.toLowerCase() === 'pending' && (
               <div className="flex gap-3">
-                {application.status.toLowerCase() === 'pending' && (
-                  <>
-                    <button
-                      onClick={() => handleAction(onReject)}
-                      disabled={submitting}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
-                    >
-                      {submitting ? <Loader2 className="animate-spin" size={18} /> : <X size={18} />}
-                      Reject
-                    </button>
-                    <button
-                      onClick={() => handleAction(onApprove)}
-                      disabled={submitting}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#5C32A3] text-white rounded-lg hover:bg-[#4A2882] disabled:opacity-50 shadow-sm"
-                    >
-                      {submitting ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
-                      Approve
-                    </button>
-                  </>
-                )}
-                {application.status.toLowerCase() === 'rejected' && (
-                  <button
-                    onClick={() => handleAction(onRetry)}
-                    disabled={submitting}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100"
-                  >
-                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <RotateCcw size={18} />}
-                    Reset to Pending
-                  </button>
-                )}
+                <button onClick={() => handleAction(onReject)} disabled={submitting} className="px-6 py-2 border-2 border-red-100 text-red-600 font-bold rounded-xl hover:bg-red-50 disabled:opacity-50">
+                  {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Reject'}
+                </button>
+                <button onClick={() => handleAction(onApprove)} disabled={submitting} className="px-6 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] disabled:opacity-50">
+                  {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Approve'}
+                </button>
               </div>
             )}
           </div>
         </div>
       </div>
+
+    
+      {previewUrl && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 p-4 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-5xl h-[95vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h4 className="font-bold text-gray-700 flex items-center gap-2">
+                <FileText size={20} className="text-[#5C32A3]" /> Secure Preview
+              </h4>
+              <div className="flex items-center gap-2">
+                <a 
+                  href={previewUrl} 
+                  download="document" 
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
+                  title="Download"
+                >
+                  <Download size={20} />
+                </a>
+                <button onClick={() => setPreviewUrl(null)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 bg-gray-100 overflow-hidden relative">
+              
+              <iframe 
+                src={previewUrl} 
+                className="w-full h-full border-none" 
+                title="Document Preview" 
+              />
+            </div>
+            
+            <div className="p-4 border-t text-right bg-white">
+              <button onClick={() => setPreviewUrl(null)} className="px-8 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] shadow-sm">
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
