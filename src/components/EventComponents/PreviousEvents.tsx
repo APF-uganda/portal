@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from "react"
 import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
-import { useEvents } from "../../hooks/useCMS"
+import { baseEvents } from "./eventsData"
 
 const PreviousEvents = () => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [cardHeight, setCardHeight] = useState<number | undefined>(undefined)
   const [activeIndex, setActiveIndex] = useState(0)
   
-  // Fetch events from CMS
-  const { events, loading } = useEvents()
+  // Utility: check if event has expired
+  const isExpired = (dateStr: string) => {
+    const eventDate = new Date(dateStr)
+    const now = new Date()
+    return eventDate < now
+  }
+
+  const previousEvents = baseEvents.filter((event) => isExpired(event.date))
 
   // Auto-scroll: 30s mobile, 60s desktop
   useEffect(() => {
@@ -67,15 +73,6 @@ const PreviousEvents = () => {
     }
   }
 
-  // Utility: check if event has expired
-  const isExpired = (dateStr: string) => {
-    const eventDate = new Date(dateStr)
-    const now = new Date()
-    return eventDate < now
-  }
-
-  const previousEvents = events.filter((event) => isExpired(event.date))
-
   return (
     <section className="bg-[#F5EFFB] py-12 -mx-[50vw] px-[50vw]">
       <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
@@ -83,20 +80,13 @@ const PreviousEvents = () => {
           Previous Events
         </h2>
         
-        {loading && (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#7E49B3]"></div>
-            <p className="mt-2 text-gray-600">Loading events...</p>
-          </div>
-        )}
-        
-        {!loading && previousEvents.length === 0 && (
+        {previousEvents.length === 0 && (
           <div className="text-center py-8 text-gray-600">
             No previous events to display.
           </div>
         )}
 
-        {!loading && previousEvents.length > 0 && (
+        {previousEvents.length > 0 && (
           <>
             <div className="flex items-center gap-4">
               {/* Left Arrow (desktop only) */}

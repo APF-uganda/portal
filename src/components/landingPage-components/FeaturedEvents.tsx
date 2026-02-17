@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import EventCard from "../common/EventCard"
-import { useEvents } from "../../hooks/useCMS"
+import { baseEvents } from "../EventComponents/eventsData"
 
 const FeaturedEvents = () => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   
-  // Fetch featured events from CMS
-  const { events, loading } = useEvents({ isFeatured: true })
-
+  // Filter for upcoming events (you can add isFeatured property to events if needed)
   const today = new Date()
-  const upcomingEvents = events.filter(
+  const upcomingEvents = baseEvents.filter(
     (event) => new Date(event.date) >= today
   )
 
@@ -67,20 +65,13 @@ const FeaturedEvents = () => {
           Featured Events
         </h2>
         
-        {loading && (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#7E49B3]"></div>
-            <p className="mt-2 text-gray-600">Loading events...</p>
-          </div>
-        )}
-        
-        {!loading && upcomingEvents.length === 0 && (
+        {upcomingEvents.length === 0 && (
           <div className="text-center py-8 text-gray-600">
             No featured events at the moment.
           </div>
         )}
 
-        {!loading && upcomingEvents.length > 0 && (
+        {upcomingEvents.length > 0 && (
           <>
             <div className="flex items-center gap-4">
               {/* Left Arrow (desktop only) */}
