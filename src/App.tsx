@@ -15,6 +15,7 @@ import LoginPage from "./pages/LoginPage";
 import OtpPage from "./pages/otpPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import TestCMS from "./pages/TestCMS";
 
 
 /* Member dashboard */
@@ -84,6 +85,7 @@ const App: React.FC = () => {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/test-cms" element={<TestCMS />} />
           <Route path="/cmspage" element={<CmsContentPage />} />
           <Route path="/communityforum" element={<CommunityForum />} />
           <Route path="/announcements" element={<CommunicationsDashboard />} />

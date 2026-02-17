@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Layout Components
@@ -10,12 +10,33 @@ import Footer from "../../components/layout/Footer";
 import { 
   Plus, Newspaper, Calendar, Megaphone, 
   Layout, Info, Phone, Settings,
-  Users, Lightbulb, Eye, Edit3
+  Users, Lightbulb, Eye, Edit3, AlertCircle,
+  Award, HelpCircle, Handshake, Clock, RefreshCw,
+  ExternalLink, CheckCircle
 } from 'lucide-react';
 
 import { ManagementColumn } from '../../components/cms-components/mgtColumn';
 import { MetricCard } from '../../components/cms-components/metricCard';
 import { RecentItem } from '../../components/cms-components/recentitems';
+
+// CMS API and Hooks
+import { 
+  getEvents, 
+  getNewsArticles, 
+  getLeadership,
+  getBenefits,
+  getFAQs,
+  getPartners,
+  getTimelineEvents,
+  Event, 
+  NewsArticle,
+  Leadership,
+  Benefit,
+  FAQ,
+  Partner,
+  TimelineEvent
+} from '../../services/cmsApi';
+import { CMS_BASE_URL } from '../../config/api';
 
 const PageCard = ({ title, icon, desc, onClick }: any) => (
   <button 
@@ -44,7 +65,86 @@ const PageCard = ({ title, icon, desc, onClick }: any) => (
 const CmsContentPage = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // State for all CMS data
+  const [events, setEvents] = useState<Event[]>([]);
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+  const [leadership, setLeadership] = useState<Leadership[]>([]);
+  const [benefits, setBenefits] = useState<Benefit[]>([]);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
+  
   const navigate = useNavigate();
+
+  // Fetch CMS data from Strapi
+  const fetchCMSData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [
+        eventsData, 
+        newsData, 
+        leadershipData,
+        benefitsData,
+        faqsData,
+        partnersData,
+        timelineData
+      ] = await Promise.all([
+        getEvents(),
+        getNewsArticles(),
+        getLeadership(),
+        getBenefits(),
+        getFAQs(),
+        getPartners(),
+        getTimelineEvents()
+      ]);
+      
+      setEvents(eventsData);
+      setNewsArticles(newsData);
+      setLeadership(leadershipData);
+      setBenefits(benefitsData);
+      setFaqs(faqsData);
+      setPartners(partnersData);
+      setTimelineEvents(timelineData);
+    } catch (err) {
+      console.error('Error fetching CMS data:', err);
+      setError('Failed to connect to Strapi CMS. Make sure Strapi is running on http://localhost:1337');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCMSData();
+  }, []);
+
+  // Refresh data
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchCMSData();
+  };
+
+  // Calculate metrics
+  const upcomingEvents = events.filter(e => e.status === 'upcoming').length;
+  const activeNews = newsArticles.filter(n => n.publishedAt).length;
+  const activeLeaders = leadership.filter(l => l.isActive).length;
+  const activeBenefits = benefits.filter(b => b.isActive).length;
+  const activeFaqs = faqs.filter(f => f.isActive).length;
+  const activePartners = partners.filter(p => p.isActive).length;
+  
+  const recentNews = newsArticles.slice(0, 3);
+  const recentEvents = events.slice(0, 3);
+  
+  // Open Strapi admin
+  const openStrapiAdmin = () => {
+    window.open(`${CMS_BASE_URL}/admin`, '_blank');
+  };
 
   return (
     <div className="flex min-h-screen font-sans selection:bg-purple-100 selection:text-[#5C32A3]">
@@ -56,6 +156,19 @@ const CmsContentPage = () => {
         <div className="flex-1 p-8">
           <div className="max-w-[1200px] mx-auto space-y-12">
             
+            {/* Error Alert */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+                <div>
+                  <h3 className="font-bold text-red-900 text-sm">CMS Connection Error</h3>
+                  <p className="text-red-700 text-xs mt-1">{error}</p>
+                  <p className="text-red-600 text-xs mt-2">
+                    Run: <code className="bg-red-100 px-2 py-0.5 rounded">cd CMS && yarn develop</code>
+                  </p>
+                </div>
+              </div>
+            )}
           
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div>
@@ -147,26 +260,88 @@ const CmsContentPage = () => {
             {/* Core Management Columns */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6">
               <ManagementColumn title="News & Press" icon={<Newspaper size={18}/>}>
-                <MetricCard label="Active" value="128" trend="12%" isPositive type="published" />
-                <div className="mt-4 space-y-2">
-                  <RecentItem title="Market Analysis 2026" subtitle="Insights • 1h ago" statusColor="bg-blue-500" />
-                  <RecentItem title="Policy Update" subtitle="News • 4h ago" statusColor="bg-emerald-500" />
-                </div>
+                {loading ? (
+                  <div className="animate-pulse">
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                  </div>
+                ) : (
+                  <>
+                    <MetricCard 
+                      label="Active Articles" 
+                      value={activeNews.toString()} 
+                      trend={`${newsArticles.length} total`} 
+                      isPositive 
+                      type="published" 
+                    />
+                    <div className="mt-4 space-y-2">
+                      {recentNews.length > 0 ? (
+                        recentNews.map((article) => (
+                          <RecentItem 
+                            key={article.id}
+                            title={article.title} 
+                            subtitle={`${article.category} • ${new Date(article.publishDate).toLocaleDateString()}`} 
+                            statusColor={article.isFeatured ? "bg-blue-500" : "bg-emerald-500"} 
+                          />
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No news articles yet</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </ManagementColumn>
 
               <ManagementColumn title="Events Hub" icon={<Calendar size={18}/>}>
-                <MetricCard label="Upcoming" value="42" trend="8%" isPositive type="published" />
-                <div className="mt-4 space-y-2">
-                  <RecentItem title="Global Tech Summit" subtitle="Feb 20 • Online" statusColor="bg-purple-500" />
-                  <RecentItem title="Member Mixer" subtitle="March 05 • NYC" statusColor="bg-amber-500" />
-                </div>
+                {loading ? (
+                  <div className="animate-pulse">
+                    <div className="h-16 bg-slate-100 rounded-lg"></div>
+                  </div>
+                ) : (
+                  <>
+                    <MetricCard 
+                      label="Upcoming Events" 
+                      value={upcomingEvents.toString()} 
+                      trend={`${events.length} total`} 
+                      isPositive 
+                      type="published" 
+                    />
+                    <div className="mt-4 space-y-2">
+                      {recentEvents.length > 0 ? (
+                        recentEvents.map((event) => (
+                          <RecentItem 
+                            key={event.id}
+                            title={event.title} 
+                            subtitle={`${new Date(event.date).toLocaleDateString()} • ${event.location}`} 
+                            statusColor={event.isFeatured ? "bg-purple-500" : "bg-amber-500"} 
+                          />
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No events yet</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </ManagementColumn>
 
-              <ManagementColumn title="Platform Alerts" icon={<Megaphone size={18}/>}>
-                <MetricCard label="Active" value="03" trend="System" isPositive type="published" />
+              <ManagementColumn title="CMS Status" icon={<Megaphone size={18}/>}>
+                <MetricCard 
+                  label="Connection" 
+                  value={loading ? "..." : error ? "Error" : "Active"} 
+                  trend={loading ? "Checking..." : error ? "Offline" : "Online"} 
+                  isPositive={!error} 
+                  type="published" 
+                />
                 <div className="mt-4 space-y-2">
-                  <RecentItem title="Maintenance Notice" subtitle="High Priority" statusColor="bg-rose-500" />
-                  <RecentItem title="New Feature: Dark Mode" subtitle="Global Alert" statusColor="bg-blue-500" />
+                  <RecentItem 
+                    title="Strapi CMS" 
+                    subtitle={error ? "Not Connected" : "Connected"} 
+                    statusColor={error ? "bg-rose-500" : "bg-emerald-500"} 
+                  />
+                  <RecentItem 
+                    title="API Endpoint" 
+                    subtitle="localhost:1337" 
+                    statusColor="bg-blue-500" 
+                  />
                 </div>
               </ManagementColumn>
             </div>
