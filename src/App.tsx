@@ -8,6 +8,7 @@ import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
 import MembershipPage from "./pages/MembershipPage";
 import EventsPage from "./pages/EventsPage";
+import EventRegistrationPage from "./pages/EventRegistrationPage";
 import NewsPage from "./pages/NewsPage";
 import ContactPage from "./pages/ContactPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -83,6 +84,7 @@ const App: React.FC = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/events" element={<EventsPage />} />
+          <Route path="/event-registration" element={<EventRegistrationPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/test-cms" element={<TestCMS />} />

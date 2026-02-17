@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import EventCard from "../common/EventCard";
 import { baseEvents } from "./eventsData";
 import { EventRegistrationForm } from "../../pages/eventRegistration";
 
 const UpcomingEvents = () => {
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const today = new Date();
   const upcomingEvents = baseEvents.filter(
@@ -16,7 +19,7 @@ const UpcomingEvents = () => {
   // Auto-scroll logic
   useEffect(() => {
     const interval = setInterval(() => {
-      if (scrollRef.current && !selectedEvent) { // Pause scroll if modal is open
+      if (scrollRef.current) {
         const cardWidth = scrollRef.current.offsetWidth;
         const nextIndex = (activeIndex + 1) % upcomingEvents.length;
         const scrollAmount =
@@ -28,7 +31,7 @@ const UpcomingEvents = () => {
     }, window.innerWidth < 768 ? 30000 : 60000);
 
     return () => clearInterval(interval);
-  }, [activeIndex, upcomingEvents.length, selectedEvent]);
+  }, [activeIndex, upcomingEvents.length]);
 
   // Track scroll position for dots
   useEffect(() => {
@@ -54,6 +57,15 @@ const UpcomingEvents = () => {
     if (scrollRef.current) scrollRef.current.scrollBy({ left: 280, behavior: "smooth" });
   };
 
+  const handleRegister = (event: any) => {
+    navigate('/event-registration', {
+      state: {
+        eventTitle: event.title,
+        eventId: event.id
+      }
+    });
+  };
+
   return (
     <section className="bg-white py-12 -mx-[50vw] px-[50vw] relative">
       <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
@@ -67,10 +79,11 @@ const UpcomingEvents = () => {
           </button>
 
           <div ref={scrollRef} className="flex overflow-x-auto snap-x snap-mandatory pb-4 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] flex-grow">
-            {upcomingEvents.map((event, index) => (
-              <div key={index} className="w-full snap-start flex-shrink-0 px-2 md:min-w-[250px] md:max-w-[360px]">
+            {upcomingEvents.map((event) => (
+              <div key={event.id} className="w-full snap-start flex-shrink-0 px-2 md:min-w-[250px] md:max-w-[360px]">
                 <EventCard
                   {...event}
+                  onRegister={() => handleRegister(event)}
                   onRegister={() => setSelectedEvent(event)}
                 />
               </div>
