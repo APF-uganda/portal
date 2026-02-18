@@ -23,7 +23,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Button } from "../../components/ui/button"
 import { useNotifications, useNotificationStats } from "../../hooks/useNotifications"
 import { useMemberDashboard } from "../../hooks/useMemberDashboard"
-import { mergeActivities } from "../../utils/activityTracker"
 
 const NotificationsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all')
@@ -37,11 +36,7 @@ const NotificationsPage: React.FC = () => {
   
   // Get activities from dashboard data
   const { data: dashboardData, loading: dashboardLoading } = useMemberDashboard()
-  const backendActivity = dashboardData?.recent_activity ?? []
-  
-  // Get all activities (no limit for full history)
-  const allActivities = mergeActivities(backendActivity)
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  const allActivities = dashboardData?.recent_activity ?? []
 
   // Helper function to get activity icon and color based on type
   const getActivityDisplay = (type: string) => {

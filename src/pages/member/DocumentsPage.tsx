@@ -8,7 +8,6 @@ import { Document } from "../../types/documents"
 import { DocumentCard } from "../../components/documents/DocumentCard"
 import { UploadArea } from "../../components/documents/UploadArea"
 import { toastMessages, showInfo } from "../../utils/toast-helpers"
-import { addLocalActivity } from "../../utils/activityTracker"
 import { refreshDashboard } from "../../utils/dashboardEvents"
 
 const DocumentsPage: React.FC = () => {
@@ -44,8 +43,6 @@ const DocumentsPage: React.FC = () => {
         const success = await replaceDocument(doc.id, target.files[0])
         if (success) {
           toastMessages.document.replaced(doc.name)
-          // Add to local activity for immediate UI feedback
-          addLocalActivity('document_upload', `Replaced document: ${doc.name} with ${target.files[0].name}`)
           // Refresh dashboard to update document info
           refreshDashboard()
         }
@@ -95,9 +92,6 @@ const DocumentsPage: React.FC = () => {
         setDocumentToRemove(null)
         toastMessages.document.deleted(documentToRemove.name)
         
-        // Add to local activity for immediate UI feedback
-        addLocalActivity('document_remove', `Deleted document: ${documentToRemove.name}`)
-        
         // Refresh dashboard to update document count
         refreshDashboard()
       } else {
@@ -124,8 +118,6 @@ const DocumentsPage: React.FC = () => {
     const success = await uploadDocument(file)
     if (success) {
       toastMessages.document.uploaded()
-      // Add to local activity for immediate UI feedback
-      addLocalActivity('document_upload', `Uploaded document: ${file.name}`)
       // Refresh dashboard to update document count
       refreshDashboard()
     }
