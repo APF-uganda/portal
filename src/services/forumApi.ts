@@ -7,6 +7,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { API_V1_BASE_URL } from '../config/api';
+import { getAccessToken } from '../utils/authStorage';
 import {
   ForumPost,
   ForumPostDetail,
@@ -70,7 +71,7 @@ const buildQueryString = (filters: Record<string, any>): string => {
  * Get authentication token from storage
  */
 const getAuthToken = (): string | null => {
-  return localStorage.getItem('access_token');
+  return getAccessToken();
 };
 
 /**

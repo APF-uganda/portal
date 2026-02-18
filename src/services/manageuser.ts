@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import { User } from '../components/manageusers-components/users';
+import { getAccessToken } from '../utils/authStorage';
 
 const getHeaders = () => ({
-  'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+  'Authorization': `Bearer ${getAccessToken()}`,
   'Content-Type': 'application/json'
 });
 

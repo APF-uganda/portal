@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import logoPurple from '../../assets/logo_purple.png'
 import whitelogo from '../../assets/whitelogo.png'
+import { isAuthenticated, getUser } from '../../utils/authStorage'
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -10,19 +11,9 @@ function Navbar() {
   const location = useLocation()
 
   // Check if user is logged in
-  const isLoggedIn = !!localStorage.getItem('access_token')
-  const userStr = localStorage.getItem('user')
-  let userRole = 'member'
-  
-  if (userStr) {
-    try {
-      const user = JSON.parse(userStr)
-      userRole = user.role === '1' || user.role === 1 ? 'admin' : 'member'
-    } catch (e) {
-      console.error('Failed to parse user data:', e)
-    }
-  }
-
+  const loggedIn = isAuthenticated()
+  const user = getUser()
+  const userRole = user && (user.role === '1' || user.role === 1) ? 'admin' : 'member'
   const dashboardPath = userRole === 'admin' ? '/admin/dashboard' : '/dashboard'
 
   useEffect(() => {
@@ -107,7 +98,7 @@ function Navbar() {
             </button>
           </Link>
 
-          {isLoggedIn ? (
+          {loggedIn ? (
             <Link to={dashboardPath}>
               <button className="bg-[#5F1C9F] rounded-full px-6 py-2 font-medium text-white shadow hover:-translate-y-0.5 transition-all">
                 My Dashboard
@@ -135,7 +126,7 @@ function Navbar() {
         </button>
       </nav>
 
-      {/* ================= MOBILE DRAWER ================= */}
+      {/* MOBILE DRAWER  */}
       {isMenuOpen && (
         <>
           {/* OVERLAY */}
@@ -178,7 +169,7 @@ function Navbar() {
                   </button>
                 </Link>
 
-                {isLoggedIn ? (
+                {loggedIn ? (
                   <Link to={dashboardPath} onClick={() => setIsMenuOpen(false)}>
                     <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow transition hover:-translate-y-0.5">
                       My Dashboard

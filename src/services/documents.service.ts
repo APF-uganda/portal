@@ -4,9 +4,10 @@
 
 import { API_V1_BASE_URL } from '../config/api'
 import { Document } from '../types/documents'
+import { getAccessToken } from '../utils/authStorage'
 
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token')
+  const token = getAccessToken()
   const headers: Record<string, string> = {}
   if (token) {
     headers['Authorization'] = `Bearer ${token}`

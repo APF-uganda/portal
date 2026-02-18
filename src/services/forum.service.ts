@@ -5,6 +5,7 @@
 import axios from 'axios'
 import { ForumPost, ForumCategory, ActiveUser, ForumStats } from '../types/forum'
 import { API_BASE_URL } from '../config/api'
+import { getAccessToken } from '../utils/authStorage';
 
 type ApiAuthor = {
   id: number
@@ -55,7 +56,7 @@ const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = getAccessToken()
   if (token) {
     config.headers = config.headers || {}
     config.headers.Authorization = `Bearer ${token}`
