@@ -78,9 +78,9 @@ function OtpPage() {
     setIsVerifying(true)
     setError('')
 
-try {
-  const response = await fetch(`${API_V1_BASE_URL}/auth/verify-otp/`, {
-    method: 'POST',
+    try {
+      const response = await fetch(`${API_V1_BASE_URL}/auth/verify-otp/`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
