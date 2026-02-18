@@ -6,6 +6,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from '../config/api';
+import { getAccessToken } from '../utils/authStorage';
 
 export interface MemberDashboardProfile {
   display_name: string;
@@ -51,7 +52,7 @@ export interface MemberDashboardResponse {
  * Get authentication headers with JWT token
  */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
