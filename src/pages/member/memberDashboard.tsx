@@ -28,15 +28,11 @@ import { Badge } from "../../components/ui/badge"
 import { useRecentTransactions } from "../../hooks/usePaymentHistory"
 import { useSpendingOverview } from "../../hooks/useSpending"
 import { useMemberDashboard } from "../../hooks/useMemberDashboard"
-import { useDocuments } from "../../hooks/useDocuments"
 import { mergeActivities } from "../../utils/activityTracker"
 import { dashboardEvents } from "../../utils/dashboardEvents"
 
 const MemberDashboard: React.FC = () => {
   const { data: dashboardData, loading: dashboardLoading, refetch: refetchDashboard } = useMemberDashboard();
-  
-  // Use the same documents hook as the Documents page for consistency
-  const { documents: documentsData, loading: documentsLoading } = useDocuments();
   
   // Subscribe to dashboard refresh events
   useEffect(() => {
@@ -54,9 +50,7 @@ const MemberDashboard: React.FC = () => {
   const { data: spendingData, loading: spendingLoading } = useSpendingOverview();
 
   const profile = dashboardData?.profile;
-  // Use documents from useDocuments hook instead of dashboard data
-  const allDocuments = [...(documentsData.system || []), ...(documentsData.user || [])];
-  const documents = allDocuments;
+  const documents = dashboardData?.documents ?? [];
   const backendActivity = dashboardData?.recent_activity ?? [];
   const notifications = dashboardData?.notifications ?? [];
 
@@ -308,7 +302,7 @@ const MemberDashboard: React.FC = () => {
               </Link>
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
-              {documentsLoading ? (
+              {dashboardLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
                 </div>
@@ -325,12 +319,7 @@ const MemberDashboard: React.FC = () => {
               ) : (
                 <div className="space-y-2 md:space-y-3">
                   {documents
-                    .filter((doc) => {
-                      const name = (doc.name || '').toLowerCase();
-                      const type = (doc.type || '').toLowerCase();
-                      return !name.includes('passport') && !type.includes('passport');
-                    })
-                    .sort((a, b) => new Date(b.uploadedDate).getTime() - new Date(a.uploadedDate).getTime())
+                    .sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())
                     .slice(0, 3)
                     .map((doc) => {
                     const IconComponent = getDocumentIcon(doc.name);
@@ -342,7 +331,7 @@ const MemberDashboard: React.FC = () => {
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs md:text-sm font-medium text-gray-900 truncate">{doc.name}</p>
-                            <p className="text-xs text-gray-500">Uploaded: {formatDate(doc.uploadedDate)}</p>
+                            <p className="text-xs text-gray-500">Uploaded: {formatDate(doc.uploaded_at)}</p>
                           </div>
                         </div>
                         <MoreVertical className="w-4 h-4 text-gray-400 cursor-pointer flex-shrink-0" />
