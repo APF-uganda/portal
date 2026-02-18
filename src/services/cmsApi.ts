@@ -1,16 +1,7 @@
 /**
- * CMS API Service
- * Handles all requests to Strapi CMS for public content
+ * CMS API Service - Placeholder for future CMS integration
+ * This file is reserved for frontend team to configure CMS integration
  */
-
-import { CMS_API_URL } from '../config/api';
-import {
-  adaptStrapiCollection,
-  adaptStrapiSingle,
-  extractMediaUrl,
-  extractRelation,
-  buildStrapiQuery,
-} from './strapiAdapter';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -202,518 +193,69 @@ export interface SiteSettings {
 }
 
 // ============================================================================
-// HELPER FUNCTIONS
+// API FUNCTIONS - Placeholder implementations
+// Frontend team will implement these with actual CMS integration
 // ============================================================================
 
-const transformEvent = (item: any): Event => {
-  return {
-    id: item.id,
-    title: item.title,
-    slug: item.slug,
-    description: item.description,
-    content: item.content,
-    date: item.date,
-    time: item.time,
-    location: item.location,
-    image: extractMediaUrl(item.image),
-    registrationLink: item.registrationLink,
-    cpdPoints: item.cpdPoints,
-    category: item.category,
-    isFeatured: item.isFeatured || false,
-    status: item.status,
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-    publishedAt: item.publishedAt,
-  };
-};
-
-const transformNewsArticle = (item: any): NewsArticle => {
-  const category = extractRelation(item.category);
-  return {
-    id: item.id,
-    title: item.title,
-    slug: item.slug,
-    summary: item.summary,
-    content: item.content,
-    featuredImage: extractMediaUrl(item.featuredImage),
-    category: category?.name || '',
-    author: item.author,
-    publishDate: item.publishDate,
-    readTime: item.readTime,
-    isTopPick: item.isTopPick || false,
-    isFeatured: item.isFeatured || false,
-    tags: item.tags?.map((tag: any) => tag.name) || [],
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-    publishedAt: item.publishedAt,
-  };
-};
-
-const transformLeadership = (item: any): Leadership => {
-  return {
-    id: item.id,
-    name: item.name,
-    role: item.role,
-    photo: extractMediaUrl(item.photo),
-    bio: item.bio,
-    email: item.email,
-    linkedIn: item.linkedIn,
-    order: item.order || 0,
-    isActive: item.isActive !== false,
-  };
-};
-
-const transformBenefit = (item: any): Benefit => {
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    image: extractMediaUrl(item.image),
-    icon: item.icon,
-    order: item.order || 0,
-    isActive: item.isActive !== false,
-  };
-};
-
-const transformFAQ = (item: any): FAQ => {
-  return {
-    id: item.id,
-    question: item.question,
-    answer: item.answer,
-    category: item.category,
-    order: item.order || 0,
-    isActive: item.isActive !== false,
-  };
-};
-
-const transformPartner = (item: any): Partner => {
-  return {
-    id: item.id,
-    name: item.name,
-    logo: extractMediaUrl(item.logo),
-    website: item.website,
-    description: item.description,
-    order: item.order || 0,
-    isActive: item.isActive !== false,
-  };
-};
-
-const transformTimelineEvent = (item: any): TimelineEvent => {
-  return {
-    id: item.id,
-    year: item.year,
-    title: item.title,
-    description: item.description,
-    image: extractMediaUrl(item.image),
-    order: item.order || 0,
-  };
-};
-
-// ============================================================================
-// API FUNCTIONS
-// ============================================================================
-
-/**
- * Fetch all events
- */
-export const getEvents = async (filters?: {
+export const getEvents = async (_filters?: {
   isFeatured?: boolean;
   status?: string;
 }): Promise<Event[]> => {
-  try {
-    const queryFilters: any = {};
-    if (filters?.isFeatured !== undefined) {
-      queryFilters['isFeatured[$eq]'] = filters.isFeatured;
-    }
-    if (filters?.status) {
-      queryFilters['status[$eq]'] = filters.status;
-    }
-
-    const query = buildStrapiQuery({
-      populate: '*',
-      filters: queryFilters,
-      sort: 'date:asc',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/events${query}`);
-    if (!response.ok) throw new Error('Failed to fetch events');
-    
-    const data = await response.json();
-    const events = adaptStrapiCollection(data);
-    return events.map(transformEvent);
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    return [];
-  }
+  return [];
 };
 
-/**
- * Fetch single event by slug
- */
-export const getEventBySlug = async (slug: string): Promise<Event | null> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: '*',
-      filters: { 'slug[$eq]': slug },
-    });
-
-    const response = await fetch(`${CMS_API_URL}/events${query}`);
-    if (!response.ok) throw new Error('Failed to fetch event');
-    
-    const data = await response.json();
-    const events = adaptStrapiCollection(data);
-    return events.length > 0 ? transformEvent(events[0]) : null;
-  } catch (error) {
-    console.error('Error fetching event:', error);
-    return null;
-  }
+export const getEventBySlug = async (_slug: string): Promise<Event | null> => {
+  return null;
 };
 
-/**
- * Fetch all news articles
- */
-export const getNewsArticles = async (filters?: {
+export const getNewsArticles = async (_filters?: {
   isFeatured?: boolean;
   isTopPick?: boolean;
   category?: string;
 }): Promise<NewsArticle[]> => {
-  try {
-    const queryFilters: any = {};
-    if (filters?.isFeatured !== undefined) {
-      queryFilters['isFeatured[$eq]'] = filters.isFeatured;
-    }
-    if (filters?.isTopPick !== undefined) {
-      queryFilters['isTopPick[$eq]'] = filters.isTopPick;
-    }
-    if (filters?.category) {
-      queryFilters['category][slug][$eq]'] = filters.category;
-    }
-
-    const query = buildStrapiQuery({
-      populate: ['featuredImage', 'category', 'tags'],
-      filters: queryFilters,
-      sort: 'publishDate:desc',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/news-articles${query}`);
-    if (!response.ok) throw new Error('Failed to fetch news articles');
-    
-    const data = await response.json();
-    const articles = adaptStrapiCollection(data);
-    return articles.map(transformNewsArticle);
-  } catch (error) {
-    console.error('Error fetching news articles:', error);
-    return [];
-  }
+  return [];
 };
 
-/**
- * Fetch single news article by slug
- */
-export const getNewsArticleBySlug = async (slug: string): Promise<NewsArticle | null> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: ['featuredImage', 'category', 'tags'],
-      filters: { 'slug[$eq]': slug },
-    });
-
-    const response = await fetch(`${CMS_API_URL}/news-articles${query}`);
-    if (!response.ok) throw new Error('Failed to fetch news article');
-    
-    const data = await response.json();
-    const articles = adaptStrapiCollection(data);
-    return articles.length > 0 ? transformNewsArticle(articles[0]) : null;
-  } catch (error) {
-    console.error('Error fetching news article:', error);
-    return null;
-  }
+export const getNewsArticleBySlug = async (_slug: string): Promise<NewsArticle | null> => {
+  return null;
 };
 
-/**
- * Fetch all leadership members
- */
 export const getLeadership = async (): Promise<Leadership[]> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: '*',
-      filters: { 'isActive[$eq]': true },
-      sort: 'order:asc',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/leaderships${query}`);
-    if (!response.ok) throw new Error('Failed to fetch leadership');
-    
-    const data = await response.json();
-    const leaders = adaptStrapiCollection(data);
-    return leaders.map(transformLeadership);
-  } catch (error) {
-    console.error('Error fetching leadership:', error);
-    return [];
-  }
+  return [];
 };
 
-/**
- * Fetch all benefits
- */
 export const getBenefits = async (): Promise<Benefit[]> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: '*',
-      filters: { 'isActive[$eq]': true },
-      sort: 'order:asc',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/benefits${query}`);
-    if (!response.ok) throw new Error('Failed to fetch benefits');
-    
-    const data = await response.json();
-    const benefits = adaptStrapiCollection(data);
-    return benefits.map(transformBenefit);
-  } catch (error) {
-    console.error('Error fetching benefits:', error);
-    return [];
-  }
+  return [];
 };
 
-/**
- * Fetch all FAQs
- */
-export const getFAQs = async (category?: string): Promise<FAQ[]> => {
-  try {
-    const queryFilters: any = { 'isActive[$eq]': true };
-    if (category) {
-      queryFilters['category[$eq]'] = category;
-    }
-
-    const query = buildStrapiQuery({
-      filters: queryFilters,
-      sort: 'order:asc',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/faqs${query}`);
-    if (!response.ok) throw new Error('Failed to fetch FAQs');
-    
-    const data = await response.json();
-    return adaptStrapiCollection<FAQ>(data).map(transformFAQ);
-  } catch (error) {
-    console.error('Error fetching FAQs:', error);
-    return [];
-  }
+export const getFAQs = async (_category?: string): Promise<FAQ[]> => {
+  return [];
 };
 
-/**
- * Fetch all partners
- */
 export const getPartners = async (): Promise<Partner[]> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: '*',
-      filters: { 'isActive[$eq]': true },
-      sort: 'order:asc',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/partners${query}`);
-    if (!response.ok) throw new Error('Failed to fetch partners');
-    
-    const data = await response.json();
-    const partners = adaptStrapiCollection(data);
-    return partners.map(transformPartner);
-  } catch (error) {
-    console.error('Error fetching partners:', error);
-    return [];
-  }
+  return [];
 };
 
-/**
- * Fetch all timeline events
- */
 export const getTimelineEvents = async (): Promise<TimelineEvent[]> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: '*',
-      sort: 'order:asc',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/timeline-events${query}`);
-    if (!response.ok) throw new Error('Failed to fetch timeline events');
-    
-    const data = await response.json();
-    const events = adaptStrapiCollection(data);
-    return events.map(transformTimelineEvent);
-  } catch (error) {
-    console.error('Error fetching timeline events:', error);
-    return [];
-  }
+  return [];
 };
 
-/**
- * Fetch homepage content
- */
 export const getHomepage = async (): Promise<Homepage | null> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: {
-        hero: { populate: '*' },
-        stats: { populate: '*' },
-        chairMessage: { populate: '*' },
-        connectingProfessionals: { populate: '*' },
-      },
-    });
-
-    const response = await fetch(`${CMS_API_URL}/homepage${query}`);
-    if (!response.ok) throw new Error('Failed to fetch homepage');
-    
-    const data = await response.json();
-    const homepage = adaptStrapiSingle<Homepage>(data);
-
-    
-    if (!homepage) return null;
-
-    // Transform nested components
-    return {
-      hero: {
-        ...homepage.hero,
-        backgroundImage: extractMediaUrl(homepage.hero?.backgroundImage),
-      },
-      stats: homepage.stats || [],
-      chairMessage: {
-        ...homepage.chairMessage,
-        photo: extractMediaUrl(homepage.chairMessage?.photo),
-      },
-      connectingProfessionals: homepage.connectingProfessionals ? {
-        ...homepage.connectingProfessionals,
-        image: extractMediaUrl(homepage.connectingProfessionals?.image),
-      } : undefined,
-    };
-  } catch (error) {
-    console.error('Error fetching homepage:', error);
-    return null;
-  }
+  return null;
 };
 
-/**
- * Fetch about page content
- */
 export const getAboutPage = async (): Promise<AboutPage | null> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: {
-        hero: { populate: '*' },
-        objectives: { populate: '*' },
-      },
-    });
-
-    const response = await fetch(`${CMS_API_URL}/about-page${query}`);
-    if (!response.ok) throw new Error('Failed to fetch about page');
-    
-    const data = await response.json();
-    const aboutPage = adaptStrapiSingle<AboutPage>(data);
-
-    
-    if (!aboutPage) return null;
-
-    return {
-      hero: {
-        ...aboutPage.hero,
-        backgroundImage: extractMediaUrl(aboutPage.hero?.backgroundImage),
-      },
-      history: aboutPage.history || '',
-      vision: aboutPage.vision || '',
-      mission: aboutPage.mission || '',
-      objectives: aboutPage.objectives || [],
-    };
-  } catch (error) {
-    console.error('Error fetching about page:', error);
-    return null;
-  }
+  return null;
 };
 
-/**
- * Fetch membership page content
- */
 export const getMembershipPage = async (): Promise<MembershipPage | null> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: {
-        hero: { populate: '*' },
-        processSteps: { populate: '*' },
-        callToAction: { populate: '*' },
-      },
-    });
-
-    const response = await fetch(`${CMS_API_URL}/membership-page${query}`);
-    if (!response.ok) throw new Error('Failed to fetch membership page');
-    
-    const data = await response.json();
-    const membershipPage = adaptStrapiSingle<MembershipPage>(data);
-
-    
-    if (!membershipPage) return null;
-
-    return {
-      hero: {
-        ...membershipPage.hero,
-        backgroundImage: extractMediaUrl(membershipPage.hero?.backgroundImage),
-      },
-      introText: membershipPage.introText,
-      processSteps: membershipPage.processSteps || [],
-      requirements: membershipPage.requirements,
-      callToAction: {
-        ...membershipPage.callToAction,
-        backgroundImage: extractMediaUrl(membershipPage.callToAction?.backgroundImage),
-      },
-    };
-  } catch (error) {
-    console.error('Error fetching membership page:', error);
-    return null;
-  }
+  return null;
 };
 
-/**
- * Fetch contact info
- */
 export const getContactInfo = async (): Promise<ContactInfo | null> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: '*',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/contact-info${query}`);
-    if (!response.ok) throw new Error('Failed to fetch contact info');
-    
-    const data = await response.json();
-    return adaptStrapiSingle<ContactInfo>(data);
-  } catch (error) {
-    console.error('Error fetching contact info:', error);
-    return null;
-  }
+  return null;
 };
 
-/**
- * Fetch site settings
- */
 export const getSiteSettings = async (): Promise<SiteSettings | null> => {
-  try {
-    const query = buildStrapiQuery({
-      populate: '*',
-    });
-
-    const response = await fetch(`${CMS_API_URL}/site-setting${query}`);
-    if (!response.ok) throw new Error('Failed to fetch site settings');
-    
-    const data = await response.json();
-    const settings = adaptStrapiSingle<SiteSettings>(data);
-
-    
-    if (!settings) return null;
-
-    return {
-      ...settings,
-      logo: extractMediaUrl(settings.logo),
-      favicon: extractMediaUrl(settings.favicon),
-    };
-  } catch (error) {
-    console.error('Error fetching site settings:', error);
-    return null;
-  }
+  return null;
 };
