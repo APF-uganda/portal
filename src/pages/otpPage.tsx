@@ -5,11 +5,10 @@ import loginImage from '../assets/images/Login-image/login.jpg'
 
 import { API_V1_BASE_URL } from '../config/api'
 import { fetchUserProfile } from '../services/profileApi'
-import { useToast } from '../hooks/useToast'
+import { saveAuth } from '../utils/authStorage'
 
 function OtpPage() {
   const navigate = useNavigate()
-  const { toast } = useToast()
   const [code, setCode] = useState<string[]>(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState('')
@@ -95,14 +94,12 @@ try {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Store tokens
-        localStorage.setItem('access_token', data.access)
-        localStorage.setItem('refresh_token', data.refresh)
-        localStorage.setItem('user', JSON.stringify(data.user))
+        // Store tokens using new auth storage
+        saveAuth(data.access, data.refresh, data.user);
 
         try {
           const profile = await fetchUserProfile()
-          localStorage.setItem('user_profile', JSON.stringify(profile))
+          sessionStorage.setItem('user_profile', JSON.stringify(profile))
         } catch (profileError) {
           console.error('Failed to preload user profile:', profileError)
         }

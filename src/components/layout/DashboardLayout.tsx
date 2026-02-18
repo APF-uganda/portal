@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom"
 
 import MemberSideNav from "../common/memberSideNav"
 import { useProfile } from "../../hooks/useProfile"
+import { clearAuth } from "../../utils/authStorage"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -62,9 +63,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   }, [isProfileDropdownOpen])
 
   const handleLogout = () => {
-    // Clear auth token
-    localStorage.removeItem('token')
-    localStorage.removeItem('refresh_token')
+    // Clear auth using new storage helper
+    clearAuth()
     // Redirect to login
     navigate('/login')
   }

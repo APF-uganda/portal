@@ -7,6 +7,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from '../config/api';
+import { getAccessToken } from '../utils/authStorage';
 
 /**
  * User profile interface - updated to match backend model
@@ -171,7 +172,7 @@ export interface ApiResponse<T = any> {
  * Get authentication headers with JWT token
  */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -187,7 +188,7 @@ function getAuthHeaders(): Record<string, string> {
  * Get multipart form headers with JWT token
  */
 function getMultipartHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   const headers: Record<string, string> = {};
   
   if (token) {

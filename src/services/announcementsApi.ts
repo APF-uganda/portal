@@ -1,4 +1,5 @@
 import { API_V1_BASE_URL } from '../config/api';
+import { getAccessToken } from '../utils/authStorage';
 
 export interface Announcement {
   id: number;
@@ -35,7 +36,7 @@ export interface AnnouncementStats {
 }
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),

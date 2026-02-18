@@ -4,6 +4,7 @@
  * Handles communication with the backend API for dashboard statistics and data.
  */
 
+import { getAccessToken } from '../utils/authStorage';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 
@@ -77,7 +78,7 @@ export interface DashboardStats {
  * Get authentication headers with JWT token
  */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
