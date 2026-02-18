@@ -28,7 +28,6 @@ import { Badge } from "../../components/ui/badge"
 import { useRecentTransactions } from "../../hooks/usePaymentHistory"
 import { useSpendingOverview } from "../../hooks/useSpending"
 import { useMemberDashboard } from "../../hooks/useMemberDashboard"
-import { mergeActivities } from "../../utils/activityTracker"
 import { dashboardEvents } from "../../utils/dashboardEvents"
 
 const MemberDashboard: React.FC = () => {
@@ -51,11 +50,8 @@ const MemberDashboard: React.FC = () => {
 
   const profile = dashboardData?.profile;
   const documents = dashboardData?.documents ?? [];
-  const backendActivity = dashboardData?.recent_activity ?? [];
+  const recentActivity = dashboardData?.recent_activity ?? [];
   const notifications = dashboardData?.notifications ?? [];
-
-  // Merge backend activities with local activities for immediate feedback
-  const recentActivity = mergeActivities(backendActivity);
 
   // Get display name from dashboard profile
   const displayName = profile?.display_name || 'Member';
@@ -122,7 +118,6 @@ const MemberDashboard: React.FC = () => {
   };
 
   const activities = recentActivity
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 3)
     .map((activity) => ({
       id: String(activity.id),
