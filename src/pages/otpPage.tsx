@@ -5,15 +5,18 @@ import loginImage from '../assets/images/Login-image/login.jpg'
 
 import { API_V1_BASE_URL } from '../config/api'
 import { fetchUserProfile } from '../services/profileApi'
+import { useToast } from '../hooks/useToast'
 
 function OtpPage() {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [code, setCode] = useState<string[]>(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState('')
   const [sessionId, setSessionId] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [email, setEmail] = useState('')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   useEffect(() => {
@@ -148,8 +151,8 @@ try {
         setCode(['', '', '', '', '', ''])
         inputRefs.current[0]?.focus()
         
-        // Show success message
-        alert('New OTP code has been sent to your email!')
+        // Show success modal
+        setShowSuccessModal(true)
       } else {
         setError(data.error?.message || 'Failed to resend OTP. Please try again.')
       }
@@ -240,6 +243,34 @@ try {
         </div>
 
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* Success Icon */}
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+
+            {/* Success Message */}
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Code Sent Successfully</h3>
+            <p className="text-gray-600 mb-8">
+              A new OTP code has been sent to your email. Please check your inbox.
+            </p>
+
+            {/* OK Button */}
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors duration-200"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
