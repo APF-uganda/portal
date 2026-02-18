@@ -51,7 +51,7 @@ function LoginPage() {
               otp_code: data.otp_code,
               user_name: data.user_name
             })
-            console.log('✅ OTP email sent via EmailJS')
+            console.log('OTP email sent via EmailJS')
           } catch (emailError) {
             console.error('⚠ Failed to send OTP email:', emailError)
             // Continue anyway - user can still see OTP in console

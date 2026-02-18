@@ -1,6 +1,11 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from './components/ui/toaster';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Toaster } from "./components/ui/toaster";
 // ... other imports ...
 
 /* Public pages */
@@ -18,7 +23,6 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import TestCMS from "./pages/TestCMS";
 
-
 /* Member dashboard */
 import MemberDashboard from "./pages/member/memberDashboard";
 import DocumentsPage from "./pages/member/DocumentsPage";
@@ -29,7 +33,7 @@ import MyPostsPage from "./pages/member/MyPostsPage";
 import PostDetailPage from "./pages/member/PostDetailPage";
 import NotificationsPage from "./pages/member/NotificationsPage";
 
-import PaymentHistoryPage from './pages/member/PaymentHistoryPage';
+import PaymentHistoryPage from "./pages/member/PaymentHistoryPage";
 import ProfilePage from "./pages/member/ProfilePage";
 
 /* Admin pages */
@@ -52,10 +56,13 @@ import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
 
 /* Simple auth guard */
-const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
+const ProtectedRoute: React.FC<{
+  children: JSX.Element;
+  role?: "admin" | "member";
+}> = ({ children, role }) => {
   const token = localStorage.getItem("access_token");
   const userStr = localStorage.getItem("user");
-  
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -63,13 +70,14 @@ const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member
   if (role && userStr) {
     try {
       const user = JSON.parse(userStr);
-      const userRole = user.role === '1' || user.role === 1 ? 'admin' : 'member';
-      
+      const userRole =
+        user.role === "1" || user.role === 1 ? "admin" : "member";
+
       if (userRole !== role) {
         return <Navigate to="/" replace />;
       }
     } catch (e) {
-      console.error('Failed to parse user data:', e);
+      console.error("Failed to parse user data:", e);
       return <Navigate to="/login" replace />;
     }
   }
@@ -87,22 +95,22 @@ const App: React.FC = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/events" element={<EventsPage />} />
-          <Route path="/event-registration" element={<EventRegistrationPage />} />
+          <Route
+            path="/event-registration"
+            element={<EventRegistrationPage />}
+          />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/test-cms" element={<TestCMS />} />
           <Route path="/cmspage" element={<CmsContentPage />} />
           <Route path="/communityforum" element={<CommunityForum />} />
           <Route path="/announcements" element={<CommunicationsDashboard />} />
-            <Route path="/newsMgt" element={<NewsManagement />} />
-            <Route path="/manageUsers" element={<ManageUsers />} />
-            <Route path="/eventMgt" element={<EventCreatePage />} />
+          <Route path="/newsMgt" element={<NewsManagement />} />
+          <Route path="/manageUsers" element={<ManageUsers />} />
+          <Route path="/eventMgt" element={<EventCreatePage />} />
             <Route path="/editMembership" element={<MembershipEditor />} />
             <Route path="/editAbout" element={<AboutPageEditor />} />
             <Route path="/editLandingpage" element={<HomePageEditor />} />
-
-
-
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
@@ -188,9 +196,9 @@ const App: React.FC = () => {
           <Route
             path="/notifications"
             element={
-             <ProtectedRoute role="member">
+              <ProtectedRoute role="member">
                 <NotificationsPage />
-             </ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
@@ -212,10 +220,6 @@ const App: React.FC = () => {
             }
           />
 
-
-
-
-
           <Route
             path="/admin/dashboard"
             element={
@@ -225,7 +229,7 @@ const App: React.FC = () => {
             }
           />
 
-<Route
+          <Route
             path="/admin/eventMgt"
             element={
               <ProtectedRoute role="admin">
@@ -243,12 +247,7 @@ const App: React.FC = () => {
             }
           />
 
-
-
-
-
-
-<Route
+          <Route
             path="/admin/cmsPage"
             element={
               <ProtectedRoute role="admin">
@@ -256,7 +255,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-<Route
+          <Route
             path="/admin/newsMgt"
             element={
               <ProtectedRoute role="admin">
@@ -265,8 +264,7 @@ const App: React.FC = () => {
             }
           />
 
-
-<Route
+          <Route
             path="/admin/manageusers"
             element={
               <ProtectedRoute role="admin">
@@ -275,8 +273,7 @@ const App: React.FC = () => {
             }
           />
 
-
-<Route
+          <Route
             path="/admin/payments"
             element={
               <ProtectedRoute role="admin">
@@ -285,8 +282,7 @@ const App: React.FC = () => {
             }
           />
 
-
-<Route
+          <Route
             path="/admin/communityForum"
             element={
               <ProtectedRoute role="admin">
@@ -304,8 +300,6 @@ const App: React.FC = () => {
             }
           />
 
-
-
           <Route
             path="/admin/reports"
             element={
@@ -314,17 +308,6 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-
-
-
-
-
-
-
-
-
-
-
 
           <Route
             path="/admin/profile"
@@ -335,8 +318,7 @@ const App: React.FC = () => {
             }
           />
 
-
-<Route
+          <Route
             path="/admin/announcements"
             element={
               <ProtectedRoute role="admin">
@@ -362,8 +344,6 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-
-
 
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
