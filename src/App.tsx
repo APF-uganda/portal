@@ -49,6 +49,7 @@ import EventCreatePage from "./pages/admin/eventMgt";
 import ManagePayments from "./pages/admin/payments";
 import MembershipEditor from './components/admincms/editMembership';
 import AboutPageEditor from './components/admincms/editAbout';
+import HomePageEditor from './components/admincms/editLandingpage';
 
 /* Simple auth guard */
 const ProtectedRoute: React.FC<{ children: JSX.Element; role?: "admin" | "member" }> = ({ children, role }) => {
@@ -98,6 +99,7 @@ const App: React.FC = () => {
             <Route path="/eventMgt" element={<EventCreatePage />} />
             <Route path="/editMembership" element={<MembershipEditor />} />
             <Route path="/editAbout" element={<AboutPageEditor />} />
+            <Route path="/editLandingpage" element={<HomePageEditor />} />
 
 
 

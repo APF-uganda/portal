@@ -114,7 +114,7 @@ const CmsContentPage = () => {
                   title="Landing Page" 
                   icon={<Layout size={22}/>} 
                   desc="Main entrance, Hero banners, and Value propositions" 
-                  onClick={() => navigate('/admin/edit-page/home')} 
+                  onClick={() => navigate('/editLandingpage')} 
                 />
                 <PageCard 
                   title="Membership" 
