@@ -109,7 +109,7 @@ const App: React.FC = () => {
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/otp" element={<OtpPage />} />
+          {/* <Route path="/otp" element={<OtpPage />} /> */}
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
 
