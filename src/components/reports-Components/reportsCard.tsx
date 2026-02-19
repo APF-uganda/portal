@@ -43,17 +43,28 @@ const ReportsCard: React.FC<ReportCardProps> = ({
     return <BarChart3 className="w-5 h-5" />;
   };
 
+ 
   const getChartData = (): number[] => {
+    
     if (template?.chart_configs?.preview_data) {
       return template.chart_configs.preview_data as number[];
     }
     
-    // Fixed: Explicitly typed 'item' to prevent error
-    if (template?.report_type === 'membership' && analytics?.membership?.monthly_growth) {
-      return analytics.membership.monthly_growth
-        .slice(-6)
-        .map((item: { count: number }) => item.count);
+    
+    if (template?.report_type === 'membership' && analytics?.membership?.growth?.data) {
+      const growthData = analytics.membership.growth.data;
+      
+     
+      return growthData.length > 0 
+        ? growthData.slice(-6) 
+        : [0, 0, 0, 0, 0, 0];
     }
+
+   
+    if (template?.report_type === 'applications' && analytics?.applications?.status_breakdown?.data) {
+        return analytics.applications.status_breakdown.data;
+    }
+    
     
     return [30, 45, 35, 60, 40, 50]; 
   };
@@ -73,7 +84,7 @@ const ReportsCard: React.FC<ReportCardProps> = ({
       );
 
       setJustFinished(true);
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(); // Refreshes the "Recently Generated" list
       
       setTimeout(() => setJustFinished(false), 3000);
     } catch (error) {
@@ -96,7 +107,7 @@ const ReportsCard: React.FC<ReportCardProps> = ({
               {title}
             </h3>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-              {template?.output_format || 'PDF'} • {date}
+              {template?.output_format?.toUpperCase() || 'PDF'} • {date}
             </span>
           </div>
         </div>
@@ -106,7 +117,7 @@ const ReportsCard: React.FC<ReportCardProps> = ({
         {description}
       </p>
 
-      {/* Mini Visualizer (Chart) - Fixed: Explicitly typed 'val' */}
+      {/* Mini Chart Visualization */}
       <div className="flex items-end gap-1.5 h-14 mb-6 px-1">
         {chartData.map((val: number, i: number) => (
           <div 

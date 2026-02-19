@@ -18,16 +18,31 @@ import { useReportTemplates } from "../../hooks/useReportTemplates";
 
 const ReportsAnalytics = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const { analytics } = useAnalytics();
+  const [refreshTrigger, setRefreshTrigger] = useState(0); 
+
+  // We pass '30d' as the default period to the hook
+  const { analytics, loading: analyticsLoading } = useAnalytics('30d');
   const { templates, loading: templatesLoading, error: templatesError } = useReportTemplates();
 
-  // Generate current date for reports
+  const handleRefreshReports = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   const getCurrentDate = () => {
     return new Date().toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
       day: 'numeric' 
     });
+  };
+
+  // specific counts from chart data arrays
+  const getCountFromChart = (chartData: { labels: string[], data: number[] }, targetLabel: string) => {
+    if (!chartData || !chartData.labels) return 0;
+    const index = chartData.labels.findIndex(
+      label => label.toLowerCase() === targetLabel.toLowerCase()
+    );
+    return index !== -1 ? chartData.data[index] : 0;
   };
 
   return (
@@ -46,8 +61,9 @@ const ReportsAnalytics = () => {
             </div>
 
             {/* Analytics Overview Cards */}
-            {analytics && (
+            {!analyticsLoading && analytics && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Total Members */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
@@ -62,6 +78,7 @@ const ReportsAnalytics = () => {
                   </div>
                 </div>
 
+                {/* Total Applications */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
@@ -76,11 +93,14 @@ const ReportsAnalytics = () => {
                   </div>
                 </div>
 
+                {/* Pending Applications  */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Pending Applications</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.applications.status_breakdown.pending}</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {getCountFromChart(analytics.applications.status_breakdown, 'Pending')}
+                      </p>
                     </div>
                     <div className="p-3 bg-yellow-100 rounded-full">
                       <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,11 +110,14 @@ const ReportsAnalytics = () => {
                   </div>
                 </div>
 
+                {/* Active Users  */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Active Users (30d)</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.system.active_users_30d || analytics.system.active_users_period || 0}</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {analytics.system.active_users_30d || 0}
+                      </p>
                     </div>
                     <div className="p-3 bg-purple-100 rounded-full">
                       <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +141,7 @@ const ReportsAnalytics = () => {
 
             {/* Available Reports Section */}
             <div>
-              <h2 className="text-xl font-bold text-slate-800 mb-6">Available Reports</h2>
+              <h2 className="text-xl font-bold text-slate-800 mb-6">Available Templates</h2>
               
               {templatesLoading ? (
                 <div className="flex items-center justify-center py-12">
@@ -130,9 +153,9 @@ const ReportsAnalytics = () => {
                   <p className="text-sm text-red-500">{templatesError}</p>
                 </div>
               ) : templates.length === 0 ? (
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                  <p className="text-gray-600 font-medium">No report templates available</p>
-                  <p className="text-sm text-gray-500 mt-2">Report templates will appear here once they are created.</p>
+                <div className="bg-white/50 border border-dashed border-slate-300 rounded-xl p-8 text-center">
+                  <p className="text-slate-600 font-medium">No templates found</p>
+                  <p className="text-sm text-slate-400 mt-2">Use the generator below to create your first report template.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
@@ -141,14 +164,18 @@ const ReportsAnalytics = () => {
                       key={template.id}
                       template={template}
                       date={getCurrentDate()}
+                      onSuccess={handleRefreshReports}
                     />
                   ))}
                 </div>
               )}
             </div>
 
-            <CustomGenerator />
-            <RecentReports />
+            {/* Generator Section */}
+            <CustomGenerator onSuccess={handleRefreshReports} />
+
+            {/* Recent Reports List Section */}
+            <RecentReports refreshTrigger={refreshTrigger} />
           </div>
         </div>
         
