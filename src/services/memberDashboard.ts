@@ -68,9 +68,9 @@ function handleApiError(error: unknown): never {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError;
     if (axiosError.response?.status === 401) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      // Clear auth using new auth storage
+      const { clearAuth } = require('../utils/authStorage');
+      clearAuth();
       window.location.href = '/login';
     }
     console.error('Member dashboard API error:', axiosError.response?.data || axiosError.message);

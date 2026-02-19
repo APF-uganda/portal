@@ -6,7 +6,8 @@ import {
   AlertTriangle,
   Eye,
   Upload,
-  Download
+  Download,
+  Trash2
 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
@@ -17,13 +18,15 @@ interface DocumentCardProps {
   onView?: (doc: Document) => void
   onReupload?: (doc: Document) => void
   onDownload?: (doc: Document) => void
+  onRemove?: (doc: Document) => void
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({ 
   document, 
   onView, 
   onReupload,
-  onDownload
+  onDownload,
+  onRemove
 }) => {
   const expired = isExpired(document.expiryDate)
   const status = expired ? 'expired' : document.status
@@ -55,8 +58,10 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   const config = statusConfig[status as keyof typeof statusConfig]
   const StatusIcon = config.icon
 
-  // Show re-upload button for expired or rejected documents
+  // Conditional actions based on status
   const showReupload = expired || document.status === 'rejected'
+  const showRemove = (document.status === 'pending' || document.status === 'rejected') && !expired
+  const canDelete = document.status !== 'approved' || expired
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-purple-300 hover:shadow-md transition-all h-full flex flex-col">
@@ -134,7 +139,19 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             className="flex-1 bg-purple-600 hover:bg-purple-700 flex items-center justify-center gap-2"
           >
             <Upload className="w-4 h-4" />
-            Re-upload
+            Replace
+          </Button>
+        )}
+        
+        {showRemove && onRemove && canDelete && (
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => onRemove(document)}
+            className="flex-1 flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          >
+            <Trash2 className="w-4 h-4" />
+            Remove
           </Button>
         )}
       </div>

@@ -5,7 +5,7 @@
  * handling phone number input, payment initiation, status polling, and
  * user feedback throughout the payment lifecycle.
  * 
- * Requirements: 3.2, 8.1, 8.6
+ * 
  */
 
 import { useState, useEffect } from 'react';
@@ -69,10 +69,10 @@ function PaymentModal({
   });
 
   // Payment status polling (Requirements: 3.8, 3.9, 3.10, 3.11, 4.3)
-  const { isPolling, pollCount, elapsedSeconds, stopPolling } = usePaymentPolling({
+  const { isPolling, pollCount, elapsedSeconds } = usePaymentPolling({
     paymentId: state.paymentId,
     enabled: state.paymentStatus === 'pending',
-    onStatusChange: (status, message) => {
+    onStatusChange: (status) => {
       setState((prev) => ({
         ...prev,
         paymentStatus: status,
@@ -141,13 +141,28 @@ function PaymentModal({
 
   /**
    * Handle modal close with state-dependent behavior
-   * Requirements: 8.7, 8.8, 8.9
+   * Requirements: 8.7, 8.8, 8.9, 8.10, 8.11
    */
   const handleClose = () => {
     // Close immediately when in idle state (Requirement 8.7)
     if (state.paymentStatus === 'idle') {
       resetState();
       onClose();
+      return;
+    }
+
+    // Delay close for 2 seconds after successful payment (Requirement 8.10)
+    if (state.paymentStatus === 'completed') {
+      // Call onPaymentSuccess callback before closing (Requirement 8.11)
+      if (state.transactionReference) {
+        onPaymentSuccess(state.transactionReference);
+      }
+      
+      // Delay close for 2 seconds
+      setTimeout(() => {
+        resetState();
+        onClose();
+      }, 2000);
       return;
     }
 
@@ -174,7 +189,7 @@ function PaymentModal({
       return;
     }
 
-    // For other states (completed, failed, timeout), close normally
+    // For other states (failed, timeout), close normally
     resetState();
     onClose();
   };
@@ -313,6 +328,59 @@ function PaymentModal({
     }
   };
 
+  /**
+   * Handle payment retry
+   * Requirements: 6.9, 12.2, 12.3
+   */
+  const handleRetry = async () => {
+    if (state.paymentId) {
+      // Try to retry with existing payment ID (Requirement 12.2)
+      setState({
+        ...state,
+        isProcessing: true,
+        errorMessage: null,
+      });
+
+      try {
+        const response = await paymentService.retryPayment(state.paymentId);
+
+        if (response.success && response.new_payment_id) {
+          // Start new polling cycle with new paymentId (Requirement 12.3)
+          setState({
+            ...state,
+            isProcessing: true,
+            paymentStatus: 'pending',
+            paymentId: response.new_payment_id,
+            transactionReference: response.transaction_reference || null,
+            errorMessage: null,
+          });
+        } else {
+          setState({
+            ...state,
+            isProcessing: false,
+            errorMessage: response.message || 'Retry failed. Please try again.',
+          });
+        }
+      } catch (error: any) {
+        setState({
+          ...state,
+          isProcessing: false,
+          errorMessage: error.message || 'Retry failed. Please try again.',
+        });
+      }
+    } else {
+      // Reset state to allow phone number modification (Requirement 12.3)
+      setState({
+        ...state,
+        paymentStatus: 'idle',
+        isProcessing: false,
+        errorMessage: null,
+        paymentId: null,
+        transactionReference: null,
+      });
+    }
+  };
+
   // Don't render if not open
   if (!isOpen) return null;
 
@@ -409,6 +477,18 @@ function PaymentModal({
                 {state.validationError}
               </p>
             )}
+            
+            {/* User instruction text (Requirement 9.1) */}
+            {!state.validationError && state.paymentStatus === 'idle' && (
+              <div className="mt-3 text-sm text-gray-700 bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                <p className="flex items-start">
+                  <svg className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Enter your phone number. You will receive a payment prompt on your phone.</span>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Processing status with loading spinner (Requirements 3.7, 9.2, 9.3, 13.1) */}
@@ -417,22 +497,25 @@ function PaymentModal({
               <div className="flex items-center justify-center mb-3">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
               </div>
+              
+              {/* User instruction text (Requirements 9.2, 9.3) */}
               <p className="text-sm text-center text-gray-700 mb-2">
                 Please check your phone for the payment prompt.
               </p>
-              <p className="text-xs text-center text-gray-600 mb-2">
+              <p className="text-sm text-center text-gray-600 mb-2">
                 This may take up to 5 minutes.
               </p>
+              
               {/* Display elapsed time during polling (Requirement 4.3) */}
               {isPolling && (
-                <p className="text-xs text-center text-gray-500">
+                <p className="text-sm text-center text-gray-500">
                   Elapsed time: {elapsedSeconds}s
                 </p>
               )}
             </div>
           )}
 
-          {/* Success state (Requirement 3.9) */}
+          {/* Success state (Requirements 3.9, 9.4) */}
           {state.paymentStatus === 'completed' && (
             <div className="mb-6 p-4 bg-green-50 rounded-lg">
               <div className="flex justify-center mb-3">
@@ -452,41 +535,62 @@ function PaymentModal({
                   </svg>
                 </div>
               </div>
+              
+              {/* User instruction text (Requirement 9.4) */}
               <p className="text-sm text-center text-gray-700 font-semibold mb-2">
                 Your payment has been processed successfully.
               </p>
+              
               {state.transactionReference && (
-                <p className="text-xs text-center text-gray-600">
+                <p className="text-sm text-center text-gray-600">
                   Transaction Reference: {state.transactionReference}
                 </p>
               )}
             </div>
           )}
 
-          {/* Error message display (Requirements 3.10, 3.11) */}
+          {/* Error message display (Requirements 3.10, 3.11, 9.6) */}
           {state.errorMessage && (state.paymentStatus === 'failed' || state.paymentStatus === 'timeout') && (
             <div className="mb-6 p-4 bg-red-50 rounded-lg">
-              <p className="text-sm text-red-600 mb-3">{state.errorMessage}</p>
-              {/* Retry button will be added in next task */}
+              <p className="text-sm text-red-600 mb-2">{state.errorMessage}</p>
+              
+              {/* User instruction text for timeout (Requirement 9.6) */}
+              {state.paymentStatus === 'timeout' && (
+                <p className="text-sm text-gray-700 mb-3">
+                  Please check your phone and try again.
+                </p>
+              )}
+              
+              {/* Retry button (Requirements 6.9, 12.2, 12.3) */}
+              <button
+                onClick={handleRetry}
+                disabled={state.isProcessing}
+                className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition"
+                style={{ minHeight: '44px' }}
+              >
+                Try Again
+              </button>
             </div>
           )}
 
           {/* Pay Now button (Requirements 8.5, 14.3) */}
-          <button
-            onClick={handlePayNow}
-            disabled={!isPayNowEnabled()}
-            className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition touch-manipulation flex items-center justify-center"
-            style={{ minHeight: '44px' }} // Minimum touch target size (Requirement 14.3)
-          >
-            {state.isProcessing && state.paymentStatus === 'idle' ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Processing...
-              </>
-            ) : (
-              'Pay Now'
-            )}
-          </button>
+          {state.paymentStatus === 'idle' && (
+            <button
+              onClick={handlePayNow}
+              disabled={!isPayNowEnabled() || state.isProcessing}
+              className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition touch-manipulation flex items-center justify-center"
+              style={{ minHeight: '44px' }} // Minimum touch target size (Requirement 14.3)
+            >
+              {state.isProcessing ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Initiating...
+                </>
+              ) : (
+                'Pay Now'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

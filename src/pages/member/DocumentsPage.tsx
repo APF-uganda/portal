@@ -1,5 +1,5 @@
-import React from "react"
-import { Calendar, ShieldCheck, FileText, Upload } from "lucide-react"
+import React, { useState } from "react"
+import { Calendar, ShieldCheck, FileText, Upload, AlertTriangle } from "lucide-react"
 
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
@@ -8,9 +8,13 @@ import { Document } from "../../types/documents"
 import { DocumentCard } from "../../components/documents/DocumentCard"
 import { UploadArea } from "../../components/documents/UploadArea"
 import { toastMessages, showInfo } from "../../utils/toast-helpers"
+import { refreshDashboard } from "../../utils/dashboardEvents"
 
 const DocumentsPage: React.FC = () => {
-  const { documents, loading, uploadDocument, replaceDocument, downloadDocument } = useDocuments()
+  const { documents, loading, uploadDocument, replaceDocument, downloadDocument, removeDocument } = useDocuments()
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [documentToRemove, setDocumentToRemove] = useState<Document | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleViewDocument = (doc: Document) => {
     if (!doc.fileUrl) {
@@ -39,10 +43,73 @@ const DocumentsPage: React.FC = () => {
         const success = await replaceDocument(doc.id, target.files[0])
         if (success) {
           toastMessages.document.replaced(doc.name)
+          // Refresh dashboard to update document info
+          refreshDashboard()
         }
       }
     }
     input.click()
+  }
+
+  const handleRemoveDocument = async (doc: Document) => {
+    // Check if document can be deleted
+    const canDelete = doc.status === 'pending' || doc.status === 'rejected'
+    
+    if (!canDelete) {
+      showInfo('Approved documents cannot be deleted.', 'Not Allowed')
+      return
+    }
+    
+    setDocumentToRemove(doc)
+    setShowConfirmModal(true)
+  }
+
+  const confirmRemoveDocument = async () => {
+    if (!documentToRemove) return
+    
+    // Double-check status before deletion
+    const canDelete = documentToRemove.status === 'pending' || documentToRemove.status === 'rejected'
+    
+    if (!canDelete) {
+      showInfo('Approved documents cannot be deleted.', 'Not Allowed')
+      setShowConfirmModal(false)
+      setDocumentToRemove(null)
+      return
+    }
+    
+    console.log('[DocumentsPage] Confirming removal of:', documentToRemove.id, documentToRemove.name);
+    
+    setIsDeleting(true)
+    
+    try {
+      const success = await removeDocument(documentToRemove.id)
+      
+      console.log('[DocumentsPage] Removal success:', success);
+      
+      if (success) {
+        // Close modal automatically on success
+        setShowConfirmModal(false)
+        setDocumentToRemove(null)
+        toastMessages.document.deleted(documentToRemove.name)
+        
+        // Refresh dashboard to update document count
+        refreshDashboard()
+      } else {
+        // Keep modal open on error
+        showInfo('Failed to remove document. Please try again.', 'Remove Error')
+      }
+    } catch (error) {
+      console.error('[DocumentsPage] Remove error:', error)
+      showInfo('Failed to remove document. Please try again.', 'Remove Error')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const cancelRemoveDocument = () => {
+    if (isDeleting) return // Prevent closing while deleting
+    setShowConfirmModal(false)
+    setDocumentToRemove(null)
   }
 
   const handleUploadNewDocument = async (
@@ -51,6 +118,8 @@ const DocumentsPage: React.FC = () => {
     const success = await uploadDocument(file)
     if (success) {
       toastMessages.document.uploaded()
+      // Refresh dashboard to update document count
+      refreshDashboard()
     }
     return success
   }
@@ -123,6 +192,7 @@ const DocumentsPage: React.FC = () => {
                   onView={handleViewDocument}
                   onDownload={handleDownloadDocument}
                   onReupload={doc.status === 'rejected' ? handleReuploadDocument : undefined}
+                  onRemove={handleRemoveDocument}
                 />
               ))}
             </div>
@@ -156,11 +226,61 @@ const DocumentsPage: React.FC = () => {
                 onView={handleViewDocument}
                 onDownload={handleDownloadDocument}
                 onReupload={handleReuploadDocument}
+                onRemove={handleRemoveDocument}
               />
             ))}
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && documentToRemove && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            {/* Warning Icon */}
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-purple-600" />
+            </div>
+
+            {/* Confirmation Message */}
+            <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">Remove Document?</h3>
+            <p className="text-gray-600 text-center mb-2">
+              Are you sure you want to remove
+            </p>
+            <p className="text-gray-900 font-semibold text-center mb-4">
+              "{documentToRemove.name}"
+            </p>
+            <p className="text-sm text-gray-500 text-center mb-8">
+              This action cannot be undone.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={cancelRemoveDocument}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRemoveDocument}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  'Remove'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   )
 }
