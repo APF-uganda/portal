@@ -30,7 +30,8 @@ export function getCurrentUser(): User | null {
  */
 export function isAdmin(): boolean {
   const user = getCurrentUser();
-  return user?.role === '1' || user?.role === 1;
+  if (!user || !user.role) return false;
+  return user.role === '1';
 }
 
 /**
