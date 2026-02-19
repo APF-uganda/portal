@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   FileText, CheckCircle, Edit3, Clock, 
-  Search, Plus, Download, Trash2, Image as ImageIcon 
+  Search, Plus, ArrowLeft, Trash2, Image as ImageIcon 
 } from 'lucide-react';
 
 import Sidebar from "../../components/common/adminSideNav";
@@ -13,6 +13,7 @@ import { StatCard } from '../../components/createcms-components/statCard';
 import { StatusBadge } from '../../components/createcms-components/status';
 import { ArticleForm } from '../../components/createcms-components/article';
 import { requireAdmin } from '../../utils/auth';
+import { useNavigate } from 'react-router-dom';
 
 const INITIAL_DATA: NewsArticle[] = [
   { 
@@ -35,6 +36,7 @@ const NewsManagement = () => {
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | undefined>();
   const [filter, setFilter] = useState<ArticleStatus | 'All'>('All');
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     requireAdmin();
@@ -68,9 +70,18 @@ const NewsManagement = () => {
 
       <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
         <Header title="News Management" />
+        
 
         <div className="flex-1 bg-[#F4F2FE] p-8">
           <div className="max-w-[1400px] mx-auto space-y-8">
+            
+            {/* Back Button Fix */}
+            <button 
+              onClick={() => navigate(-1)} 
+              className="flex items-center gap-2 text-slate-500 hover:text-[#5C32A3] font-bold text-xs uppercase tracking-widest transition-colors mb-2"
+            >
+              <ArrowLeft size={16} /> Back to Portal
+            </button>
             
             {isEditing ? (
               <ArticleForm initialData={selectedArticle} onSave={handleSave} onCancel={() => setIsEditing(false)} />
@@ -78,18 +89,16 @@ const NewsManagement = () => {
               <>
                 <div className="flex justify-between items-center">
                   <div>
-                    <h1 className="text-[26px] font-bold tracking-tight text-[#5C32A3]">Newsroom Manager</h1>
-                    <p className="text-slate-500 mt-1">Design rich multimedia stories for your platform community.</p>
+                    <h1 className="text-[26px] font-bold tracking-tight text-[#5C32A3]">Manage News</h1>
+                    <p className="text-slate-500 mt-1">Create News for your platform community.</p>
                   </div>
                   <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition text-sm font-bold">
-                      <Download size={18} /> Export CSV
-                    </button>
+                    
                     <button 
                       onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
                       className="flex items-center gap-2 px-6 py-2.5 bg-purple-700 text-white rounded-xl hover:bg-purple-800 transition text-sm font-black shadow-lg shadow-purple-200"
                     >
-                      <Plus size={18} /> Create New Story
+                      <Plus size={18} /> Create News
                     </button>
                   </div>
                 </div>
@@ -120,9 +129,9 @@ const NewsManagement = () => {
                       <table className="w-full">
                         <thead className="bg-gray-50/30 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
                           <tr>
-                            <th className="px-8 py-5">Article Overview</th>
+                            <th className="px-8 py-5 text-left">Article Overview</th>
                             <th className="px-8 py-5 text-center">Engagement</th>
-                            <th className="px-8 py-5">Status</th>
+                            <th className="px-8 py-5 text-left">Status</th>
                             <th className="px-8 py-5 text-right">Actions</th>
                           </tr>
                         </thead>
@@ -131,7 +140,7 @@ const NewsManagement = () => {
                             <tr key={article.id} className="hover:bg-gray-50/40 transition group">
                               <td className="px-8 py-5">
                                 <div className="flex items-center gap-5">
-                                  <div className="w-16 h-12 rounded-xl bg-gray-100 border overflow-hidden shadow-inner">
+                                  <div className="w-16 h-12 rounded-xl bg-gray-100 border overflow-hidden shadow-inner flex-shrink-0">
                                     {article.featuredImage ? <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={16} className="text-gray-200"/></div>}
                                   </div>
                                   <div>

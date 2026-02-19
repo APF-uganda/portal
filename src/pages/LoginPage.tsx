@@ -6,6 +6,7 @@ import apfLogo from '../assets/whitelogo.png'
 import loginImage from '../assets/images/Login-image/login.jpg'
 
 import { API_V1_BASE_URL } from '../config/api'
+import { saveAuth } from '../utils/authStorage'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -37,7 +38,26 @@ function LoginPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Store session_id and remember_me for OTP page
+        // Check if OTP was bypassed (test users)
+        if (data.otp_bypassed) {
+          // Direct login - store tokens using authStorage
+          saveAuth(data.access, data.refresh, data.user)
+          
+          console.log('✅ Login successful (OTP bypassed for test user)')
+          console.log('User role:', data.user.role)
+          console.log('Auth saved to sessionStorage')
+          
+          // Navigate to appropriate dashboard based on role
+          const dashboardRoute = (data.user.role === "1" || data.user.role === 1) 
+            ? '/admin/dashboard' 
+            : '/dashboard'
+          
+          console.log('Navigating to:', dashboardRoute)
+          navigate(dashboardRoute)
+          return
+        }
+
+        // Regular flow - store session info for OTP verification
         sessionStorage.setItem('otp_session_id', data.session_id)
         sessionStorage.setItem('remember_me', rememberMe.toString())
         sessionStorage.setItem('login_email', email)

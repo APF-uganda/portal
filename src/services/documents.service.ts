@@ -4,9 +4,10 @@
 
 import { API_V1_BASE_URL } from '../config/api'
 import { Document } from '../types/documents'
+import { getAccessToken } from '../utils/authStorage'
 
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token')
+  const token = getAccessToken()
   const headers: Record<string, string> = {}
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
@@ -87,12 +88,41 @@ export const replaceDocument = async (_documentId: string, _file: File): Promise
  * @returns Promise with deletion result
  */
 export const deleteDocument = async (_documentId: string): Promise<boolean> => {
-  const response = await fetch(`${API_V1_BASE_URL}/documents/${_documentId}/`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  })
+  console.log('[Documents] Attempting to delete document:', _documentId);
+  
+  try {
+    const response = await fetch(`${API_V1_BASE_URL}/documents/${_documentId}/`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    })
 
-  return response.ok
+    console.log('[Documents] Delete response status:', response.status);
+    
+    // 204 No Content is the success response for DELETE
+    if (response.status === 204) {
+      console.log('[Documents] Document deleted successfully (204)');
+      return true;
+    }
+    
+    // Some APIs return 200 with empty body
+    if (response.status === 200) {
+      console.log('[Documents] Document deleted successfully (200)');
+      return true;
+    }
+    
+    // Try to parse error response
+    try {
+      const errorData = await response.json();
+      console.error('[Documents] Delete failed:', errorData);
+    } catch {
+      console.error('[Documents] Delete failed with status:', response.status);
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('[Documents] Delete error:', error);
+    return false;
+  }
 }
 
 /**

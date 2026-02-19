@@ -6,6 +6,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from '../config/api';
+import { getAccessToken } from '../utils/authStorage';
 
 export interface MemberDashboardProfile {
   display_name: string;
@@ -51,7 +52,7 @@ export interface MemberDashboardResponse {
  * Get authentication headers with JWT token
  */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -67,9 +68,9 @@ function handleApiError(error: unknown): never {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError;
     if (axiosError.response?.status === 401) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      // Clear auth using new auth storage
+      const { clearAuth } = require('../utils/authStorage');
+      clearAuth();
       window.location.href = '/login';
     }
     console.error('Member dashboard API error:', axiosError.response?.data || axiosError.message);

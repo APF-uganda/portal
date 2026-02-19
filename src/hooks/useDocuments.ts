@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Document, isExpired } from '../types/documents'
-import { getDocuments, uploadDocument as uploadDocumentService, replaceDocument as replaceDocumentService, downloadDocument as downloadDocumentService } from '../services/documents.service'
+import { 
+  getDocuments, 
+  uploadDocument as uploadDocumentService, 
+  replaceDocument as replaceDocumentService, 
+  downloadDocument as downloadDocumentService,
+  deleteDocument as deleteDocumentService
+} from '../services/documents.service'
 
 /**
  * Custom hook for document management
@@ -111,6 +117,36 @@ export const useDocuments = () => {
   }
 
   /**
+   * Delete a document
+   */
+  const removeDocument = async (documentId: string): Promise<boolean> => {
+    console.log('[useDocuments] Removing document:', documentId);
+    
+    try {
+      const success = await deleteDocumentService(documentId)
+      
+      console.log('[useDocuments] Delete result:', success);
+      
+      if (success) {
+        // Refresh documents after deletion
+        const allDocuments = await getDocuments()
+        const systemDocs = allDocuments.filter(doc => doc.type === 'SYSTEM')
+        const userDocs = allDocuments.filter(doc => doc.type === 'USER')
+        
+        setDocuments({
+          system: systemDocs,
+          user: userDocs
+        })
+      }
+      
+      return success
+    } catch (error) {
+      console.error('[useDocuments] Delete failed:', error)
+      return false
+    }
+  }
+
+  /**
    * Check if a document needs re-upload
    */
   const needsReupload = (doc: Document): boolean => {
@@ -124,6 +160,7 @@ export const useDocuments = () => {
     uploadDocument,
     replaceDocument,
     downloadDocument,
+    removeDocument,
     needsReupload,
     isExpired
   }

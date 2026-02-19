@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   User,
@@ -28,9 +28,19 @@ import { Badge } from "../../components/ui/badge"
 import { useRecentTransactions } from "../../hooks/usePaymentHistory"
 import { useSpendingOverview } from "../../hooks/useSpending"
 import { useMemberDashboard } from "../../hooks/useMemberDashboard"
+import { dashboardEvents } from "../../utils/dashboardEvents"
 
 const MemberDashboard: React.FC = () => {
-  const { data: dashboardData, loading: dashboardLoading } = useMemberDashboard();
+  const { data: dashboardData, loading: dashboardLoading, refetch: refetchDashboard } = useMemberDashboard();
+  
+  // Subscribe to dashboard refresh events
+  useEffect(() => {
+    const unsubscribe = dashboardEvents.subscribe(() => {
+      refetchDashboard();
+    });
+    
+    return unsubscribe;
+  }, [refetchDashboard]);
   
   // Get recent transactions from payment history
   const { transactions: recentTransactions, loading: transactionsLoading } = useRecentTransactions(5);
@@ -71,18 +81,28 @@ const MemberDashboard: React.FC = () => {
       'profile_update': { icon: Edit, bgColor: 'bg-purple-600' },
       'payment': { icon: CreditCard, bgColor: 'bg-green-600' },
       'document_upload': { icon: Upload, bgColor: 'bg-green-400' },
+      'document_remove': { icon: FileText, bgColor: 'bg-gray-500' },
+      'document_approved': { icon: FileCheck, bgColor: 'bg-green-600' },
+      'document_rejected': { icon: FileText, bgColor: 'bg-red-600' },
       'document_download': { icon: Download, bgColor: 'bg-purple-400' },
       'forum_post': { icon: StickyNote, bgColor: 'bg-blue-600' },
       'forum_reply': { icon: StickyNote, bgColor: 'bg-blue-400' },
       'application_submit': { icon: FileText, bgColor: 'bg-yellow-600' },
       'application_approved': { icon: FileCheck, bgColor: 'bg-green-600' },
       'application_rejected': { icon: FileText, bgColor: 'bg-red-600' },
+      'other': { icon: Activity, bgColor: 'bg-gray-600' },
     };
     
     return typeMap[type] || { icon: Activity, bgColor: 'bg-gray-600' };
   };
 
   const getActivityType = (action: string) => {
+    // Return action directly if it's already a known type
+    if (['document_upload', 'document_remove', 'document_approved', 'document_rejected', 'other'].includes(action)) {
+      return action;
+    }
+    
+    // Map old profile actions to types
     switch (action) {
       case 'picture_uploaded':
         return 'document_upload';
@@ -97,12 +117,14 @@ const MemberDashboard: React.FC = () => {
     }
   };
 
-  const activities = recentActivity.map((activity) => ({
-    id: String(activity.id),
-    type: getActivityType(activity.action),
-    message: activity.message || 'Account activity',
-    createdAt: activity.timestamp,
-  }));
+  const activities = recentActivity
+    .slice(0, 3)
+    .map((activity) => ({
+      id: String(activity.id),
+      type: getActivityType(activity.action),
+      message: activity.message || 'Account activity',
+      createdAt: activity.timestamp,
+    }));
 
   const getNotificationDisplay = (type: string) => {
     switch (type) {
@@ -220,6 +242,12 @@ const MemberDashboard: React.FC = () => {
                 <span className="hidden sm:inline">Your Recent Activity</span>
                 <span className="sm:hidden">Activity</span>
               </CardTitle>
+              <Link to="/notifications">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  <span className="hidden sm:inline">View All</span>
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent className="space-y-3 md:space-y-4">
               {dashboardLoading ? (
@@ -286,11 +314,7 @@ const MemberDashboard: React.FC = () => {
               ) : (
                 <div className="space-y-2 md:space-y-3">
                   {documents
-                    .filter((doc) => {
-                      const name = (doc.name || '').toLowerCase();
-                      const type = (doc.document_type || '').toLowerCase();
-                      return !name.includes('passport') && !type.includes('passport');
-                    })
+                    .sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime())
                     .slice(0, 3)
                     .map((doc) => {
                     const IconComponent = getDocumentIcon(doc.name);
@@ -468,7 +492,7 @@ const MemberDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
+        </div>
     </DashboardLayout>
   )
 }

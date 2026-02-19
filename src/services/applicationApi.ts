@@ -10,6 +10,7 @@ import axios, { AxiosError } from 'axios';
 import { ApplicationSubmissionData } from '../types/registration';
 import { Application } from '../types/Application';
 import { API_BASE_URL } from '../config/api';
+import { getAccessToken } from '../utils/authStorage';
 
 /**
  * Shape of application items returned by the backend list endpoint
@@ -116,7 +117,7 @@ export interface ApplicationDetail {
  */
 export async function fetchApplications(): Promise<Application[]> {
   try {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     
     if (!token) {
       console.error('No access token found - user not logged in');
@@ -165,7 +166,7 @@ export async function fetchApplications(): Promise<Application[]> {
  */
 export async function fetchApplicationDetail(applicationId: number): Promise<ApplicationDetail | null> {
   try {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     
     if (!token) {
       console.error('No access token found - user not logged in');
@@ -522,7 +523,7 @@ export interface AvailabilityResponse {
  * @returns Headers object with Authorization header if token exists
  */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

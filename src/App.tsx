@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Toaster } from "./components/ui/toaster";
+import { isAuthenticated, getUser, migrateFromLocalStorage } from "./utils/authStorage";
 // ... other imports ...
 
 /* Public pages */
@@ -51,31 +52,30 @@ import NewsManagement from "./pages/admin/newsMgt";
 import ManageUsers from "./pages/admin/manageusers";
 import EventCreatePage from "./pages/admin/eventMgt";
 import ManagePayments from "./pages/admin/payments";
+import MembershipEditor from './components/admincms/editMembership';
+import AboutPageEditor from './components/admincms/editAbout';
+import HomePageEditor from './components/admincms/editLandingpage';
 
-/* Simple auth guard */
+/* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
   children: JSX.Element;
   role?: "admin" | "member";
 }> = ({ children, role }) => {
-  const token = localStorage.getItem("access_token");
-  const userStr = localStorage.getItem("user");
-
-  if (!token) {
+  // Check if authenticated and session is valid
+  if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
 
-  if (role && userStr) {
-    try {
-      const user = JSON.parse(userStr);
-      const userRole =
-        user.role === "1" || user.role === 1 ? "admin" : "member";
-
-      if (userRole !== role) {
-        return <Navigate to="/" replace />;
-      }
-    } catch (e) {
-      console.error("Failed to parse user data:", e);
+  // Check role if specified
+  if (role) {
+    const user = getUser();
+    if (!user) {
       return <Navigate to="/login" replace />;
+    }
+
+    const userRole = user.role === "1" || user.role === 1 ? "admin" : "member";
+    if (userRole !== role) {
+      return <Navigate to="/" replace />;
     }
   }
 
@@ -83,6 +83,11 @@ const ProtectedRoute: React.FC<{
 };
 
 const App: React.FC = () => {
+  // Migrate from localStorage to sessionStorage on app load
+  useEffect(() => {
+    migrateFromLocalStorage();
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
@@ -105,6 +110,9 @@ const App: React.FC = () => {
           <Route path="/newsMgt" element={<NewsManagement />} />
           <Route path="/manageUsers" element={<ManageUsers />} />
           <Route path="/eventMgt" element={<EventCreatePage />} />
+            <Route path="/editMembership" element={<MembershipEditor />} />
+            <Route path="/editAbout" element={<AboutPageEditor />} />
+            <Route path="/editLandingpage" element={<HomePageEditor />} />
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />

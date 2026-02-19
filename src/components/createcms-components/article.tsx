@@ -56,7 +56,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel }: ArticleFormProps)
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in duration-500">
       <button onClick={onCancel} className="flex items-center gap-2 text-gray-500 hover:text-[#5C32A3] transition font-medium">
-        <ArrowLeft size={18} /> Back to Newsroom
+        <ArrowLeft size={18} /> Back to News
       </button>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-8">
@@ -79,7 +79,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel }: ArticleFormProps)
           <input 
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter a compelling title..." 
+            placeholder=" title..." 
             className="w-full text-4xl font-black outline-none border-b-2 border-transparent focus:border-purple-100 py-2 placeholder:text-gray-200" 
           />
         </section>
@@ -98,7 +98,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel }: ArticleFormProps)
               {/* Render Block Types */}
               {block.type === 'text' && (
                 <textarea 
-                  placeholder="Start typing your story..."
+                  placeholder="Type content here..."
                   className="w-full min-h-[80px] outline-none text-lg text-gray-700 resize-none leading-relaxed placeholder:text-gray-300"
                   value={block.value}
                   onChange={(e) => updateBlock(block.id, e.target.value)}

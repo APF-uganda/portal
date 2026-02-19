@@ -1,6 +1,9 @@
 /**
  * Authentication utilities
+ * Now uses authStorage.ts for consistent session management
  */
+
+import { isAuthenticated as checkAuth, getUser, getAccessToken as getToken, clearAuth as clearAuthStorage } from './authStorage';
 
 export interface User {
   id: number;
@@ -12,22 +15,14 @@ export interface User {
  * Check if user is authenticated
  */
 export function isAuthenticated(): boolean {
-  const token = localStorage.getItem('access_token');
-  const user = localStorage.getItem('user');
-  return !!(token && user);
+  return checkAuth();
 }
 
 /**
  * Get current user data
  */
 export function getCurrentUser(): User | null {
-  try {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) return null;
-    return JSON.parse(userStr);
-  } catch {
-    return null;
-  }
+  return getUser();
 }
 
 /**
@@ -35,23 +30,22 @@ export function getCurrentUser(): User | null {
  */
 export function isAdmin(): boolean {
   const user = getCurrentUser();
-  return user?.role === '1';
+  if (!user || !user.role) return false;
+  return user.role === '1';
 }
 
 /**
  * Get access token
  */
 export function getAccessToken(): string | null {
-  return localStorage.getItem('access_token');
+  return getToken();
 }
 
 /**
  * Clear authentication data
  */
 export function clearAuth(): void {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('user');
+  clearAuthStorage();
 }
 
 /**
