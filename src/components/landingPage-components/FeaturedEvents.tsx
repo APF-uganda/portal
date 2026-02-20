@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import EventCard from "../common/EventCard"
 import { baseEvents } from "../EventComponents/eventsData"
 
 const FeaturedEvents = () => {
+  const navigate = useNavigate()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   
@@ -58,6 +60,15 @@ const FeaturedEvents = () => {
     }
   }
 
+  const handleRegister = (event: any) => {
+    navigate('/event-registration', {
+      state: {
+        eventTitle: event.title,
+        eventId: event.id
+      }
+    })
+  }
+
   return (
     <section className="bg-white py-12 -mx-[50vw] px-[50vw]">
       <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
@@ -102,9 +113,7 @@ const FeaturedEvents = () => {
                       time={event.time}
                       location={event.location}
                       description={event.description}
-                      onRegister={() => {
-                        console.log(`Register clicked for ${event.title}`)
-                      }}
+                      onRegister={() => handleRegister(event)}
                     />
                   </div>
                 ))}
