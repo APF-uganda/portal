@@ -6,6 +6,7 @@ import {
   User,
   LogOut,
   Globe,
+  Settings,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
@@ -72,6 +73,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const handleProfileClick = () => {
     setIsProfileDropdownOpen(false)
     navigate('/profile')
+  }
+
+  const handleSettings = () => {
+    setIsProfileDropdownOpen(false)
+    navigate('/member/settings')
   }
 
   const handleBackToWebsite = () => {
@@ -197,12 +203,23 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       </button>
 
                       <button
+                        onClick={handleSettings}
+                        className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <Settings className="w-4 h-4 text-gray-400" />
+                        <span>Settings</span>
+                      </button>
+
+                      <button
                         onClick={handleBackToWebsite}
                         className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         <Globe className="w-4 h-4 text-gray-400" />
                         <span>Back to Website</span>
                       </button>
+
+                      {/* Divider */}
+                      <div className="my-1 h-px bg-gray-200" />
 
                       <button
                         onClick={handleLogout}

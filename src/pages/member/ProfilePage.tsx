@@ -48,13 +48,6 @@ const ProfilePage = () => {
     confirmPassword: ''
   });
 
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    marketingEmails: true,
-    securityAlerts: true
-  });
-
   useEffect(() => {
     if (!profile) {
       return;
@@ -150,17 +143,9 @@ const ProfilePage = () => {
     }
   };
 
-  const handleNotificationChange = (key: string) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: !prev[key as keyof typeof prev]
-    }));
-  };
-
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
-    { id: 'notifications', label: 'Notifications', icon: Bell }
   ];
 
   return (
@@ -595,46 +580,6 @@ const ProfilePage = () => {
                       {changingPassword ? 'Updating...' : 'Update Password'}
                     </button>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Notifications Tab */}
-            {activeTab === 'notifications' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Notification Preferences</h3>
-
-                <div className="space-y-4">
-                  {Object.entries(notifications).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
-                      <div>
-                        <h4 className="font-medium text-gray-900">
-                          {key === 'emailNotifications' && 'Email Notifications'}
-                          {key === 'smsNotifications' && 'SMS Notifications'}
-                          {key === 'marketingEmails' && 'Marketing Emails'}
-                          {key === 'securityAlerts' && 'Security Alerts'}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          {key === 'emailNotifications' && 'Receive notifications via email'}
-                          {key === 'smsNotifications' && 'Receive notifications via SMS'}
-                          {key === 'marketingEmails' && 'Receive promotional emails and updates'}
-                          {key === 'securityAlerts' && 'Receive security-related notifications'}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleNotificationChange(key)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          value ? 'bg-purple-600' : 'bg-gray-200'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            value ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  ))}
                 </div>
               </div>
             )}
