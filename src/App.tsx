@@ -33,6 +33,7 @@ import CreatePostPage from "./pages/member/CreatePostPage";
 import MyPostsPage from "./pages/member/MyPostsPage";
 import PostDetailPage from "./pages/member/PostDetailPage";
 import NotificationsPage from "./pages/member/NotificationsPage";
+import SettingsPage from "./pages/member/SettingsPage";
 
 import PaymentHistoryPage from "./pages/member/PaymentHistoryPage";
 import ProfilePage from "./pages/member/ProfilePage";
@@ -208,6 +209,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute role="member">
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/member/settings"
+            element={
+              <ProtectedRoute role="member">
+                <SettingsPage />
               </ProtectedRoute>
             }
           />
