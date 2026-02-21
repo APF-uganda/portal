@@ -1,6 +1,6 @@
 import  { useState } from 'react';
 import StatCard from '../../components/manageusers-components/stats';
-
+import MemberDocumentsModal from '../../components/manageusers-components/MemberDocumentsModal';
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
@@ -11,6 +11,7 @@ import { useUserManagement } from '../../hooks/userMgt';
 
 const ManageUsers = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
   
   // Use the hook to get data, loading state, and action handlers
   const { users, loading, error, handleToggleStatus } = useUserManagement();
@@ -93,17 +94,27 @@ const ManageUsers = () => {
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">{user.renewalDate || 'N/A'}</td>
                           <td className="px-6 py-4 text-sm text-right">
-                            {/* Logic to show Suspend or Reactivate based on backend data */}
-                            <button 
-                              onClick={() => handleToggleStatus(user.id, user.status)}
-                              className={`font-bold transition-colors whitespace-nowrap text-sm px-4 py-2 rounded-lg hover:bg-gray-100 ${
-                                user.status === 'Suspended' 
-                                ? 'text-green-600' 
-                                : 'text-[#5E2590] hover:text-red-600'
-                              }`}
-                            >
-                              {user.status === 'Suspended' ? 'Reactivate Account' : 'Suspend Account'}
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              {/* View Documents Button */}
+                              <button 
+                                onClick={() => setSelectedMember({ id: user.id, name: user.name })}
+                                className="font-bold transition-colors whitespace-nowrap text-sm px-4 py-2 rounded-lg hover:bg-purple-50 text-[#5E2590]"
+                              >
+                                View Documents
+                              </button>
+                              
+                              {/* Logic to show Suspend or Reactivate based on backend data */}
+                              <button 
+                                onClick={() => handleToggleStatus(user.id, user.status)}
+                                className={`font-bold transition-colors whitespace-nowrap text-sm px-4 py-2 rounded-lg hover:bg-gray-100 ${
+                                  user.status === 'Suspended' 
+                                  ? 'text-green-600' 
+                                  : 'text-[#5E2590] hover:text-red-600'
+                                }`}
+                              >
+                                {user.status === 'Suspended' ? 'Reactivate Account' : 'Suspend Account'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -118,6 +129,16 @@ const ManageUsers = () => {
         {/* Footer Component */}
         <Footer />
       </main>
+
+      {/* Member Documents Modal */}
+      {selectedMember && (
+        <MemberDocumentsModal
+          isOpen={!!selectedMember}
+          onClose={() => setSelectedMember(null)}
+          userId={selectedMember.id}
+          userName={selectedMember.name}
+        />
+      )}
     </div>
   );
 };
