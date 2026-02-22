@@ -1,259 +1,204 @@
 import { useState, useEffect } from 'react';
-import api from '../../utils/cmsapi';
-import { Save, ArrowLeft, BarChart3, Quote, Plus, Layout, Image as ImageIcon, X, Building2, MousePointer2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Save, Loader2, Layout, Quote, BarChart3, Users, Image as ImageIcon, Building2 } from 'lucide-react';
+import * as cms from '../../services/cmsApi';
 
 const HomepageEditor = () => {
   const navigate = useNavigate();
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
-  const [data, setData] = useState<any>({
-    hero: { title: '', description: '', backgroundImage: null },
-    stats: [],
-    chairMessage: { author: '', message: '', role: '', photo: null },
-    partners: [], 
-    connectingProfessionals: { title: '', content: '' }
-  });
 
-  useEffect(() => { fetchHomeData(); }, []);
+  useEffect(() => { loadData(); }, []);
 
-  const fetchHomeData = async () => {
+  const loadData = async () => {
     try {
-      const res = await api.get('/homepage?populate=deep'); 
-      const item = res.data.data.attributes || res.data.data;
-      setData(item);
-    } catch (err) { console.error("Fetch error:", err); } 
-    finally { setLoading(false); }
+      const fetched = await cms.getHomepage();
+      setData(fetched);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Helper for uploading images
-  const handleImageUpload = async (file: File, path: string) => {
-    const formData = new FormData();
-    formData.append('files', file);
-    try {
-      const res = await api.post('/upload', formData);
-      const uploadedFile = res.data[0];
-      
-     
-      if (path === 'chairMessage.photo') {
-        setData({ ...data, chairMessage: { ...data.chairMessage, photo: uploadedFile } });
+  const getImageUrl = (media: any) => {
+    const url = media?.data?.attributes?.url || media?.url;
+    if (!url) return null;
+    return url.startsWith('http') ? url : `http://localhost:1337${url}`;
+  };
+
+  // THE WORKING LOGIC: Kept exactly as requested
+  const prepareDataForStrapi = (item: any): any => {
+    if (!item) return null;
+    if (Array.isArray(item)) return item.map(prepareDataForStrapi);
+    if (typeof item === 'object') {
+      if (item.data && item.id) return item.id; 
+      if (item.id && (item.url || item.mime)) return item.id;
+
+      const cleanObj: any = {};
+      for (const key in item) {
+        if (['id', 'documentId', 'createdAt', 'updatedAt', 'publishedAt', 'locale'].includes(key)) continue;
+        cleanObj[key] = prepareDataForStrapi(item[key]);
       }
-    } catch (err) { alert("Upload failed"); }
+      return cleanObj;
+    }
+    return item;
   };
 
   const handleSave = async () => {
+    if (!data) return;
     setSaving(true);
     try {
-      const payload = {
-        data: {
-          ...data,
-          
-          hero: { ...data.hero, backgroundImage: data.hero.backgroundImage?.id },
-          chairMessage: { ...data.chairMessage, photo: data.chairMessage.photo?.id },
-          partners: data.partners.map((p: any) => ({ ...p, logo: p.logo?.id }))
-        }
-      };
-      await api.put('/homepage', payload);
-      alert("Homepage updated!");
-    } catch (err) { alert("Update failed."); } 
-    finally { setSaving(false); }
+      const attr = data.attributes || data;
+      const payload = prepareDataForStrapi(attr);
+      await cms.updateHomepage(payload);
+      alert("SUCCESS! Published.");
+      loadData();
+    } catch (err: any) {
+      console.error("Save Error:", err.response?.data);
+      alert(`Error: ${err.response?.data?.error?.message}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (loading) return <div className="p-20 text-center font-bold text-slate-400 font-sans">Loading Landing Page...</div>;
+  if (loading) return <div className="p-20 text-center font-black">SYNCING CONTENT...</div>;
+
+  const attr = data.attributes || data;
 
   return (
-    <div className="max-w-6xl mx-auto p-8 pb-32 font-sans">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-12 sticky top-0 bg-gray-50/80 backdrop-blur-md z-10 py-4">
-        <div>
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 font-bold text-sm mb-1 hover:text-[#5C32A3]">
-            <ArrowLeft size={16} /> Back to Portal
+    <div className="min-h-screen bg-[#F8FAFC] pb-20">
+      {/* HEADERBAR */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b p-4 flex justify-between items-center px-10">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+            <ArrowLeft size={20} className="text-slate-600"/>
           </button>
-          <h1 className="text-2xl font-black text-slate-900">Landing Page Editor</h1>
+          <h1 className="font-black text-slate-800 tracking-tight">HOMEPAGE EDITOR</h1>
         </div>
-        <button onClick={handleSave} disabled={saving} className="bg-[#5C32A3] text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl hover:bg-[#4a2885] transition-all disabled:opacity-50">
-          <Save size={20} /> {saving ? "Saving..." : "Save Changes"}
+        <button onClick={handleSave} disabled={saving} className="bg-[#5C32A3] hover:bg-[#4A2882] text-white px-8 py-2.5 rounded-xl font-black flex items-center gap-2 transition-all shadow-lg shadow-purple-200 disabled:opacity-50">
+          {saving ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>}
+          PUBLISH CHANGES
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="max-w-4xl mx-auto py-12 space-y-10 px-6">
         
-        {/* LEFT COLUMN */}
-        <div className="lg:col-span-8 space-y-8">
-          
-          {/* HERO SECTION */}
-          <section className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-6 text-purple-600">
-              <Layout size={20} />
-              <h2 className="font-black uppercase tracking-widest text-[10px]">Main Hero Banner</h2>
+        {/* HERO SECTION */}
+        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+          <div className="flex justify-between items-center mb-8">
+            <div className="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+              <Layout size={14}/> Hero Header
             </div>
-            <input 
-              className="w-full text-3xl font-black text-slate-800 border-none outline-none mb-4"
-              placeholder=" Headline..."
-              value={data.hero?.title}
-              onChange={(e) => setData({...data, hero: {...data.hero, title: e.target.value}})}
-            />
-            <textarea 
-              className="w-full p-4 bg-slate-50 rounded-2xl text-slate-600 font-medium h-24 outline-none border-none resize-none"
-              placeholder="Sub-headline description..."
-              value={data.hero?.description}
-              onChange={(e) => setData({...data, hero: {...data.hero, description: e.target.value}})}
-            />
-          </section>
-
-          {/* CHAIR MESSAGE + PHOTO */}
-          <section className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-6 text-blue-600">
-              <Quote size={20} />
-              <h2 className="font-black uppercase tracking-widest text-[10px]">Chairman's Message</h2>
-            </div>
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="w-full md:w-40 space-y-2">
-                <div className="aspect-square bg-slate-100 rounded-2xl relative overflow-hidden group border-2 border-dashed border-slate-200">
-                  {data.chairMessage?.photo?.url ? (
-                    <img src={`http://localhost:1337${data.chairMessage.photo.url}`} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                      <ImageIcon size={24} />
-                      <span className="text-[10px] font-bold mt-1">PHOTO</span>
-                    </div>
-                  )}
-                  <input 
-                    type="file" 
-                    className="absolute inset-0 opacity-0 cursor-pointer" 
-                    onChange={(e) => e.target.files && handleImageUpload(e.target.files[0], 'chairMessage.photo')}
-                  />
+            {attr.hero?.backgroundImage && (
+              <div className="relative group">
+                <img src={getImageUrl(attr.hero.backgroundImage)} className="w-24 h-14 object-cover rounded-xl border-2 border-white shadow-md" alt="Hero" />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity flex items-center justify-center">
+                   <ImageIcon size={16} className="text-white"/>
                 </div>
-                <p className="text-[9px] text-center font-bold text-slate-400 uppercase">Click to upload</p>
               </div>
-              <div className="flex-1 space-y-4">
-                <input 
-                  className="w-full p-4 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none"
-                  placeholder="Chairman's Name"
-                  value={data.chairMessage?.author}
-                  onChange={(e) => setData({...data, chairMessage: {...data.chairMessage, author: e.target.value}})}
-                />
-                <textarea 
-                  className="w-full p-4 bg-slate-50 rounded-xl text-slate-600 min-h-[120px] outline-none border-none"
-                  placeholder="Write the message here..."
-                  value={data.chairMessage?.message}
-                  onChange={(e) => setData({...data, chairMessage: {...data.chairMessage, message: e.target.value}})}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* PARTNER LOGOS SECTION */}
-          <section className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2 text-rose-500">
-                <Building2 size={20} />
-                <h2 className="font-black uppercase tracking-widest text-[10px]">Partner Organizations</h2>
-              </div>
-              <button 
-                onClick={() => setData({...data, partners: [...(data.partners || []), { name: '', logo: null }]})}
-                className="flex items-center gap-2 text-[10px] font-black bg-rose-50 text-rose-600 px-4 py-2 rounded-full hover:bg-rose-100 transition"
-              >
-                <Plus size={14} /> ADD PARTNER
-              </button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {data.partners?.map((partner: any, idx: number) => (
-                <div key={idx} className="p-4 bg-slate-50 rounded-2xl relative group border border-slate-100">
-                  <button 
-                    onClick={() => {
-                      const newList = [...data.partners];
-                      newList.splice(idx, 1);
-                      setData({...data, partners: newList});
-                    }}
-                    className="absolute -top-2 -right-2 bg-white text-rose-500 p-1 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition"
-                  >
-                    <X size={14} />
-                  </button>
-                  <div className="aspect-video bg-white rounded-lg mb-2 flex items-center justify-center overflow-hidden relative">
-                    {partner.logo?.url ? (
-                      <img src={`http://localhost:1337${partner.logo.url}`} className="h-full w-full object-contain p-2" />
-                    ) : (
-                      <ImageIcon className="text-slate-200" size={20} />
-                    )}
-                    <input 
-                      type="file" 
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      onChange={async (e) => {
-                        if (e.target.files) {
-                          const formData = new FormData();
-                          formData.append('files', e.target.files[0]);
-                          const res = await api.post('/upload', formData);
-                          const newList = [...data.partners];
-                          newList[idx].logo = res.data[0];
-                          setData({...data, partners: newList});
-                        }
-                      }}
-                    />
-                  </div>
-                  <input 
-                    placeholder="Partner Name"
-                    className="w-full bg-transparent text-[10px] font-bold text-center text-slate-500 uppercase outline-none"
-                    value={partner.name}
-                    onChange={(e) => {
-                      const newList = [...data.partners];
-                      newList[idx].name = e.target.value;
-                      setData({...data, partners: newList});
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
+            )}
+          </div>
+          <input className="w-full text-4xl font-black outline-none mb-4 placeholder:text-slate-200" placeholder="Main Title" value={attr.hero?.title || ""} 
+            onChange={(e) => setData({...data, attributes: {...attr, hero: {...attr.hero, title: e.target.value}}})} 
+          />
+          <textarea className="w-full text-lg text-slate-500 outline-none h-24 resize-none leading-relaxed" placeholder="Sub-headline text..." value={attr.hero?.subtitle || ""} 
+            onChange={(e) => setData({...data, attributes: {...attr, hero: {...attr.hero, subtitle: e.target.value}}})} 
+          />
         </div>
 
-        {/* RIGHT COLUMN */}
-        <div className="lg:col-span-4 space-y-8">
-          
-          {/* STATS */}
-          <section className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2 text-emerald-600">
-                <BarChart3 size={20} />
-                <h2 className="font-black uppercase tracking-widest text-[10px]">Impact Numbers</h2>
+        {/* STATS SECTION */}
+        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+          <div className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest mb-8 w-fit flex items-center gap-2">
+            <BarChart3 size={14}/> Impact Statistics
+          </div>
+          <div className="grid grid-cols-3 gap-6">
+            {attr.stats?.map((s: any, i: number) => (
+              <div key={i} className="bg-slate-50 p-6 rounded-[24px] border border-slate-100 hover:border-emerald-200 transition-colors">
+                <input className="w-full text-3xl font-black text-emerald-600 bg-transparent outline-none mb-1" value={s.value} 
+                  onChange={(e) => {
+                    const next = [...attr.stats]; next[i].value = e.target.value;
+                    setData({...data, attributes: {...attr, stats: next}});
+                  }}
+                />
+                <input className="w-full text-[11px] font-bold text-slate-400 bg-transparent outline-none uppercase tracking-wider" value={s.label}
+                  onChange={(e) => {
+                    const next = [...attr.stats]; next[i].label = e.target.value;
+                    setData({...data, attributes: {...attr, stats: next}});
+                  }}
+                />
               </div>
-              <button 
-                onClick={() => setData({...data, stats: [...data.stats, { label: '', value: '' }]})}
-                className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            <div className="space-y-3">
-              {data.stats?.map((stat: any, index: number) => (
-                <div key={index} className="flex gap-2 items-center p-3 bg-slate-50 rounded-xl group">
-                  <input 
-                    placeholder="Value" 
-                    className="w-20 bg-white p-2 rounded-lg font-black text-emerald-600 text-center text-sm outline-none"
-                    value={stat.value}
-                    onChange={(e) => {
-                      const newStats = [...data.stats];
-                      newStats[index].value = e.target.value;
-                      setData({...data, stats: newStats});
-                    }}
-                  />
-                  <input 
-                    placeholder="Label" 
-                    className="flex-1 bg-white p-2 rounded-lg text-[10px] font-bold text-slate-500 uppercase outline-none"
-                    value={stat.label}
-                    onChange={(e) => {
-                      const newStats = [...data.stats];
-                      newStats[index].label = e.target.value;
-                      setData({...data, stats: newStats});
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
+            ))}
+          </div>
+        </div>
 
-          
+        {/* CHAIRPERSON SECTION */}
+        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+          <div className="flex justify-between items-center mb-8">
+            <div className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+              <Quote size={14}/> Leadership Message
+            </div>
+            {attr.chairMessage?.photo && (
+              <img src={getImageUrl(attr.chairMessage.photo)} className="w-14 h-14 rounded-full border-4 border-slate-50 shadow-sm object-cover" alt="Chair" />
+            )}
+          </div>
+          <div className="space-y-4 mb-6">
+            <input className="w-full text-2xl font-black outline-none placeholder:text-slate-200" placeholder="Chairperson Name" value={attr.chairMessage?.name || ""} 
+              onChange={(e) => setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, name: e.target.value}}})} 
+            />
+            {/* ADDED ROLE FIELD */}
+            <input className="w-full text-md font-bold text-blue-500 outline-none border-b border-slate-50 pb-2" placeholder="Professional Title / Role" value={attr.chairMessage?.role || ""} 
+              onChange={(e) => setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, role: e.target.value}}})} 
+            />
+          </div>
+          <textarea className="w-full bg-slate-50 p-8 rounded-[24px] outline-none h-64 resize-none leading-relaxed text-slate-600 border border-transparent focus:border-blue-100 transition-all" placeholder="Enter the full message here..." value={attr.chairMessage?.fullMessage || ""} 
+            onChange={(e) => setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, fullMessage: e.target.value}}})} 
+          />
+        </div>
+
+        {/* CONNECTING PROFESSIONALS */}
+        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+          <div className="bg-amber-50 text-amber-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest mb-8 w-fit flex items-center gap-2">
+            <Users size={14}/> Professional Accordion
+          </div>
+          <div className="grid gap-4">
+            {attr.connectingProfessionals?.map((cp: any, i: number) => (
+              <div key={i} className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 group">
+                <input className="w-full font-black text-slate-800 bg-transparent outline-none mb-2 group-focus-within:text-amber-600 transition-colors" value={cp.title} 
+                  onChange={(e) => {
+                    const next = [...attr.connectingProfessionals]; next[i].title = e.target.value;
+                    setData({...data, attributes: {...attr, connectingProfessionals: next}});
+                  }}
+                />
+                <textarea className="w-full text-sm text-slate-500 bg-transparent outline-none resize-none leading-relaxed h-20" value={cp.content} 
+                   onChange={(e) => {
+                    const next = [...attr.connectingProfessionals]; next[i].content = e.target.value;
+                    setData({...data, attributes: {...attr, connectingProfessionals: next}});
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* PARTNERS SECTION  */}
+        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+          <div className="bg-slate-50 text-slate-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest mb-8 w-fit flex items-center gap-2">
+            <Building2 size={14}/> Partner Logos
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {attr.partnerlogo?.map((p: any, i: number) => (
+              <div key={i} className="flex-shrink-0 w-32 h-20 bg-slate-50 rounded-xl border flex items-center justify-center p-2">
+                {p.logo ? (
+                  <img src={getImageUrl(p.logo)} className="max-w-full max-h-full object-contain" alt="Partner" />
+                ) : (
+                  <ImageIcon size={20} className="text-slate-300"/>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-400 mt-4 text-center font-bold italic">Logo management is handled primarily via Strapi Media Library</p>
         </div>
 
       </div>
