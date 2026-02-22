@@ -45,9 +45,7 @@ function ChairMessage({ data }: ChairMessageProps) {
             A Message from the Board Chairperson
           </h4>
           
-          <p className="leading-relaxed text-[#333] mb-4 text-sm sm:text-base font-medium">
-            Dear Colleagues and Partners,
-          </p>
+         
 
           {/* Dynamic Message Content */}
           <div className="leading-relaxed text-[#333] text-sm sm:text-base whitespace-pre-line">

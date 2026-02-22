@@ -8,7 +8,6 @@ interface StatItemProps {
   label: string
 }
 
-// Internal component for the animated counter
 function StatItem({ icon, value, suffix, label }: StatItemProps) {
   const [count, setCount] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
@@ -28,16 +27,18 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
       setCount(0)
       const duration = 2000
       const steps = 60
-      const increment = value / steps
+     
+      const safeValue = isNaN(value) ? 0 : value;
+      const increment = safeValue / steps
       
       let currentStep = 0
       const timer = setInterval(() => {
         currentStep++
         if (currentStep <= steps) {
-          setCount(Math.min(Math.floor(increment * currentStep), value))
+          setCount(Math.min(Math.floor(increment * currentStep), safeValue))
         } else {
           clearInterval(timer)
-          setCount(value)
+          setCount(safeValue)
         }
       }, duration / steps)
       return () => clearInterval(timer)
@@ -59,21 +60,16 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
   )
 }
 
-// Main Stats Section
 function Stats({ data }: { data: any[] }) {
-  
-  // Logic to assign icons based on keywords in the CMS label
   const getDynamicIcon = (label: string = "") => {
     const text = label.toLowerCase();
     const className = "w-6 h-6 sm:w-10 sm:h-10 text-primary";
-    
     if (text.includes('member') || text.includes('people')) return <Users className={className} />;
     if (text.includes('event') || text.includes('year')) return <Calendar className={className} />;
     if (text.includes('resource') || text.includes('book')) return <BookOpen className={className} />;
     return <BarChart3 className={className} />;
   };
 
-  // Hardcoded fallback data in case CMS fails or is empty
   const defaultStats = [
     { value: 1000, label: "Active Members" },
     { value: 10, label: "Annual Events" },
@@ -89,7 +85,8 @@ function Stats({ data }: { data: any[] }) {
           <StatItem 
             key={index}
             icon={getDynamicIcon(item.label)} 
-            value={Number(item.value)} 
+           
+            value={Number(item.value) || 0} 
             suffix="+" 
             label={item.label} 
           />
