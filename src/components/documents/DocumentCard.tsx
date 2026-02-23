@@ -59,9 +59,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   const StatusIcon = config.icon
 
   // Conditional actions based on status
+  const canView = Boolean(document.fileUrl)
   const showReupload = expired || document.status === 'rejected'
-  const showRemove = (document.status === 'pending' || document.status === 'rejected') && !expired
-  const canDelete = document.status !== 'approved' || expired
+  const showRemove = document.status === 'pending' || document.status === 'rejected'
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-purple-300 hover:shadow-md transition-all h-full flex flex-col">
@@ -108,7 +108,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
       {/* Actions */}
       <div className="flex gap-2 pt-3 border-t border-gray-100">
-        {onView && (
+        {/* View - Always available if fileUrl exists */}
+        {canView && onView && (
           <Button 
             variant="outline" 
             size="sm"
@@ -120,7 +121,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           </Button>
         )}
         
-        {onDownload && (
+        {/* Download - Always available if fileUrl exists */}
+        {canView && onDownload && (
           <Button 
             variant="outline" 
             size="sm"
@@ -132,6 +134,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           </Button>
         )}
         
+        {/* Replace - Only for expired or rejected documents */}
         {showReupload && onReupload && (
           <Button 
             size="sm"
@@ -143,7 +146,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           </Button>
         )}
         
-        {showRemove && onRemove && canDelete && (
+        {/* Remove - Only for pending or rejected documents */}
+        {showRemove && onRemove && (
           <Button 
             variant="outline"
             size="sm"

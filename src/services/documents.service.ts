@@ -126,6 +126,42 @@ export const deleteDocument = async (_documentId: string): Promise<boolean> => {
 }
 
 /**
+ * View a document in a new tab
+ * @param documentId - ID of document to view
+ * @returns Promise with view result
+ */
+export const viewDocument = async (documentId: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_V1_BASE_URL}/documents/${documentId}/download/`, {
+      headers: getAuthHeaders(),
+    })
+
+    if (!response.ok) {
+      return false
+    }
+
+    // Get the blob from response
+    const blob = await response.blob()
+    
+    // Create a temporary URL for the blob
+    const url = window.URL.createObjectURL(blob)
+    
+    // Open in new tab
+    window.open(url, '_blank', 'noopener,noreferrer')
+    
+    // Clean up after a delay to allow the tab to load
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url)
+    }, 1000)
+    
+    return true
+  } catch (error) {
+    console.error('View error:', error)
+    return false
+  }
+}
+
+/**
  * Download a document
  * @param documentId - ID of document to download
  * @param fileName - Name to save the file as
