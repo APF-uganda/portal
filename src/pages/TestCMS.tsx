@@ -1,18 +1,11 @@
-/**
- * CMS Integration Test Page
- * Use this page to test Strapi CMS integration
- * Access at: http://localhost:5173/test-cms
- */
 
-import { useEvents, useNewsArticles, useLeadership, useBenefits, useFAQs, usePartners } from '../hooks/useCMS';
+import { useEvents, useNews, useHomepage } from '../hooks/useCMS';
 
 function TestCMS() {
+  
   const { events, loading: eventsLoading, error: eventsError } = useEvents();
-  const { articles, loading: articlesLoading, error: articlesError } = useNewsArticles();
-  const { leaders, loading: leadersLoading, error: leadersError } = useLeadership();
-  const { benefits, loading: benefitsLoading, error: benefitsError } = useBenefits();
-  const { faqs, loading: faqsLoading, error: faqsError } = useFAQs();
-  const { partners, loading: partnersLoading, error: partnersError } = usePartners();
+  const { news, loading: newsLoading, error: newsError } = useNews();
+  const { data: homepageData, loading: homeLoading, error: homeError } = useHomepage();
 
   const renderSection = (
     title: string,
@@ -22,7 +15,7 @@ function TestCMS() {
   ) => (
     <div style={{ marginBottom: '40px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
       <h2 style={{ color: '#7E49B3', marginBottom: '10px' }}>
-        {title} ({data.length})
+        {title} ({data ? (Array.isArray(data) ? data.length : '1 Object') : 0})
       </h2>
       
       {loading && <p style={{ color: '#666' }}>Loading...</p>}
@@ -33,13 +26,13 @@ function TestCMS() {
         </div>
       )}
       
-      {!loading && !error && data.length === 0 && (
+      {!loading && !error && (!data || (Array.isArray(data) && data.length === 0)) && (
         <div style={{ padding: '10px', background: '#ffc', color: '#660', borderRadius: '4px' }}>
           No data found. Add content in Strapi admin panel.
         </div>
       )}
       
-      {!loading && !error && data.length > 0 && (
+      {!loading && !error && data && (
         <details>
           <summary style={{ cursor: 'pointer', padding: '10px', background: '#f5f5f5', borderRadius: '4px' }}>
             View Data (Click to expand)
@@ -66,31 +59,13 @@ function TestCMS() {
           🧪 CMS Integration Test
         </h1>
         <p style={{ color: '#666', fontSize: '14px' }}>
-          This page tests the connection between React frontend and Strapi CMS.
+          Testing the connection with deep population for images.
         </p>
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          background: '#e9d5ff', 
-          borderRadius: '8px',
-          fontSize: '14px'
-        }}>
-          <strong>Instructions:</strong>
-          <ol style={{ marginTop: '10px', marginBottom: '0' }}>
-            <li>Ensure Strapi is running at <code>http://localhost:1337</code></li>
-            <li>Add sample content in Strapi admin panel</li>
-            <li>Ensure public permissions are enabled (Settings → Roles → Public)</li>
-            <li>Refresh this page to see the data</li>
-          </ol>
-        </div>
       </div>
 
+      {renderSection('Homepage (Deep Populated)', homepageData, homeLoading, homeError)}
       {renderSection('Events', events, eventsLoading, eventsError)}
-      {renderSection('News Articles', articles, articlesLoading, articlesError)}
-      {renderSection('Leadership', leaders, leadersLoading, leadersError)}
-      {renderSection('Benefits', benefits, benefitsLoading, benefitsError)}
-      {renderSection('FAQs', faqs, faqsLoading, faqsError)}
-      {renderSection('Partners', partners, partnersLoading, partnersError)}
+      {renderSection('News Articles', news, newsLoading, newsError)}
 
       <div style={{ 
         marginTop: '40px', 
@@ -99,14 +74,11 @@ function TestCMS() {
         borderRadius: '8px',
         fontSize: '14px'
       }}>
-        <h3 style={{ marginTop: 0 }}>API Endpoints Being Tested:</h3>
+        <h3 style={{ marginTop: 0 }}>Active Endpoints:</h3>
         <ul style={{ marginBottom: 0 }}>
+          <li><code>GET /api/homepage?populate=...</code> (Deep)</li>
+          <li><code>GET /api/news-items?populate=*</code></li>
           <li><code>GET /api/events?populate=*</code></li>
-          <li><code>GET /api/news-articles?populate=*</code></li>
-          <li><code>GET /api/leaderships?populate=*</code></li>
-          <li><code>GET /api/benefits?populate=*</code></li>
-          <li><code>GET /api/faqs</code></li>
-          <li><code>GET /api/partners?populate=*</code></li>
         </ul>
       </div>
     </div>

@@ -8,7 +8,9 @@ const HomepageEditor = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const chairFileRef = useRef<HTMLInputElement>(null);
+  const heroFileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -23,16 +25,15 @@ const HomepageEditor = () => {
     }
   };
 
- 
+  // handle populated data and raw upload objects
   const getImageUrl = (media: any) => {
     if (!media) return null;
-    const url = media.data?.attributes?.url || media.url;
+    const url = media.data?.attributes?.url || media.attributes?.url || media.url;
     if (!url) return null;
     return url.startsWith('http') ? url : `http://localhost:1337${url}`;
   };
 
-  // Handles the actual file upload to Strapi
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (fileId: number) => void) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (fileObject: any) => void) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -47,8 +48,9 @@ const HomepageEditor = () => {
       });
       const result = await response.json();
       if (result[0]?.id) {
-        callback(result[0].id);
-        alert("Image uploaded successfully! Remember to PUBLISH to save changes.");
+        
+        callback(result[0]);
+        alert("Image uploaded! Click 'PUBLISH CHANGES' to save permanently.");
       }
     } catch (err) {
       console.error("Upload error:", err);
@@ -62,11 +64,12 @@ const HomepageEditor = () => {
     if (!item) return null;
     if (Array.isArray(item)) return item.map(prepareDataForStrapi);
     if (typeof item === 'object') {
-      if (item.data && item.id) return item.id; 
-      if (item.id && (item.url || item.mime)) return item.id;
+      if (item.id && (item.url || item.attributes || item.mime)) return item.id;
+      if (item.data && item.id) return item.id;
+
       const cleanObj: any = {};
       for (const key in item) {
-        if (['id', 'documentId', 'createdAt', 'updatedAt', 'publishedAt', 'locale'].includes(key)) continue;
+        if (['id', 'documentId', 'createdAt', 'updatedAt', 'publishedAt', 'locale', 'formats', 'hash', 'ext', 'mime', 'size', 'previewUrl', 'provider', 'provider_metadata'].includes(key)) continue;
         cleanObj[key] = prepareDataForStrapi(item[key]);
       }
       return cleanObj;
@@ -84,7 +87,8 @@ const HomepageEditor = () => {
       alert("SUCCESS! Published.");
       loadData();
     } catch (err: any) {
-      alert(`Error: ${err.response?.data?.error?.message}`);
+      console.error("Save Error:", err.response?.data);
+      alert(`Error: ${err.response?.data?.error?.message || "Check Console"}`);
     } finally {
       setSaving(false);
     }
@@ -95,7 +99,6 @@ const HomepageEditor = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      {/* HEADERBAR */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b p-4 flex justify-between items-center px-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
@@ -113,9 +116,33 @@ const HomepageEditor = () => {
         
         {/* HERO SECTION */}
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-start mb-8">
             <div className="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
               <Layout size={14}/> Hero Header
+            </div>
+            
+            <div className="flex flex-col items-end gap-2">
+              <div 
+                className="w-40 h-24 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 overflow-hidden relative group cursor-pointer"
+                onClick={() => heroFileRef.current?.click()}
+              >
+                {attr.hero?.backgroundImage ? (
+                  <img src={getImageUrl(attr.hero.backgroundImage)} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                    <Upload size={20} />
+                    <span className="text-[10px] font-bold">BG IMAGE</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <span className="text-white text-xs font-bold">CHANGE BG</span>
+                </div>
+              </div>
+              <input type="file" ref={heroFileRef} className="hidden" accept="image/*"
+                onChange={(e) => handleFileUpload(e, (file) => {
+                  setData({...data, attributes: {...attr, hero: {...attr.hero, backgroundImage: file}}});
+                })}
+              />
             </div>
           </div>
           <input className="w-full text-4xl font-black outline-none mb-4" value={attr.hero?.title || ""} 
@@ -132,26 +159,16 @@ const HomepageEditor = () => {
             <div className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
               <BarChart3 size={14}/> Impact Statistics
             </div>
-            <button 
-                onClick={() => {
-                    const next = [...(attr.stats || []), { value: "0", label: "New Label" }];
-                    setData({...data, attributes: {...attr, stats: next}});
-                }}
-                className="text-emerald-600 flex items-center gap-1 text-xs font-bold hover:bg-emerald-50 px-3 py-1 rounded-lg"
-            >
+            <button onClick={() => setData({...data, attributes: {...attr, stats: [...(attr.stats || []), { value: "0", label: "New Label" }]}})}
+                className="text-emerald-600 flex items-center gap-1 text-xs font-bold hover:bg-emerald-50 px-3 py-1 rounded-lg">
               <Plus size={14}/> ADD STAT
             </button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {attr.stats?.map((s: any, i: number) => (
               <div key={i} className="bg-slate-50 p-4 rounded-2xl border flex flex-col relative group">
-                <button 
-                    onClick={() => {
-                        const next = attr.stats.filter((_:any, idx:number) => idx !== i);
-                        setData({...data, attributes: {...attr, stats: next}});
-                    }}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600"
-                >
+                <button onClick={() => setData({...data, attributes: {...attr, stats: attr.stats.filter((_:any, idx:number) => idx !== i)}})}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600">
                     <Trash2 size={14}/>
                 </button>
                 <input className="w-full text-2xl font-black text-emerald-600 bg-transparent outline-none" value={s.value} 
@@ -171,14 +188,14 @@ const HomepageEditor = () => {
           </div>
         </div>
 
-        {/* CHAIRPERSON SECTION - WITH UPLOAD */}
+        {/* CHAIRPERSON SECTION */}
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
           <div className="flex justify-between items-center mb-8">
             <div className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
               <Quote size={14}/> Leadership Message
             </div>
             
-            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <div className="relative group cursor-pointer" onClick={() => chairFileRef.current?.click()}>
               <div className="w-16 h-16 rounded-full bg-slate-100 border-2 border-white shadow-md overflow-hidden flex items-center justify-center">
                 {attr.chairMessage?.photo ? (
                     <img src={getImageUrl(attr.chairMessage.photo)} className="w-full h-full object-cover" />
@@ -189,13 +206,9 @@ const HomepageEditor = () => {
               <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                 <p className="text-[8px] text-white font-bold">CHANGE</p>
               </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e, (id) => {
-                    setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, photo: id}}});
+              <input type="file" ref={chairFileRef} className="hidden" accept="image/*"
+                onChange={(e) => handleFileUpload(e, (file) => {
+                    setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, photo: file}}});
                 })}
               />
             </div>
@@ -213,64 +226,14 @@ const HomepageEditor = () => {
           />
         </div>
 
-        {/* CONNECTING PROFESSIONALS */}
-        <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-8">
-            <div className="bg-amber-50 text-amber-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-              <Users size={14}/> Professional Accordion
-            </div>
-            <button 
-                onClick={() => {
-                    const next = [...(attr.connectingProfessionals || []), { title: "New Feature", content: "Details here" }];
-                    setData({...data, attributes: {...attr, connectingProfessionals: next}});
-                }}
-                className="text-amber-600 flex items-center gap-1 text-xs font-bold hover:bg-amber-50 px-3 py-1 rounded-lg"
-            >
-              <Plus size={14}/> ADD ITEM
-            </button>
-          </div>
-          <div className="space-y-4">
-            {attr.connectingProfessionals?.map((cp: any, i: number) => (
-              <div key={i} className="p-4 bg-slate-50 rounded-2xl border group relative">
-                <button 
-                    onClick={() => {
-                        const next = attr.connectingProfessionals.filter((_:any, idx:number) => idx !== i);
-                        setData({...data, attributes: {...attr, connectingProfessionals: next}});
-                    }}
-                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-red-400"
-                >
-                    <Trash2 size={14}/>
-                </button>
-                <input className="w-full font-black text-slate-800 bg-transparent outline-none mb-2" value={cp.title} 
-                  onChange={(e) => {
-                    const next = [...attr.connectingProfessionals]; next[i].title = e.target.value;
-                    setData({...data, attributes: {...attr, connectingProfessionals: next}});
-                  }}
-                />
-                <textarea className="w-full text-sm text-slate-500 bg-transparent outline-none h-16 resize-none leading-relaxed" value={cp.content} 
-                   onChange={(e) => {
-                    const next = [...attr.connectingProfessionals]; next[i].content = e.target.value;
-                    setData({...data, attributes: {...attr, connectingProfessionals: next}});
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* PARTNERS SECTION */}
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
           <div className="flex justify-between items-center mb-8">
             <div className="bg-slate-50 text-slate-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
               <Building2 size={14}/> Partner Logos
             </div>
-            <button 
-                onClick={() => {
-                    const next = [...(attr.partnerlogo || []), { name: "Company", logo: null }];
-                    setData({...data, attributes: {...attr, partnerlogo: next}});
-                }}
-                className="text-slate-600 flex items-center gap-1 text-xs font-bold hover:bg-slate-100 px-3 py-1 rounded-lg"
-            >
+            <button onClick={() => setData({...data, attributes: {...attr, partnerlogo: [...(attr.partnerlogo || []), { name: "", logo: null }]}})}
+                className="text-slate-600 flex items-center gap-1 text-xs font-bold hover:bg-slate-100 px-3 py-1 rounded-lg">
               <Plus size={14}/> ADD LOGO
             </button>
           </div>
@@ -283,27 +246,21 @@ const HomepageEditor = () => {
                     ) : (
                       <label className="cursor-pointer flex flex-col items-center">
                         <Upload size={16} className="text-slate-300 mb-1"/>
-                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, (id) => {
-                             const next = [...attr.partnerlogo]; next[i].logo = id;
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, (file) => {
+                             const next = [...attr.partnerlogo]; next[i].logo = file;
                              setData({...data, attributes: {...attr, partnerlogo: next}});
                         })}/>
                       </label>
                     )}
                 </div>
-                <button 
-                    onClick={() => {
-                        const next = attr.partnerlogo.filter((_:any, idx:number) => idx !== i);
-                        setData({...data, attributes: {...attr, partnerlogo: next}});
-                    }}
-                    className="absolute -top-2 -right-2 bg-white rounded-full shadow-md p-1 text-red-400 opacity-0 group-hover:opacity-100"
-                >
+                <button onClick={() => setData({...data, attributes: {...attr, partnerlogo: attr.partnerlogo.filter((_:any, idx:number) => idx !== i)}})}
+                    className="absolute -top-2 -right-2 bg-white rounded-full shadow-md p-1 text-red-400 opacity-0 group-hover:opacity-100">
                     <Trash2 size={12}/>
                 </button>
               </div>
             ))}
           </div>
         </div>
-
       </div>
     </div>
   );

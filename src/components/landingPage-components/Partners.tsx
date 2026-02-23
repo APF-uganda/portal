@@ -17,23 +17,25 @@ function Partners({ data }: { data: PartnerItem[] }) {
 
   const items = data && data.length > 0 ? data : defaultPartners;
 
-  
   const getLogoUrl = (item: any) => {
+    if (!item || !item.logo) return '';
+
     
-    const url = item.logo?.data?.attributes?.url || item.logo?.url || item.logo || '';
-    
-    if (!url) return '';
-    
+    const logoObj = item.logo.data ? item.logo.data.attributes : item.logo;
+    const rawUrl = logoObj?.url || (typeof item.logo === 'string' ? item.logo : '');
+
    
-    if (typeof url === 'string' && url.startsWith('/')) {
-  
-      const isLocalAsset = url.includes('.'); 
+    if (!rawUrl || typeof rawUrl !== 'string') return '';
+
+    if (rawUrl.startsWith('/')) {
     
-      if (url.startsWith('/uploads/')) return `http://localhost:1337${url}`;
-      return isLocalAsset ? url : `http://localhost:1337${url}`;
+      const isLocalAsset = rawUrl.includes('.') && !rawUrl.startsWith('/uploads');
+      if (isLocalAsset) return rawUrl;
+      
+      return `http://localhost:1337${rawUrl}`;
     }
     
-    return url;
+    return rawUrl;
   };
 
   return (
@@ -47,11 +49,17 @@ function Partners({ data }: { data: PartnerItem[] }) {
         Our Partners
       </h4>
 
-      <div className="max-w-full overflow-hidden relative py-6 sm:py-8 before:content-[''] before:absolute before:top-0 before:left-0 before:w-[100px] sm:before:w-[150px] before:h-full before:z-[2] before:pointer-events-none before:bg-gradient-to-r before:from-white before:to-transparent after:content-[''] after:absolute after:top-0 after:right-0 after:w-[100px] sm:after:w-[150px] after:h-full after:z-[2] after:pointer-events-none after:bg-gradient-to-l after:from-white after:to-transparent">
+      <div className="max-w-full overflow-hidden relative py-6 sm:py-8 
+        before:content-[''] before:absolute before:top-0 before:left-0 before:w-[100px] sm:before:w-[150px] before:h-full before:z-[2] before:pointer-events-none before:bg-gradient-to-r before:from-white before:to-transparent 
+        after:content-[''] after:absolute after:top-0 after:right-0 after:w-[100px] sm:after:w-[150px] after:h-full after:z-[2] after:pointer-events-none after:bg-gradient-to-l after:from-white after:to-transparent">
        
         <div className="flex gap-8 sm:gap-16 w-fit animate-scroll hover:[animation-play-state:paused]">
+         
           {[...items, ...items].map((partner, index) => {
             const logoPath = getLogoUrl(partner);
+            
+            if (!logoPath) return null;
+
             return (
               <img
                 key={index}
@@ -59,9 +67,8 @@ function Partners({ data }: { data: PartnerItem[] }) {
                 alt={partner.name || 'Partner Logo'}
                 className="h-16 sm:h-24 object-contain min-w-[120px] sm:min-w-[150px] flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-110"
                 onError={(e) => {
-                  // Fallback: if the image fails, we hide it or you could set a placeholder
-                  console.log("Image load failed for:", logoPath);
-                  e.currentTarget.style.opacity = '0.3'; // Subtle hint it failed during dev
+                  console.warn("Failed to load image:", logoPath);
+                  e.currentTarget.style.display = 'none';
                 }}
               />
             );
