@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, User,  FileText, Eye,  Loader2,  Download,  } from 'lucide-react';
+import { getAccessToken } from '../../utils/authStorage';
 
 interface Application {
   id: number;
@@ -48,6 +49,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   
   
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileType, setPreviewFileType] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState<number | null>(null);
 
   useEffect(() => {
@@ -66,7 +68,12 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getAccessToken();
+      if (!token) {
+        setError('Authentication required. Please log in again.');
+        return;
+      }
+      
       const response = await fetch(
         `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/applications/${applicationId}/`,
         {
@@ -89,6 +96,8 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   // SECURE FETCH LOGIC
   const handleViewDocument = async (doc: any) => {
     setIsPreviewLoading(doc.id);
+    
+    // Get the file path - prefer file_url, then fall back to file or document
     const path = doc.file_url || doc.file || doc.document;
     if (!path) {
       alert("No file path found for this document.");
@@ -96,32 +105,55 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
       return;
     }
 
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    const finalUrl = path.startsWith('http') ? path : `${cleanBase}${cleanPath}`;
-
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getAccessToken();
+      if (!token) {
+        alert("Authentication required. Please log in again.");
+        setIsPreviewLoading(null);
+        return;
+      }
+      
+      // If it's already a full URL, use it directly
+      let finalUrl = path;
+      
+      // If it's a relative path, construct the full URL
+      if (!path.startsWith('http')) {
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        finalUrl = `${cleanBase}${cleanPath}`;
+      }
+
       const response = await fetch(finalUrl, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert("Document file not found on server. The file may have been deleted or moved.");
+        } else if (response.status === 403) {
+          alert("You don't have permission to view this document.");
+        } else {
+          alert(`Failed to load document: ${response.status} ${response.statusText}`);
+        }
+        setIsPreviewLoading(null);
+        return;
+      }
 
       const blob = await response.blob();
+      const fileType = blob.type || doc.file_type || 'application/octet-stream';
       
-      
+      // Revoke previous preview URL to prevent memory leaks
       if (previewUrl && previewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(previewUrl);
       }
 
       const objectUrl = URL.createObjectURL(blob);
       setPreviewUrl(objectUrl);
+      setPreviewFileType(fileType);
     } catch (err) {
-      console.error("Authenticated fetch failed:", err);
-      
-      window.open(finalUrl, '_blank');
+      console.error("Failed to fetch document:", err);
+      alert("Failed to load document. Please try again or contact support if the problem persists.");
     } finally {
       setIsPreviewLoading(null);
     }
@@ -239,6 +271,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                             onClick={() => handleViewDocument(doc)}
                             disabled={isPreviewLoading !== null}
                             className="flex items-center gap-1 text-xs font-bold text-[#5C32A3] bg-[#F4F2FE] px-4 py-2 rounded-lg hover:bg-[#5C32A3] hover:text-white transition-all disabled:opacity-50"
+                            title="View document (Note: Some files may be missing from server)"
                           >
                             {isPreviewLoading === doc.id ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
                             View
@@ -246,6 +279,9 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                         </div>
                       ))}
                     </div>
+                    <p className="text-xs text-gray-500 mt-2 italic">
+                      Note: If a document fails to load, the file may be missing from the server. Please contact support.
+                    </p>
                   </div>
                 )}
               </div>
@@ -273,38 +309,87 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
     
       {previewUrl && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 p-4 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-5xl h-[95vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+          <div className="relative w-full max-w-6xl h-[95vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
             
-            <div className="flex items-center justify-between px-6 py-4 border-b">
+            <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
               <h4 className="font-bold text-gray-700 flex items-center gap-2">
-                <FileText size={20} className="text-[#5C32A3]" /> Secure Preview
+                <FileText size={20} className="text-[#5C32A3]" /> Document Preview
               </h4>
               <div className="flex items-center gap-2">
                 <a 
                   href={previewUrl} 
                   download="document" 
-                  className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
+                  className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
                   title="Download"
                 >
                   <Download size={20} />
                 </a>
-                <button onClick={() => setPreviewUrl(null)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-all">
+                <button 
+                  onClick={() => {
+                    setPreviewUrl(null);
+                    setPreviewFileType(null);
+                  }} 
+                  className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
+                  title="Close"
+                >
                   <X size={24} />
                 </button>
               </div>
             </div>
             
-            <div className="flex-1 bg-gray-100 overflow-hidden relative">
-              
-              <iframe 
-                src={previewUrl} 
-                className="w-full h-full border-none" 
-                title="Document Preview" 
-              />
+            <div className="flex-1 bg-gray-100 overflow-auto relative p-4">
+              <div className="w-full h-full flex items-center justify-center">
+                {previewFileType?.startsWith('image/') ? (
+                  // For images, use img tag with object-fit
+                  <img 
+                    src={previewUrl} 
+                    alt="Document preview"
+                    className="max-w-full max-h-full object-contain shadow-lg"
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      maxWidth: '100%',
+                      maxHeight: '100%'
+                    }}
+                  />
+                ) : previewFileType === 'application/pdf' ? (
+                  // For PDFs, use iframe with proper sizing
+                  <iframe 
+                    src={previewUrl} 
+                    className="w-full h-full border-none bg-white shadow-lg"
+                    title="PDF Preview"
+                  />
+                ) : (
+                  // For other file types, show download option
+                  <div className="text-center p-8 bg-white rounded-lg shadow-lg">
+                    <FileText size={64} className="mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-700 mb-4">Preview not available for this file type</p>
+                    <a 
+                      href={previewUrl} 
+                      download="document"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] transition-colors"
+                    >
+                      <Download size={20} />
+                      Download File
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
             
-            <div className="p-4 border-t text-right bg-white">
-              <button onClick={() => setPreviewUrl(null)} className="px-8 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] shadow-sm">
+            <div className="p-4 border-t bg-gray-50 flex justify-between items-center">
+              <p className="text-sm text-gray-600">
+                {previewFileType?.startsWith('image/') 
+                  ? 'Image scaled to fit. Download for full quality.' 
+                  : 'Use scroll to navigate, or download for offline viewing.'}
+              </p>
+              <button 
+                onClick={() => {
+                  setPreviewUrl(null);
+                  setPreviewFileType(null);
+                }} 
+                className="px-8 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] shadow-sm transition-colors"
+              >
                 Close Preview
               </button>
             </div>

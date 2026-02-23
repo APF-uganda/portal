@@ -1,112 +1,81 @@
-/**
- * Custom hook for analytics data management
- */
+import { useState, useEffect, useCallback } from 'react';
+import { analyticsApi } from '../services/analyticsApi';
 
-import { useState, useEffect } from 'react';
-import { analyticsApi, ComprehensiveAnalytics, MembershipAnalytics, ApplicationAnalytics } from '../services/analyticsApi';
 
-export const useAnalytics = () => {
-  const [analytics, setAnalytics] = useState<ComprehensiveAnalytics | null>(null);
+interface AnalyticsState {
+  membership: { 
+    total_members: number; 
+    growth: { labels: string[]; data: number[] } 
+  };
+  applications: { 
+    total_applications: number; 
+    status_breakdown: { labels: string[]; data: number[] } 
+  };
+  system: { 
+    active_users_30d: number; 
+    daily_activity: { labels: string[]; data: number[] } 
+  };
+}
+
+export const useAnalytics = (period: string = '30d') => {
+  const [analytics, setAnalytics] = useState<AnalyticsState>({
+    membership: { total_members: 0, growth: { labels: [], data: [] } },
+    applications: { total_applications: 0, status_breakdown: { labels: [], data: [] } },
+    system: { active_users_30d: 0, daily_activity: { labels: [], data: [] } }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAnalytics = async () => {
+  const fetchAllData = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-      console.log('Fetching comprehensive analytics...');
-      const data = await analyticsApi.getComprehensiveAnalytics();
-      console.log('Analytics data received:', data);
-      setAnalytics(data);
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || err.message || 'Failed to load analytics data';
-      setError(errorMsg);
-      console.error('Error fetching analytics:', err);
-      console.error('Error details:', {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
-        url: err.config?.url
+     
+      const results = await Promise.allSettled([
+        analyticsApi.getDashboardSummary(period),
+        analyticsApi.getApplicationStatusChart(period),
+        analyticsApi.getDailyActivityChart('7d')
+      ]);
+
+      const [summaryRes, appsRes, systemRes] = results;
+
+      setAnalytics({
+        // 1. Membership comes from the summary endpoint
+        membership: summaryRes.status === 'fulfilled' 
+          ? summaryRes.value?.membership 
+          : { total_members: 0, growth: { labels: [], data: [] } },
+
+      
+        applications: appsRes.status === 'fulfilled' 
+          ? { 
+              total_applications: summaryRes.status === 'fulfilled' ? summaryRes.value?.applications?.total_applications : 0,
+              status_breakdown: appsRes.value 
+            }
+          : { total_applications: 0, status_breakdown: { labels: [], data: [] } },
+
+        system: systemRes.status === 'fulfilled' 
+          ? { 
+              active_users_30d: summaryRes.status === 'fulfilled' ? summaryRes.value?.system?.active_users_30d : 0,
+              daily_activity: systemRes.value 
+            }
+          : { active_users_30d: 0, daily_activity: { labels: [], data: [] } }
       });
+
+      if (results.every(r => r.status === 'rejected')) {
+        setError("Unable to connect to analytics services.");
+      } else {
+        setError(null);
+      }
+    } catch (err: any) {
+      console.error("Critical Analytics Hook Error:", err);
+      setError("A critical error occurred while fetching analytics.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]); 
 
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    fetchAllData();
+  }, [fetchAllData]);
 
-  const refetch = () => {
-    fetchAnalytics();
-  };
-
-  return {
-    analytics,
-    loading,
-    error,
-    refetch,
-  };
-};
-
-export const useMembershipAnalytics = () => {
-  const [analytics, setAnalytics] = useState<MembershipAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await analyticsApi.getMembershipAnalytics();
-      setAnalytics(data);
-    } catch (err) {
-      setError('Failed to load membership analytics');
-      console.error('Error fetching membership analytics:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  return {
-    analytics,
-    loading,
-    error,
-    refetch: fetchAnalytics,
-  };
-};
-
-export const useApplicationAnalytics = () => {
-  const [analytics, setAnalytics] = useState<ApplicationAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await analyticsApi.getApplicationAnalytics();
-      setAnalytics(data);
-    } catch (err) {
-      setError('Failed to load application analytics');
-      console.error('Error fetching application analytics:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  return {
-    analytics,
-    loading,
-    error,
-    refetch: fetchAnalytics,
-  };
+  return { analytics, loading, error, refresh: fetchAllData };
 };

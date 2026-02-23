@@ -1,12 +1,39 @@
-import React from 'react';
-import { History, FileText, Download, Share2, Trash2, FileSpreadsheet } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { History, FileText, Download, Trash2, FileSpreadsheet, Loader2, AlertCircle } from 'lucide-react';
+import { analyticsApi } from '../../services/analyticsApi';
 
-const RecentReports: React.FC = () => {
-  const reports = [
-    { name: "Membership_Report_Dec2024.pdf", type: "Membership Report", date: "Dec 22, 2024", size: "2.4 MB", ext: 'pdf' },
-    { name: "Financial_Summary_Q4_2024.xlsx", type: "Financial Report", date: "Dec 20, 2024", size: "1.8 MB", ext: 'xlsx' },
-    { name: "Events_Analysis_2024.pdf", type: "Events Report", date: "Dec 18, 2024", size: "3.1 MB", ext: 'pdf' },
-  ];
+interface RecentReportsProps {
+  refreshTrigger?: number;
+}
+
+const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchReports = async () => {
+    try {
+      const data = await analyticsApi.getGeneratedReports();
+      setReports(data);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+    // Auto-refresh every 15 seconds to check for "processing" -> "completed" status
+    const interval = setInterval(fetchReports, 15000);
+    return () => clearInterval(interval);
+  }, [refreshTrigger]);
+
+  if (loading) return (
+    <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 flex flex-col items-center">
+      <Loader2 className="animate-spin text-[#5E2590] mb-2" size={24} />
+      <p className="text-sm text-slate-500">Loading your reports...</p>
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
@@ -15,36 +42,47 @@ const RecentReports: React.FC = () => {
           <History size={18} strokeWidth={2.5} />
           <h2 className="font-bold text-slate-800">Recently Generated</h2>
         </div>
-        <span className="text-[11px] text-slate-400 font-medium">Your recently generated reports are available for download.</span>
       </div>
 
       <div className="divide-y divide-slate-50">
-        {reports.map((report, idx) => (
-          <div key={idx} className="p-4 hover:bg-slate-50 transition-all flex items-center justify-between group">
-            <div className="flex items-center gap-4">
-              <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-[#5E2590] focus:ring-[#5E2590]" />
-              <div className={`p-2.5 rounded-lg ${report.ext === 'pdf' ? 'bg-indigo-50 text-[#5E2590]' : 'bg-emerald-50 text-emerald-600'}`}>
-                {report.ext === 'pdf' ? <FileText size={18} /> : <FileSpreadsheet size={18} />}
-              </div>
-              <div>
-                <p className="font-bold text-slate-700 text-sm group-hover:text-[#5E2590] transition-colors">{report.name}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">{report.type} • {report.date} • {report.size}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button title="Download" className="p-2 text-slate-400 hover:text-[#5E2590] hover:bg-white rounded-lg border border-transparent hover:border-slate-100 shadow-sm transition-all">
-                <Download size={16} />
-              </button>
-              <button title="Share" className="p-2 text-slate-400 hover:text-[#5E2590] hover:bg-white rounded-lg border border-transparent hover:border-slate-100 shadow-sm transition-all">
-                <Share2 size={16} />
-              </button>
-              <button title="Delete" className="p-2 text-slate-400 hover:text-red-500 hover:bg-white rounded-lg border border-transparent hover:border-slate-100 shadow-sm transition-all">
-                <Trash2 size={16} />
-              </button>
-            </div>
+        {reports.length === 0 ? (
+          <div className="p-12 text-center">
+            <p className="text-slate-400 text-sm">No reports generated yet.</p>
           </div>
-        ))}
+        ) : (
+          reports.map((report) => (
+            <div key={report.id} className="p-4 hover:bg-slate-50 transition-all flex items-center justify-between group">
+              <div className="flex items-center gap-4">
+                <div className={`p-2.5 rounded-lg ${report.file_format === 'pdf' ? 'bg-indigo-50 text-[#5E2590]' : 'bg-emerald-50 text-emerald-600'}`}>
+                  {report.file_format === 'pdf' ? <FileText size={18} /> : <FileSpreadsheet size={18} />}
+                </div>
+                <div>
+                  <p className="font-bold text-slate-700 text-sm">{report.title}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    {report.status.toUpperCase()} • {new Date(report.created_at).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {report.status === 'processing' ? (
+                  <Loader2 size={16} className="animate-spin text-amber-500 mr-2" />
+                ) : report.status === 'failed' ? (
+                  <AlertCircle size={16} className="text-red-500 mr-2" />
+                ) : (
+                  <a 
+                    href={report.file_path} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 text-slate-400 hover:text-[#5E2590] hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all"
+                  >
+                    <Download size={16} />
+                  </a>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

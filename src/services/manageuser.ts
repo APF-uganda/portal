@@ -43,5 +43,30 @@ export const userManagementApi = {
       {}, 
       { headers: getHeaders() }
     );
+  },
+
+  fetchMemberDocuments: async (userId: string) => {
+    console.log(`[API] Fetching documents for user ${userId}`);
+    console.log(`[API] URL: ${API_BASE_URL}/api/v1/documents/member-documents/${userId}/`);
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/v1/documents/member-documents/${userId}/`,
+        { headers: getHeaders() }
+      );
+      console.log('[API] Response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('[API] Error fetching documents:', error);
+      console.error('[API] Error response:', error.response?.data);
+      throw error;
+    }
+  },
+
+  updateDocumentStatus: async (documentId: string, status: string, feedback?: string) => {
+    return axios.patch(
+      `${API_BASE_URL}/api/v1/documents/${documentId}/admin-review/`,
+      { status, admin_feedback: feedback },
+      { headers: getHeaders() }
+    );
   }
 };

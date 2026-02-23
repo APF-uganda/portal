@@ -1,7 +1,11 @@
-import React from 'react';
-import { Users, Eye, Download, FileText, BarChart3, ShieldCheck, TrendingUp, DollarSign, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Users, Eye, Download, FileText, BarChart3, 
+  ShieldCheck, TrendingUp, DollarSign, Calendar, 
+  Loader2, CheckCircle2 
+} from 'lucide-react';
 import { useAnalytics } from '../../hooks/useAnalytics';
-import { ReportTemplate } from '../../services/analyticsApi';
+import { analyticsApi, ReportTemplate } from '../../services/analyticsApi';
 
 interface ReportCardProps {
   template?: ReportTemplate;
@@ -9,7 +13,7 @@ interface ReportCardProps {
   date?: string;
   description?: string;
   onView?: () => void;
-  onDownload?: () => void;
+  onSuccess?: () => void; 
 }
 
 const ReportsCard: React.FC<ReportCardProps> = ({ 
@@ -17,25 +21,21 @@ const ReportsCard: React.FC<ReportCardProps> = ({
   title: propTitle, 
   date: propDate, 
   description: propDescription, 
-  onView, 
-  onDownload 
+  onView,
+  onSuccess
 }) => {
   const { analytics } = useAnalytics();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [justFinished, setJustFinished] = useState(false);
   
-  // Use template data if available, otherwise use props
-  const title = template ? template.report_type_display : propTitle || 'Report';
+  const title = template ? template.name : propTitle || 'Report';
   const description = template ? template.description : propDescription || '';
-  const date = propDate || new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
-  });
+  const date = propDate || (template ? new Date(template.created_at).toLocaleDateString() : 'Recent');
   
   const getIcon = () => {
     const reportType = template ? template.report_type : title.toLowerCase();
-    
     if (reportType.includes('membership')) return <Users className="w-5 h-5" />;
-    if (reportType.includes('financial') || reportType.includes('general')) return <DollarSign className="w-5 h-5" />;
+    if (reportType.includes('financial')) return <DollarSign className="w-5 h-5" />;
     if (reportType.includes('event')) return <Calendar className="w-5 h-5" />;
     if (reportType.includes('compliance')) return <ShieldCheck className="w-5 h-5" />;
     if (reportType.includes('growth')) return <TrendingUp className="w-5 h-5" />;
@@ -43,160 +43,119 @@ const ReportsCard: React.FC<ReportCardProps> = ({
     return <BarChart3 className="w-5 h-5" />;
   };
 
-  // Generate realistic chart data based on report type
-  const getChartData = () => {
-    const reportType = template ? template.report_type : title.toLowerCase();
+ 
+  const getChartData = (): number[] => {
     
-    if (reportType.includes('membership') && analytics?.membership) {
-      // Use real membership growth data
-      const growthData = analytics.membership.monthly_growth.slice(-6);
-      return growthData.map(item => item.count);
-    } else if ((reportType.includes('application') || reportType.includes('general')) && analytics?.applications) {
-      // Use application status data
-      const { pending, approved, rejected } = analytics.applications.status_breakdown;
-      return [pending, approved, rejected, pending + approved, rejected + approved, pending + rejected];
-    } else {
-      // Default chart data
-      return [40, 55, 45, 80, 60, 40];
+    if (template?.chart_configs?.preview_data) {
+      return template.chart_configs.preview_data as number[];
     }
+    
+    
+    if (template?.report_type === 'membership' && analytics?.membership?.growth?.data) {
+      const growthData = analytics.membership.growth.data;
+      
+     
+      return growthData.length > 0 
+        ? growthData.slice(-6) 
+        : [0, 0, 0, 0, 0, 0];
+    }
+
+   
+    if (template?.report_type === 'applications' && analytics?.applications?.status_breakdown?.data) {
+        return analytics.applications.status_breakdown.data;
+    }
+    
+    
+    return [30, 45, 35, 60, 40, 50]; 
   };
 
   const chartData = getChartData();
-  const maxValue = Math.max(...chartData);
+  const maxValue = Math.max(...chartData, 1);
 
-  const handleView = () => {
-    if (onView) {
-      onView();
-    } else {
-      console.log(`Viewing ${title} report`);
-      // Add navigation or modal logic here
-    }
-  };
+  const handleGenerateRequest = async () => {
+    if (!template?.id) return;
+    
+    setIsGenerating(true);
+    try {
+      await analyticsApi.generateReport(
+        template.id,
+        `${template.name} - ${new Date().toLocaleDateString()}`,
+        template.output_format
+      );
 
-  const handleDownload = async () => {
-    if (onDownload) {
-      onDownload();
-    } else {
-      console.log(`Downloading ${title} report`);
+      setJustFinished(true);
+      if (onSuccess) onSuccess(); // Refreshes the "Recently Generated" list
       
-      try {
-        // Generate report data based on type
-        let reportData: any = {};
-        const reportType = template ? template.report_type : title.toLowerCase();
-        let filename = `${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`;
-        
-        if (reportType.includes('membership') && analytics?.membership) {
-          reportData = {
-            title: title,
-            generated_date: new Date().toISOString(),
-            data: analytics.membership,
-            summary: {
-              total_members: analytics.membership.total_members,
-              total_admins: analytics.membership.total_admins,
-              profile_completion_rate: analytics.membership.profile_completion.completion_rate
-            }
-          };
-        } else if ((reportType.includes('general') || reportType.includes('application')) && analytics) {
-          reportData = {
-            title: title,
-            generated_date: new Date().toISOString(),
-            data: {
-              applications: analytics.applications,
-              system: analytics.system
-            },
-            summary: {
-              total_applications: analytics.applications.total_applications,
-              pending: analytics.applications.status_breakdown.pending,
-              approved: analytics.applications.status_breakdown.approved,
-              rejected: analytics.applications.status_breakdown.rejected
-            }
-          };
-        } else {
-          reportData = {
-            title: title,
-            generated_date: new Date().toISOString(),
-            description: description,
-            template_info: template ? {
-              id: template.id,
-              type: template.report_type,
-              output_format: template.output_format
-            } : null,
-            note: 'Full report data not yet available'
-          };
-        }
-        
-        // Create and download JSON file
-        const dataStr = JSON.stringify(reportData, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${filename}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        console.log(`Report downloaded: ${filename}.json`);
-      } catch (error) {
-        console.error('Error downloading report:', error);
-        alert('Failed to download report. Please try again.');
-      }
+      setTimeout(() => setJustFinished(false), 3000);
+    } catch (error) {
+      console.error('Generation failed:', error);
+      alert('Failed to start report generation.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-[15px] p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-shadow">
-      
-     
-      <div className="flex justify-between items-start mb-3 gap-x-4"> 
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="text-[#5E2590] shrink-0">
+    <div className="bg-white rounded-[20px] p-6 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-md hover:border-indigo-100 transition-all group">
+      <div className="flex justify-between items-start mb-4 gap-x-4"> 
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="p-2 bg-indigo-50 text-[#5E2590] rounded-xl group-hover:bg-[#5E2590] group-hover:text-white transition-colors shrink-0">
             {getIcon()}
           </div>
-          <h3 className="font-bold text-gray-800 text-[15px] leading-tight whitespace-nowrap">
-            {title}
-          </h3>
+          <div className="truncate">
+            <h3 className="font-bold text-slate-800 text-[15px] leading-tight truncate">
+              {title}
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+              {template?.output_format?.toUpperCase() || 'PDF'} • {date}
+            </span>
+          </div>
         </div>
-        
-        
-        <span className="text-[9px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 uppercase shrink-0">
-          {date}
-        </span>
       </div>
       
-      {/* Description */}
-      <p className="text-[12px] text-gray-500 leading-snug mb-4 min-h-[36px]">
+      <p className="text-[12px] text-slate-500 leading-relaxed mb-6 line-clamp-2 min-h-[32px]">
         {description}
       </p>
 
-      {/* Chart */}
-      <div className="flex items-end gap-1 h-12 mb-5">
-        {chartData.map((height, i) => (
+      {/* Mini Chart Visualization */}
+      <div className="flex items-end gap-1.5 h-14 mb-6 px-1">
+        {chartData.map((val: number, i: number) => (
           <div 
             key={i} 
-            className="flex-1 bg-[#5E2590] rounded-sm opacity-90" 
-            style={{ height: `${(height / maxValue) * 100}%` }}
-          />
+            className="flex-1 bg-indigo-100 rounded-t-md group-hover:bg-indigo-200 transition-colors" 
+            style={{ height: `${(val / maxValue) * 100}%` }}
+          >
+            <div className="w-full h-full bg-[#5E2590] rounded-t-md opacity-0 group-hover:opacity-40 transition-opacity" />
+          </div>
         ))}
       </div>
 
-      {/* Buttons */}
-      <div className="flex items-center gap-2 mt-auto">
+      <div className="flex items-center gap-3 mt-auto">
         <button 
-          onClick={handleView}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-[#5E2590] text-white text-[11px] font-bold py-2.5 rounded-lg hover:bg-[#4a1d72] transition-all whitespace-nowrap min-w-max px-3"
+          onClick={onView}
+          className="flex-1 flex items-center justify-center gap-2 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-50 transition-all"
         >
           <Eye size={14} strokeWidth={2.5} /> 
-          <span>View Report</span>
+          <span>Preview</span>
         </button>
         
         <button 
-          onClick={handleDownload}
-          className="flex-1 flex items-center justify-center gap-1.5 border border-gray-300 text-gray-600 text-[11px] font-bold py-2.5 rounded-lg hover:bg-gray-50 transition-all whitespace-nowrap min-w-max px-3"
+          onClick={handleGenerateRequest}
+          disabled={isGenerating || !template}
+          className={`flex-1 flex items-center justify-center gap-2 text-white text-[11px] font-bold py-3 rounded-xl transition-all shadow-sm ${
+            justFinished 
+              ? 'bg-green-500 hover:bg-green-600' 
+              : 'bg-[#5E2590] hover:bg-[#4a1d72] shadow-indigo-100'
+          }`}
         >
-          <Download size={14} strokeWidth={2.5} /> 
-          <span>Download</span>
+          {isGenerating ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : justFinished ? (
+            <CheckCircle2 size={14} />
+          ) : (
+            <Download size={14} strokeWidth={2.5} />
+          )}
+          <span>{isGenerating ? 'Processing...' : justFinished ? 'Queued' : 'Generate'}</span>
         </button>
       </div>
     </div>
