@@ -21,7 +21,7 @@ interface PageCardProps {
 const PageCard = ({ title, icon, desc, onClick }: PageCardProps) => (
   <button 
     onClick={onClick}
-    className="group relative bg-white p-6 rounded-3xl border border-slate-100 hover:border-purple-300 transition-all shadow-sm hover:shadow-xl hover:-translate-y-1 text-left overflow-hidden font-['Plus_Jakarta_Sans']"
+    className="group relative bg-white p-6 rounded-3xl border border-slate-100 hover:border-purple-300 transition-all shadow-sm hover:shadow-xl hover:-translate-y-1 text-left overflow-hidden"
   >
     <div className="flex items-start justify-between relative z-10">
       <div className="p-3 bg-slate-50 text-slate-500 rounded-2xl group-hover:bg-[#5C32A3] group-hover:text-white transition-all duration-500">
@@ -52,7 +52,7 @@ const CmsContentPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen font-['Plus_Jakarta_Sans'] selection:bg-purple-100 selection:text-[#5C32A3] bg-[#FDFDFF]">
+    <div className="flex min-h-screen selection:bg-purple-100 selection:text-[#5C32A3] bg-[#FDFDFF]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen`}>

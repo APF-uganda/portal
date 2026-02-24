@@ -112,12 +112,12 @@ const AboutPageEditor = () => {
           <ArrowLeft size={18} /> Back
         </button>
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/admin/governance')} // Redirect to Leadership Manager
-            className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 hover:bg-slate-50"
-          >
-            <Users size={18} /> Manage Governance
-          </button>
+        <button 
+  onClick={() => navigate('/admincms/leadership')} 
+  className="flex items-center gap-2 bg-white border border-slate-200 px-5 py-2.5 rounded-xl font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+>
+  <Users size={18} /> Manage Team
+</button>
           <button 
             onClick={handleSave}
             disabled={saving}

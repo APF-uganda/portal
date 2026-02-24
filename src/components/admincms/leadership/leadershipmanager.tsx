@@ -1,159 +1,190 @@
 import { useState, useEffect } from 'react';
-import api from '../../../utils/cmsapi';
-import { Plus, Pencil, Trash2, UserPlus, CheckCircle, XCircle } from 'lucide-react';
+import api from '../../../services/cmsApi';
+import { Save, Plus, Trash2, ArrowLeft, UserPlus, Loader2, Camera, RefreshCw, Hash } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const LeadershipManager = () => {
-  const [leaders, setLeaders] = useState([]);
+  const navigate = useNavigate();
+  const [leaders, setLeaders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    role: '',
-    order: 0,
-    isActive: true,
-    Photo: null as any
-  });
+  const [updatingId, setUpdatingId] = useState<any | null>(null);
 
-  useEffect(() => {
-    fetchLeaders();
-  }, []);
+  useEffect(() => { fetchLeaders(); }, []);
 
   const fetchLeaders = async () => {
     try {
-     
-      const res = await api.get('/leaderships?populate=Photo&sort=order:asc');
+      // Fetching and sorting by 'order' ascending
+      const res = await api.get('/leaderships?populate=*&sort=order:asc');
       setLeaders(res.data.data);
     } catch (err) {
-      console.error("Fetch error", err);
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpdateField = async (id: any, field: string, value: any) => {
+    setUpdatingId(id);
+    try {
+      
+      const targetId = typeof id === 'object' ? id.documentId : id;
+      await api.put(`/leaderships/${targetId}`, { data: { [field]: value } });
+      
+      setLeaders(prev => prev.map(l => (l.id === id || l.documentId === id) 
+        ? { ...l, attributes: { ...l.attributes, [field]: value } } 
+        : l
+      ));
+    } catch (err) {
+      console.error("Update failed", err);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handlePhotoUpload = async (id: any, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const formData = new FormData();
+    formData.append('files', file);
 
-    const uploadData = new FormData();
-    uploadData.append('files', file);
-
+    setUpdatingId(id);
     try {
-      const res = await api.post('/upload', uploadData);
-      setFormData({ ...formData, Photo: res.data[0].id });
-      alert("Photo uploaded successfully!");
+      const uploadRes = await api.post('/upload', formData);
+      const imageId = uploadRes.data[0].id;
+      
+      const targetId = typeof id === 'object' ? id.documentId : id;
+      await api.put(`/leaderships/${targetId}`, { data: { Photo: imageId } });
+      fetchLeaders(); 
     } catch (err) {
-      alert("Upload failed");
+      alert("Photo upload failed");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDelete = async (id: any) => {
+    if (!window.confirm("Are you sure? This will remove the leader from the website.")) return;
     try {
-      // Collection types use POST for new entries
-      await api.post('/leaderships', { data: formData });
-      setIsModalOpen(false);
-      fetchLeaders(); // Refresh list
-      setFormData({ name: '', role: '', order: 0, isActive: true, Photo: null });
+      const targetId = typeof id === 'object' ? id.documentId : id;
+      await api.delete(`/leaderships/${targetId}`);
+      setLeaders(prev => prev.filter(l => (l.id !== id && l.documentId !== id)));
     } catch (err) {
-      alert("Error saving leader");
+      alert("Delete failed");
     }
   };
 
-  const deleteLeader = async (id: number) => {
-    if (!window.confirm("Delete this leader?")) return;
-    await api.delete(`/leaderships/${id}`);
-    fetchLeaders();
-  };
-
-  if (loading) return <div className="p-10">Loading Governance...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+       <div className="text-center space-y-4">
+         <Loader2 className="animate-spin text-purple-600 mx-auto" size={40} />
+         <p className="font-black text-slate-400 uppercase tracking-widest text-xs">Syncing Governance...</p>
+       </div>
+    </div>
+  );
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-black text-slate-900">Governance & Leadership</h1>
+    <div className="min-h-screen bg-[#F8FAFC] pb-20">
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b p-4 flex justify-between items-center px-10">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/admin/about')} className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 pr-4 rounded-full transition-all">
+            <ArrowLeft size={18} />
+            <span className="text-xs font-bold">BACK </span>
+          </button>
+          <h1 className="font-black text-slate-800 text-xl tracking-tight uppercase">Governance </h1>
+        </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-purple-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-bold"
+          onClick={async () => {
+            await api.post('/leaderships', { 
+              data: { name: "New Member", role: "Assign Role", order: leaders.length + 1 } 
+            });
+            fetchLeaders();
+          }} 
+          className="bg-emerald-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-100"
         >
-          <UserPlus size={18}/> Add Member
+          <UserPlus size={18} /> ADD LEADER
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {leaders.map((leader: any) => (
-          <div key={leader.id} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative">
-            <div className="flex items-center gap-4">
-              {leader.attributes.Photo?.data?.attributes?.url && (
-                <img 
-                  src={`http://localhost:1337${leader.attributes.Photo.data.attributes.url}`} 
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-              )}
-              <div>
-                <h3 className="font-bold text-slate-800">{leader.attributes.name}</h3>
-                <p className="text-sm text-slate-500">{leader.attributes.role}</p>
-              </div>
-            </div>
-            
-            <div className="mt-4 flex justify-between items-center pt-4 border-t border-slate-50">
-              <span className="flex items-center gap-1 text-xs font-bold">
-                {leader.attributes.isActive ? (
-                  <><CheckCircle size={14} className="text-green-500"/> Active</>
-                ) : (
-                  <><XCircle size={14} className="text-red-400"/> Inactive</>
-                )}
-              </span>
-              <div className="flex gap-2">
-                <button className="p-2 text-slate-400 hover:text-purple-600"><Pencil size={16}/></button>
-                <button 
-                   onClick={() => deleteLeader(leader.id)}
-                   className="p-2 text-slate-400 hover:text-red-500"
-                ><Trash2 size={16}/></button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <div className="max-w-5xl mx-auto py-12 px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {leaders.map((leader) => {
+          const attr = leader.attributes || leader;
+          const photoUrl = attr.Photo?.data?.attributes?.url || attr.Photo?.url;
+          const currentId = leader.documentId || leader.id;
+          const isProcessing = updatingId === currentId;
 
-      {/* MODAL FOR ADDING (Simple version) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
-            <h2 className="text-xl font-black mb-6">New Leader</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input 
-                placeholder="Full Name" 
-                className="w-full p-3 bg-slate-50 rounded-xl outline-none"
-                onChange={e => setFormData({...formData, name: e.target.value})}
-                required
-              />
-              <input 
-                placeholder="Role (e.g. Chairperson)" 
-                className="w-full p-3 bg-slate-50 rounded-xl outline-none"
-                onChange={e => setFormData({...formData, role: e.target.value})}
-                required
-              />
-              <div>
-                <label className="text-xs font-bold text-slate-400 block mb-2">PHOTO</label>
-                <input type="file" onChange={handleFileUpload} required />
+          return (
+            <div key={currentId} className={`bg-white p-6 rounded-[32px] shadow-sm border-2 ${isProcessing ? 'border-purple-400' : 'border-white'} flex gap-6 relative group transition-all hover:shadow-md`}>
+              
+              {/* Photo Section */}
+              <div className="relative w-32 h-32 flex-shrink-0">
+                <div className="w-full h-full rounded-[2.5rem] bg-slate-50 overflow-hidden border-2 border-slate-100 shadow-inner">
+                  {photoUrl ? (
+                    <img src={`http://localhost:1337${photoUrl}`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300"><Camera size={32}/></div>
+                  )}
+                </div>
+                <label className="absolute -bottom-1 -right-1 bg-white p-2.5 rounded-2xl shadow-xl cursor-pointer hover:scale-110 transition-transform border border-slate-100 text-purple-600">
+                  <Plus size={18} />
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(currentId, e)} />
+                </label>
               </div>
-              <div className="flex gap-4">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 font-bold text-slate-500"
-                >Cancel</button>
-                <button 
-                  type="submit" 
-                  className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold"
-                >Save Leader</button>
+
+              {/* Data Section */}
+              <div className="flex-1 space-y-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Full Name</label>
+                    <input 
+                      className="w-full text-lg font-black outline-none border-b-2 border-transparent focus:border-purple-100 transition-colors"
+                      value={attr.name}
+                      onChange={(e) => setLeaders(prev => prev.map(l => (l.id === leader.id || l.documentId === leader.documentId) ? {...l, attributes: {...(l.attributes || l), name: e.target.value}} : l))}
+                      onBlur={(e) => handleUpdateField(currentId, 'name', e.target.value)}
+                    />
+                  </div>
+                  
+                  {/* Sort Order Field */}
+                  <div className="w-14">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Hash size={8}/> Order</label>
+                    <input 
+                      type="number"
+                      className="w-full text-sm font-black text-purple-600 bg-purple-50 rounded-lg px-2 py-1 outline-none"
+                      value={attr.order || 0}
+                      onChange={(e) => setLeaders(prev => prev.map(l => (l.id === leader.id || l.documentId === leader.documentId) ? {...l, attributes: {...(l.attributes || l), order: parseInt(e.target.value)}} : l))}
+                      onBlur={(e) => handleUpdateField(currentId, 'order', parseInt(e.target.value))}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Position / Role</label>
+                  <input 
+                    className="w-full text-sm font-bold text-slate-500 outline-none uppercase border-b-2 border-transparent focus:border-purple-100 transition-colors"
+                    value={attr.role}
+                    onChange={(e) => setLeaders(prev => prev.map(l => (l.id === leader.id || l.documentId === leader.documentId) ? {...l, attributes: {...(l.attributes || l), role: e.target.value}} : l))}
+                    onBlur={(e) => handleUpdateField(currentId, 'role', e.target.value)}
+                  />
+                </div>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              {/* Delete Button */}
+              <button 
+                onClick={() => handleDelete(currentId)}
+                className="absolute top-4 right-4 text-slate-200 hover:text-red-500 transition-colors p-2"
+              >
+                <Trash2 size={18} />
+              </button>
+
+              {/* Saving Indicator */}
+              {isProcessing && (
+                <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] rounded-[32px] flex items-center justify-center z-10">
+                  <RefreshCw size={24} className="animate-spin text-purple-600" />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

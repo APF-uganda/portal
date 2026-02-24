@@ -56,7 +56,7 @@ import ManagePayments from "./pages/admin/payments";
 import MembershipEditor from './components/admincms/editMembership';
 import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
-
+import LeadershipManager from './components/admincms/leadership/leadershipmanager';
 /* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
   children: JSX.Element;
@@ -114,6 +114,8 @@ const App: React.FC = () => {
             <Route path="/editMembership" element={<MembershipEditor />} />
             <Route path="/editAbout" element={<AboutPageEditor />} />
             <Route path="/editLandingpage" element={<HomePageEditor />} />
+            <Route path="/admin/about" element={<AboutPageEditor />} />
+           <Route path="/admincms/leadership" element={<LeadershipManager />} />
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
