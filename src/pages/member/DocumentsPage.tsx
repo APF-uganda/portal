@@ -11,17 +11,21 @@ import { toastMessages, showInfo } from "../../utils/toast-helpers"
 import { refreshDashboard } from "../../utils/dashboardEvents"
 
 const DocumentsPage: React.FC = () => {
-  const { documents, loading, uploadDocument, replaceDocument, downloadDocument, removeDocument } = useDocuments()
+  const { documents, loading, uploadDocument, replaceDocument, viewDocument, downloadDocument, removeDocument } = useDocuments()
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [documentToRemove, setDocumentToRemove] = useState<Document | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleViewDocument = (doc: Document) => {
+  const handleViewDocument = async (doc: Document) => {
     if (!doc.fileUrl) {
       showInfo('No file available for this document yet.', 'Document Preview')
       return
     }
-    window.open(doc.fileUrl, '_blank', 'noopener,noreferrer')
+    
+    const success = await viewDocument(doc.id)
+    if (!success) {
+      showInfo('Failed to view document. Please try again.', 'View Error')
+    }
   }
 
   const handleDownloadDocument = async (doc: Document) => {
@@ -52,11 +56,11 @@ const DocumentsPage: React.FC = () => {
   }
 
   const handleRemoveDocument = async (doc: Document) => {
-    // Check if document can be deleted
+    // Check if document can be deleted (only pending or rejected)
     const canDelete = doc.status === 'pending' || doc.status === 'rejected'
     
     if (!canDelete) {
-      showInfo('Approved documents cannot be deleted.', 'Not Allowed')
+      showInfo("Approved documents can't be deleted.", 'Not Allowed')
       return
     }
     
@@ -66,16 +70,6 @@ const DocumentsPage: React.FC = () => {
 
   const confirmRemoveDocument = async () => {
     if (!documentToRemove) return
-    
-    // Double-check status before deletion
-    const canDelete = documentToRemove.status === 'pending' || documentToRemove.status === 'rejected'
-    
-    if (!canDelete) {
-      showInfo('Approved documents cannot be deleted.', 'Not Allowed')
-      setShowConfirmModal(false)
-      setDocumentToRemove(null)
-      return
-    }
     
     console.log('[DocumentsPage] Confirming removal of:', documentToRemove.id, documentToRemove.name);
     
@@ -95,12 +89,12 @@ const DocumentsPage: React.FC = () => {
         // Refresh dashboard to update document count
         refreshDashboard()
       } else {
-        // Keep modal open on error
-        showInfo('Failed to remove document. Please try again.', 'Remove Error')
+        // Keep modal open on error, show error message
+        showInfo('Failed to delete document. Please try again.', 'Delete Error')
       }
     } catch (error) {
       console.error('[DocumentsPage] Remove error:', error)
-      showInfo('Failed to remove document. Please try again.', 'Remove Error')
+      showInfo('Failed to delete document. Please try again.', 'Delete Error')
     } finally {
       setIsDeleting(false)
     }

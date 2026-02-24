@@ -5,6 +5,7 @@ import {
   uploadDocument as uploadDocumentService, 
   replaceDocument as replaceDocumentService, 
   downloadDocument as downloadDocumentService,
+  viewDocument as viewDocumentService,
   deleteDocument as deleteDocumentService
 } from '../services/documents.service'
 
@@ -105,6 +106,18 @@ export const useDocuments = () => {
   }
 
   /**
+   * View a document in a new tab
+   */
+  const viewDocument = async (documentId: string): Promise<boolean> => {
+    try {
+      return await viewDocumentService(documentId)
+    } catch (error) {
+      console.error('View failed:', error)
+      return false
+    }
+  }
+
+  /**
    * Download a document
    */
   const downloadDocument = async (documentId: string, fileName: string): Promise<boolean> => {
@@ -159,6 +172,7 @@ export const useDocuments = () => {
     error,
     uploadDocument,
     replaceDocument,
+    viewDocument,
     downloadDocument,
     removeDocument,
     needsReupload,
