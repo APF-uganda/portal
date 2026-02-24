@@ -17,7 +17,7 @@ function Hero({ data }: { data: any }) {
       }}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/20" />
-      <div className="max-w-7xl mx-auto w-full px-4 relative z-10 text-white">
+      <div className="max-w-6xl mx-auto w-full px-4 relative z-10 text-white">
         <div className="max-w-3xl animate-fade-in-up">
           <h1 className="text-4xl lg:text-[3.5rem] mb-6 font-bold leading-tight">
             {data?.title || "Advancing Accountancy Excellence in Uganda"}

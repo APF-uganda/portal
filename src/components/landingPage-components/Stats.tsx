@@ -28,7 +28,8 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
       const duration = 2000
       const steps = 60
      
-      const safeValue = isNaN(value) ? 0 : value;
+      
+      const safeValue = typeof value === 'number' ? value : 0;
       const increment = safeValue / steps
       
       let currentStep = 0
@@ -76,21 +77,31 @@ function Stats({ data }: { data: any[] }) {
     { value: 100, label: "Resources Shared" }
   ];
 
-  const statsToDisplay = data && data.length > 0 ? data : defaultStats;
+  
+  const statsToDisplay = Array.isArray(data) && data.length > 0 ? data : defaultStats;
 
   return (
     <section className="bg-white py-8 sm:py-12 px-4">
       <div className="max-w-7xl mx-auto flex flex-row justify-center items-stretch gap-2 sm:gap-8">
-        {statsToDisplay.map((item: any, index: number) => (
-          <StatItem 
-            key={index}
-            icon={getDynamicIcon(item.label)} 
-           
-            value={Number(item.value) || 0} 
-            suffix="+" 
-            label={item.label} 
-          />
-        ))}
+        {statsToDisplay.map((item: any, index: number) => {
+          
+        
+          const rawValue = item.value ?? item.number;
+          const cleanValue = typeof rawValue === 'string' ? parseInt(rawValue, 10) : rawValue;
+          
+         
+          if (index === 0) console.log("Stats Data Received:", { label: item.label, value: cleanValue });
+
+          return (
+            <StatItem 
+              key={item.id || index}
+              icon={getDynamicIcon(item.label)} 
+              value={Number(cleanValue) || 0} 
+              suffix="+" 
+              label={item.label || "Statistic"} 
+            />
+          )
+        })}
       </div>
 
       <style>{`

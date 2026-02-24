@@ -25,7 +25,7 @@ function ConnectingProfessionals({ data }: { data: any[] }) {
 
   return (
     <section className="bg-white py-12 sm:py-16 px-4 sm:px-6 md:px-8">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 sm:gap-12 items-center animate-[fadeIn_1s_ease-out]">
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 sm:gap-12 items-center animate-[fadeIn_1s_ease-out]">
         <div className="flex-1 animate-[slideInLeft_1s_ease-out]">
           <h4 
             ref={elementRef}
