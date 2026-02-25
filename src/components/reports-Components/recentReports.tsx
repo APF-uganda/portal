@@ -9,6 +9,7 @@ interface RecentReportsProps {
 const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   const fetchReports = async () => {
     try {
@@ -27,6 +28,35 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
     const interval = setInterval(fetchReports, 15000);
     return () => clearInterval(interval);
   }, [refreshTrigger]);
+
+  const handleDownload = async (report: any) => {
+    if (report.status !== 'completed' || !report.download_url) {
+      return;
+    }
+
+    setDownloading(report.id);
+    try {
+      const blob = await analyticsApi.downloadReport(report.id);
+      
+      // Get filename from report or use default
+      const filename = `${report.title.replace(/[^a-z0-9]/gi, '_')}.${report.file_format}`;
+
+      // Create blob URL and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download report. Please try again.');
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   if (loading) return (
     <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 flex flex-col items-center">
@@ -68,17 +98,24 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
                 {report.status === 'processing' ? (
                   <Loader2 size={16} className="animate-spin text-amber-500 mr-2" />
                 ) : report.status === 'failed' ? (
-                  <AlertCircle size={16} className="text-red-500 mr-2" />
-                ) : (
-                  <a 
-                    href={report.file_path} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="p-2 text-slate-400 hover:text-[#5E2590] hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all"
+                  <div className="flex items-center gap-2">
+                    <AlertCircle size={16} className="text-red-500" />
+                    <span className="text-xs text-red-500">Failed</span>
+                  </div>
+                ) : report.status === 'completed' && report.download_url ? (
+                  <button
+                    onClick={() => handleDownload(report)}
+                    disabled={downloading === report.id}
+                    className="p-2 text-slate-400 hover:text-[#5E2590] hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Download report"
                   >
-                    <Download size={16} />
-                  </a>
-                )}
+                    {downloading === report.id ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Download size={16} />
+                    )}
+                  </button>
+                ) : null}
               </div>
             </div>
           ))
