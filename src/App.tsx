@@ -52,7 +52,7 @@ import SearchResults from "./pages/admin/SearchResults";
 import NewsManagement from "./pages/admin/newsMgt";
 import ManageUsers from "./pages/admin/manageusers";
 import EventCreatePage from "./pages/admin/eventMgt";
-import ManagePayments from "./pages/admin/payments";
+import ManagePayments from "./pages/admin/managePayments";
 import MembershipEditor from './components/admincms/editMembership';
 import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
