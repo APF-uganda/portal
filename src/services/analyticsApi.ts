@@ -61,6 +61,13 @@ export const analyticsApi = {
     return response.data;
   },
 
+  downloadReport: async (reportId: string): Promise<Blob> => {
+    const response = await api.get(`/api/v1/reports/download/${reportId}/`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
   // --- Dashboard Chart Data ---
 
   /**
