@@ -61,7 +61,7 @@ function StatItem({ icon, value, suffix, label }: StatItemProps) {
   )
 }
 
-function Stats({ data }: { data: any[] }) {
+function Stats({ data }: { data?: any[] }) {
   const getDynamicIcon = (label: string = "") => {
     const text = label.toLowerCase();
     const className = "w-6 h-6 sm:w-10 sm:h-10 text-primary";

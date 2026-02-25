@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import defaultHeroImg from '../../assets/images/landingPage-image/land.jpg';
 
-function Hero({ data }: { data: any }) {
+function Hero({ data }: { data?: any }) {
   const navigate = useNavigate();
 
  

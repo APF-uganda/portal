@@ -3,7 +3,7 @@ import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import defaultChairmanImg from '../../assets/images/landingPage-image/chair.jpg'
 
 interface ChairMessageProps {
-  data: {
+  data?: {
     name?: string;
     role?: string;
     fullMessage?: string;
@@ -50,12 +50,12 @@ function ChairMessage({ data }: ChairMessageProps) {
           {/* Dynamic Message Content */}
           <div className="leading-relaxed text-[#333] text-sm sm:text-base whitespace-pre-line">
             {isExpanded 
-              ? data?.fullMessage 
-              : `${data?.fullMessage?.substring(0, 350)}...`}
+              ? (data?.fullMessage || "Welcome to the Accountancy Professionals Forum Uganda. As the leading professional body for accountants in Uganda, we are committed to advancing excellence, integrity, and innovation in the accountancy profession. Our mission is to support our members through continuous professional development, advocacy, and creating opportunities for networking and collaboration. Together, we are building a stronger, more ethical financial sector that contributes to Uganda's economic growth and development.")
+              : `${(data?.fullMessage || "Welcome to the Accountancy Professionals Forum Uganda. As the leading professional body for accountants in Uganda, we are committed to advancing excellence, integrity, and innovation in the accountancy profession. Our mission is to support our members through continuous professional development, advocacy, and creating opportunities for networking and collaboration. Together, we are building a stronger, more ethical financial sector that contributes to Uganda's economic growth and development.").substring(0, 350)}...`}
           </div>
           
           {/* Read More Button */}
-          {data?.fullMessage && data.fullMessage.length > 350 && (
+          {((data?.fullMessage || "Welcome to the Accountancy Professionals Forum Uganda. As the leading professional body for accountants in Uganda, we are committed to advancing excellence, integrity, and innovation in the accountancy profession. Our mission is to support our members through continuous professional development, advocacy, and creating opportunities for networking and collaboration. Together, we are building a stronger, more ethical financial sector that contributes to Uganda's economic growth and development.").length > 350) && (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
               className="text-primary font-semibold mt-4 mb-4 p-0 transition-all duration-300 bg-transparent text-sm sm:text-base hover:underline hover:translate-x-1.5"

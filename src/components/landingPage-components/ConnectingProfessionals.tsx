@@ -4,7 +4,7 @@ import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import defaultConnectingImg from '../../assets/images/landingPage-image/shake.jpg'
 
 
-function ConnectingProfessionals({ data }: { data: any[] }) {
+function ConnectingProfessionals({ data }: { data?: any[] }) {
   const { elementRef, isVisible } = useScrollAnimation()
   
   

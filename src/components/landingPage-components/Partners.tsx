@@ -6,7 +6,7 @@ interface PartnerItem {
   logo?: any; 
 }
 
-function Partners({ data }: { data: PartnerItem[] }) {
+function Partners({ data }: { data?: PartnerItem[] }) {
   const { elementRef, isVisible } = useScrollAnimation()
 
   const defaultPartners = [
