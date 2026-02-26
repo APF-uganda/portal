@@ -28,6 +28,7 @@ interface PaymentFormsProps {
   selectedMethod: PaymentMethod | null;
   onPaymentDataChange: (paymentData: PaymentData) => void;
   onPaymentValidated: (isValid: boolean) => void;
+  onPaymentComplete?: () => void; // Callback when payment is successfully completed
 }
 
 /**
@@ -37,6 +38,7 @@ export function PaymentForms({
   selectedMethod,
   onPaymentDataChange,
   onPaymentValidated,
+  onPaymentComplete,
 }: PaymentFormsProps) {
   // Track previous method to detect changes
   const prevMethodRef = useRef<PaymentMethod | null>(null);
@@ -71,8 +73,20 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
       }
     },
     onComplete: (txRef: string) => {
+      console.log('[PaymentForms] Payment completed, txRef:', txRef);
       setPaymentStatus('completed');
       setTransactionReference(txRef);
+      // Trigger automatic submission when payment completes
+      // Use setTimeout to ensure state updates have propagated to parent
+      if (onPaymentComplete) {
+        console.log('[PaymentForms] Triggering onPaymentComplete callback in 500ms');
+        setTimeout(() => {
+          console.log('[PaymentForms] Executing onPaymentComplete callback now');
+          onPaymentComplete();
+        }, 500);
+      } else {
+        console.log('[PaymentForms] No onPaymentComplete callback provided');
+      }
     },
     onFailed: (error: string) => {
       setPaymentStatus('failed');
@@ -545,7 +559,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
               
               {/* User instruction text (Requirement 9.4) */}
               <p className="text-sm text-gray-700 text-center mb-4">
-                Your payment has been processed successfully.
+                Your payment has been processed successfully. Your application is being submitted automatically...
               </p>
               
               <div className="w-full space-y-2">

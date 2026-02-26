@@ -10,9 +10,10 @@ interface PaymentStepsProps {
   data?: PaymentData | null;
   onChange?: (data: PaymentData) => void;
   onValidationChange?: (isValid: boolean) => void;
+  onPaymentComplete?: () => void; // Callback when payment is successfully completed
 }
 
-function PaymentsStep({ data, onChange, onValidationChange }: PaymentStepsProps) {
+function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }: PaymentStepsProps) {
   const [consentEKYC, setConsentEKYC] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
@@ -184,6 +185,7 @@ function PaymentsStep({ data, onChange, onValidationChange }: PaymentStepsProps)
               selectedMethod={paymentMethod}
               onPaymentDataChange={handlePaymentDataChange}
               onPaymentValidated={handlePaymentValidated}
+              onPaymentComplete={onPaymentComplete}
             />
           )}
         </div>

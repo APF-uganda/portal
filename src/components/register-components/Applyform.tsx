@@ -82,18 +82,30 @@ function ApplyForm() {
 
   // Handle form submission
   const handleSubmit = async () => {
+    console.log('[Applyform] handleSubmit called');
+    console.log('[Applyform] accountData:', accountData);
+    console.log('[Applyform] personalData:', personalData);
+    console.log('[Applyform] documentsData:', documentsData);
+    console.log('[Applyform] paymentData:', paymentData);
+    
     // Validate all required data is present
     if (!accountData || !personalData || documentsData.length === 0 || !paymentData) {
+      console.log('[Applyform] Validation failed: missing data');
       setSubmissionError('Please complete all required fields');
       return;
     }
 
     // Validate payment is successful - check both status and isValidated flag
-    if (paymentData.status !== 'success' || !paymentData.isValidated) {
+    if ((paymentData.status !== 'success' && paymentData.status !== 'completed') || !paymentData.isValidated) {
+      console.log('[Applyform] Validation failed: payment not completed', {
+        status: paymentData.status,
+        isValidated: paymentData.isValidated
+      });
       setSubmissionError('Please complete payment before submitting');
       return;
     }
 
+    console.log('[Applyform] Starting submission...');
     setIsSubmitting(true);
     setSubmissionError(null);
 
@@ -235,6 +247,7 @@ function ApplyForm() {
               data={paymentData}
               onChange={setPayment}
               onValidationChange={setIsPaymentValid}
+              onPaymentComplete={handleSubmit}
             />
           )}
 
