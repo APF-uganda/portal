@@ -89,7 +89,7 @@ function ApplyForm() {
     }
 
     // Validate payment is successful - check both status and isValidated flag
-    if (paymentData.status !== 'success' || !paymentData.isValidated) {
+    if ((paymentData.status !== 'success' && paymentData.status !== 'completed') || !paymentData.isValidated) {
       setSubmissionError('Please complete payment before submitting');
       return;
     }
