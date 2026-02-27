@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+
 const STRAPI_URL = 'http://localhost:1337';
 const ADMIN_TOKEN = '0889ca4cdbb55fdeddaa95f0dfca91eb8bb3dc15664b0912f4d1eeb661e9b905391c39fe965054160282519bf8fa7e8570b53b98d4a6f6427e53c7887e63e6f317a8f128fa7c44b33de19ce94db7b2ae72d3d3468fa0ac64e1d35e12d69d56a62cb8c485f4a6df25ba661cf97d7ca070db2e83cf3dcb687b3df73f18f21269ab';
 
@@ -91,25 +92,46 @@ export const deleteNews = async (id: number) => {
 /**
  * EVENTS
  */
-export const getEvents = async (): Promise<Event[]> => {
-  const res = await api.get('/events', {
-    params: {
-      populate: '*',
-      sort: 'date:asc'
-    }
-  });
 
-  //  Logic
-  return res.data.data.map((item: any) => ({
-    id: item.id,
-    documentId: item.documentId, 
-    ...item, 
-    
-    // Final Image Mapping 
-    image: item.image?.url 
-      ? `${STRAPI_URL}${item.image.url}` 
-      : '/images/placeholder.jpg'
-  }));
+export const getEvents = async (): Promise<any[]> => {
+  try {
+    const res = await api.get('/events', { 
+      params: { populate: '*' } 
+    });
+
+
+    return (res.data.data || []).map((item: any) => ({
+      id: item.id,
+      documentId: item.documentId,
+      title: item.title,
+      description: item.description,
+      date: item.date,
+      time: item.time,
+      location: item.location,
+      registrationLink: item.registrationLink,
+      //  image path
+      image: item.image?.url 
+        ? `http://localhost:1337${item.image.url}` 
+        : '/images/placeholder.jpg',
+    }));
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return [];
+  }
+};
+
+
+
+export const createEvent = async (payload: any) => {
+ 
+  const response = await api.post('/events', { 
+    data: {
+      ...payload,
+      
+      date: payload.date ? new Date(payload.date).toISOString().split('T')[0] : null
+    } 
+  });
+  return response.data.data; 
 };
 
 export default api;
