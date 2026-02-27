@@ -62,8 +62,18 @@ export const useEvents = () => {
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await cmsApi.getEvents();
-      setEvents(data);
+      const rawData = await cmsApi.getEvents();
+      
+      // Personalization: Including all fields from Strapi and flattening attributes
+      const flattened = rawData.map((item: any) => ({
+        id: item.id,
+        ...item.attributes, // Spreads all fields: title, date, location, cpdPoints, etc.
+        image: item.attributes.image?.data?.attributes?.url 
+          ? `http://localhost:1337${item.attributes.image.data.attributes.url}` 
+          : '/images/placeholder.jpg'
+      }));
+
+      setEvents(flattened);
     } catch (err) {
       setError('Failed to fetch events');
     } finally {

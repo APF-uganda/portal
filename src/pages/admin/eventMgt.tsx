@@ -6,7 +6,7 @@ import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
 
-import { ActionHeader } from '../../components/adminEvents/contentEditor';
+import { ActionHeader } from '../../components/adminEvents/actionHeader';
 import { LogisticsSidebar } from '../../components/adminEvents/logistics';
 
 const EventCreatePage = () => {
