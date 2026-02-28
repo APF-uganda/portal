@@ -57,6 +57,7 @@ import MembershipEditor from './components/admincms/editMembership';
 import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
 import LeadershipManager from './components/admincms/leadership/leadershipmanager';
+
 /* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
   children: JSX.Element;
@@ -242,14 +243,6 @@ const App: React.FC = () => {
             }
           />
 
-          <Route
-            path="/admin/eventMgt"
-            element={
-              <ProtectedRoute role="admin">
-                <EventCreatePage />
-              </ProtectedRoute>
-            }
-          />
 
           <Route
             path="/admin/approval"
