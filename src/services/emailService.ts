@@ -6,10 +6,10 @@
 
 import emailjs from '@emailjs/browser';
 
-const EMAILJS_SERVICE_ID ='service_vjzvr2e';
-const EMAILJS_PUBLIC_KEY ='bnnAdDByZZy8gxYSF';
-const EMAILJS_TEMPLATE_ID_OTP ='template_5ea6jqe';
-const EMAILJS_TEMPLATE_ID_APPROVAL ='template_hdunzl7';
+const EMAILJS_SERVICE_ID ='service_4fbgc6k';
+const EMAILJS_PUBLIC_KEY ='gxneaZyyHF3D6Xi4F';
+const EMAILJS_TEMPLATE_ID_OTP ='template_okkvzy9';
+const EMAILJS_TEMPLATE_ID_APPROVAL ='template_988bvdj';
 
 
 // Check if we're in development mode

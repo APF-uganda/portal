@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { sendOTPEmail } from '../services/emailService';
-import { API_BASE_URL } from '../config/api';
 
 const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +13,8 @@ const ForgotPasswordPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // Request OTP from backend
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password/`, {
+      // Request OTP from backend (backend sends email automatically)
+      const response = await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,24 +25,16 @@ const ForgotPasswordPage: React.FC = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Send OTP email via EmailJS
-        const emailSent = await sendOTPEmail({
-          to_email: email,
-          otp_code: data.otp_code,
-          user_name: data.user_name || email.split('@')[0],
+        // OTP email is sent by backend automatically
+        console.log('Password reset OTP sent by backend to:', email);
+        
+        // Navigate to reset password page with session_id
+        navigate('/reset-password', {
+          state: {
+            session_id: data.session_id,
+            email: email,
+          },
         });
-
-        if (emailSent) {
-          // Navigate to reset password page with session_id
-          navigate('/reset-password', {
-            state: {
-              session_id: data.session_id,
-              email: email,
-            },
-          });
-        } else {
-          setError('Failed to send OTP email. Please try again.');
-        }
       } else {
         setError(data.error?.message || 'Failed to process request');
       }
