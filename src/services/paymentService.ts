@@ -41,7 +41,7 @@ class PaymentService {
 
   constructor() {
     // Initialize from environment variables (Requirement 1.1, 7.1, 7.2)
-    this.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     
     // Log API endpoint in development mode (Requirement 7.4)
     if (import.meta.env.DEV) {
@@ -281,3 +281,4 @@ class PaymentService {
 // Export singleton instance
 export const paymentService = new PaymentService();
 export default paymentService;
+
