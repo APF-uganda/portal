@@ -1,176 +1,253 @@
 import { useState, useEffect } from 'react';
 import { 
-  FileText, CheckCircle, Edit3, Clock, 
-  Search, Plus, ArrowLeft, Trash2, Image as ImageIcon 
+  Edit3, Search, Plus, ArrowLeft, Trash2, Image as ImageIcon, Loader2 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/cmsApi';
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
-import { NewsArticle, ArticleStatus } from '../../components/createcms-components/newstypes';
-import { StatCard } from '../../components/createcms-components/statCard';
 import { StatusBadge } from '../../components/createcms-components/status';
 import { ArticleForm } from '../../components/createcms-components/article';
-import { requireAdmin } from '../../utils/auth';
-import { useNavigate } from 'react-router-dom';
-
-const INITIAL_DATA: NewsArticle[] = [
-  { 
-    id: '1', 
-    title: 'New Community Guidelines Released', 
-    subtitle: 'Updated financial community standards for 2026', 
-    category: 'News', 
-    status: 'Published', 
-    publishDate: '2026-01-24', 
-    views: '1,248',
-    featuredImage: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&q=80',
-    contentBlocks: [{ id: 'b1', type: 'text', value: 'This is the start of the article...' }]
-  }
-];
 
 const NewsManagement = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [articles, setArticles] = useState<NewsArticle[]>(INITIAL_DATA);
+  const [articles, setArticles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | undefined>();
-  const [filter, setFilter] = useState<ArticleStatus | 'All'>('All');
+  const [selectedArticle, setSelectedArticle] = useState<any | undefined>();
+  const [filter, setFilter] = useState<string>('All');
   const [search, setSearch] = useState('');
+  
   const navigate = useNavigate();
+  const STRAPI_URL = "http://localhost:1337";
+
+  const fetchNews = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/news-articles?populate=*&sort=createdAt:desc');
+      const formatted = res.data.data.map((item: any) => ({
+        id: item.id,
+        documentId: item.documentId,
+        ...item.attributes,
+        featuredImage: item.attributes.image?.data?.attributes?.url 
+          ? `${STRAPI_URL}${item.attributes.image.data.attributes.url}` 
+          : null
+      }));
+      setArticles(formatted);
+    } catch (err) {
+      console.error("Failed to fetch news:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    requireAdmin();
+    fetchNews();
   }, []);
 
-  const handleSave = (data: Partial<NewsArticle>) => {
-    if (selectedArticle) {
-      setArticles(articles.map(a => a.id === selectedArticle.id ? { ...a, ...data } as NewsArticle : a));
-    } else {
-      const newArt: NewsArticle = {
-        ...data,
-        id: Math.random().toString(36).substr(2, 9),
-        publishDate: data.status === 'Published' ? new Date().toISOString().split('T')[0] : null,
-        views: '0',
-        contentBlocks: data.contentBlocks || []
-      } as NewsArticle;
-      setArticles([newArt, ...articles]);
+  const handleSave = async (formData: any) => {
+    setLoading(true);
+    try {
+      const payload = {
+        data: {
+          title: formData.title,
+          // Match Strapi field names exactly:
+          description: formData.summary, // Strapi calls it 'description'
+          isTopic: !!formData.isTopPick,  // Strapi calls it 'isTopic'
+          isFeatured: !!formData.isTopPick, // Also setting featured to be safe
+          readTime: parseInt(formData.readTime) || 5, // Strapi wants a number
+          publishDate: formData.date || new Date().toISOString().split('T')[0],
+          
+          // If you have a field for the image, check its exact name in Strapi
+          // image: formData.imageId || null, 
+        }
+      };
+  
+      if (selectedArticle) {
+        const id = selectedArticle.documentId || selectedArticle.id;
+        await api.put(`/news-articles/${id}`, payload);
+      } else {
+        await api.post('/news-articles', payload);
+      }
+      
+      setIsEditing(false);
+      fetchNews();
+    } catch (err: any) {
+      console.error("Full Error:", err.response?.data);
+      alert(`Save Failed: ${err.response?.data?.error?.message || "Check field names"}`);
+    } finally {
+      setLoading(false);
     }
-    setIsEditing(false);
+  };  const handleDelete = async (id: string | number) => {
+    if (!window.confirm("Are you sure you want to delete this article?")) return;
+    try {
+      await api.delete(`/news-articles/${id}`);
+      fetchNews();
+    } catch (err) {
+      alert("Delete failed.");
+    }
   };
 
   const filteredArticles = articles.filter(a => {
-    const matchesFilter = filter === 'All' || a.status === filter;
+    const matchesFilter = filter === 'All' || a.category === filter;
     const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen bg-[#F4F2FE]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
+      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col`}>
         <Header title="News Management" />
-        
 
-        <div className="flex-1 bg-[#F4F2FE] p-8">
-          <div className="max-w-[1400px] mx-auto space-y-8">
+        <div className="flex-1 p-10 md:p-14">
+          <div className="max-w-[1600px] mx-auto space-y-10">
             
-            {/* Back Button Fix */}
-            <button 
-              onClick={() => navigate(-1)} 
-              className="flex items-center gap-2 text-slate-500 hover:text-[#5C32A3] font-bold text-xs uppercase tracking-widest transition-colors mb-2"
-            >
-              <ArrowLeft size={16} /> Back to Portal
-            </button>
+            {/* Nav Back Button */}
+            {!isEditing && (
+              <button 
+                onClick={() => navigate(-1)} 
+                className="group flex items-center gap-3 text-slate-400 hover:text-purple-700 transition-all"
+              >
+                <div className="p-2 rounded-xl bg-white border border-slate-100 group-hover:border-purple-200 shadow-sm">
+                  <ArrowLeft size={16} />
+                </div>
+                <span className="font-black text-[10px] uppercase tracking-[0.2em]">Return to Dashboard</span>
+              </button>
+            )}
             
             {isEditing ? (
-              <ArticleForm initialData={selectedArticle} onSave={handleSave} onCancel={() => setIsEditing(false)} />
+              <ArticleForm 
+                initialData={selectedArticle} 
+                onSave={handleSave} 
+                onCancel={() => setIsEditing(false)} 
+                isLoading={loading}
+              />
             ) : (
               <>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 border-b border-slate-200 pb-10">
                   <div>
-                    <h1 className="text-[26px] font-bold tracking-tight text-[#5C32A3]">Manage News</h1>
-                    <p className="text-slate-500 mt-1">Create News for your platform community.</p>
+                    <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-4">News Console</h1>
+                    <p className="text-slate-500 font-bold uppercase text-[11px] tracking-widest">Global Broadcast & Thought Leadership Control</p>
                   </div>
-                  <div className="flex gap-3">
-                    
-                    <button 
-                      onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
-                      className="flex items-center gap-2 px-6 py-2.5 bg-purple-700 text-white rounded-xl hover:bg-purple-800 transition text-sm font-black shadow-lg shadow-purple-200"
-                    >
-                      <Plus size={18} /> Create News
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
+                    className="flex items-center gap-4 px-10 py-5 bg-slate-900 text-white rounded-2xl hover:bg-purple-700 transition-all text-xs font-black uppercase tracking-[0.15em] shadow-2xl active:scale-95"
+                  >
+                    <Plus size={10} strokeWidth={3} /> Create News Entry
+                  </button>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <StatCard title="Stories" value={articles.length.toString()} change="10%" isUp={true} Icon={FileText} />
-                  <StatCard title="Live" value={articles.filter(a=>a.status==='Published').length.toString()} change="12%" isUp={true} Icon={CheckCircle} />
-                  <StatCard title="Drafts" value={articles.filter(a=>a.status==='Draft').length.toString()} change="2%" isUp={false} Icon={Edit3} />
-                  <StatCard title="Waitlist" value={articles.filter(a=>a.status==='Scheduled').length.toString()} change="5%" isUp={true} Icon={Clock} />
-                </div>
-
-                {/* List Container */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                   <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-white">
-                      <div className="flex bg-gray-100/50 p-1.5 rounded-2xl">
-                        {['All', 'Published', 'Draft', 'Scheduled'].map((t) => (
-                          <button key={t} onClick={() => setFilter(t as any)} className={`px-5 py-2 text-xs font-black rounded-xl transition ${filter === t ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-400 hover:text-gray-900'}`}>{t}</button>
+                {/* Filters & Table Container */}
+                <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden mt-10">
+                   <div className="p-10 border-b border-slate-50 flex flex-col 2xl:flex-row justify-between items-center gap-8 bg-slate-50/30">
+                      <div className="flex bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-inner overflow-x-auto w-full 2xl:w-auto">
+                        {['All', 'Policy Update', 'Thought Leadership', 'Announcements', 'SME Support'].map((t) => (
+                          <button 
+                            key={t} 
+                            onClick={() => setFilter(t)} 
+                            className={`px-8 py-3.5 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all whitespace-nowrap ${filter === t ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
+                          >
+                            {t}
+                          </button>
                         ))}
                       </div>
-                      <div className="relative w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-                        <input placeholder="Search stories..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-100 outline-none text-sm font-medium" />
+                      <div className="relative w-full 2xl:w-[450px]">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+                        <input 
+                          placeholder="SEARCH ENTRIES..." 
+                          value={search} 
+                          onChange={(e) => setSearch(e.target.value)} 
+                          className="w-full pl-16 pr-8 py-5 bg-white border-none rounded-[1.5rem] focus:ring-4 focus:ring-purple-50 outline-none text-xs font-black text-slate-900 placeholder:text-slate-300 shadow-sm border border-slate-100" 
+                        />
                       </div>
                    </div>
 
-                   <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50/30 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
-                          <tr>
-                            <th className="px-8 py-5 text-left">Article Overview</th>
-                            <th className="px-8 py-5 text-center">Engagement</th>
-                            <th className="px-8 py-5 text-left">Status</th>
-                            <th className="px-8 py-5 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                          {filteredArticles.map((article) => (
-                            <tr key={article.id} className="hover:bg-gray-50/40 transition group">
-                              <td className="px-8 py-5">
-                                <div className="flex items-center gap-5">
-                                  <div className="w-16 h-12 rounded-xl bg-gray-100 border overflow-hidden shadow-inner flex-shrink-0">
-                                    {article.featuredImage ? <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={16} className="text-gray-200"/></div>}
-                                  </div>
-                                  <div>
-                                    <h4 className="font-black text-gray-900 text-sm">{article.title}</h4>
-                                    <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tighter">{article.category} • {article.publishDate || 'Not Live'}</p>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-8 py-5 text-center">
-                                <span className="text-xs font-black text-gray-700">{article.views} Views</span>
-                              </td>
-                              <td className="px-8 py-5"><StatusBadge status={article.status} /></td>
-                              <td className="px-8 py-5 text-right">
-                                <div className="flex justify-end gap-2">
-                                  <button onClick={() => { setSelectedArticle(article); setIsEditing(true); }} className="p-2.5 bg-gray-50 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition"><Edit3 size={18} /></button>
-                                  <button className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition"><Trash2 size={18} /></button>
-                                </div>
-                              </td>
+                   <div className="overflow-x-auto min-h-[400px]">
+                      {loading && articles.length === 0 ? (
+                        <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+                          <Loader2 className="animate-spin text-purple-600" size={48} strokeWidth={3} />
+                          <span className="font-black text-[10px] uppercase tracking-widest text-slate-400">Syncing with Strapi...</span>
+                        </div>
+                      ) : (
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
+                              <th className="px-12 py-8 text-left">Article Blueprint</th>
+                              <th className="px-10 py-8 text-center">Classification</th>
+                              <th className="px-10 py-8 text-center">Placement</th>
+                              <th className="px-12 py-8 text-right">Control</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {filteredArticles.map((article) => (
+                              <tr key={article.id} className="hover:bg-slate-50/50 transition-all group">
+                                <td className="px-12 py-8">
+                                  <div className="flex items-center gap-8">
+                                    <div className="w-24 h-16 rounded-[1.25rem] bg-slate-100 border border-slate-200 overflow-hidden shadow-inner flex-shrink-0 relative group-hover:scale-105 transition-transform">
+                                      {article.featuredImage ? (
+                                        <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/>
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center"><ImageIcon size={24} className="text-slate-300"/></div>
+                                      )}
+                                    </div>
+                                    <div className="max-w-xl">
+                                      <h4 className="font-black text-slate-900 text-lg line-clamp-1 mb-1 group-hover:text-purple-700 transition-colors uppercase tracking-tight">{article.title}</h4>
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                                          {new Date(article.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </span>
+                                        <div className="w-1 h-1 bg-slate-200 rounded-full" />
+                                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{article.readTime}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-10 py-8 text-center">
+                                  <StatusBadge status={article.status || 'Published'} />
+                                </td>
+                                <td className="px-10 py-8 text-center">
+                                  {article.isTopPick ? (
+                                    <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2 rounded-xl border border-amber-100 shadow-sm">
+                                      <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                                      <span className="font-black text-[9px] uppercase tracking-widest">Priority Pick</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-slate-300 text-[9px] font-black uppercase tracking-widest">Standard</span>
+                                  )}
+                                </td>
+                                <td className="px-12 py-8 text-right">
+                                  <div className="flex justify-end gap-4 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0">
+                                    <button 
+                                      onClick={() => { setSelectedArticle(article); setIsEditing(true); }} 
+                                      className="p-4 bg-white text-slate-400 hover:text-purple-700 border border-slate-100 hover:border-purple-200 rounded-[1rem] transition-all shadow-sm hover:shadow-md"
+                                    >
+                                      <Edit3 size={20} strokeWidth={2.5} />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDelete(article.documentId || article.id)}
+                                      className="p-4 bg-white text-slate-400 hover:text-red-500 border border-slate-100 hover:border-red-200 rounded-[1rem] transition-all shadow-sm hover:shadow-md"
+                                    >
+                                      <Trash2 size={20} strokeWidth={2.5} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
                    </div>
                 </div>
               </>
             )}
           </div>
         </div>
-
-        <div className="mt-auto"><Footer /></div>
+        <Footer />
       </main>
     </div>
   );

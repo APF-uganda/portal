@@ -35,7 +35,7 @@ const PageCard = ({ title, icon, desc, onClick }: PageCardProps) => (
       <h3 className="font-black text-slate-800 text-base tracking-tight group-hover:text-[#5C32A3] transition-colors">
         {title}
       </h3>
-      <p className="text-[12px] text-slate-400 font-bold mt-1.5 leading-snug">
+      <p className="text-[12px] text-slate-400  mt-1.5 leading-snug">
         {desc}
       </p>
     </div>
