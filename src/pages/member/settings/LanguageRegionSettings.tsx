@@ -6,15 +6,15 @@ import { LanguageRegionPreferences } from './types'
 
 const LANGUAGES = [
   { value: 'en', label: 'English' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'fr', label: 'French' },
-  { value: 'de', label: 'German' },
-  { value: 'zh', label: 'Chinese' },
-  { value: 'ar', label: 'Arabic' },
-  { value: 'pt', label: 'Portuguese' },
-  { value: 'ru', label: 'Russian' },
-  { value: 'ja', label: 'Japanese' },
-  { value: 'hi', label: 'Hindi' },
+  { value: 'es', label: 'Spanish (Español)' },
+  { value: 'fr', label: 'French (Français)' },
+  { value: 'de', label: 'German (Deutsch)' },
+  { value: 'zh', label: 'Chinese (中文)' },
+  { value: 'ar', label: 'Arabic (العربية)' },
+  { value: 'pt', label: 'Portuguese (Português)' },
+  { value: 'ru', label: 'Russian (Русский)' },
+  { value: 'ja', label: 'Japanese (日本語)' },
+  { value: 'hi', label: 'Hindi (हिन्दी)' },
 ]
 
 const TIMEZONES = [

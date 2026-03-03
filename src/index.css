@@ -13,34 +13,8 @@
   .animate-gradient-shift {
     animation: gradientShift 8s ease infinite;
   }
-}
 
-@layer base {
-  body {
-    margin: 0;
-    font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont;
-    overflow-x: hidden;
-  }
-
-  #root {
-    overflow-x: hidden;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  /* Global text wrapping to prevent horizontal overflow */
-  p, span, div, h1, h2, h3, h4, h5, h6, li, td, th, label, a {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
-  }
-}
-
-/* Text wrapping utility classes */
-@layer utilities {
+  /* Text wrapping utilities */
   .text-wrap {
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -64,14 +38,45 @@
     text-overflow: ellipsis;
   }
 
+  /* Prevent horizontal overflow */
   .no-overflow {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
+  /* For long URLs or code */
   .break-all {
     word-break: break-all;
+  }
+
+  /* Preserve spaces but wrap */
+  .whitespace-normal {
+    white-space: normal;
+  }
+}
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont;
+    overflow-x: hidden;
+  }
+
+  #root {
+    overflow-x: hidden;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Global text wrapping to prevent horizontal overflow */
+  p, span, div, h1, h2, h3, h4, h5, h6, a, li, td, th, label {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
   }
 }
 
