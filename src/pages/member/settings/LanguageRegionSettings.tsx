@@ -6,8 +6,15 @@ import { LanguageRegionPreferences } from './types'
 
 const LANGUAGES = [
   { value: 'en', label: 'English' },
-  { value: 'sw', label: 'Swahili' },
-  { value: 'lg', label: 'Luganda' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'ru', label: 'Russian' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'hi', label: 'Hindi' },
 ]
 
 const TIMEZONES = [
@@ -24,9 +31,6 @@ const DATE_FORMATS = [
 
 const CURRENCIES = [
   { value: 'UGX', label: 'Ugandan Shilling (UGX)' },
-  { value: 'USD', label: 'US Dollar (USD)' },
-  { value: 'EUR', label: 'Euro (EUR)' },
-  { value: 'GBP', label: 'British Pound (GBP)' },
 ]
 
 export function LanguageRegionSettings() {
