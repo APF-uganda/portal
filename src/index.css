@@ -40,8 +40,19 @@
 
   /* Prevent horizontal overflow */
   .no-overflow {
-    overflow-x: hidden;
-    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* For long URLs or code */
+  .break-all {
+    word-break: break-all;
+  }
+
+  /* Preserve spaces but wrap */
+  .whitespace-normal {
+    white-space: normal;
   }
 }
 
@@ -60,29 +71,12 @@
     box-sizing: border-box;
   }
 
-  /* Global text wrapping - prevent overflow */
+  /* Global text wrapping to prevent horizontal overflow */
   p, span, div, h1, h2, h3, h4, h5, h6, a, li, td, th, label {
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: break-word;
     hyphens: auto;
-  }
-
-  /* Prevent text overflow in containers */
-  .text-wrap {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-word;
-  }
-
-  /* For long URLs or code */
-  .break-all {
-    word-break: break-all;
-  }
-
-  /* Preserve spaces but wrap */
-  .whitespace-normal {
-    white-space: normal;
   }
 }
 

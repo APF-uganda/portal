@@ -31,9 +31,6 @@ const DATE_FORMATS = [
 
 const CURRENCIES = [
   { value: 'UGX', label: 'Ugandan Shilling (UGX)' },
-  { value: 'USD', label: 'US Dollar (USD)' },
-  { value: 'EUR', label: 'Euro (EUR)' },
-  { value: 'GBP', label: 'British Pound (GBP)' },
 ]
 
 export function LanguageRegionSettings() {
