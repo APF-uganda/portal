@@ -7,6 +7,7 @@ import loginImage from '../assets/images/Login-image/login.jpg'
 
 import { API_V1_BASE_URL } from '../config/api'
 import { saveAuth } from '../utils/authStorage'
+import { safeLog } from '../utils/logger';
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -43,7 +44,7 @@ function LoginPage() {
           // Direct login - store tokens using authStorage
           saveAuth(data.access, data.refresh, data.user)
           
-          console.log('✅ Login successful (OTP bypassed for test user)')
+          console.log(' Login successful (OTP bypassed for test user)')
           console.log('User role:', data.user.role)
           console.log('Auth saved to sessionStorage')
           
