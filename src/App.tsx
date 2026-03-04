@@ -270,6 +270,15 @@ const App: React.FC = () => {
             }
           />
 
+<Route
+            path="/admin/eventMgt"
+            element={
+              <ProtectedRoute role="admin">
+                <EventCreatePage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/admin/manageusers"
             element={

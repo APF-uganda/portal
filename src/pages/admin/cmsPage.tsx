@@ -115,30 +115,14 @@ const CmsContentPage = () => {
                   desc="Main entrance, Hero banners, and Value propositions" 
                   onClick={() => navigate('/editLandingpage')} 
                 />
-                <PageCard 
-                  title="Membership" 
-                  icon={<Users size={24}/>} 
-                  desc="Tiers, benefits, and registration workflow" 
-                  onClick={() => navigate('/editMembership')} 
-                />
-                 <PageCard 
-                  title="Insights" 
-                  icon={<Lightbulb size={24}/>} 
-                  desc="Research, News archives, and Data reports" 
-                  onClick={() => navigate('/admin/edit-page/insights')} 
-                />
+               
                 <PageCard 
                   title="About Us" 
                   icon={<Info size={24}/>} 
                   desc="Our history, mission, and leadership team" 
                   onClick={() => navigate('/editAbout')} 
                 />
-                <PageCard 
-                  title="Contact Us" 
-                  icon={<Phone size={24}/>} 
-                  desc="Location details, Map settings, and Inquiries" 
-                  onClick={() => navigate('/admin/edit-page/contact')} 
-                />
+                
                 <PageCard 
                   title="Site Config" 
                   icon={<Settings size={24}/>} 
