@@ -54,15 +54,14 @@ const NewsManagement = () => {
       const payload = {
         data: {
           title: formData.title,
-          // Match Strapi field names exactly:
+        
           description: formData.summary, // Strapi calls it 'description'
           isTopic: !!formData.isTopPick,  // Strapi calls it 'isTopic'
           isFeatured: !!formData.isTopPick, // Also setting featured to be safe
           readTime: parseInt(formData.readTime) || 5, // Strapi wants a number
           publishDate: formData.date || new Date().toISOString().split('T')[0],
           
-          // If you have a field for the image, check its exact name in Strapi
-          // image: formData.imageId || null, 
+         
         }
       };
   
@@ -130,10 +129,7 @@ const NewsManagement = () => {
             ) : (
               <>
                 <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 border-b border-slate-200 pb-10">
-                  <div>
-                    <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-4">News Console</h1>
-                    <p className="text-slate-500 font-bold uppercase text-[11px] tracking-widest">Global Broadcast & Thought Leadership Control</p>
-                  </div>
+                 
                   <button 
                     onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
                     className="flex items-center gap-4 px-10 py-5 bg-slate-900 text-white rounded-2xl hover:bg-purple-700 transition-all text-xs font-black uppercase tracking-[0.15em] shadow-2xl active:scale-95"

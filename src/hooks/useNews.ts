@@ -18,7 +18,7 @@ export const useNews = () => {
           const relativeUrl = 
             data.image?.url || 
             data.image?.data?.attributes?.url || 
-            data.image?.[0]?.url;ld
+            data.image?.[0]?.url;
 
           return {
             id: item.id,

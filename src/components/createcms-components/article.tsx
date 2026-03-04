@@ -2,67 +2,66 @@ import React, { useState } from 'react';
 import { 
   Save, ArrowLeft, Image as ImageIcon, X, 
   Type, Video, Paperclip, Trash2, 
-  MoveUp, MoveDown, UploadCloud, Star, Loader2 
+  MoveUp, MoveDown, UploadCloud, Star, Loader2, Link as LinkIcon 
 } from 'lucide-react';
 import api from '../../services/cmsApi';
-import {  ContentBlock, BlockType, Category } from './newstypes';
 
-interface ArticleFormProps {
-  initialData?: any;
-  onSave: (data: any) => void;
-  onCancel: () => void;
-  isLoading?: boolean;
-}
-
-export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: ArticleFormProps) => {
-  // Form States
+export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) => {
   const [title, setTitle] = useState(initialData?.title || "");
   const [summary, setSummary] = useState(initialData?.summary || "");
-  const [category, setCategory] = useState<Category>(initialData?.category || 'Policy Update');
+  const [category, setCategory] = useState(initialData?.category || 'Policy Update');
   const [isTopPick, setIsTopPick] = useState(initialData?.isTopPick || false);
-  const [blocks, setBlocks] = useState<ContentBlock[]>(initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }]);
-  
-  // Image States
+  const [blocks, setBlocks] = useState(initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }]);
   const [imagePreview, setImagePreview] = useState(initialData?.featuredImage || "");
   const [imageId, setImageId] = useState<number | null>(initialData?.imageId || null);
   const [uploading, setUploading] = useState(false);
 
-  //  Image Upload Logic 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // --- LOGIC FOR BLOCK IMAGE UPLOAD ---
+  const handleBlockImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setUploading(true);
     const formData = new FormData();
     formData.append('files', file);
+    try {
+      const res = await api.post('/upload', formData);
+      const url = `http://localhost:1337${res.data[0].url}`;
+      updateBlock(blockId, url);
+    } catch (err) {
+      alert("Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('files', file);
     try {
       const res = await api.post('/upload', formData);
       const uploadedFile = res.data[0];
       setImageId(uploadedFile.id);
       setImagePreview(`http://localhost:1337${uploadedFile.url}`);
     } catch (err) {
-      alert("Upload failed. Ensure Strapi is running on port 1337.");
+      alert("Upload failed.");
     } finally {
       setUploading(false);
     }
   };
 
- 
-  const addBlock = (type: BlockType) => {
-    const newBlock: ContentBlock = {
-      id: Math.random().toString(36).substr(2, 9),
-      type,
-      value: '',
-    };
+  const addBlock = (type: string) => {
+    const newBlock = { id: Math.random().toString(36).substr(2, 9), type, value: '' };
     setBlocks([...blocks, newBlock]);
   };
 
-  const updateBlock = (id: string, value: string, fileName?: string) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, value, fileName } : b));
+  const updateBlock = (id: string, value: string) => {
+    setBlocks(blocks.map((b: any) => b.id === id ? { ...b, value } : b));
   };
 
-  const removeBlock = (id: string) => setBlocks(blocks.filter(b => b.id !== id));
+  const removeBlock = (id: string) => setBlocks(blocks.filter((b: any) => b.id !== id));
 
   const moveBlock = (index: number, direction: 'up' | 'down') => {
     const newBlocks = [...blocks];
@@ -76,155 +75,148 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: Articl
   const handleFinalSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return alert("Title is required");
-    
-    onSave({
-      title,
-      summary,
-      category,
-      isTopPick,
-      imageId,
-      contentBlocks: blocks,
-      status: initialData?.status || 'Published'
-    });
+    onSave({ title, summary, category, isTopPick, imageId, contentBlocks: blocks });
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Top Action Bar */}
-      <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-        <button onClick={onCancel} className="group flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-all">
-          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="font-black text-[10px] uppercase tracking-[0.2em]">Exit Editor</span>
+    <div className="max-w-5xl mx-auto pb-20 space-y-8">
+      {/* Action Header */}
+      <div className="flex justify-between items-center py-4 border-b border-gray-100">
+        <button onClick={onCancel} className="flex items-center gap-2 text-gray-400 hover:text-[#5C32A3] transition-colors text-xs font-bold">
+          <ArrowLeft size={16} /> Exit Editor
         </button>
         
-        <div className="flex gap-4">
-            <button 
-                type="button"
-                onClick={() => setIsTopPick(!isTopPick)}
-                className={`flex items-center gap-3 px-6 py-3 rounded-xl border transition-all ${isTopPick ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-slate-50 border-slate-100 text-slate-300'}`}
-            >
-                <Star size={18} fill={isTopPick ? "currentColor" : "none"} />
-                <span className="font-black text-[10px] uppercase tracking-widest">Mark as Top Pick</span>
-            </button>
-            <button 
-                onClick={handleFinalSave} 
-                disabled={isLoading || uploading}
-                className="px-10 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-purple-700 transition-all flex items-center gap-3 disabled:opacity-50"
-            >
-                {isLoading ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> Sync to Portal</>}
-            </button>
+        <div className="flex gap-3">
+          <button 
+            type="button"
+            onClick={() => setIsTopPick(!isTopPick)}
+            className={`p-2.5 rounded-xl border transition-all ${isTopPick ? 'bg-amber-50 border-amber-200 text-amber-500' : 'bg-white border-gray-200 text-gray-300'}`}
+          >
+            <Star size={18} fill={isTopPick ? "currentColor" : "none"} />
+          </button>
+          <button 
+            onClick={handleFinalSave} 
+            disabled={isLoading || uploading}
+            className="px-6 py-2.5 bg-[#5C32A3] text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#4A2882] transition-all flex items-center gap-2"
+          >
+            {isLoading ? <Loader2 className="animate-spin" size={16} /> : <><Save size={16} /> Save Article</>}
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-      
-        <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-50 p-12 space-y-10">
-                {/* Title Area */}
-                <section className="space-y-6">
-                    <input 
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="ARTICLE HEADLINE..." 
-                        className="w-full text-5xl font-black outline-none border-none placeholder:text-slate-100 text-slate-900 tracking-tighter" 
-                    />
-                    <textarea 
-                        value={summary}
-                        onChange={(e) => setSummary(e.target.value)}
-                        placeholder="Brief summary or deck for the article..."
-                        className="w-full text-xl font-bold text-slate-400 outline-none resize-none h-24 italic leading-relaxed"
-                    />
-                    <div className="h-[1px] w-full bg-slate-50" />
-                </section>
-
-                {/* Dynamic Content Blocks */}
-                <div className="space-y-12">
-                {blocks.map((block, index) => (
-                    <div key={block.id} className="group relative pl-10 border-l-4 border-transparent hover:border-purple-100 transition-all">
-                        {/* Control Gutter */}
-                        <div className="absolute -left-6 top-0 hidden group-hover:flex flex-col gap-2 bg-white border border-slate-100 rounded-xl shadow-2xl p-1.5 z-10">
-                            <button onClick={() => moveBlock(index, 'up')} className="p-2 hover:bg-slate-50 text-slate-400 hover:text-slate-900 rounded-lg"><MoveUp size={16}/></button>
-                            <button onClick={() => moveBlock(index, 'down')} className="p-2 hover:bg-slate-50 text-slate-400 hover:text-slate-900 rounded-lg"><MoveDown size={16}/></button>
-                            <button onClick={() => removeBlock(block.id)} className="p-2 hover:bg-red-50 text-red-400 rounded-lg"><Trash2 size={16}/></button>
-                        </div>
-
-                        {block.type === 'text' && (
-                            <textarea 
-                                placeholder="Start writing..."
-                                className="w-full min-h-[120px] outline-none text-lg text-slate-700 font-medium resize-none leading-relaxed placeholder:text-slate-200"
-                                value={block.value}
-                                onChange={(e) => updateBlock(block.id, e.target.value)}
-                            />
-                        )}
-
-                        {block.type === 'image' && (
-                            <div className="space-y-4">
-                                <div className="h-96 bg-slate-50 rounded-[2rem] flex items-center justify-center overflow-hidden border border-slate-100 shadow-inner group/img relative">
-                                    {block.value ? <img src={block.value} className="w-full h-full object-cover" alt="" /> : <ImageIcon className="text-slate-200" size={64} />}
-                                </div>
-                                <input 
-                                    placeholder="PASTE EXTERNAL IMAGE URL..." 
-                                    value={block.value}
-                                    className="text-[10px] font-black uppercase tracking-widest w-full p-4 bg-slate-50 rounded-xl border-none outline-none text-purple-600" 
-                                    onChange={(e) => updateBlock(block.id, e.target.value)}
-                                />
-                            </div>
-                        )}
-                       
-                    </div>
-                ))}
-                </div>
-
-                {/* Block Adder Toolbar */}
-                <div className="mt-20 p-8 bg-slate-900 rounded-[2.5rem] flex items-center justify-center gap-12 shadow-2xl">
-                    <ToolbarButton icon={<Type size={22}/>} label="Text" onClick={() => addBlock('text')} />
-                    <ToolbarButton icon={<ImageIcon size={22}/>} label="Image" onClick={() => addBlock('image')} />
-                    <ToolbarButton icon={<Video size={22}/>} label="Video" onClick={() => addBlock('video')} />
-                    <ToolbarButton icon={<Paperclip size={22}/>} label="File" onClick={() => addBlock('attachment')} />
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+        <div className="lg:col-span-3 space-y-10">
+          <div className="bg-white">
+            {/* Title & Summary Area  */}
+            <div className="space-y-4 mb-10 px-4">
+              <input 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Article Title..." 
+                className="w-full text-3xl font-bold outline-none border-none placeholder:text-gray-200 text-gray-900 py-2" 
+              />
+              <textarea 
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Add a brief summary..."
+                className="w-full text-base font-medium text-gray-500 outline-none resize-none h-16 leading-relaxed border-none py-1"
+              />
             </div>
+
+            {/* Content Blocks */}
+            <div className="space-y-6">
+              {blocks.map((block: any, index: number) => (
+                <div key={block.id} className="group relative transition-all px-4">
+                  {/* Floating Controls */}
+                  <div className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 flex flex-col gap-1 transition-opacity">
+                    <button onClick={() => moveBlock(index, 'up')} className="p-1.5 text-gray-300 hover:text-gray-600"><MoveUp size={14}/></button>
+                    <button onClick={() => removeBlock(block.id)} className="p-1.5 text-gray-300 hover:text-red-400"><Trash2 size={14}/></button>
+                  </div>
+
+                  {block.type === 'text' && (
+                    <textarea 
+                      placeholder="Start typing..."
+                      className="w-full min-h-[120px] outline-none text-gray-700 leading-relaxed placeholder:text-gray-200 border-none resize-none px-2 py-2 bg-gray-50/30 rounded-lg focus:bg-white transition-colors"
+                      value={block.value}
+                      onChange={(e) => updateBlock(block.id, e.target.value)}
+                    />
+                  )}
+
+                  {block.type === 'image' && (
+                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 border-dashed flex flex-col items-center justify-center min-h-[250px]">
+                      {block.value ? (
+                        <div className="relative group/img w-full">
+                          <img src={block.value} className="rounded-xl max-h-80 w-full object-cover mb-4 mx-auto shadow-sm" />
+                          <button onClick={() => updateBlock(block.id, "")} className="absolute top-2 right-2 p-1 bg-white/80 rounded-full text-red-500 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                            <X size={16}/>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="flex gap-4">
+                             {/* Upload Option */}
+                            <label className="flex flex-col items-center justify-center w-24 h-24 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 transition-colors">
+                              <UploadCloud className="text-gray-300" size={24} />
+                              <span className="text-[9px] font-bold text-gray-400 uppercase mt-2">Upload</span>
+                              <input type="file" className="hidden" onChange={(e) => handleBlockImageUpload(e, block.id)} />
+                            </label>
+                            <div className="flex items-center text-gray-200 text-xs font-bold">OR</div>
+                            {/* Icon Placeholder */}
+                            <div className="flex flex-col items-center justify-center w-24 h-24 bg-white border border-gray-200 rounded-xl">
+                              <LinkIcon className="text-gray-300" size={24} />
+                              <span className="text-[9px] font-bold text-gray-400 uppercase mt-2">Paste Link</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <input 
+                        placeholder="Paste image URL here..." 
+                        value={block.value}
+                        onChange={(e) => updateBlock(block.id, e.target.value)}
+                        className="text-[10px] w-full max-w-sm p-3 bg-white rounded-xl border border-gray-100 outline-none text-center mt-4 shadow-sm focus:border-purple-200 transition-colors" 
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Simple Toolbar */}
+            <div className="mt-12 flex items-center justify-center gap-8 py-6 border-t border-gray-50">
+              <ToolbarButton icon={<Type size={20}/>} label="Text" onClick={() => addBlock('text')} />
+              <ToolbarButton icon={<ImageIcon size={20}/>} label="Image" onClick={() => addBlock('image')} />
+              <ToolbarButton icon={<Video size={20}/>} label="Video" onClick={() => addBlock('video')} />
+              <ToolbarButton icon={<Paperclip size={20}/>} label="File" onClick={() => addBlock('attachment')} />
+            </div>
+          </div>
         </div>
 
-        {/* Right Column*/}
-        <div className="space-y-8">
-            <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-8">
-                <h3 className="font-black text-[10px] uppercase tracking-[0.3em] text-slate-300">Article Poster</h3>
-                <div className="relative aspect-[4/5] bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden group hover:border-purple-300 transition-all">
-                    {imagePreview ? (
-                        <>
-                            <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
-                            <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <button onClick={() => {setImagePreview(""); setImageId(null);}} className="p-4 bg-white rounded-2xl text-red-500 shadow-2xl hover:scale-110 transition-transform"><Trash2 size={24}/></button>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="text-center p-6">
-                            {uploading ? <Loader2 className="animate-spin text-purple-600 mx-auto" size={32} /> : (
-                                <>
-                                    <UploadCloud className="mx-auto text-slate-200 mb-4" size={48} />
-                                    <p className="font-black text-[10px] uppercase tracking-widest text-slate-400">Drag or Click to Upload</p>
-                                </>
-                            )}
-                        </div>
-                    )}
-                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageUpload} accept="image/*" />
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-8">
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Cover Image</label>
+            <div className="relative aspect-square bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center overflow-hidden group hover:border-[#5C32A3] transition-colors cursor-pointer">
+              {imagePreview ? (
+                <img src={imagePreview} className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-center">
+                  {uploading ? <Loader2 className="animate-spin text-purple-600 mx-auto" size={24} /> : <><UploadCloud className="mx-auto text-gray-300 mb-2" size={24} /><span className="text-[9px] font-bold text-gray-400 uppercase">Upload</span></>}
                 </div>
-
-                <div className="space-y-6 pt-4">
-                    <div>
-                        <label className="font-black text-[9px] uppercase tracking-widest text-slate-400 block mb-3">Classification</label>
-                        <select 
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value as Category)}
-                            className="w-full p-4 bg-slate-50 border-none rounded-xl font-bold text-slate-700 outline-none appearance-none"
-                        >
-                            {['Policy Update', 'Thought Leadership', 'Announcements', 'Ethics & Governance', 'SME Support'].map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
+              )}
+              <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageUpload} />
             </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Category</label>
+            <select 
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:border-[#5C32A3] appearance-none"
+            >
+              {['Policy Update', 'Thought Leadership', 'Announcements'].map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -232,12 +224,10 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: Articl
 };
 
 const ToolbarButton = ({ icon, label, onClick }: any) => (
-  <button 
-    type="button"
-    onClick={onClick} 
-    className="flex flex-col items-center gap-3 text-slate-500 hover:text-white transition group"
-  >
-    <div className="p-4 bg-slate-800 rounded-2xl group-hover:bg-purple-600 group-hover:scale-110 transition-all duration-300 text-slate-400 group-hover:text-white shadow-lg">{icon}</div>
-    <span className="text-[9px] font-black uppercase tracking-[0.2em]">{label}</span>
+  <button type="button" onClick={onClick} className="flex flex-col items-center gap-2 text-gray-400 hover:text-[#5C32A3] transition-all group">
+    <div className="p-3 bg-white rounded-full group-hover:bg-purple-50 transition-colors border border-gray-100 shadow-sm">
+      {icon}
+    </div>
+    <span className="text-[9px] font-bold uppercase tracking-wider">{label}</span>
   </button>
 );

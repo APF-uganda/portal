@@ -9,11 +9,20 @@ const TopPickSection = ({ article }: TopPickProps) => {
   if (!article) return null;
 
   return (
-    <section className="py-10 px-6 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row gap-8 items-center bg-gray-50 rounded-[2rem] p-6 md:p-10 border border-gray-100">
-        {/* Image Container  */}
-        <div className="w-full md:w-5/12">
-          <div className="relative aspect-video md:aspect-square rounded-2xl overflow-hidden shadow-sm">
+    <section className="py-6 px-6 max-w-5xl mx-auto">
+     
+      <div className="flex items-center gap-3 mb-6">
+        <h3 className="text-xl font-black text-[#1A1A1A] center uppercase tracking-tighter">
+          Our Latest News: Top Pick
+        </h3>
+        <div className="h-[1px] flex-1 bg-gray-100"></div>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-8 items-center justify-center bg-gray-50 rounded-[1.5rem] p-4 md:p-6 border border-gray-100 min-h-[300px]">
+        
+        {/* Image Container */}
+        <div className="w-full md:w-5/12 flex justify-center">
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm">
             <img 
               src={article.image} 
               alt={article.title}
@@ -22,22 +31,27 @@ const TopPickSection = ({ article }: TopPickProps) => {
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="w-full md:w-7/12 space-y-4">
-          <div className="flex items-center gap-2 text-[#5C32A3] font-bold text-[10px] uppercase tracking-widest">
-            <span className="w-6 h-[1.5px] bg-[#5C32A3]"></span>
+        {/* Content Area - Vertically Centered */}
+        <div className="w-full md:w-6/12 flex flex-col justify-center space-y-3">
+          <div className="flex items-center gap-2 text-[#5C32A3] font-bold text-[9px] uppercase tracking-widest">
+            <span className="w-5 h-[1.5px] bg-[#ffffff]"></span>
             Featured Story
           </div>
-          <h2 className="text-2xl md:text-3xl font-black text-[#1A1A1A] leading-tight tracking-tight">
+          
+          <h2 className="text-xl md:text-2xl font-black text-[#1A1A1A] leading-tight tracking-tight">
             {article.title}
           </h2>
-          <p className="text-gray-500 text-sm md:text-base leading-relaxed line-clamp-3">
+          
+          <p className="text-gray-500 text-xs md:text-sm leading-relaxed line-clamp-2">
             {article.summary}
           </p>
-          <button className="flex items-center gap-2 text-[#5C32A3] font-black text-xs uppercase tracking-widest group pt-2">
-            Read Full Story 
-            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+          
+          <div className="pt-2">
+            <button className="flex items-center gap-2 text-[#5C32A3] font-black text-[10px] uppercase tracking-widest group">
+              Read Full Story 
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
