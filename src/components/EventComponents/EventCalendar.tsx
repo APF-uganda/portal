@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react"
 import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { useEvents } from "../../hooks/useCMS"
-
+import { useNavigate } from 'react-router-dom';
 
 const isExpired = (dateStr: string) => {
   if (!dateStr) return true;
@@ -26,9 +26,11 @@ const EventCalendar = () => {
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [selectedDate, setSelectedDate] = useState("")
+  const navigate = useNavigate();
   
   const { events, loading } = useEvents()
   
+  // Maps dates to event objects for easy calendar lookup
   const eventsMap = useMemo(() => {
     const map: Record<string, any> = {}
     events.forEach(event => {
@@ -43,15 +45,16 @@ const EventCalendar = () => {
   const calendarDates = generateCalendar(year, month)
   const rawSelectedEvent = eventsMap[selectedDate]
 
-  
   const selectedEvent = useMemo(() => {
     if (!rawSelectedEvent) return null;
     return {
       ...rawSelectedEvent,
+      id: rawSelectedEvent.id || rawSelectedEvent.documentId,
       title: rawSelectedEvent.title || "Untitled Event",
       location: rawSelectedEvent.location || "Location TBD",
       description: rawSelectedEvent.description || "No description available.",
-      time: rawSelectedEvent.time || null 
+      time: rawSelectedEvent.time || null,
+      image: rawSelectedEvent.image?.data?.attributes?.url || rawSelectedEvent.image || ""
     };
   }, [rawSelectedEvent]);
 
@@ -72,6 +75,29 @@ const EventCalendar = () => {
     setSelectedDate("")
   }
 
+  // Navigation Logic that matches the working EventCard pattern
+  // Inside EventCalendar.tsx
+const handleRegisterClick = (event: any) => {
+  if (!event) return;
+
+  // Format the date here to be human-readable
+  const readableDate = new Date(event.date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  navigate('/event-registration', { 
+    state: { 
+      eventTitle: event.title, 
+      eventId: event.id,
+      location: event.location, 
+      date: readableDate,      
+      image: event.image
+    } 
+  });
+};
   return (
     <section className="bg-[#f3e8ff] py-12 -mx-[50vw] px-[50vw]">
       <div className="max-w-5xl mx-auto px-4">
@@ -87,7 +113,7 @@ const EventCalendar = () => {
         ) : (
           <div className="flex flex-col md:flex-row gap-8">
             {/* Calendar Grid */}
-            <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-8">
+            <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-8 border border-purple-100">
               <div className="flex justify-between items-center mb-6">
                 <button onClick={handlePrev} className="p-2 hover:bg-purple-50 rounded-full transition-colors text-purple-600">
                   <ChevronLeft className="w-6 h-6" />
@@ -111,32 +137,39 @@ const EventCalendar = () => {
                   const hasEvent = eventsMap[fullDate]
                   const isSelected = fullDate === selectedDate
                   const isToday = fullDate === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+                  
+                  const showEventRing = hasEvent && !isExpired(hasEvent.date)
 
                   return (
                     <button
                       key={i}
                       onClick={() => setSelectedDate(fullDate)}
-                      className={`aspect-square flex items-center justify-center rounded-2xl text-sm font-bold transition-all
+                      className={`aspect-square flex items-center justify-center rounded-2xl text-sm font-bold transition-all relative
                         ${isSelected 
-                          ? "bg-[#7E49B3] text-white scale-110 shadow-lg" 
-                          : hasEvent 
-                            ? "border-2 border-[#7E49B3] text-[#7E49B3] hover:bg-purple-50" 
-                            : isToday ? "bg-gray-800 text-white" : "text-gray-400 hover:bg-gray-100"
-                        }`}
+                          ? "bg-[#7E49B3] text-white scale-110 shadow-lg z-10" 
+                          : isToday 
+                            ? "bg-purple-700 text-white shadow-md ring-4 ring-purple-100 font-black" // Bold purple highlight for today
+                            : "text-gray-400 hover:bg-gray-100"
+                        }
+                        ${!isSelected && showEventRing ? "border-2 border-[#7E49B3] text-[#7E49B3]" : ""}
+                      `}
                     >
                       {date}
+                      {!isSelected && hasEvent && isExpired(hasEvent.date) && (
+                        <div className="absolute bottom-1 w-1 h-1 bg-slate-300 rounded-full"></div>
+                      )}
                     </button>
                   )
                 })}
               </div>
             </div>
 
-            {/*  Event Details */}
-            <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-8 min-h-[400px]">
+            {/* Event Details */}
+            <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-8 min-h-[400px] border border-slate-100">
               {selectedEvent ? (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                  <span className="inline-block px-3 py-1 bg-purple-100 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-4">
-                    Selected Event
+                  <span className={`inline-block px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full mb-4 ${isExpired(selectedEvent.date) ? 'bg-slate-100 text-slate-500' : 'bg-purple-100 text-purple-600'}`}>
+                    {isExpired(selectedEvent.date) ? 'Past Event' : 'Upcoming Event'}
                   </span>
                   <h4 className="text-2xl font-black text-gray-900 mb-6 leading-tight uppercase tracking-tighter">
                     {selectedEvent.title}
@@ -147,7 +180,6 @@ const EventCalendar = () => {
                       <Calendar className="w-5 h-5 mr-3 text-purple-500" />
                       <span>{new Date(selectedEvent.date).toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
                     </div>
-                    
                     
                     <div className="flex items-center text-gray-600 font-medium">
                       <Clock className="w-5 h-5 mr-3 text-purple-500" />
@@ -170,14 +202,14 @@ const EventCalendar = () => {
 
                   {!isExpired(selectedEvent.date) ? (
                     <button
-                      onClick={() => window.open(selectedEvent.registrationLink || '#', '_blank')}
+                      onClick={() => handleRegisterClick(selectedEvent)}
                       className="w-full bg-[#7E49B3] text-white rounded-2xl py-4 font-black text-xs uppercase tracking-widest shadow-lg hover:bg-[#3C096C] transition-all"
                     >
                       Secure Your Spot
                     </button>
                   ) : (
-                    <div className="w-full bg-gray-50 text-gray-400 rounded-2xl py-4 text-center font-bold text-xs uppercase">
-                      Event Concluded
+                    <div className="w-full bg-gray-50 text-gray-400 rounded-2xl py-4 text-center font-bold text-xs uppercase border border-dashed border-slate-200">
+                      Registration Closed
                     </div>
                   )}
                 </div>
@@ -187,7 +219,7 @@ const EventCalendar = () => {
                       <Calendar className="text-slate-300" />
                    </div>
                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
-                     Select a date with a <br/> <span className="text-[#7E49B3]">purple ring</span> to view details
+                     Select an active date with a <br/> <span className="text-[#7E49B3]">purple ring</span> to view details
                    </p>
                 </div>
               )}
@@ -199,4 +231,4 @@ const EventCalendar = () => {
   )
 }
 
-export default EventCalendar
+export default EventCalendar;

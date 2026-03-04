@@ -27,15 +27,22 @@ const NewsManagement = () => {
   const fetchNews = async () => {
     setLoading(true);
     try {
+      // populate=* ensures we get the 'image' and 'news_categories' relation data
       const res = await api.get('/news-articles?populate=*&sort=createdAt:desc');
-      const formatted = res.data.data.map((item: any) => ({
-        id: item.id,
-        documentId: item.documentId,
-        ...item.attributes,
-        featuredImage: item.attributes.image?.data?.attributes?.url 
-          ? `${STRAPI_URL}${item.attributes.image.data.attributes.url}` 
-          : null
-      }));
+      
+      const formatted = res.data.data.map((item: any) => {
+        const data = item.attributes || item;
+        return {
+          id: item.id,
+          documentId: item.documentId,
+          ...data,
+          // Extract category name from the Strapi Relation 'news_categories'
+          displayCategory: data.news_categories?.data?.[0]?.attributes?.name || 'General',
+          featuredImage: data.image?.data?.attributes?.url 
+            ? `${STRAPI_URL}${data.image.data.attributes.url}` 
+            : null
+        };
+      });
       setArticles(formatted);
     } catch (err) {
       console.error("Failed to fetch news:", err);
@@ -50,21 +57,29 @@ const NewsManagement = () => {
 
   const handleSave = async (formData: any) => {
     setLoading(true);
-    try {
-      const payload = {
-        data: {
-          title: formData.title,
+    
+    const payload = {
+      data: {
+        title: formData.title,
+        description: formData.summary,
         
-          description: formData.summary, // Strapi calls it 'description'
-          isTopic: !!formData.isTopPick,  // Strapi calls it 'isTopic'
-          isFeatured: !!formData.isTopPick, // Also setting featured to be safe
-          readTime: parseInt(formData.readTime) || 5, // Strapi wants a number
-          publishDate: formData.date || new Date().toISOString().split('T')[0],
-          
-         
-        }
-      };
-  
+        // 1. IMAGE: Ensure the field API ID in Strapi is exactly 'image'
+        image: formData.imageId || null, 
+
+        // 2. RELATION: Strapi expects an array of IDs for the relation field
+        news_categories: formData.categoryId ? [formData.categoryId] : [],
+
+        isTopic: !!formData.isTopPick,
+        readTime: parseInt(formData.readTime) || 5,
+        publishDate: formData.date || new Date().toISOString().split('T')[0],
+        contentBlocks: formData.contentBlocks || [],
+        
+        // Force publish for public-facing visibility
+        publishedAt: new Date().toISOString(), 
+      }
+    };
+
+    try {
       if (selectedArticle) {
         const id = selectedArticle.documentId || selectedArticle.id;
         await api.put(`/news-articles/${id}`, payload);
@@ -75,12 +90,15 @@ const NewsManagement = () => {
       setIsEditing(false);
       fetchNews();
     } catch (err: any) {
-      console.error("Full Error:", err.response?.data);
-      alert(`Save Failed: ${err.response?.data?.error?.message || "Check field names"}`);
+      console.error("Payload Debug:", payload);
+      console.error("Strapi Response Error:", err.response?.data);
+      alert(`Save Failed: ${err.response?.data?.error?.message || "Check field names in Strapi"}`);
     } finally {
       setLoading(false);
     }
-  };  const handleDelete = async (id: string | number) => {
+  };
+
+  const handleDelete = async (id: string | number) => {
     if (!window.confirm("Are you sure you want to delete this article?")) return;
     try {
       await api.delete(`/news-articles/${id}`);
@@ -91,8 +109,8 @@ const NewsManagement = () => {
   };
 
   const filteredArticles = articles.filter(a => {
-    const matchesFilter = filter === 'All' || a.category === filter;
-    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = filter === 'All' || a.displayCategory === filter;
+    const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -106,7 +124,6 @@ const NewsManagement = () => {
         <div className="flex-1 p-10 md:p-14">
           <div className="max-w-[1600px] mx-auto space-y-10">
             
-            {/* Nav Back Button */}
             {!isEditing && (
               <button 
                 onClick={() => navigate(-1)} 
@@ -129,7 +146,10 @@ const NewsManagement = () => {
             ) : (
               <>
                 <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 border-b border-slate-200 pb-10">
-                 
+                  <div>
+                    <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-4">News Console</h1>
+                    <p className="text-slate-500 text-[11px] tracking-widest">Global Broadcast & Thought Leadership Control</p>
+                  </div>
                   <button 
                     onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
                     className="flex items-center gap-4 px-10 py-5 bg-slate-900 text-white rounded-2xl hover:bg-purple-700 transition-all text-xs font-black uppercase tracking-[0.15em] shadow-2xl active:scale-95"
@@ -138,7 +158,6 @@ const NewsManagement = () => {
                   </button>
                 </div>
 
-                {/* Filters & Table Container */}
                 <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden mt-10">
                    <div className="p-10 border-b border-slate-50 flex flex-col 2xl:flex-row justify-between items-center gap-8 bg-slate-50/30">
                       <div className="flex bg-white p-2 rounded-[1.5rem] border border-slate-100 shadow-inner overflow-x-auto w-full 2xl:w-auto">
@@ -195,19 +214,19 @@ const NewsManagement = () => {
                                       <h4 className="font-black text-slate-900 text-lg line-clamp-1 mb-1 group-hover:text-purple-700 transition-colors uppercase tracking-tight">{article.title}</h4>
                                       <div className="flex items-center gap-3">
                                         <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                                          {new Date(article.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                          {article.publishDate || "No Date"}
                                         </span>
                                         <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{article.readTime}</span>
+                                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{article.readTime} MIN READ</span>
                                       </div>
                                     </div>
                                   </div>
                                 </td>
                                 <td className="px-10 py-8 text-center">
-                                  <StatusBadge status={article.status || 'Published'} />
+                                  <StatusBadge status={article.displayCategory} />
                                 </td>
                                 <td className="px-10 py-8 text-center">
-                                  {article.isTopPick ? (
+                                  {article.isTopic ? (
                                     <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2 rounded-xl border border-amber-100 shadow-sm">
                                       <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
                                       <span className="font-black text-[9px] uppercase tracking-widest">Priority Pick</span>

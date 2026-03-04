@@ -28,6 +28,17 @@ export default function EventCard({
   const STRAPI_URL = "http://localhost:1337";
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
+  
+  const imageUrl = useMemo(() => {
+   
+    const imgPath = image?.data?.attributes?.url || image?.url || image?.attributes?.url || (typeof image === 'string' ? image : null);
+    
+    if (!imgPath) return DEFAULT_IMAGE;
+    
+   
+    return imgPath.startsWith('http') ? imgPath : `${STRAPI_URL}${imgPath}`;
+  }, [image]);
+
   const displayDate = useMemo(() => {
     if (!date) return "Date TBD";
     try {
@@ -45,19 +56,12 @@ export default function EventCard({
     }
   }, [date]);
 
-  const imageUrl = useMemo(() => {
-   
-    const imgData = image?.data?.attributes?.url || image?.url || image?.data?.url;
-    if (!imgData) return DEFAULT_IMAGE;
-    return imgData.startsWith('http') ? imgData : `${STRAPI_URL}${imgData}`;
-  }, [image, STRAPI_URL]);
-
   return (
     <div 
       className={`bg-white rounded-lg overflow-hidden shadow-md group w-full h-full flex flex-col transition-all duration-500 ${isPast ? 'opacity-80' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
-      {/* Image Section  */}
+      {/* Image Section */}
       <div className="h-40 sm:h-48 overflow-hidden relative flex-shrink-0">
         <img 
           src={imageUrl} 
@@ -96,7 +100,6 @@ export default function EventCard({
           {description}
         </p>
         
-       
         <div className="mt-auto">
           {!isPast ? (
             <button 

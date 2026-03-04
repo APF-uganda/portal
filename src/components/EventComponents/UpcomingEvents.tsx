@@ -11,6 +11,17 @@ const UpcomingEvents = () => {
 
   const { events, loading } = useEvents();
 
+  // Helper function to format the date before sending it to the registration page
+  const formatReadableDate = (dateStr: string) => {
+    if (!dateStr) return "Date TBA";
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   const upcomingEvents = useMemo(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0); 
@@ -25,7 +36,6 @@ const UpcomingEvents = () => {
     const interval = setInterval(() => {
       if (scrollRef.current) {
         const nextIndex = (activeIndex + 1) % upcomingEvents.length;
-        const containerWidth = scrollRef.current.offsetWidth;
         scrollRef.current.scrollTo({ left: nextIndex * 350, behavior: "smooth" });
         setActiveIndex(nextIndex);
       }
@@ -45,7 +55,6 @@ const UpcomingEvents = () => {
   );
 
   return (
-  
     <section className="bg-white py-12 -mx-[50vw] px-[50vw] relative">
       <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
         <h2 className="text-3xl font-black text-gray-800 uppercase tracking-tighter text-center mb-10">
@@ -57,28 +66,35 @@ const UpcomingEvents = () => {
             <button onClick={() => scroll('left')} className="hidden md:flex bg-[#7E49B3] text-white rounded-full p-3 hover:bg-[#3C096C] shadow-lg transition-all flex-shrink-0">
               <ChevronLeft className="w-6 h-6" />
             </button>
-
            
             <div ref={scrollRef} className="flex overflow-x-auto snap-x snap-mandatory pb-6 scroll-smooth [&::-webkit-scrollbar]:hidden flex-grow gap-6 items-stretch">
-              {upcomingEvents.map((event, idx) => (
-                <div key={event.id || idx} className="w-[85vw] md:w-[350px] snap-start flex-shrink-0 flex">
-                  <EventCard
-                    image={event.image}
-                    title={event.title}
-                    date={event.date}
-                    time={event.time}
-                    location={event.location}
-                    description={event.description}
-                    isPast={false}
-                    onRegister={() => navigate('/event-registration', { 
-                      state: { 
-                        eventTitle: event.title, 
-                        eventId: event.documentId || event.id 
-                      } 
-                    })}
-                  />
-                </div>
-              ))}
+              {upcomingEvents.map((event, idx) => {
+                // Determine the correct image URL 
+                const imageUrl = event.image?.data?.attributes?.url || event.image || "";
+                
+                return (
+                  <div key={event.id || idx} className="w-[85vw] md:w-[350px] snap-start flex-shrink-0 flex">
+                    <EventCard
+                      image={imageUrl}
+                      title={event.title}
+                      date={event.date}
+                      time={event.time}
+                      location={event.location || "Location TBD"}
+                      description={event.description}
+                      isPast={false}
+                      onRegister={() => navigate('/event-registration', { 
+                        state: { 
+                          eventTitle: event.title, 
+                          eventId: event.documentId || event.id,
+                          location: event.location || "Location TBD",
+                          date: formatReadableDate(event.date), // Sends formatted date
+                          image: imageUrl // Sends corrected image path
+                        } 
+                      })}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             <button onClick={() => scroll('right')} className="hidden md:flex bg-[#7E49B3] text-white rounded-full p-3 hover:bg-[#3C096C] shadow-lg transition-all flex-shrink-0">

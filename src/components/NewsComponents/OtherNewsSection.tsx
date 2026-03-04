@@ -1,11 +1,14 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface OtherNewsProps {
   articles: any[];
 }
 
 const OtherNewsSection = ({ articles }: OtherNewsProps) => {
+  const navigate = useNavigate();
+
   if (!articles || articles.length === 0) return null;
 
   return (
@@ -22,6 +25,8 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
         {articles.map((item) => (
           <article 
             key={item.id} 
+           
+            onClick={() => navigate(`/news/${item.documentId || item.id}`)}
             className="group cursor-pointer flex flex-col bg-white rounded-[2rem] p-4 border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-100 transition-all duration-300"
           >
             {/* Image Container inside the card */}
@@ -45,12 +50,12 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
               </h3>
               
               <p className="text-gray-500 line-clamp-2 text-sm leading-relaxed font-normal mb-4">
-                {item.summary}
+                {item.description || item.summary}
               </p>
 
               <div className="mt-auto">
                 {/* Read More Link */}
-                <div className="mb-4">
+                <div className="mb-4 flex items-center">
                   <span className="inline-flex items-center gap-1 text-[#5C32A3] font-bold text-[10px] uppercase tracking-widest group-hover:gap-2 transition-all">
                     Read More <ArrowRight size={12} />
                   </span>
@@ -58,9 +63,9 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
 
                 {/* Metadata footer inside card */}
                 <div className="pt-4 border-t border-gray-50 flex items-center gap-3 text-gray-400 text-[9px] tracking-wide font-normal uppercase">
-                  <span>{item.date}</span>
+                  <span>{item.publishDate || item.date}</span>
                   <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
-                  <span>{item.readTime}</span>
+                  <span>{item.readTime} MIN READ</span>
                 </div>
               </div>
             </div>

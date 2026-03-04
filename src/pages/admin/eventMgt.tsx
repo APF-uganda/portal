@@ -31,17 +31,14 @@ const EventCreatePage = () => {
     imagePreview: ''
   });
 
- 
   const updateField = (field: string, value: any) => {
     setEventData(prev => {
       let newState = { ...prev, [field]: value };
 
-      
       if (field === 'startDate' && newState.endDate && value > newState.endDate) {
         newState.endDate = value;
       }
 
-      
       if (field === 'endDate' && newState.startDate && value < newState.startDate) {
         alert("End date cannot be earlier than the start date.");
         return prev; 
@@ -51,7 +48,7 @@ const EventCreatePage = () => {
     });
   };
 
-  // Image Upload Logic
+  // UPDATED: Image Upload Logic to ensure URL is captured correctly
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -63,10 +60,16 @@ const EventCreatePage = () => {
     try {
       const res = await api.post('/upload', formData);
       const uploadedFile = res.data[0];
+      
+      // We set the full URL for the preview
+      const fullImageUrl = uploadedFile.url.startsWith('http') 
+        ? uploadedFile.url 
+        : `http://localhost:1337${uploadedFile.url}`;
+
       setEventData(prev => ({ 
         ...prev, 
         imageId: uploadedFile.id,
-        imagePreview: `http://localhost:1337${uploadedFile.url}`
+        imagePreview: fullImageUrl
       }));
     } catch (err) {
       alert("Image upload failed. Check Strapi port 1337.");
@@ -75,9 +78,7 @@ const EventCreatePage = () => {
     }
   };
 
- 
   const handlePublish = async () => {
-    
     const hasTitle = !!eventData.title.trim();
     const hasDate = !!eventData.startDate;
     const hasLocation = !!eventData.location.trim();
@@ -93,15 +94,14 @@ const EventCreatePage = () => {
         data: {
           title: eventData.title,
           description: eventData.description,
-          
           date: new Date(`${eventData.startDate}T${eventData.startTime}:00`).toISOString(),
-         
           time: `${eventData.startTime} - ${eventData.endTime}`,
           location: eventData.location,
           cpdPoints: Number(eventData.cpdPoints),
           registrationLink: eventData.registrationLink,
           isFeatured: eventData.isFeatured,
-          image: eventData.imageId || null, 
+          // FIX: Explicitly send imageId. If null, frontend fallback kicks in.
+          image: eventData.imageId, 
           publishedAt: new Date().toISOString()
         }
       };
@@ -110,7 +110,7 @@ const EventCreatePage = () => {
       const res = await api.post('/events', payload);
       
       if (res.status === 201 || res.status === 200) {
-        alert(" Published successfully!");
+        alert("Published successfully!");
         navigate('/events');
       }
     } catch (err: any) {
@@ -138,7 +138,6 @@ const EventCreatePage = () => {
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-              
               <div className="lg:col-span-2 space-y-8">
                 <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-sm relative">
                   <div className="flex justify-between items-start mb-4">
@@ -150,7 +149,6 @@ const EventCreatePage = () => {
                       onChange={(e) => updateField('title', e.target.value)}
                     />
                     
-                    {/* Featured Event Toggle */}
                     <button 
                       type="button"
                       onClick={() => updateField('isFeatured', !eventData.isFeatured)}
@@ -161,7 +159,6 @@ const EventCreatePage = () => {
                     </button>
                   </div>
                   
-                  {/* Poster Upload Area  */}
                   <div className="relative h-64 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden mb-8 group transition-colors hover:border-purple-300">
                     {eventData.imagePreview ? (
                       <img src={eventData.imagePreview} className="w-full h-full object-cover" alt="Event preview" />
@@ -185,16 +182,13 @@ const EventCreatePage = () => {
                 </div>
               </div>
 
-              {/* Sidebar with Logistics and Time */}
               <LogisticsSidebar 
                 data={eventData} 
                 onChange={updateField} 
               />
-
             </div>
           </div>
         </div>
-
         <Footer />
       </main>
     </div>

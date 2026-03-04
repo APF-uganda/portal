@@ -57,6 +57,7 @@ import MembershipEditor from './components/admincms/editMembership';
 import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
 import LeadershipManager from './components/admincms/leadership/leadershipmanager';
+import NewsDetail from './components/NewsComponents/NewsDetail';
 
 /* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
@@ -117,6 +118,7 @@ const App: React.FC = () => {
             <Route path="/editLandingpage" element={<HomePageEditor />} />
             <Route path="/admin/about" element={<AboutPageEditor />} />
            <Route path="/admincms/leadership" element={<LeadershipManager />} />
+           <Route path="/news/:id" element={<NewsDetail />} />
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
