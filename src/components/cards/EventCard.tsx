@@ -73,6 +73,7 @@ export default function EventCard({
             <span className="bg-white text-gray-800 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">Past Event</span>
           </div>
         )}
+        
       </div>
 
       {/* Content Section */}
