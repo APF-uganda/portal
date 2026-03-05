@@ -1,52 +1,61 @@
-import React from "react";
+import React from 'react';
+import { ArrowRight } from 'lucide-react';
 
-const TopPickSection: React.FC = () => {
-    return (
-        <section className="bg-white py-12 px-6 md:px-12">
-            <h2 className="text-center text-3xl font-bold text-black mb-10">
-                Our Latest News: Top Pick
-            </h2>
+interface TopPickProps {
+  article?: any;
+}
 
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden md:flex">
-                {/* Details */}
-                <div className="md:w-1/2 p-6 flex flex-col justify-between">
-                    <div>
-                        <div className="flex gap-2 mb-4">
-                            <span className="bg-[#641BA1] text-white text-xs font-semibold px-3 py-1 rounded-full">
-                                Featured
-                            </span>
-                            <span className="bg-gray-100 text-black text-xs font-semibold px-3 py-1 rounded-full">
-                                Policy Update
-                            </span>
-                        </div>
+const TopPickSection = ({ article }: TopPickProps) => {
+  if (!article) return null;
 
-                        <h3 className="text-xl font-bold mb-3">
-                            Navigating the New Tax Regime: Key Considerations for Ugandan Businesses
-                        </h3>
-                        <p className="text-gray-700 mb-4">
-                            The recent changes in Uganda's tax policy present both challenges and opportunities for businesses.
-                            Our in-depth analysis provides a clear breakdown of the new regulations.
-                        </p>
-                        <div className="text-sm text-gray-500 mb-6">
-                            <span>January 2, 2026</span> <span className="mx-2">•</span> <span>10 min read</span>
-                        </div>
-                    </div>
+  return (
+    <section className="py-6 px-6 max-w-5xl mx-auto">
+     
+      <div className="flex items-center gap-3 mb-6">
+        <h3 className="text-xl font-black text-[#1A1A1A] center uppercase tracking-tighter">
+          Our Latest News: Top Pick
+        </h3>
+        <div className="h-[1px] flex-1 bg-gray-100"></div>
+      </div>
 
-                    <button className="bg-[#641BA1] text-white py-2 rounded-xl w-full  transition">
-                        Read More
-                    </button>
-                </div>
-                {/* Image */}
-                <div className="md:w-1/2">
-                    <img
-                        src="/images/News/Tax.jpg"
-                        alt="Tax calculator and coins"
-                        className="object-cover w-full h-full"
-                    />
-                </div>
-            </div>
-        </section>
-    );
+      <div className="flex flex-col md:flex-row gap-8 items-center justify-center bg-gray-50 rounded-[1.5rem] p-4 md:p-6 border border-gray-100 min-h-[300px]">
+        
+        {/* Image Container */}
+        <div className="w-full md:w-5/12 flex justify-center">
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm">
+            <img 
+              src={article.image} 
+              alt={article.title}
+              className="w-full h-full object-cover" 
+            />
+          </div>
+        </div>
+
+        {/* Content Area - Vertically Centered */}
+        <div className="w-full md:w-6/12 flex flex-col justify-center space-y-3">
+          <div className="flex items-center gap-2 text-[#5C32A3] font-bold text-[9px] uppercase tracking-widest">
+            <span className="w-5 h-[1.5px] bg-[#ffffff]"></span>
+            Featured Story
+          </div>
+          
+          <h2 className="text-xl md:text-2xl font-black text-[#1A1A1A] leading-tight tracking-tight">
+            {article.title}
+          </h2>
+          
+          <p className="text-gray-500 text-xs md:text-sm leading-relaxed line-clamp-2">
+            {article.summary}
+          </p>
+          
+          <div className="pt-2">
+            <button className="flex items-center gap-2 text-[#5C32A3] font-black text-[10px] uppercase tracking-widest group">
+              Read Full Story 
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default TopPickSection;

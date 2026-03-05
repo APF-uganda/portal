@@ -1,159 +1,79 @@
-import React, { useState } from "react";
+import React from 'react';
+import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-type NewsItem = {
-    category: string;
-    title: string;
-    summary: string;
-    date: string;
-    readTime: string;
-    image: string;
-};
+interface OtherNewsProps {
+  articles: any[];
+}
 
-const newsItems: NewsItem[] = [
-    {
-        category: "Thought Leadership",
-        title: "The Future of Accountancy: Embracing Digital",
-        summary:
-            "Digital tools are reshaping the accounting landscape. Explore how AI, blockchain, and cloud computing are revolutionizing...",
-        date: "October 18, 2024",
-        readTime: "7 min read",
-        image: "/images/News/digital.jpeg",
-    },
-    {
-        category: "Ethics & Governance",
-        title: "Strengthening Ethical Frameworks in Public Practice",
-        summary:
-            "A deep dive into the importance of ethical conduct in maintaining public trust and the role of APF in fostering integrity...",
-        date: "October 10, 2024",
-        readTime: "9 min read",
-        image: "/images/News/legal.png",
-    },
-    {
-        category: "Announcements",
-        title: "Highlights from the Annual CPD Conference 2024",
-        summary:
-            "Recap of the key takeaways, insightful sessions, and networking opportunities from our recent successful CPD conference.",
-        date: "September 30, 2024",
-        readTime: "5 min read",
-        image: "/images/News/annual.jpg",
-    },
-    {
-        category: "SME Support",
-        title: "Financial Strategies for Sustainable SME Growth",
-        summary:
-            "Practical advice and proven strategies for small and medium-sized enterprises to achieve sustainable financial growth...",
-        date: "September 22, 2024",
-        readTime: "6 min read",
-        image: "/images/News/growth.jpeg",
-    },
-    {
-        category: "Policy Update",
-        title: "Understanding IFRS 17: Impact on Insurance",
-        summary:
-            "An essential guide to IFRS 17 and its profound implications for the insurance sector in Uganda...",
-        date: "September 13, 2024",
-        readTime: "11 min read",
-        image: "/images/News/Insurance.webp",
-    },
-    {
-        category: "Announcements",
-        title: "Member Spotlight: Celebrating Professional Excellence",
-        summary:
-            "We feature one of our esteemed members, highlighting their journey, achievements, and contributions...",
-        date: "September 08, 2024",
-        readTime: "8 min read",
-        image: "/images/News/member.jpeg",
-    },
-];
+const OtherNewsSection = ({ articles }: OtherNewsProps) => {
+  const navigate = useNavigate();
 
-const getTagStyle = (category: string) => {
-    switch (category) {
-        case "Thought Leadership":
-            return "bg-gray-200 text-gray-800";
-        case "Ethics & Governance":
-            return "bg-gray-200 text-gray-800";
-        case "Announcements":
-            return "bg-gray-200 text-gray-800";
-        case "SME Support":
-            return "bg-gray-200 text-gray-800";
-        case "Policy Update":
-            return "bg-gray-200 text-gray-800";
-        default:
-            return "bg-gray-200 text-gray-800";
-    }
-};
+  if (!articles || articles.length === 0) return null;
 
-const categories = [
-    "All Categories",
-    "Policy Update",
-    "Thought Leadership",
-    "Announcements",
-    "Ethics & Governance",
-    "SME Support",
-];
+  return (
+    <section className="py-16 px-6 max-w-6xl mx-auto border-t border-gray-100">
+      {/* Centered Title Area */}
+      <div className="flex flex-col items-center mb-12 text-center">
+        <h3 className="text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">
+          Other News
+        </h3>
+        <div className="w-12 h-[2px] bg-[#5C32A3] mt-2"></div>
+      </div>
 
-const OtherNewsSection: React.FC = () => {
-    const [selectedCategory, setSelectedCategory] = useState("All Categories");
-
-    const filteredItems =
-        selectedCategory === "All Categories"
-            ? newsItems
-            : newsItems.filter((item) => item.category === selectedCategory);
-
-    return (
-        <section className="bg-[#F8F5FE] py-12 px-6 md:px-12">
-            <h2 className="text-center text-3xl font-bold text-black mb-6">Our Other News</h2>
-
-            {/* Category Filters */}
-            <div className="flex flex-wrap justify-center gap-4 mb-10">
-                {categories.map((cat) => (
-                    <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition ${selectedCategory === cat
-                                ? "bg-[#641BA1] text-white"
-                                : "bg-gray-200 text-black hover:bg-gray-300"
-                            }`}
-                    >
-                        {cat}
-                    </button>
-                ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {articles.map((item) => (
+          <article 
+            key={item.id} 
+           
+            onClick={() => navigate(`/news/${item.documentId || item.id}`)}
+            className="group cursor-pointer flex flex-col bg-white rounded-[2rem] p-4 border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-100 transition-all duration-300"
+          >
+            {/* Image Container inside the card */}
+            <div className="relative aspect-[16/10] rounded-[1.5rem] overflow-hidden mb-5 bg-gray-50">
+              <img 
+                src={item.image} 
+                alt={item.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+              />
+              <div className="absolute top-3 left-3">
+                <span className="bg-white/95 backdrop-blur-sm text-[#5C32A3] px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm">
+                  {item.category}
+                </span>
+              </div>
             </div>
+            
+            {/* Content Area within the card padding */}
+            <div className="flex-1 flex flex-col px-2 pb-2">
+              <h3 className="text-lg font-black text-[#1A1A1A] leading-snug group-hover:text-[#5C32A3] transition-colors mb-3">
+                {item.title}
+              </h3>
+              
+              <p className="text-gray-500 line-clamp-2 text-sm leading-relaxed font-normal mb-4">
+                {item.description || item.summary}
+              </p>
 
-            {/* News Cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                {filteredItems.map((item, index) => (
-                    <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                        <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-48 object-cover"
-                        />
-                        <div className="p-5">
-                            <span
-                                className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${getTagStyle(
-                                    item.category
-                                )}`}
-                            >
-                                {item.category}
-                            </span>
-                            <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-                            <p className="text-gray-600 mb-3">{item.summary}</p>
-                            <div className="text-sm text-gray-500 mb-4">
-                                {item.date} <span className="mx-2">•</span> {item.readTime}
-                            </div>
-                            <a
-                                href="#"
-                                className="text-[#641BA1] font-semibold text-sm hover:underline"
-                            >
-                                Read More
-                            </a>
-                        </div>
-                    </div>
-                ))}
+              <div className="mt-auto">
+                {/* Read More Link */}
+                <div className="mb-4 flex items-center">
+                  <span className="inline-flex items-center gap-1 text-[#5C32A3] font-bold text-[10px] uppercase tracking-widest group-hover:gap-2 transition-all">
+                    Read More <ArrowRight size={12} />
+                  </span>
+                </div>
+
+                {/* Metadata footer inside card */}
+                <div className="pt-4 border-t border-gray-50 flex items-center gap-3 text-gray-400 text-[9px] tracking-wide font-normal uppercase">
+                  <span>{item.publishDate || item.date}</span>
+                  <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
+                  <span>{item.readTime} MIN READ</span>
+                </div>
+              </div>
             </div>
-        </section>
-    );
+          </article>
+        ))}
+      </div>
+    </section>
+  );
 };
 
 export default OtherNewsSection;

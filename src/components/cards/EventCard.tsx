@@ -1,17 +1,19 @@
-import { Calendar, Clock, MapPin } from 'lucide-react'
+import { Calendar, Clock, MapPin } from 'lucide-react';
+import { useMemo } from 'react';
 
-interface EventCardProps {
-  image: string
-  title: string
-  date: string
-  time: string
-  location: string
-  description: string
-  onRegister?: () => void
-  delay?: number
+export interface EventCardProps {
+  image?: any;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  onRegister?: () => void;
+  delay?: number;
+  isPast?: boolean; 
 }
 
-function EventCard({ 
+export default function EventCard({ 
   image, 
   title, 
   date, 
@@ -19,56 +21,101 @@ function EventCard({
   location, 
   description, 
   onRegister,
-  delay = 0 
+  delay = 0,
+  isPast = false 
 }: EventCardProps) {
+
+  const STRAPI_URL = "http://localhost:1337";
+  const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
+
+  // FIX: Refined image logic to drill into Strapi attributes while allowing string fallbacks
+  const imageUrl = useMemo(() => {
+    // Check all possible Strapi locations for the URL string
+    const imgPath = image?.data?.attributes?.url || image?.url || image?.attributes?.url || (typeof image === 'string' ? image : null);
+    
+    if (!imgPath) return DEFAULT_IMAGE;
+    
+   
+    return imgPath.startsWith('http') ? imgPath : `${STRAPI_URL}${imgPath}`;
+  }, [image]);
+
+  const displayDate = useMemo(() => {
+    if (!date) return "Date TBD";
+    try {
+      const datePart = date.split('T')[0]; 
+      const [year, month, day] = datePart.split('-');
+      const eventDate = new Date(Number(year), Number(month) - 1, Number(day));
+      
+      return eventDate.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return date; 
+    }
+  }, [date]);
+
   return (
     <div 
-      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group opacity-0 translate-y-12 animate-fade-in-up w-full"
-      style={{ 
-        animationDelay: `${delay}ms`,
-        animationFillMode: 'forwards'
-      }}
+      className={`bg-white rounded-lg overflow-hidden shadow-md group w-full h-full flex flex-col transition-all duration-500 ${isPast ? 'opacity-80' : ''}`}
+      style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="h-40 sm:h-44 md:h-48 overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+      {/* Image Section */}
+      <div className="h-40 sm:h-48 overflow-hidden relative flex-shrink-0">
+        <img 
+          src={imageUrl} 
+          alt={title} 
+          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isPast ? 'grayscale-[0.5]' : ''}`} 
         />
+        {isPast && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <span className="bg-white text-gray-800 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">Past Event</span>
+          </div>
+        )}
+        
       </div>
-      <div className="p-4 sm:p-5 md:p-6">
-        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[3.5rem] leading-tight transition-colors duration-300 group-hover:text-purple-700">
+
+      {/* Content Section */}
+      <div className="p-6 flex flex-col flex-grow">
+        <h3 className="text-lg font-bold text-gray-900 mb-3 min-h-[3.5rem] line-clamp-2 group-hover:text-purple-700 transition-colors">
           {title}
         </h3>
         
-        <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 text-xs sm:text-sm text-gray-600">
-          <div className="flex items-start gap-2 transition-transform duration-300 group-hover:translate-x-1">
-            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0 text-purple-600" />
-            <span className="leading-tight">{date}</span>
+        <div className="space-y-2 mb-4 text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-purple-600" />
+            <span className=" text-gray-900">{displayDate}</span>
           </div>
-          <div className="flex items-start gap-2 transition-transform duration-300 group-hover:translate-x-1">
-            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0 text-purple-600" />
-            <span className="leading-tight">{time}</span>
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-purple-600" />
+            <span>{time}</span>
           </div>
-          <div className="flex items-start gap-2 transition-transform duration-300 group-hover:translate-x-1">
-            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0 text-purple-600" />
-            <span className="leading-tight">{location}</span>
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-purple-600" />
+            <span className="truncate">{location}</span>
           </div>
         </div>
         
-        <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-5 md:mb-6 min-h-[2.5rem] sm:min-h-[3rem] leading-relaxed">
+        <p className="text-xs text-gray-500 mb-6 line-clamp-3 ">
           {description}
         </p>
         
-        <button 
-          onClick={onRegister}
-          className="w-full bg-purple-700 text-white py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold hover:bg-purple-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95"
-        >
-          Register
-        </button>
+        <div className="mt-auto">
+          {!isPast ? (
+            <button 
+              onClick={onRegister}
+              className="w-full bg-purple-700 text-white py-2.5 rounded-full font-semibold hover:bg-purple-800 transition-all transform active:scale-95"
+            >
+              Register Now
+            </button>
+          ) : (
+            <div className="pt-4 ">
+             
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  )
+  );
 }
-
-export default EventCard

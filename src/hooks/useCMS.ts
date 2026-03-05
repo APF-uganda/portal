@@ -1,33 +1,33 @@
-import { useState, useEffect, useCallback } from 'react';
-import * as cmsApi from '../services/cmsApi';
+import { useState, useEffect, useCallback } from "react";
 
-/**
- * Hook to fetch the Homepage 
- */
-export const useHomepage = () => {
-  const [data, setData] = useState<any>(null);
+import api, { getEvents, getHomepage, getNews } from "../services/cmsApi";
+
+
+export const useEvents = () => {
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await cmsApi.getHomepage();
-      setData(result);
+      const data = await getEvents();
+      setEvents(data || []);
     } catch (err) {
-      setError('Failed to fetch homepage');
+      console.error("Fetch Events Error:", err);
+      setError('Failed to fetch events');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
-  return { data, loading, error, refresh: fetchData };
+  return { events, loading, error, refresh: fetchEvents };
 };
 
 /**
- * Hook to fetch News Items
+ * Hook for fetching all News Items
  */
 export const useNews = () => {
   const [news, setNews] = useState<any[]>([]);
@@ -37,9 +37,10 @@ export const useNews = () => {
   const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await cmsApi.getNews();
-      setNews(data);
+      const data = await getNews();
+      setNews(data || []); 
     } catch (err) {
+      console.error("Fetch News Error:", err);
       setError('Failed to fetch news');
     } finally {
       setLoading(false);
@@ -52,26 +53,27 @@ export const useNews = () => {
 };
 
 /**
- * Hook to fetch Events
+ * Hook for fetching Homepage 
  */
-export const useEvents = () => {
-  const [events, setEvents] = useState<any[]>([]);
+export const useHomepage = () => {
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEvents = useCallback(async () => {
+  const fetchHome = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await cmsApi.getEvents();
-      setEvents(data);
+      const homeData = await getHomepage();
+      setData(homeData);
     } catch (err) {
-      setError('Failed to fetch events');
+      console.error("Home Fetch Error:", err);
+      setError("Failed to load homepage content");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchEvents(); }, [fetchEvents]);
+  useEffect(() => { fetchHome(); }, [fetchHome]);
 
-  return { events, loading, error, refresh: fetchEvents };
+  return { data, loading, error, refresh: fetchHome };
 };
