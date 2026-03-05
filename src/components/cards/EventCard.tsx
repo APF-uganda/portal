@@ -28,9 +28,9 @@ export default function EventCard({
   const STRAPI_URL = "http://localhost:1337";
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  
+  // FIX: Refined image logic to drill into Strapi attributes while allowing string fallbacks
   const imageUrl = useMemo(() => {
-   
+    // Check all possible Strapi locations for the URL string
     const imgPath = image?.data?.attributes?.url || image?.url || image?.attributes?.url || (typeof image === 'string' ? image : null);
     
     if (!imgPath) return DEFAULT_IMAGE;
@@ -84,7 +84,7 @@ export default function EventCard({
         <div className="space-y-2 mb-4 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-purple-600" />
-            <span className="font-bold text-gray-900">{displayDate}</span>
+            <span className=" text-gray-900">{displayDate}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-purple-600" />
@@ -96,7 +96,7 @@ export default function EventCard({
           </div>
         </div>
         
-        <p className="text-xs text-gray-500 mb-6 line-clamp-3 italic">
+        <p className="text-xs text-gray-500 mb-6 line-clamp-3 ">
           {description}
         </p>
         
@@ -109,10 +109,8 @@ export default function EventCard({
               Register Now
             </button>
           ) : (
-            <div className="pt-4 border-t border-gray-100 text-center">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                Registration Closed
-              </p>
+            <div className="pt-4 ">
+             
             </div>
           )}
         </div>
