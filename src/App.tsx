@@ -58,6 +58,7 @@ import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
 import LeadershipManager from './components/admincms/leadership/leadershipmanager';
 import NewsDetail from './components/NewsComponents/NewsDetail';
+import AdminInquiryDashboard from './pages/admin/inquiries';
 
 /* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
@@ -298,6 +299,17 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+
+<Route
+            path="/admin/inquiries"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminInquiryDashboard />
+              </ProtectedRoute>
+            }
+          />
+
 
           <Route
             path="/admin/communityForum"

@@ -71,6 +71,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, onToggle }) => {
           <NavItem icon={<MdInsights />} label="Reports & Analytics" to="/admin/reports" collapsed={collapsed} />
           <NavItem icon={<FaComments />} label="Community Forum" to="/admin/communityForum" collapsed={collapsed} />
           <NavItem icon={<FiBell />} label="Announcements" to="/admin/announcements" collapsed={collapsed} />
+          <NavItem icon={<FiUser />} label="Inquiries" to="/admin/inquiries" collapsed={collapsed} />
         </nav>
       </div>
 
