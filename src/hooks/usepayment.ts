@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Payment, DashboardStats } from '../components/payment-components/types'; 
+import { Payment, DashboardStats } from '../components/adminpayments-components/types'; 
 import { API_BASE_URL } from '../config/api';
-
 export const usePayments = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   

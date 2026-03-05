@@ -2,36 +2,66 @@ import React, { useState } from 'react';
 import { 
   Save, ArrowLeft, Image as ImageIcon, X, 
   Type, Video, Paperclip, Trash2, 
-  MoveUp, MoveDown, UploadCloud 
+  MoveUp, MoveDown, UploadCloud, Star, Loader2, Link as LinkIcon 
 } from 'lucide-react';
-import { NewsArticle, ContentBlock, BlockType, Category, ArticleStatus } from './newstypes';
+import api from '../../services/cmsApi';
 
-interface ArticleFormProps {
-  initialData?: Partial<NewsArticle>;
-  onSave: (data: Partial<NewsArticle>) => void;
-  onCancel: () => void;
-}
-
-export const ArticleForm = ({ initialData, onSave, onCancel }: ArticleFormProps) => {
-  const [blocks, setBlocks] = useState<ContentBlock[]>(initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }]);
-  const [featuredImage, setFeaturedImage] = useState(initialData?.featuredImage || "");
+export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) => {
   const [title, setTitle] = useState(initialData?.title || "");
+  const [summary, setSummary] = useState(initialData?.summary || "");
+  const [category, setCategory] = useState(initialData?.category || 'Policy Update');
+  const [isTopPick, setIsTopPick] = useState(initialData?.isTopPick || false);
+  const [blocks, setBlocks] = useState(initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }]);
+  const [imagePreview, setImagePreview] = useState(initialData?.featuredImage || "");
+  const [imageId, setImageId] = useState<number | null>(initialData?.imageId || null);
+  const [uploading, setUploading] = useState(false);
 
-  // --- Block Management ---
-  const addBlock = (type: BlockType) => {
-    const newBlock: ContentBlock = {
-      id: Math.random().toString(36).substr(2, 9),
-      type,
-      value: '',
-    };
+  // --- LOGIC FOR BLOCK IMAGE UPLOAD ---
+  const handleBlockImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('files', file);
+    try {
+      const res = await api.post('/upload', formData);
+      const url = `http://localhost:1337${res.data[0].url}`;
+      updateBlock(blockId, url);
+    } catch (err) {
+      alert("Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('files', file);
+    try {
+      const res = await api.post('/upload', formData);
+      const uploadedFile = res.data[0];
+      setImageId(uploadedFile.id);
+      setImagePreview(`http://localhost:1337${uploadedFile.url}`);
+    } catch (err) {
+      alert("Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const addBlock = (type: string) => {
+    const newBlock = { id: Math.random().toString(36).substr(2, 9), type, value: '' };
     setBlocks([...blocks, newBlock]);
   };
 
-  const updateBlock = (id: string, value: string, fileName?: string) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, value, fileName } : b));
+  const updateBlock = (id: string, value: string) => {
+    setBlocks(blocks.map((b: any) => b.id === id ? { ...b, value } : b));
   };
 
-  const removeBlock = (id: string) => setBlocks(blocks.filter(b => b.id !== id));
+  const removeBlock = (id: string) => setBlocks(blocks.filter((b: any) => b.id !== id));
 
   const moveBlock = (index: number, direction: 'up' | 'down') => {
     const newBlocks = [...blocks];
@@ -44,138 +74,160 @@ export const ArticleForm = ({ initialData, onSave, onCancel }: ArticleFormProps)
 
   const handleFinalSave = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      title,
-      featuredImage,
-      contentBlocks: blocks,
-      status: (initialData?.status || 'Draft') as ArticleStatus,
-      category: (initialData?.category || 'News') as Category,
-    });
+    if (!title) return alert("Title is required");
+    onSave({ title, summary, category, isTopPick, imageId, contentBlocks: blocks });
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in duration-500">
-      <button onClick={onCancel} className="flex items-center gap-2 text-gray-500 hover:text-[#5C32A3] transition font-medium">
-        <ArrowLeft size={18} /> Back to News
-      </button>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-8">
-        {/* Header Media */}
-        <section className="space-y-4">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Main Featured Image</label>
-          <div className="relative h-64 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden group hover:border-purple-300 transition-colors">
-            {featuredImage ? (
-              <>
-                <img src={featuredImage} className="w-full h-full object-cover" alt="Featured" />
-                <button onClick={() => setFeaturedImage("")} className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-lg text-red-500 hover:scale-110 transition"><X size={18}/></button>
-              </>
-            ) : (
-              <div className="text-center">
-                <UploadCloud className="mx-auto text-gray-300 mb-2" size={40} />
-                <button type="button" onClick={() => setFeaturedImage("https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80")} className="text-purple-600 font-bold hover:underline">Upload Header Image</button>
-              </div>
-            )}
-          </div>
-          <input 
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder=" title..." 
-            className="w-full text-4xl font-black outline-none border-b-2 border-transparent focus:border-purple-100 py-2 placeholder:text-gray-200" 
-          />
-        </section>
-
-        {/* Dynamic Canvas */}
-        <div className="space-y-10 min-h-[300px]">
-          {blocks.map((block, index) => (
-            <div key={block.id} className="group relative pl-8 border-l-2 border-transparent hover:border-purple-200 transition-all">
-              {/* Floating Controls */}
-              <div className="absolute -left-4 top-0 hidden group-hover:flex flex-col gap-1 bg-white border rounded-lg shadow-xl p-1 z-10">
-                <button onClick={() => moveBlock(index, 'up')} className="p-1.5 hover:bg-gray-100 text-gray-500"><MoveUp size={14}/></button>
-                <button onClick={() => moveBlock(index, 'down')} className="p-1.5 hover:bg-gray-100 text-gray-500"><MoveDown size={14}/></button>
-                <button onClick={() => removeBlock(block.id)} className="p-1.5 hover:bg-red-50 text-red-500"><Trash2 size={14}/></button>
-              </div>
-
-              {/* Render Block Types */}
-              {block.type === 'text' && (
-                <textarea 
-                  placeholder="Type content here..."
-                  className="w-full min-h-[80px] outline-none text-lg text-gray-700 resize-none leading-relaxed placeholder:text-gray-300"
-                  value={block.value}
-                  onChange={(e) => updateBlock(block.id, e.target.value)}
-                />
-              )}
-
-              {block.type === 'image' && (
-                <div className="space-y-3">
-                   <div className="h-80 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 shadow-inner">
-                      {block.value ? <img src={block.value} className="w-full h-full object-cover" alt="Article Content" /> : <ImageIcon className="text-gray-200" size={60} />}
-                   </div>
-                   <input 
-                    placeholder="Paste Image URL..." 
-                    value={block.value}
-                    className="text-xs w-full p-2 bg-gray-50 rounded border-none outline-none text-purple-600 font-mono" 
-                    onChange={(e) => updateBlock(block.id, e.target.value)}
-                   />
-                </div>
-              )}
-
-              {block.type === 'video' && (
-                <div className="p-6 bg-slate-900 rounded-2xl flex items-center gap-6 text-white shadow-2xl">
-                  <div className="p-4 bg-white/10 rounded-full"><Video size={28} /></div>
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-slate-400 uppercase mb-1">Video Link (YouTube / Vimeo)</p>
-                    <input 
-                      placeholder="https://youtube.com/watch?v=..." 
-                      className="w-full bg-transparent border-b border-slate-700 outline-none pb-1 focus:border-purple-400 transition"
-                      value={block.value}
-                      onChange={(e) => updateBlock(block.id, e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {block.type === 'attachment' && (
-                <div className="p-5 border-2 border-gray-100 rounded-2xl flex items-center justify-between bg-white hover:bg-purple-50/30 transition shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-purple-100 rounded-xl text-purple-600"><Paperclip size={22} /></div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-700">{block.fileName || "No file chosen"}</p>
-                      <p className="text-xs text-gray-400 uppercase font-medium">Article Attachment</p>
-                    </div>
-                  </div>
-                  <button type="button" onClick={() => updateBlock(block.id, "file_url", "Guideline_2026.pdf")} className="px-4 py-2 bg-white border border-gray-200 text-xs font-black text-purple-600 rounded-lg hover:shadow-md transition">Upload</button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Toolbar - Section Adder */}
-        <div className="mt-12 p-6 bg-[#F4F2FE] rounded-3xl flex items-center justify-center gap-8 border border-purple-100 shadow-inner">
-           <ToolbarButton icon={<Type size={20}/>} label="Text" onClick={() => addBlock('text')} />
-           <ToolbarButton icon={<ImageIcon size={20}/>} label="Image" onClick={() => addBlock('image')} />
-           <ToolbarButton icon={<Video size={20}/>} label="Video" onClick={() => addBlock('video')} />
-           <ToolbarButton icon={<Paperclip size={20}/>} label="File" onClick={() => addBlock('attachment')} />
+    <div className="max-w-5xl mx-auto pb-20 space-y-8">
+      {/* Action Header */}
+      <div className="flex justify-between items-center py-4 border-b border-gray-100">
+        <button onClick={onCancel} className="flex items-center gap-2 text-gray-400 hover:text-[#5C32A3] transition-colors text-xs font-bold">
+          <ArrowLeft size={16} /> Exit Editor
+        </button>
+        
+        <div className="flex gap-3">
+          <button 
+            type="button"
+            onClick={() => setIsTopPick(!isTopPick)}
+            className={`p-2.5 rounded-xl border transition-all ${isTopPick ? 'bg-amber-50 border-amber-200 text-amber-500' : 'bg-white border-gray-200 text-gray-300'}`}
+          >
+            <Star size={18} fill={isTopPick ? "currentColor" : "none"} />
+          </button>
+          <button 
+            onClick={handleFinalSave} 
+            disabled={isLoading || uploading}
+            className="px-6 py-2.5 bg-[#5C32A3] text-white rounded-xl text-xs font-bold shadow-md hover:bg-[#4A2882] transition-all flex items-center gap-2"
+          >
+            {isLoading ? <Loader2 className="animate-spin" size={16} /> : <><Save size={16} /> Save Article</>}
+          </button>
         </div>
       </div>
 
-      <div className="flex justify-end gap-4 mt-8">
-        <button onClick={onCancel} className="px-8 py-3 rounded-2xl font-bold text-gray-400 hover:text-gray-600 transition">Discard Changes</button>
-        <button onClick={handleFinalSave} className="px-10 py-3 bg-purple-700 text-white rounded-2xl font-black shadow-xl shadow-purple-200 hover:bg-purple-800 transition transform hover:-translate-y-1 active:scale-95 flex items-center gap-3">
-          <Save size={20} /> Save & Update Article
-        </button>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+        <div className="lg:col-span-3 space-y-10">
+          <div className="bg-white">
+            {/* Title & Summary Area  */}
+            <div className="space-y-4 mb-10 px-4">
+              <input 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Article Title..." 
+                className="w-full text-3xl font-bold outline-none border-none placeholder:text-gray-200 text-gray-900 py-2" 
+              />
+              <textarea 
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Add a brief summary..."
+                className="w-full text-base font-medium text-gray-500 outline-none resize-none h-16 leading-relaxed border-none py-1"
+              />
+            </div>
+
+            {/* Content Blocks */}
+            <div className="space-y-6">
+              {blocks.map((block: any, index: number) => (
+                <div key={block.id} className="group relative transition-all px-4">
+                  {/* Floating Controls */}
+                  <div className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 flex flex-col gap-1 transition-opacity">
+                    <button onClick={() => moveBlock(index, 'up')} className="p-1.5 text-gray-300 hover:text-gray-600"><MoveUp size={14}/></button>
+                    <button onClick={() => removeBlock(block.id)} className="p-1.5 text-gray-300 hover:text-red-400"><Trash2 size={14}/></button>
+                  </div>
+
+                  {block.type === 'text' && (
+                    <textarea 
+                      placeholder="Start typing..."
+                      className="w-full min-h-[120px] outline-none text-gray-700 leading-relaxed placeholder:text-gray-200 border-none resize-none px-2 py-2 bg-gray-50/30 rounded-lg focus:bg-white transition-colors"
+                      value={block.value}
+                      onChange={(e) => updateBlock(block.id, e.target.value)}
+                    />
+                  )}
+
+                  {block.type === 'image' && (
+                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 border-dashed flex flex-col items-center justify-center min-h-[250px]">
+                      {block.value ? (
+                        <div className="relative group/img w-full">
+                          <img src={block.value} className="rounded-xl max-h-80 w-full object-cover mb-4 mx-auto shadow-sm" />
+                          <button onClick={() => updateBlock(block.id, "")} className="absolute top-2 right-2 p-1 bg-white/80 rounded-full text-red-500 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                            <X size={16}/>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="flex gap-4">
+                             {/* Upload Option */}
+                            <label className="flex flex-col items-center justify-center w-24 h-24 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 transition-colors">
+                              <UploadCloud className="text-gray-300" size={24} />
+                              <span className="text-[9px] font-bold text-gray-400 uppercase mt-2">Upload</span>
+                              <input type="file" className="hidden" onChange={(e) => handleBlockImageUpload(e, block.id)} />
+                            </label>
+                            <div className="flex items-center text-gray-200 text-xs font-bold">OR</div>
+                            {/* Icon Placeholder */}
+                            <div className="flex flex-col items-center justify-center w-24 h-24 bg-white border border-gray-200 rounded-xl">
+                              <LinkIcon className="text-gray-300" size={24} />
+                              <span className="text-[9px] font-bold text-gray-400 uppercase mt-2">Paste Link</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <input 
+                        placeholder="Paste image URL here..." 
+                        value={block.value}
+                        onChange={(e) => updateBlock(block.id, e.target.value)}
+                        className="text-[10px] w-full max-w-sm p-3 bg-white rounded-xl border border-gray-100 outline-none text-center mt-4 shadow-sm focus:border-purple-200 transition-colors" 
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Simple Toolbar */}
+            <div className="mt-12 flex items-center justify-center gap-8 py-6 border-t border-gray-50">
+              <ToolbarButton icon={<Type size={20}/>} label="Text" onClick={() => addBlock('text')} />
+              <ToolbarButton icon={<ImageIcon size={20}/>} label="Image" onClick={() => addBlock('image')} />
+              <ToolbarButton icon={<Video size={20}/>} label="Video" onClick={() => addBlock('video')} />
+              <ToolbarButton icon={<Paperclip size={20}/>} label="File" onClick={() => addBlock('attachment')} />
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-8">
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Cover Image</label>
+            <div className="relative aspect-square bg-white rounded-2xl border border-gray-200 flex flex-col items-center justify-center overflow-hidden group hover:border-[#5C32A3] transition-colors cursor-pointer">
+              {imagePreview ? (
+                <img src={imagePreview} className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-center">
+                  {uploading ? <Loader2 className="animate-spin text-purple-600 mx-auto" size={24} /> : <><UploadCloud className="mx-auto text-gray-300 mb-2" size={24} /><span className="text-[9px] font-bold text-gray-400 uppercase">Upload</span></>}
+                </div>
+              )}
+              <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageUpload} />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Category</label>
+            <select 
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:border-[#5C32A3] appearance-none"
+            >
+              {['Policy Update', 'Thought Leadership', 'Announcements'].map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 const ToolbarButton = ({ icon, label, onClick }: any) => (
-  <button 
-    type="button"
-    onClick={onClick} 
-    className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-purple-700 transition group"
-  >
-    <div className="p-3 bg-white rounded-2xl shadow-sm group-hover:shadow-md group-hover:scale-110 transition">{icon}</div>
-    <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+  <button type="button" onClick={onClick} className="flex flex-col items-center gap-2 text-gray-400 hover:text-[#5C32A3] transition-all group">
+    <div className="p-3 bg-white rounded-full group-hover:bg-purple-50 transition-colors border border-gray-100 shadow-sm">
+      {icon}
+    </div>
+    <span className="text-[9px] font-bold uppercase tracking-wider">{label}</span>
   </button>
 );

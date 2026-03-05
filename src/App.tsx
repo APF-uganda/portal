@@ -52,10 +52,12 @@ import SearchResults from "./pages/admin/SearchResults";
 import NewsManagement from "./pages/admin/newsMgt";
 import ManageUsers from "./pages/admin/manageusers";
 import EventCreatePage from "./pages/admin/eventMgt";
-import ManagePayments from "./pages/admin/payments";
+import ManagePayments from "./pages/admin/managePayments";
 import MembershipEditor from './components/admincms/editMembership';
 import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
+import LeadershipManager from './components/admincms/leadership/leadershipmanager';
+import NewsDetail from './components/NewsComponents/NewsDetail';
 
 /* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
@@ -114,6 +116,9 @@ const App: React.FC = () => {
             <Route path="/editMembership" element={<MembershipEditor />} />
             <Route path="/editAbout" element={<AboutPageEditor />} />
             <Route path="/editLandingpage" element={<HomePageEditor />} />
+            <Route path="/admin/about" element={<AboutPageEditor />} />
+           <Route path="/admincms/leadership" element={<LeadershipManager />} />
+           <Route path="/news/:id" element={<NewsDetail />} />
 
           {/* Auth routes */}
           <Route path="/register" element={<RegisterPage />} />
@@ -240,14 +245,6 @@ const App: React.FC = () => {
             }
           />
 
-          <Route
-            path="/admin/eventMgt"
-            element={
-              <ProtectedRoute role="admin">
-                <EventCreatePage />
-              </ProtectedRoute>
-            }
-          />
 
           <Route
             path="/admin/approval"
@@ -271,6 +268,15 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute role="admin">
                 <NewsManagement />
+              </ProtectedRoute>
+            }
+          />
+
+<Route
+            path="/admin/eventMgt"
+            element={
+              <ProtectedRoute role="admin">
+                <EventCreatePage />
               </ProtectedRoute>
             }
           />

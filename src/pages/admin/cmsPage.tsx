@@ -21,7 +21,7 @@ interface PageCardProps {
 const PageCard = ({ title, icon, desc, onClick }: PageCardProps) => (
   <button 
     onClick={onClick}
-    className="group relative bg-white p-6 rounded-3xl border border-slate-100 hover:border-purple-300 transition-all shadow-sm hover:shadow-xl hover:-translate-y-1 text-left overflow-hidden font-['Plus_Jakarta_Sans']"
+    className="group relative bg-white p-6 rounded-3xl border border-slate-100 hover:border-purple-300 transition-all shadow-sm hover:shadow-xl hover:-translate-y-1 text-left overflow-hidden"
   >
     <div className="flex items-start justify-between relative z-10">
       <div className="p-3 bg-slate-50 text-slate-500 rounded-2xl group-hover:bg-[#5C32A3] group-hover:text-white transition-all duration-500">
@@ -35,7 +35,7 @@ const PageCard = ({ title, icon, desc, onClick }: PageCardProps) => (
       <h3 className="font-black text-slate-800 text-base tracking-tight group-hover:text-[#5C32A3] transition-colors">
         {title}
       </h3>
-      <p className="text-[12px] text-slate-400 font-bold mt-1.5 leading-snug">
+      <p className="text-[12px] text-slate-400  mt-1.5 leading-snug">
         {desc}
       </p>
     </div>
@@ -52,7 +52,7 @@ const CmsContentPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen font-['Plus_Jakarta_Sans'] selection:bg-purple-100 selection:text-[#5C32A3] bg-[#FDFDFF]">
+    <div className="flex min-h-screen selection:bg-purple-100 selection:text-[#5C32A3] bg-[#FDFDFF]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen`}>
@@ -115,30 +115,14 @@ const CmsContentPage = () => {
                   desc="Main entrance, Hero banners, and Value propositions" 
                   onClick={() => navigate('/editLandingpage')} 
                 />
-                <PageCard 
-                  title="Membership" 
-                  icon={<Users size={24}/>} 
-                  desc="Tiers, benefits, and registration workflow" 
-                  onClick={() => navigate('/editMembership')} 
-                />
-                 <PageCard 
-                  title="Insights" 
-                  icon={<Lightbulb size={24}/>} 
-                  desc="Research, News archives, and Data reports" 
-                  onClick={() => navigate('/admin/edit-page/insights')} 
-                />
+               
                 <PageCard 
                   title="About Us" 
                   icon={<Info size={24}/>} 
                   desc="Our history, mission, and leadership team" 
                   onClick={() => navigate('/editAbout')} 
                 />
-                <PageCard 
-                  title="Contact Us" 
-                  icon={<Phone size={24}/>} 
-                  desc="Location details, Map settings, and Inquiries" 
-                  onClick={() => navigate('/admin/edit-page/contact')} 
-                />
+                
                 <PageCard 
                   title="Site Config" 
                   icon={<Settings size={24}/>} 
