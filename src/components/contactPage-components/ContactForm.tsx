@@ -96,7 +96,7 @@ function ContactForm() {
                       Phone
                     </p>
                     <p className="text-sm text-[#9ca3af]">
-                      +256-XXXX-XXXXX
+                      +256-767618767
                     </p>
                   </div>
                 </div>
@@ -109,7 +109,7 @@ function ContactForm() {
                       Email
                     </p>
                     <p className="text-sm text-[#9ca3af]">
-                      info@apfuganda.com
+                      practitionersug@gmail.com
                     </p>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ function ContactForm() {
                       Office Address
                     </p>
                     <p className="text-sm text-[#9ca3af]">
-                      Spring Road, Bugolobi, Kampala
+                      C/O Plot 6, Bunyonyi Lane, Off Kataza Close, Bugolobi, Kampala
                     </p>
                   </div>
                 </div>
