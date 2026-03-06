@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../utils/cmsapi'; // Verify if path should be ../../../services/cmsApi based on your previous files
+import api from '../../utils/cmsapi'; // Verify if
 import { Save, Plus, Trash2, ArrowLeft, UserPlus, Loader2, Camera, Globe, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -47,9 +47,7 @@ const LeadershipManager = () => {
   const handlePublish = async (id: number) => {
     try {
       setSaving(true);
-      // In Strapi v4, publishing is a POST to /content-manager/collection-types/.../publish 
-      // but for standard API, we usually just update the publishedAt field if using custom logic, 
-      // however, the most reliable way via standard API is:
+     
       await api.put(`/leaderships/${id}`, {
         data: { publishedAt: new Date() }
       });
@@ -114,7 +112,7 @@ const LeadershipManager = () => {
         <div className="flex items-center gap-4">
           {/* Updated: Navigates back to Admin Dashboard */}
           <button onClick={() => navigate('/admincms')} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-            <ArrowLeft size={20} />
+            <ArrowLeft size={15} />
           </button>
           <div>
             <h1 className="font-black text-slate-800 tracking-tight text-xl uppercase">Governance</h1>
