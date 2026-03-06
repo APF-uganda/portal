@@ -59,7 +59,7 @@ import HomePageEditor from './components/admincms/editLandingpage';
 import LeadershipManager from './components/admincms/leadership/leadershipmanager';
 import NewsDetail from './components/NewsComponents/NewsDetail';
 import AdminInquiryDashboard from './pages/admin/inquiries';
-
+import PendingApprovalPage from './components/register-components/pendingApproval';
 /* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
   children: JSX.Element;
@@ -127,6 +127,7 @@ const App: React.FC = () => {
           <Route path="/otp" element={<OtpPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/apply/pending" element={<PendingApprovalPage />} />
 
           {/* Member routes (protected) */}
           <Route

@@ -12,7 +12,6 @@ function LoginPage() {
   const navigate = useNavigate()
 
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -40,26 +39,18 @@ function LoginPage() {
       if (response.ok && data.success) {
         // Check if OTP was bypassed (test users)
         if (data.otp_bypassed) {
-          // Direct login - store tokens using authStorage
           saveAuth(data.access, data.refresh, data.user)
           
-          console.log('✅ Login successful (OTP bypassed for test user)')
-          console.log('User role:', data.user.role)
-          console.log('Auth saved to sessionStorage')
-          
-          // Navigate to appropriate dashboard based on role
           const dashboardRoute = (data.user.role === "1" || data.user.role === 1) 
             ? '/admin/dashboard' 
             : '/dashboard'
           
-          console.log('Navigating to:', dashboardRoute)
           navigate(dashboardRoute)
           return
         }
 
         // Regular flow - store session info for OTP verification
         sessionStorage.setItem('otp_session_id', data.session_id)
-        sessionStorage.setItem('remember_me', rememberMe.toString())
         sessionStorage.setItem('login_email', email)
 
         // OTP email is sent by backend automatically
@@ -68,7 +59,6 @@ function LoginPage() {
         // Navigate to OTP page
         navigate('/otp')
       } else {
-        // Show error message
         setError(data.error?.message || 'Invalid email or password')
       }
     } catch (err) {
@@ -87,6 +77,7 @@ function LoginPage() {
 
       <div className="w-[90%] max-w-5xl grid grid-cols-1 md:grid-cols-2        
         bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl">  
+        
         {/* LEFT SIDE */}
         <div className="flex flex-col justify-center px-10 py-16 text-white text-center md:text-left">
           <Link to="/" className="w-56 mx-auto md:mx-0 cursor-pointer">
@@ -120,6 +111,8 @@ function LoginPage() {
               </label>
               <input
                 type="email"
+                name="email"
+                autoComplete="username"
                 placeholder="you@example.com"
                 required
                 value={email}
@@ -141,6 +134,8 @@ function LoginPage() {
               <div className="relative mt-2">
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  autoComplete="current-password"
                   placeholder="Enter your password"
                   required
                   value={password}
@@ -164,20 +159,8 @@ function LoginPage() {
               </div>
             </div>
 
-            {/* Remember + Forgot */}
-            <div className="flex items-center justify-between text-xs text-gray-600">
-
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  disabled={loading}
-                  className="accent-purple-600 disabled:cursor-not-allowed"
-                />
-                Remember me
-              </label>
-
+            {/* Forgot Password Action */}
+            <div className="flex items-center justify-end text-xs text-gray-600">
               <Link
                 to="/forgot-password"
                 className="text-purple-600 hover:underline"
@@ -191,7 +174,7 @@ function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full rounded-xl bg-purple-600 py-3 text-white font-semibold
-                hover:bg-purple-700 transition-
+                hover:bg-purple-700 transition-all
                 disabled:bg-purple-400 disabled:cursor-not-allowed
                 flex items-center justify-center gap-2"
             >
