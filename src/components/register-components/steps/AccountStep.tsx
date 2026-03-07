@@ -183,40 +183,7 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
           {serverError}
         </div>
       )}
-        {/* OTP Entry UI */}
-        {otpSent && !isEmailVerified && (
-          <div className="md:col-span-2 bg-blue-50 p-5 rounded-xl border border-blue-100 animate-in fade-in slide-in-from-top-2">
-            <p className="text-sm text-blue-800 mb-3 font-medium flex items-center gap-2">
-              <Mail size={16} /> Check your inbox for the 6-digit code.
-            </p>
-            <div className="flex flex-col sm:flex-row items-end gap-3">
-              <div className="flex-1 w-full">
-                <input 
-                  type="text" 
-                  maxLength={6}
-                  value={otpValue}
-                  onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
-                  placeholder="Enter Code"
-                  className="w-full p-3 rounded-lg border-2 border-blue-200 focus:border-[#2563EB] outline-none text-center tracking-[10px] font-bold text-xl"
-                />
-              </div>
-              <button 
-                type="button"
-                onClick={handleVerifyOTP}
-                disabled={isVerifying || otpValue.length < 6}
-                className="w-full sm:w-auto bg-[#2563EB] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#1d4ed8] transition disabled:bg-gray-400"
-              >
-                {isVerifying ? <Loader2 className="animate-spin" /> : "Confirm Code"}
-              </button>
-            </div>
-            {serverError && (
-              <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
-                <AlertCircle size={12} /> {serverError}
-              </p>
-            )}
-          </div>
-        )}
-
+        
         {/* Password Fields */}
         <div>
           <Input
