@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Added for navigation
+import { useNavigate } from "react-router-dom"; 
 import Stepper from "./steps/Stepper";
 import AccountStep from "./steps/AccountStep";
 import PersonalStep from "./steps/PersonalStep";
@@ -19,7 +19,7 @@ const STEPS = [
 ];
 
 function ApplyForm() {
-  const navigate = useNavigate(); // Initialize navigate hook
+  const navigate = useNavigate(); 
   
   // Form state management
   const {
@@ -82,6 +82,7 @@ function ApplyForm() {
 
   // Handle form submission
   const handleSubmit = async () => {
+    // Note: Email and Password validation is now handled inside AccountStep
     if (!accountData || !personalData || documentsData.length === 0 || !paymentData) {
       setSubmissionError('Please complete all required fields');
       return;
@@ -151,10 +152,9 @@ function ApplyForm() {
     }
   };
 
-  // Updated to redirect to the Pending Approval screen
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    navigate('/apply/pending'); // Redirects to the branded pending page
+    navigate('/apply/pending'); 
   };
 
   return (

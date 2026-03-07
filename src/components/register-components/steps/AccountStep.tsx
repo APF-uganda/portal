@@ -1,12 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { Check, ShieldCheck, Loader2, X,AlertCircle, Mail } from 'lucide-react';
 import Input from '../Input';
 import { AccountDetailsData } from '../../../types/registration';
-import {
-  validateEmail,
-  validatePasswordLength,
-  validatePasswordMatch,
-} from '../../../lib/validators';
-import { checkApplicationAvailability } from '../../../services/applicationApi';
+import { validateEmail } from '../../../lib/validators';
+import { requestVerificationEmail, confirmVerificationCode } from '../../../services/authApi';
 
 interface AccountDetailsStepProps {
   data: AccountDetailsData;
@@ -18,214 +15,247 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [availabilityErrors, setAvailabilityErrors] = useState<Record<string, string>>({});
-  const requestIdRef = useRef(0);
+  
+  // Verification States
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [otpToken, setOtpToken] = useState<string>(''); 
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  // Validate all fields and update validation state
+  // Password Strength Logic
+  const strength = {
+    length: data.password.length >= 8,
+    hasNumber: /\d/.test(data.password),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(data.password),
+    hasUpper: /[A-Z]/.test(data.password),
+  };
+  const isPasswordStrong = Object.values(strength).every(Boolean);
+
+  // 1. Validation Logic
   useEffect(() => {
     const newErrors: Record<string, string> = {};
-
-    // Validate username (required)
-    if (!data.username || data.username.trim() === '') {
-      newErrors.username = 'Username is required';
-    }
-
-    // Validate email
-    if (!data.email || data.email.trim() === '') {
-      newErrors.email = 'Email is required';
-    } else {
-      const emailResult = validateEmail(data.email);
-      if (!emailResult.isValid) {
-        newErrors.email = emailResult.errorMessage || 'Invalid email';
-      }
-    }
-
-    // Validate password
-    if (!data.password || data.password.trim() === '') {
-      newErrors.password = 'Password is required';
-    } else {
-      const passwordResult = validatePasswordLength(data.password);
-      if (!passwordResult.isValid) {
-        newErrors.password = passwordResult.errorMessage || 'Invalid password';
-      }
-    }
-
-    // Validate password confirmation
-    if (!data.passwordConfirmation || data.passwordConfirmation.trim() === '') {
-      newErrors.passwordConfirmation = 'Password confirmation is required';
-    } else if (data.password) {
-      const matchResult = validatePasswordMatch(data.password, data.passwordConfirmation);
-      if (!matchResult.isValid) {
-        newErrors.passwordConfirmation = matchResult.errorMessage || 'Passwords do not match';
-      }
-    }
+    if (!data.username?.trim()) newErrors.username = 'Username is required';
+    if (!validateEmail(data.email).isValid) newErrors.email = 'Valid email is required';
+    if (!isPasswordStrong) newErrors.password = 'Password too weak';
+    if (data.password !== data.passwordConfirmation) newErrors.passwordConfirmation = 'Passwords must match';
 
     setErrors(newErrors);
 
-    // Notify parent of validation state
     const isValid = Object.keys(newErrors).length === 0 &&
                     Object.keys(availabilityErrors).length === 0 &&
-                    data.username.trim() !== '' &&
-                    data.email.trim() !== '' &&
-                    data.password.trim() !== '' &&
-                    data.passwordConfirmation.trim() !== '';
+                    isEmailVerified;
     
     onValidationChange(isValid);
-  }, [data, availabilityErrors, onValidationChange]);
+  }, [data, availabilityErrors, isEmailVerified, isPasswordStrong, onValidationChange]);
 
-  useEffect(() => {
-    const email = data.email.trim();
-    const username = data.username.trim();
+  // 2. Send OTP Logic
+  const handleSendOTP = async () => {
+    if (!validateEmail(data.email).isValid || availabilityErrors.email) return;
+  
+    setIsVerifying(true);
+    setServerError(null);
 
-    const emailValid = email !== '' && validateEmail(email).isValid;
-    const usernameValid = username !== '';
-
-    if (!email) {
-      setAvailabilityErrors(prev => {
-        const nextErrors = { ...prev };
-        delete nextErrors.email;
-        return nextErrors;
-      });
-    }
-
-    if (!username) {
-      setAvailabilityErrors(prev => {
-        const nextErrors = { ...prev };
-        delete nextErrors.username;
-        return nextErrors;
-      });
-    }
-
-    if (!emailValid && !usernameValid) {
-      return;
-    }
-
-    const currentRequestId = ++requestIdRef.current;
-    const timer = setTimeout(async () => {
-      try {
-        const availability = await checkApplicationAvailability({
-          email: emailValid ? email : undefined,
-          username: usernameValid ? username : undefined,
-        });
-
-        if (requestIdRef.current !== currentRequestId) {
-          return;
-        }
-
-        setAvailabilityErrors(prev => {
-          const nextErrors = { ...prev };
-
-          if (emailValid) {
-            if (!availability.email_available) {
-              nextErrors.email = 'Email already exists';
-            } else {
-              delete nextErrors.email;
-            }
-          }
-
-          if (usernameValid) {
-            if (!availability.username_available) {
-              nextErrors.username = 'Username already exists';
-            } else {
-              delete nextErrors.username;
-            }
-          }
-
-          return nextErrors;
-        });
-      } catch {
-        // Silent fail: avoid blocking the user on availability errors.
-      } finally {
-        // No-op
+    try {
+      const response = await requestVerificationEmail(data.email, data.username);
+      
+      // Save the token returned by Django's TimestampSigner
+      if (response.token) {
+        setOtpToken(response.token);
+        setOtpSent(true);
       }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [data.email, data.username]);
-
-  const handleFieldChange = (field: keyof AccountDetailsData, value: string) => {
-    onChange({
-      ...data,
-      [field]: value,
-    });
+    } catch (err: any) {
+      setServerError(err.response?.data?.message || 'Failed to send verification email.');
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
-  const handleBlur = (field: keyof AccountDetailsData) => {
-    setTouched({
-      ...touched,
-      [field]: true,
-    });
-  };
+  // 3. Verify Code Logic
+  const handleVerifyOTP = async () => {
+    if (otpValue.length < 6) return;
+    
+    setIsVerifying(true);
+    setServerError(null);
 
-  const getFieldError = (field: keyof AccountDetailsData): string | undefined => {
-    if (availabilityErrors[field]) {
-      return availabilityErrors[field];
+    try {
+      // Pass BOTH the code and the token back to the server
+      await confirmVerificationCode(data.email, otpValue, otpToken);
+      setIsEmailVerified(true);
+      setOtpSent(false);
+      setOtpValue('');
+    } catch (err: any) {
+      setServerError(err.response?.data?.message || 'Invalid or expired code.');
+    } finally {
+      setIsVerifying(false);
     }
-    if (!touched[field]) {
-      return undefined;
-    }
-    return errors[field];
   };
 
   return (
-    <>
-      <h3 className="font-semibold text-gray-800 mb-6 text-center">
+    <div className="space-y-6">
+      <h3 className="font-semibold text-gray-800 text-center flex items-center justify-center gap-2">
+        <ShieldCheck className="text-[#5E2590]" size={20} />
         Account Details
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Input
           label="Username"
-          type="text"
-          placeholder="johndoe"
           name="username"
           value={data.username}
-          onChange={(e) => handleFieldChange('username', e.target.value)}
-          onBlur={() => handleBlur('username')}
-          error={getFieldError('username')}
+          onChange={(e) => onChange({ ...data, username: e.target.value })}
+          error={availabilityErrors.username || (touched.username ? errors.username : undefined)}
           required
         />
 
-        <Input
-          label="Email Address"
-          type="email"
-          placeholder="john@example.com"
-          name="email"
-          value={data.email}
-          onChange={(e) => handleFieldChange('email', e.target.value)}
-          onBlur={() => handleBlur('email')}
-          error={getFieldError('email')}
-          required
-        />
+        <div className="relative">
+          <Input
+            label="Email Address"
+            name="email"
+            value={data.email}
+            disabled={isEmailVerified || otpSent}
+            onChange={(e) => {
+              onChange({ ...data, email: e.target.value });
+              setIsEmailVerified(false);
+              setOtpSent(false);
+            }}
+            error={availabilityErrors.email || (touched.email ? errors.email : undefined)}
+            required
+          />
+          {!isEmailVerified && !otpSent && validateEmail(data.email).isValid && !availabilityErrors.email && (
+            <button 
+              type="button"
+              onClick={handleSendOTP}
+              disabled={isVerifying}
+              className="absolute right-2 top-[34px] text-xs font-bold text-[#5E2590] hover:underline disabled:opacity-50"
+            >
+              {isVerifying ? "Sending..." : "Verify Email"}
+            </button>
+          )}
+          {isEmailVerified && (
+            <div className="absolute right-3 top-10 flex items-center gap-1 text-xs font-bold text-green-600">
+              <Check size={14} /> Verified
+            </div>
+          )}
+        </div>
+      </div>
 
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Enter password"
-          name="password"
-          value={data.password}
-          onChange={(e) => handleFieldChange('password', e.target.value)}
-          onBlur={() => handleBlur('password')}
-          error={getFieldError('password')}
-          required
-        />
+      {/* OTP Input Section */}
+      {otpSent && !isEmailVerified && (
+        <div className="p-4 bg-purple-50 rounded-lg border border-purple-100 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3 mb-3">
+            <Mail className="text-[#5E2590]" size={18} />
+            <p className="text-sm text-gray-700">Enter the 6-digit code sent to your email.</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                label="Verification Code"
+                name="otp"
+                placeholder="000000"
+                value={otpValue}
+                onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                error={serverError || undefined}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleVerifyOTP}
+              disabled={isVerifying || otpValue.length !== 6}
+              className="mt-[28px] px-6 h-[42px] bg-[#5E2590] text-white rounded-lg font-semibold hover:bg-[#4a1d72] disabled:opacity-50 flex items-center gap-2"
+            >
+              {isVerifying ? <Loader2 className="animate-spin" size={18} /> : "Verify"}
+            </button>
+          </div>
+          <button 
+            onClick={() => { setOtpSent(false); setServerError(null); }}
+            className="mt-2 text-xs text-gray-500 hover:text-[#5E2590]"
+          >
+            Change email address
+          </button>
+        </div>
+      )}
+
+      {serverError && !otpSent && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-sm">
+          <AlertCircle size={16} />
+          {serverError}
+        </div>
+      )}
+        {/* OTP Entry UI */}
+        {otpSent && !isEmailVerified && (
+          <div className="md:col-span-2 bg-blue-50 p-5 rounded-xl border border-blue-100 animate-in fade-in slide-in-from-top-2">
+            <p className="text-sm text-blue-800 mb-3 font-medium flex items-center gap-2">
+              <Mail size={16} /> Check your inbox for the 6-digit code.
+            </p>
+            <div className="flex flex-col sm:flex-row items-end gap-3">
+              <div className="flex-1 w-full">
+                <input 
+                  type="text" 
+                  maxLength={6}
+                  value={otpValue}
+                  onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Enter Code"
+                  className="w-full p-3 rounded-lg border-2 border-blue-200 focus:border-[#2563EB] outline-none text-center tracking-[10px] font-bold text-xl"
+                />
+              </div>
+              <button 
+                type="button"
+                onClick={handleVerifyOTP}
+                disabled={isVerifying || otpValue.length < 6}
+                className="w-full sm:w-auto bg-[#2563EB] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#1d4ed8] transition disabled:bg-gray-400"
+              >
+                {isVerifying ? <Loader2 className="animate-spin" /> : "Confirm Code"}
+              </button>
+            </div>
+            {serverError && (
+              <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
+                <AlertCircle size={12} /> {serverError}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Password Fields */}
+        <div>
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            value={data.password}
+            onChange={(e) => onChange({ ...data, password: e.target.value })}
+            error={touched.password ? errors.password : undefined}
+            required
+          />
+          <div className="mt-3 grid grid-cols-2 gap-y-2">
+            <StrengthItem label="8+ Characters" met={strength.length} />
+            <StrengthItem label="Number" met={strength.hasNumber} />
+            <StrengthItem label="Special Char" met={strength.hasSpecial} />
+            <StrengthItem label="Uppercase" met={strength.hasUpper} />
+          </div>
+        </div>
 
         <Input
           label="Confirm Password"
           type="password"
-          placeholder="Confirm password"
           name="passwordConfirmation"
           value={data.passwordConfirmation}
-          onChange={(e) => handleFieldChange('passwordConfirmation', e.target.value)}
-          onBlur={() => handleBlur('passwordConfirmation')}
-          error={getFieldError('passwordConfirmation')}
+          onChange={(e) => onChange({ ...data, passwordConfirmation: e.target.value })}
+          error={touched.passwordConfirmation ? errors.passwordConfirmation : undefined}
           required
         />
       </div>
+   
+  );
+}
 
-      <p className="text-xs text-gray-500 mt-2 text-center">
-        Password must be at least 8 characters
-      </p>
-    </>
+function StrengthItem({ label, met }: { label: string; met: boolean }) {
+  return (
+    <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-tight ${met ? 'text-green-600' : 'text-gray-400'}`}>
+      {met ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
+      {label}
+    </div>
   );
 }
 
