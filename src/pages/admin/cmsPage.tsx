@@ -55,10 +55,10 @@ const CmsContentPage = () => {
     <div className="flex min-h-screen font-['Plus_Jakarta_Sans'] selection:bg-purple-100 selection:text-[#5C32A3] bg-[#FDFDFF]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen`}>
+      <main className={`transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
         <Header title="CMS Control Center" />
 
-        <div className="flex-1 p-8 lg:p-12">
+        <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
           <div className="max-w-[1200px] mx-auto space-y-12">
             
             {/* Header Section */}

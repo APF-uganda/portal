@@ -39,10 +39,10 @@ const CreatePost = () => {
     <div className="flex min-h-screen">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
+      <main className={`bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
         <Header title="Create Post" />
 
-        <div className="flex-1 bg-[#F4F7FE] p-8">
+        <div className="flex-1 bg-[#F4F7FE] p-8 overflow-y-auto">
           <div className="max-w-[900px] mx-auto">
             
             {/* Header Section */}

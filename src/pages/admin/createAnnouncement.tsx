@@ -58,13 +58,13 @@ export default function CreateAnnouncement() {
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main
-        className={`flex-1 bg-gray-50 transition-all duration-300 ${
+        className={`bg-gray-50 transition-all duration-300 ${
           collapsed ? "ml-20" : "ml-64"
-        } flex flex-col min-h-screen min-w-0`}
+        } h-screen overflow-hidden flex flex-col`}
       >
         <Header title="Create Announcement" />
 
-        <div className="flex-1 bg-[#F4F7FE] p-8">
+        <div className="flex-1 bg-[#F4F7FE] p-8 overflow-y-auto">
           <div className="max-w-[1000px] mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
