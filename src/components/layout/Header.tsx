@@ -1,5 +1,7 @@
 import { FC } from "react";
 import { useProfile } from "../../hooks/useProfile";
+import { getDisplayName } from "../../utils/displayName";
+import { getCurrentUser } from "../../utils/auth";
 
 type HeaderProps = {
   title: string;
@@ -9,6 +11,11 @@ const Header: FC <HeaderProps> = ({
 title
 }) => {
   const { profile, loading } = useProfile();
+  const displayName = getDisplayName(profile, "User");
+  const authUser = getCurrentUser();
+  const roleValue = profile?.user_role ?? authUser?.role;
+  const normalizedRole = String(roleValue ?? "").trim().toLowerCase();
+  const isAdminRole = normalizedRole === "1" || normalizedRole === "admin" || normalizedRole === "administrator";
 
   return (
     <header className="flex items-center justify-between bg-white shadow px-6 py-3 h-20 rounded-md">
@@ -52,10 +59,10 @@ title
             ) : (
               <>
                 <p className="font-medium text-gray-700">
-                  {profile?.full_name || profile?.email?.split('@')[0] || 'User'}
+                  {displayName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {profile?.user_role === '1' ? 'Administrator' : 'Member'}
+                  {isAdminRole ? "Admin" : "Member"}
                 </p>
               </>
             )}

@@ -1,4 +1,4 @@
-import { useNews } from '../hooks/useNews';
+import { useNews, type NewsItem } from '../hooks/useNews';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import HeroSection from '../components/NewsComponents/HeroSection';
@@ -22,10 +22,10 @@ function NewsPage() {
     }
 
     
-    const topPick = news.find(item => item.isTopPick);
+    const topPick = news.find((item: NewsItem) => item.isTopPick);
     
    
-    const otherNews = news.filter(item => item.id !== topPick?.id);
+    const otherNews = news.filter((item: NewsItem) => item.id !== topPick?.id);
 
     return (
       <div className="min-h-screen bg-white">

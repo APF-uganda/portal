@@ -13,6 +13,7 @@ import Footer from "../../components/layout/Footer";
 import { fetchDashboardStats, DashboardStats } from "../../services/dashboard";
 import { requireAdmin } from "../../utils/auth";
 import { useProfile } from "../../hooks/useProfile";
+import { getDisplayName } from "../../utils/displayName";
 
 function AdminDashboard(){
     const [collapsed, setCollapsed] = useState(false);
@@ -60,8 +61,8 @@ function AdminDashboard(){
       return () => clearInterval(intervalId);
    }, []);
 
-  // Get display name from profile or fallback to email
-  const displayName = profile?.full_name || profile?.first_name || profile?.email?.split('@')[0] || 'Admin';
+  const displayName = getDisplayName(profile, "Admin");
+
 
   // Format last updated time
   const formatLastUpdated = () => {
