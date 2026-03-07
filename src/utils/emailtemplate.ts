@@ -1,4 +1,4 @@
-
+﻿
 
 export interface MemberApprovalData {
     member_name: string;
@@ -13,7 +13,7 @@ export const getMemberApprovalEmail = (data: MemberApprovalData): string => {
 <head>
 <style>
 body {
-font-family: Arial, sans-serif;
+font-family: Poppins, sans-serif;
 line-height: 1.6;
 color: #333;
 max-width: 600px;
@@ -109,3 +109,6 @@ Membership Approved
 
   `.trim();
 };
+
+
+

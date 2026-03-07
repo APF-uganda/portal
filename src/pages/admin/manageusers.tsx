@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import StatCard from '../../components/manageusers-components/stats';
 import MemberDocumentsModal from '../../components/manageusers-components/MemberDocumentsModal';
 
@@ -12,9 +12,28 @@ import { useUserManagement } from '../../hooks/userMgt';
 const ManageUsers = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   
   // Use the hook to get data, loading state, and action handlers
   const { users, loading, error, handleToggleStatus } = useUserManagement();
+
+  const totalPages = Math.max(1, Math.ceil(users.length / rowsPerPage));
+  const clampedPage = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (clampedPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, users.length);
+
+  const paginatedUsers = useMemo(() => users.slice(startIndex, endIndex), [users, startIndex, endIndex]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rowsPerPage]);
+
+  useEffect(() => {
+    if (currentPage !== clampedPage) {
+      setCurrentPage(clampedPage);
+    }
+  }, [currentPage, clampedPage]);
 
   return (
     <div className="flex min-h-screen">
@@ -79,7 +98,7 @@ const ManageUsers = () => {
                         </td>
                       </tr>
                     ) : (
-                      users.map((user) => (
+                      paginatedUsers.map((user) => (
                         <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4 text-sm font-bold text-gray-800">{user.name}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
@@ -122,6 +141,51 @@ const ManageUsers = () => {
                   </tbody>
                 </table>
               </div>
+
+              {!loading && users.length > 0 && (
+                <div className="flex flex-col gap-3 border-t border-gray-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-gray-500">
+                    Showing {startIndex + 1}-{endIndex} of {users.length} users
+                  </p>
+
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm text-gray-500" htmlFor="users-rows-per-page">
+                      Rows:
+                    </label>
+                    <select
+                      id="users-rows-per-page"
+                      value={rowsPerPage}
+                      onChange={(event) => setRowsPerPage(Number(event.target.value))}
+                      className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700 focus:border-[#5E2590] focus:outline-none"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={clampedPage === 1}
+                      className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+
+                    <span className="text-sm font-medium text-gray-600">
+                      Page {clampedPage} of {totalPages}
+                    </span>
+
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={clampedPage === totalPages}
+                      className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -9,7 +9,6 @@ import { useApplications } from "../../hooks/useApplications";
 import { useAdminActions } from "../../hooks/useAdminActions";
 import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { requireAdmin } from "../../utils/auth";
-import { AuthDebug } from "../../components/debug/AuthDebug";
 
 import {
     MdPendingActions,
@@ -263,7 +262,6 @@ return (
             <div className="fixed bottom-0 left-0 right-0 z-30" style={{ marginLeft: collapsed ? '5rem' : '16rem' }}>
                 <Footer />
             </div>
-            <AuthDebug />
         </main>
 
         {/* Application Detail Modal */}

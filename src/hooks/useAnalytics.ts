@@ -37,27 +37,39 @@ export const useAnalytics = (period: string = '30d') => {
       ]);
 
       const [summaryRes, appsRes, systemRes] = results;
+      const emptyChart = { labels: [], data: [] };
+
+      const summaryData = summaryRes.status === 'fulfilled'
+        ? summaryRes.value
+        : {
+            membership: { total_members: 0, growth: emptyChart },
+            applications: { total_applications: 0, status_breakdown: emptyChart },
+            system: { active_users_30d: 0, daily_activity: emptyChart },
+          };
+
+      const applicationStatusChart = appsRes.status === 'fulfilled'
+        ? appsRes.value
+        : summaryData?.applications?.status_breakdown || emptyChart;
+
+      const dailyActivityChart = systemRes.status === 'fulfilled'
+        ? systemRes.value
+        : summaryData?.system?.daily_activity || emptyChart;
 
       setAnalytics({
-        // 1. Membership comes from the summary endpoint
-        membership: summaryRes.status === 'fulfilled' 
-          ? summaryRes.value?.membership 
-          : { total_members: 0, growth: { labels: [], data: [] } },
+        membership: {
+          total_members: summaryData?.membership?.total_members || 0,
+          growth: summaryData?.membership?.growth || emptyChart,
+        },
 
-      
-        applications: appsRes.status === 'fulfilled' 
-          ? { 
-              total_applications: summaryRes.status === 'fulfilled' ? summaryRes.value?.applications?.total_applications : 0,
-              status_breakdown: appsRes.value 
-            }
-          : { total_applications: 0, status_breakdown: { labels: [], data: [] } },
+        applications: {
+          total_applications: summaryData?.applications?.total_applications || 0,
+          status_breakdown: applicationStatusChart,
+        },
 
-        system: systemRes.status === 'fulfilled' 
-          ? { 
-              active_users_30d: summaryRes.status === 'fulfilled' ? summaryRes.value?.system?.active_users_30d : 0,
-              daily_activity: systemRes.value 
-            }
-          : { active_users_30d: 0, daily_activity: { labels: [], data: [] } }
+        system: {
+          active_users_30d: summaryData?.system?.active_users_30d || 0,
+          daily_activity: dailyActivityChart,
+        },
       });
 
       if (results.every(r => r.status === 'rejected')) {

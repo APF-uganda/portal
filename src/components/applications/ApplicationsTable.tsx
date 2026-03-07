@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import {
     FiEye,
     FiDownload,
@@ -22,6 +22,27 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
     onView,
 }) => {
     const [isExporting, setIsExporting] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const totalPages = Math.max(1, Math.ceil(applicants.length / rowsPerPage));
+    const clampedPage = Math.min(Math.max(currentPage, 1), totalPages);
+    const startIndex = (clampedPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, applicants.length);
+
+    const paginatedApplicants = useMemo(() => {
+        return applicants.slice(startIndex, endIndex);
+    }, [applicants, startIndex, endIndex]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [rowsPerPage]);
+
+    useEffect(() => {
+        if (currentPage !== clampedPage) {
+            setCurrentPage(clampedPage);
+        }
+    }, [currentPage, clampedPage]);
 
     const handleExport = () => {
         setIsExporting(true);
@@ -122,7 +143,7 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {applicants.map((app) => (
+                        {paginatedApplicants.map((app) => (
                             <tr key={app.id} className="border-b last:border-none hover:bg-gray-50">
                                 <td className="px-4 py-2 font-bold">{app.name}</td>
                                 <td className="px-4 py-2 font-medium max-w-xs">
@@ -167,6 +188,49 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-500">
+                    Showing {startIndex + 1}-{endIndex} of {applicants.length} applications
+                </p>
+
+                <div className="flex items-center gap-3">
+                    <label className="text-sm text-gray-500" htmlFor="rows-per-page">
+                        Rows:
+                    </label>
+                    <select
+                        id="rows-per-page"
+                        value={rowsPerPage}
+                        onChange={(event) => setRowsPerPage(Number(event.target.value))}
+                        className="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700 focus:border-[#5F2F8B] focus:outline-none"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        disabled={clampedPage === 1}
+                        className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+
+                    <span className="text-sm font-medium text-gray-600">
+                        Page {clampedPage} of {totalPages}
+                    </span>
+
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                        disabled={clampedPage === totalPages}
+                        className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -58,16 +58,16 @@ export default function CreateAnnouncement() {
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main
-        className={`bg-gray-50 transition-all duration-300 ${
+        className={`flex-1 min-w-0 bg-gray-50 transition-all duration-300 ${
           collapsed ? "ml-20" : "ml-64"
-        } h-screen overflow-hidden flex flex-col`}
+        } min-h-screen flex flex-col`}
       >
         <Header title="Create Announcement" />
 
-        <div className="flex-1 bg-[#F4F7FE] p-8 overflow-y-auto">
-          <div className="max-w-[1000px] mx-auto">
+        <div className="flex-1 bg-[#F4F7FE] px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto overflow-x-hidden">
+          <div className="w-full max-w-5xl mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="mb-8">
               <div>
                 <button
                   onClick={() => navigate("/admin/announcements")}
@@ -76,8 +76,8 @@ export default function CreateAnnouncement() {
                   <ArrowLeft size={20} />
                   <span className="font-medium">Back to Announcements</span>
                 </button>
-                <h1 className="text-3xl font-bold text-gray-800">Create New Announcement</h1>
-                <nav className="text-sm font-medium text-gray-400 mt-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Create New Announcement</h1>
+                <nav className="text-sm font-medium text-gray-400 mt-2 break-words">
                   Admin Dashboard <span className="mx-1">&gt;</span> Communications{" "}
                   <span className="mx-1">&gt;</span> Create Announcement
                 </nav>
@@ -92,7 +92,7 @@ export default function CreateAnnouncement() {
             )}
 
             {/* Form */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 lg:p-8">
               <div className="space-y-6">
                 {/* Title */}
                 <div>
@@ -196,11 +196,11 @@ export default function CreateAnnouncement() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-4 pt-6 border-t border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 pt-6 border-t border-gray-100">
                   <button
                     onClick={() => handleSubmit("draft")}
                     disabled={loading || !formData.title || !formData.content}
-                    className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Save size={20} />
                     Save as Draft
@@ -210,7 +210,7 @@ export default function CreateAnnouncement() {
                     <button
                       onClick={() => handleSubmit("scheduled")}
                       disabled={loading || !formData.title || !formData.content}
-                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Calendar size={20} />
                       Schedule
@@ -220,7 +220,7 @@ export default function CreateAnnouncement() {
                   <button
                     onClick={() => handleSubmit("sent")}
                     disabled={loading || !formData.title || !formData.content}
-                    className="flex items-center gap-2 px-6 py-3 bg-[#5C32A3] text-white rounded-lg font-semibold hover:bg-[#4A2882] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[#5C32A3] text-white rounded-lg font-semibold hover:bg-[#4A2882] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send size={20} />
                     {loading ? "Sending..." : "Send Now"}

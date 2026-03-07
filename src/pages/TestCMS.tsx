@@ -1,4 +1,4 @@
-
+﻿
 import { useEvents, useNews, useHomepage } from '../hooks/useCMS';
 
 function TestCMS() {
@@ -53,10 +53,10 @@ function TestCMS() {
   );
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'system-ui' }}>
+    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Poppins, sans-serif' }}>
       <div style={{ marginBottom: '40px' }}>
         <h1 style={{ color: '#3C096C', marginBottom: '10px' }}>
-          🧪 CMS Integration Test
+          ðŸ§ª CMS Integration Test
         </h1>
         <p style={{ color: '#666', fontSize: '14px' }}>
           Testing the connection with deep population for images.
@@ -86,3 +86,6 @@ function TestCMS() {
 }
 
 export default TestCMS;
+
+
+

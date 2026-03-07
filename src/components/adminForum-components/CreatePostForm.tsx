@@ -221,7 +221,7 @@ const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = n
         <label className="block text-sm font-bold text-gray-700 mb-2">
           Post Status *
         </label>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
@@ -254,11 +254,11 @@ const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = n
       </div>
 
       {/* Submit Buttons */}
-      <div className="flex gap-4 pt-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-[#5C32A3] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#4A2885] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:flex-1 bg-[#5C32A3] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#4A2885] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Creating Post...' : 'Create Post'}
         </button>
@@ -266,7 +266,7 @@ const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = n
           type="button"
           onClick={() => window.history.back()}
           disabled={loading}
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
