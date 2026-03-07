@@ -77,7 +77,7 @@ const SearchResults = () => {
     <div className="flex min-h-screen flex-col">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
       
-      <div className={`flex flex-1 flex-col transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} min-h-screen`}>
+      <div className={`flex flex-col transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden`}>
         <Header title="Search Results" />
         
         <main className="flex-1 overflow-y-auto p-6">

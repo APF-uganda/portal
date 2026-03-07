@@ -29,7 +29,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, onToggle }) => {
 
   return (
     <aside
-      className={`bg-[#EBF3E8] text-[#6A7270] flex flex-col shadow-lg transition-all duration-300 fixed left-0 top-0 h-screen z-20 ${
+      className={`bg-[#F4F2FE] text-[#6A7270] flex flex-col shadow-lg transition-all duration-300 fixed left-0 top-0 h-screen z-20 ${
         collapsed ? "w-20" : "w-64"
       }`}
     >

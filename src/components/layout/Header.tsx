@@ -18,9 +18,9 @@ title
   const isAdminRole = normalizedRole === "1" || normalizedRole === "admin" || normalizedRole === "administrator";
 
   return (
-    <header className="flex items-center justify-between bg-white shadow px-6 py-3 h-20 rounded-md">
+    <header className="flex items-center justify-between bg-[#F4F2FE] px-8 py-3 h-20 w-full shadow-sm flex-shrink-0">
       {/* Left: Page Title */}
-      <h2 className="text-lg font-semibold text-gray-700 pl-4">
+      <h2 className="text-lg font-bold text-gray-700">
       {title}
       </h2>
 

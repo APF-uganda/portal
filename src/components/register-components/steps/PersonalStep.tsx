@@ -68,9 +68,15 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
       }
     }
 
-    // Validate ICPAU Certificate Number (required)
+    // Validate ICPAU Certificate Number (required and format)
     if (!data.icpauCertificateNumber || data.icpauCertificateNumber.trim() === '') {
       newErrors.icpauCertificateNumber = 'ICPAU Practising Certificate Number is required';
+    } else {
+      // Format: FXXX/XX (F followed by 3 digits, slash, then 2 digits)
+      const icpauPattern = /^F\d{3}\/\d{2}$/;
+      if (!icpauPattern.test(data.icpauCertificateNumber.trim())) {
+        newErrors.icpauCertificateNumber = 'Format must be FXXX/XX (e.g., F123/45)';
+      }
     }
 
     // Organization is optional, no validation needed
@@ -204,7 +210,7 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
         <Input
           label="ICPAU Practising Certificate Number"
           type="text"
-          placeholder="ICPAU/XXXX/XX"
+          placeholder="F123/45"
           name="icpauCertificateNumber"
           value={data.icpauCertificateNumber}
           onChange={(e) => handleFieldChange('icpauCertificateNumber', e.target.value)}

@@ -46,11 +46,11 @@ const ManagePayments = () => {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
       
-      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col`}>
+      <main className={`w-full transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
         <Header title="Payments Management" />
         
-        <div className="flex-1 bg-[#F4F2FE] p-6 lg:p-10">
-          <div className="max-w-[1600px] mx-auto space-y-8">
+        <div className="flex-1 bg-[#F4F2FE] overflow-y-auto w-full">
+          <div className="p-6 lg:p-10 space-y-8 w-full">
             
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

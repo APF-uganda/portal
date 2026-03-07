@@ -10,15 +10,13 @@ interface DocumentsStepProps {
 
 // Document field identifiers
 const DOCUMENT_FIELDS = {
-  NATIONAL_ID_FRONT: 'national_id_front',
-  NATIONAL_ID_BACK: 'national_id_back',
+ 
   PRACTISING_CERTIFICATE: 'practising_certificate',
   PASSPORT_PHOTO: 'passport_photo',
 } as const;
 
 const REQUIRED_DOCUMENT_IDS = [
-  DOCUMENT_FIELDS.NATIONAL_ID_FRONT,
-  DOCUMENT_FIELDS.NATIONAL_ID_BACK,
+ 
   DOCUMENT_FIELDS.PRACTISING_CERTIFICATE,
   DOCUMENT_FIELDS.PASSPORT_PHOTO,
 ] as const;
@@ -95,29 +93,9 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
         Document Uploads
       </h3>
 
-      <div className="space-y-6">
-        <CloudUpload
-          title="Upload National ID (Front)"
-          description="Max file size 5MB · JPG / PNG / PDF"
-          accept=".jpg,.jpeg,.png,.pdf"
-          maxSizeMB={5}
-          onFileSelected={(file) => handleFileSelected(DOCUMENT_FIELDS.NATIONAL_ID_FRONT, file)}
-          onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.NATIONAL_ID_FRONT)}
-          existingFile={getDocumentByField(DOCUMENT_FIELDS.NATIONAL_ID_FRONT)?.file || null}
-          existingError={getDocumentByField(DOCUMENT_FIELDS.NATIONAL_ID_FRONT)?.errorMessage || null}
-        />
+      
 
-        <CloudUpload
-          title="Upload National ID (Back)"
-          description="Max file size 5MB · JPG / PNG / PDF"
-          accept=".jpg,.jpeg,.png,.pdf"
-          maxSizeMB={5}
-          onFileSelected={(file) => handleFileSelected(DOCUMENT_FIELDS.NATIONAL_ID_BACK, file)}
-          onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.NATIONAL_ID_BACK)}
-          existingFile={getDocumentByField(DOCUMENT_FIELDS.NATIONAL_ID_BACK)?.file || null}
-          existingError={getDocumentByField(DOCUMENT_FIELDS.NATIONAL_ID_BACK)?.errorMessage || null}
-        />
-
+       
         <CloudUpload
           title="Upload Practising Certificate"
           description="Max file size 5MB · JPG / PNG / PDF"
@@ -128,7 +106,7 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
           existingFile={getDocumentByField(DOCUMENT_FIELDS.PRACTISING_CERTIFICATE)?.file || null}
           existingError={getDocumentByField(DOCUMENT_FIELDS.PRACTISING_CERTIFICATE)?.errorMessage || null}
         />
-
+        <div>
         <CloudUpload
           title="Upload Passport Photo"
           description="Max file size 2MB · JPG / PNG"

@@ -13,11 +13,22 @@ function RecentApplications() {
       .finally(() => setLoading(false));
   }, []);
 
-  const timeAgo = (date: string) => {
+  const formatDate = (date: string) => {
     const diffMs = Date.now() - new Date(date).getTime();
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    if (hours < 1) return "Just now";
-    return `${hours} hours ago`;
+    
+    // If less than 24 hours, show "hours ago"
+    if (hours < 24) {
+      if (hours < 1) return "Just now";
+      return `${hours} hours ago`;
+    }
+    
+    // If 24 hours or more, show date in dd/mm/yyyy format
+    const dateObj = new Date(date);
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
 
@@ -60,7 +71,7 @@ function RecentApplications() {
           {app.first_name} {app.last_name}
         </p>
         <p className="text-xs text-gray-400">
-          Member • {timeAgo(app.submitted_at)}
+          Member • {formatDate(app.submitted_at)}
         </p>
       </div>
 

@@ -28,6 +28,12 @@ const AdminApprovals = () => {
     const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+    // Debug logging
+    console.log('AdminApprovals - Applications:', applications);
+    console.log('AdminApprovals - Loading:', loading);
+    console.log('AdminApprovals - Error:', fetchError);
+    console.log('AdminApprovals - Statistics:', statistics);
+
  
     useEffect(() => {
         if (!requireAdmin()) {
@@ -165,11 +171,12 @@ return (
 
         
         <main
-            className={`flex-1 bg-gray-50 p-0 overflow-y-auto transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"
-                } flex flex-col min-h-screen`}
+            className={`bg-gray-50 p-0 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"
+                } h-screen overflow-hidden flex flex-col`}
         >
             <Header title="Application Approval" />
 
+            <div className="flex-1 overflow-y-auto pb-16">
             
             {(successMessage || actionError || fetchError || statsError) && (
                 <div className="mx-6 mt-4">
@@ -242,7 +249,7 @@ return (
                 </div>
                 <ApplicationsTable
                     applicants={applications}
-                    loading={loading || statsLoading}
+                    loading={loading}
                     onApprove={handleApprove}
                     onReject={handleReject}
                     onRetry={handleRetry}
@@ -250,9 +257,10 @@ return (
                     actionLoading={actionLoadingId}
                 />
             </div>
+            </div>
 
-            
-            <div className="mt-auto">
+            {/* Fixed Footer */}
+            <div className="fixed bottom-0 left-0 right-0 z-30" style={{ marginLeft: collapsed ? '5rem' : '16rem' }}>
                 <Footer />
             </div>
             <AuthDebug />

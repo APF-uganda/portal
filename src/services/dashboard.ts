@@ -93,18 +93,24 @@ function getAuthHeaders(): Record<string, string> {
 /**
  * Fetch comprehensive dashboard statistics
  */
-export async function fetchDashboardStatistics(): Promise<DashboardStatistics> {
+export async function fetchDashboardStatistics(signal?: AbortSignal): Promise<DashboardStatistics> {
   try {
     const response = await axios.get<DashboardStatistics>(
       `${API_BASE_URL}/api/v1/applications/statistics/`,
       {
         headers: getAuthHeaders(),
         timeout: 30000,
+        signal,
       }
     );
 
     return response.data;
   } catch (error) {
+    // Don't log errors if request was aborted
+    if (axios.isCancel(error) || (error as Error).name === 'AbortError') {
+      throw error;
+    }
+    
     console.error('Failed to fetch dashboard statistics:', error);
     // Return default values if API fails
     return {

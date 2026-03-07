@@ -32,7 +32,7 @@ export const confirmVerificationCode = async (email: string, code: string, token
     const response = await axios.post(`${API_URL}/applications/verify-otp/`, {
       email: email.trim().toLowerCase(),
       verification_code: code,
-      token: token, // <--- Crucial: Sending the signer token back to the server
+      token: token, 
     });
     return response.data;
   } catch (error) {
