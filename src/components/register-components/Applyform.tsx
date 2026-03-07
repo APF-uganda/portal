@@ -10,6 +10,7 @@ import { useRegistrationForm } from "../../hooks/useRegistrationForm";
 import { submitApplication } from "../../services/applicationApi";
 import { AccountDetailsData, PersonalInfoData, DocumentData, PaymentData, ApplicationSubmissionData } from "../../types/registration";
 
+
 // Constants
 const STEPS = [
   "Account Details",
@@ -69,38 +70,46 @@ function ApplyForm() {
   };
 
   const documentsData: DocumentData[] = documents || [];
+
   const paymentData: PaymentData | null = payment || null;
 
-  
+  // Determine if Next button should be enabled
   const canProceed = () => {
     if (currentStep === 0) return isAccountValid;
     if (currentStep === 1) return isPersonalInfoValid;
     if (currentStep === 2) return isDocumentsValid;
     if (currentStep === 3) return isPaymentValid;
-    return true; 
+    return true; // For other steps, allow navigation for now
   };
 
   // Handle form submission
   const handleSubmit = async () => {
     // Note: Email and Password validation is now handled inside AccountStep
     if (!accountData || !personalData || documentsData.length === 0 || !paymentData) {
+      console.log('[Applyform] Validation failed: missing data');
       setSubmissionError('Please complete all required fields');
       return;
     }
 
+    // Validate payment is successful - check both status and isValidated flag
     if ((paymentData.status !== 'success' && paymentData.status !== 'completed') || !paymentData.isValidated) {
       setSubmissionError('Please complete payment before submitting');
       return;
     }
 
+    console.log('[Applyform] Starting submission...');
     setIsSubmitting(true);
     setSubmissionError(null);
 
     try {
+      // Transform data to ApplicationSubmissionData format
       const submissionData: ApplicationSubmissionData = {
+        // Account details
         username: accountData.username,
         email: accountData.email,
         password: accountData.password,
+        
+        // Personal information
         firstName: personalData.firstName,
         lastName: personalData.lastName,
         age_range: personalData.ageRange,
@@ -109,6 +118,8 @@ function ApplyForm() {
         nationalIdNumber: personalData.nationalIdNumber,
         icpauCertificateNumber: personalData.icpauCertificateNumber,
         organization: personalData.organization,
+        
+        // Payment information
         paymentMethod: paymentData.method,
         paymentPhone: paymentData.phoneNumber,
         paymentCardNumber: paymentData.cardNumber,
@@ -118,19 +129,27 @@ function ApplyForm() {
         paymentStatus: paymentData.status,
         paymentTransactionReference: paymentData.transactionReference,
         paymentErrorMessage: paymentData.errorMessage,
-        paymentAmount: 50000, 
+        paymentAmount: 50000, // Standard application fee
+        
+        // Documents with IDs
         documents: documentsData.filter((doc) => doc.file instanceof File),
       };
 
+      // Submit application
       const result = await submitApplication(submissionData);
 
       if (result.success) {
+        // Clear session storage on successful submission (Requirement 14.3)
         clearAllData();
+
+        // Show success modal (Requirement 9.3)
         setShowSuccessModal(true);
       } else {
+        // Display error message on submission failure (Requirement 9.5)
         setSubmissionError(result.error || 'Failed to submit application. Please try again.');
       }
     } catch (error) {
+      // Display error message on submission failure (Requirement 9.5)
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit application. Please try again.';
       setSubmissionError(errorMessage);
     } finally {
@@ -138,6 +157,7 @@ function ApplyForm() {
     }
   };
 
+  // Handle Next/Submit button click
   const handleNextOrSubmit = () => {
     if (isLastStep) {
       handleSubmit();
@@ -146,6 +166,7 @@ function ApplyForm() {
     }
   };
 
+  // Handle Back button click
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
@@ -172,6 +193,7 @@ function ApplyForm() {
 
         {/* Step Indicator */}
         <div className="w-full mb-6">
+          {/* Mobile: simple indicator */}
           <div className="sm:hidden text-center">
             <p className="text-sm font-medium text-gray-700">
               Step {currentStep + 1} of {STEPS.length}
@@ -180,6 +202,8 @@ function ApplyForm() {
               {STEPS[currentStep]}
             </p>
           </div>
+
+          {/* Desktop: full stepper */}
           <div className="hidden sm:block">
             <Stepper steps={STEPS} currentStep={currentStep} />
           </div>
@@ -246,6 +270,7 @@ function ApplyForm() {
             </button>
           </div>
 
+          {/* Error message display */}
           {submissionError && (
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600">{submissionError}</p>
@@ -253,6 +278,7 @@ function ApplyForm() {
           )}
         </div>
 
+        {/* Success Modal */}
         <SuccessModal
           isOpen={showSuccessModal}
           onClose={handleSuccessModalClose}

@@ -17,4 +17,5 @@ export interface Payment {
   amount: number;
   currency: string;
   status: string;
+  created_at?: string | null;
 }
