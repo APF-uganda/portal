@@ -1,40 +1,50 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setInfoMessage('');
     setLoading(true);
 
     try {
+      const normalizedEmail = email.trim();
+
       // Request OTP from backend (backend sends email automatically)
-      const response = await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: normalizedEmail }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // OTP email is sent by backend automatically
-        console.log('Password reset OTP sent by backend to:', email);
-        
-        // Navigate to reset password page with session_id
-        navigate('/reset-password', {
-          state: {
-            session_id: data.session_id,
-            email: email,
-          },
-        });
+        if (data.session_id) {
+          // OTP email is sent by backend automatically
+          console.log('Password reset OTP sent by backend to:', normalizedEmail);
+
+          // Navigate to reset password page with session_id
+          navigate('/reset-password', {
+            state: {
+              session_id: data.session_id,
+              email: normalizedEmail,
+            },
+          });
+          return;
+        }
+
+        setInfoMessage(data.message || 'If the email exists, an OTP has been sent.');
       } else {
         setError(data.error?.message || 'Failed to process request');
       }
@@ -60,6 +70,12 @@ const ForgotPasswordPage: React.FC = () => {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
               {error}
+            </div>
+          )}
+
+          {infoMessage && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded">
+              {infoMessage}
             </div>
           )}
 

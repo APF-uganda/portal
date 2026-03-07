@@ -7,7 +7,6 @@ import loginImage from '../assets/images/Login-image/login.jpg'
 
 import { API_V1_BASE_URL } from '../config/api'
 import { saveAuth } from '../utils/authStorage'
-import { safeLog } from '../utils/logger';
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -40,9 +39,10 @@ function LoginPage() {
       if (response.ok && data.success) {
         // Check if OTP was bypassed (test users)
         if (data.otp_bypassed) {
+          // Direct login - store tokens using authStorage
           saveAuth(data.access, data.refresh, data.user)
           
-          console.log(' Login successful (OTP bypassed for test user)')
+          console.log('✅ Login successful (OTP bypassed for test user)')
           console.log('User role:', data.user.role)
           console.log('Auth saved to sessionStorage')
           
@@ -51,6 +51,7 @@ function LoginPage() {
             ? '/admin/dashboard' 
             : '/dashboard'
           
+          console.log('Navigating to:', dashboardRoute)
           navigate(dashboardRoute)
           return
         }
@@ -65,6 +66,7 @@ function LoginPage() {
         // Navigate to OTP page
         navigate('/otp')
       } else {
+        // Show error message
         setError(data.error?.message || 'Invalid email or password')
       }
     } catch (err) {
@@ -83,7 +85,6 @@ function LoginPage() {
 
       <div className="w-[90%] max-w-5xl grid grid-cols-1 md:grid-cols-2        
         bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl">  
-        
         {/* LEFT SIDE */}
         <div className="flex flex-col justify-center px-10 py-16 text-white text-center md:text-left">
           <Link to="/" className="w-56 mx-auto md:mx-0 cursor-pointer">
@@ -117,8 +118,6 @@ function LoginPage() {
               </label>
               <input
                 type="email"
-                name="email"
-                autoComplete="username"
                 placeholder="you@example.com"
                 required
                 value={email}
@@ -140,8 +139,6 @@ function LoginPage() {
               <div className="relative mt-2">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  autoComplete="current-password"
                   placeholder="Enter your password"
                   required
                   value={password}
@@ -165,7 +162,7 @@ function LoginPage() {
               </div>
             </div>
 
-            {/* Forgot Password Action */}
+            {/* Forgot password */}
             <div className="flex items-center justify-end text-xs text-gray-600">
               <Link
                 to="/forgot-password"
@@ -180,7 +177,7 @@ function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full rounded-xl bg-purple-600 py-3 text-white font-semibold
-                hover:bg-purple-700 transition-all
+                hover:bg-purple-700 transition-
                 disabled:bg-purple-400 disabled:cursor-not-allowed
                 flex items-center justify-center gap-2"
             >

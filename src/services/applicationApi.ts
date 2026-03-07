@@ -454,9 +454,12 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
     case 503:
     case 504:
       // Server errors
+      const backendErrorMessage =
+        (error.response?.data as any)?.error?.debug ||
+        (error.response?.data as any)?.error?.message;
       return {
         success: false,
-        error: 'Something went wrong on our end. Please try again later.',
+        error: backendErrorMessage || 'Something went wrong on our end. Please try again later.',
       };
     
     default:

@@ -52,7 +52,7 @@ import SearchResults from "./pages/admin/SearchResults";
 import NewsManagement from "./pages/admin/newsMgt";
 import ManageUsers from "./pages/admin/manageusers";
 import EventCreatePage from "./pages/admin/eventMgt";
-import ManagePayments from "./pages/admin/managePayments";
+import ManagePayments from "./pages/admin/managePayments.tsx";
 import MembershipEditor from './components/admincms/editMembership';
 import AboutPageEditor from './components/admincms/editAbout';
 import HomePageEditor from './components/admincms/editLandingpage';
@@ -109,6 +109,7 @@ const App: React.FC = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/test-cms" element={<TestCMS />} />
           <Route path="/cmspage" element={<CmsContentPage />} />
+          <Route path="/cmsPage" element={<CmsContentPage />} />
           <Route path="/communityforum" element={<CommunityForum />} />
           <Route path="/announcements" element={<CommunicationsDashboard />} />
           <Route path="/newsMgt" element={<NewsManagement />} />
@@ -266,10 +267,54 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/admincms"
+            element={
+              <ProtectedRoute role="admin">
+                <CmsContentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/newsMgt"
             element={
               <ProtectedRoute role="admin">
                 <NewsManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/NewsMgt"
+            element={<Navigate to="/admin/newsMgt" replace />}
+          />
+          <Route
+            path="/admin/governance"
+            element={
+              <ProtectedRoute role="admin">
+                <LeadershipManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/edit-page/insights"
+            element={
+              <ProtectedRoute role="admin">
+                <CmsContentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/edit-page/contact"
+            element={
+              <ProtectedRoute role="admin">
+                <CmsContentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminProfilePage />
               </ProtectedRoute>
             }
           />
@@ -329,6 +374,14 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/communityForum/edit-post/:id"
+            element={
+              <ProtectedRoute role="admin">
+                <CreatePost />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/admin/reports"
@@ -350,6 +403,14 @@ const App: React.FC = () => {
 
           <Route
             path="/admin/announcements"
+            element={
+              <ProtectedRoute role="admin">
+                <CommunicationsDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/announcements/:id"
             element={
               <ProtectedRoute role="admin">
                 <CommunicationsDashboard />
