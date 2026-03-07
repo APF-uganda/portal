@@ -1,6 +1,5 @@
-import React from 'react';
 import { RotateCcw, ArrowRight } from 'lucide-react';
-import { Payment } from '../../components/adminpayments-components/types';
+import { Payment } from './types';
 
 interface PaymentTableProps {
   payments: Payment[];
@@ -46,14 +45,14 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
           <tbody className="divide-y divide-slate-50">
             {loading ? (
               <tr>
-                <td colSpan={4} className="py-20 text-center">
+                <td colSpan={5} className="py-20 text-center">
                   <div className="w-8 h-8 border-3 border-[#5E2590] border-t-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="text-slate-400 mt-4 font-bold text-sm">Fetching records...</p>
                 </td>
               </tr>
             ) : payments.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-20 text-center text-slate-400 font-bold">No payment history found.</td>
+                <td colSpan={5} className="py-20 text-center text-slate-400 font-bold">No payment history found.</td>
               </tr>
             ) : (
               payments.map((p) => (
@@ -74,6 +73,9 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
                     <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusColor(p.status)}`}>
                       {p.status}
                     </span>
+                  </td>
+                  <td className="px-8 py-5 text-center text-sm text-slate-500 font-medium">
+                    {p.created_at ? new Date(p.created_at).toLocaleDateString() : '--'}
                   </td>
                 </tr>
               ))

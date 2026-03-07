@@ -1,7 +1,6 @@
-
-import { Hash, Clock, Banknote } from 'lucide-react';
-import { PaymentStatCard } from '../../components/adminpayments-components/statcard';
-import { DashboardStats } from '../../components/adminpayments-components/types';
+import { Clock, Banknote } from 'lucide-react';
+import { PaymentStatCard } from './statcard';
+import { DashboardStats } from './types';
 
 interface PaymentStatsProps {
   stats: DashboardStats | null;

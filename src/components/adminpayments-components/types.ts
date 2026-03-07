@@ -5,7 +5,8 @@ export interface Payment {
     description: string;
     amount: number;
     currency: string;
-    status: 'Completed' | 'Pending' | 'Failed';
+    status: string;
+    created_at?: string | null;
   }
   
   export interface DashboardStats {
