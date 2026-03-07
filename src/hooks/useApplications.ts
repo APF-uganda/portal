@@ -21,30 +21,41 @@ export const useApplications = (): UseApplicationsReturn => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadApplications = useCallback(async () => {
+  const loadApplications = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
     
     try {
-      const data = await fetchApplications();
-      setApplications(data);
+      const data = await fetchApplications(signal);
+      if (!signal?.aborted) {
+        setApplications(data);
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load applications';
-      setError(errorMessage);
-      console.error('Error fetching applications:', err);
+      if (!signal?.aborted) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load applications';
+        setError(errorMessage);
+        console.error('Error fetching applications:', err);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadApplications();
+    const abortController = new AbortController();
+    loadApplications(abortController.signal);
+    
+    return () => {
+      abortController.abort();
+    };
   }, [loadApplications]);
 
   return {
     applications,
     loading,
     error,
-    refetch: loadApplications,
+    refetch: () => loadApplications(),
   };
 };

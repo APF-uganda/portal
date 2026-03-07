@@ -19,30 +19,41 @@ export const useDashboardStats = (): UseDashboardStatsReturn => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadStatistics = useCallback(async () => {
+  const loadStatistics = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
     
     try {
-      const data = await fetchDashboardStatistics();
-      setStatistics(data);
+      const data = await fetchDashboardStatistics(signal);
+      if (!signal?.aborted) {
+        setStatistics(data);
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard statistics';
-      setError(errorMessage);
-      console.error('Error fetching dashboard statistics:', err);
+      if (!signal?.aborted) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard statistics';
+        setError(errorMessage);
+        console.error('Error fetching dashboard statistics:', err);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadStatistics();
+    const abortController = new AbortController();
+    loadStatistics(abortController.signal);
+    
+    return () => {
+      abortController.abort();
+    };
   }, [loadStatistics]);
 
   return {
     statistics,
     loading,
     error,
-    refetch: loadStatistics,
+    refetch: () => loadStatistics(),
   };
 };
