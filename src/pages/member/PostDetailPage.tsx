@@ -7,10 +7,11 @@ import {
   Eye, 
   Share2,
   Send,
-  Clock
+  Clock,
+  Reply as ReplyIcon
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { createForumComment, getForumPostDetail, likeForumPost, unlikeForumPost } from '../../services/forum.service';
+import { createForumComment, getForumPostDetail, likeForumPost, unlikeForumPost, getForumComments } from '../../services/forum.service';
 
 // Import images
 import chairImage from '../../assets/images/landingPage-image/chair.jpg';
@@ -23,6 +24,13 @@ const PostDetailPage = () => {
   const [post, setPost] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [comments, setComments] = useState<any[]>([]);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const postId = Number(id);
@@ -40,16 +48,15 @@ const PostDetailPage = () => {
         setLoadError('Failed to load post');
       } else {
         setPost(data);
+        // Load comments
+        const commentsData = await getForumComments(postId);
+        setComments(commentsData || []);
       }
       setLoading(false);
     };
 
     loadPost();
   }, [id]);
-
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [newComment, setNewComment] = useState('');
 
   // Related content
   const relatedPosts = [
@@ -157,16 +164,55 @@ const PostDetailPage = () => {
     }
   }, [post]);
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent, parentId?: number) => {
     e.preventDefault();
-    const content = newComment.trim();
-    if (!content || !post?.id) return;
-    createForumComment(post.id, content).then((created) => {
-      if (created) {
-        setNewComment('');
+    const content = parentId ? replyText.trim() : newComment.trim();
+    if (!content || !post?.id || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    const created = await createForumComment(post.id, content, parentId);
+    if (created) {
+      if (parentId) {
+        setReplyText('');
+        setReplyingTo(null);
       } else {
-        alert('Failed to add comment. Please try again.');
+        setNewComment('');
       }
+      // Refresh comments
+      const updated = await getForumComments(post.id);
+      setComments(updated || []);
+    } else {
+      alert('Failed to add comment. Please try again.');
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+    setReplyText('');
+  };
+
+  // Organize comments into parent and replies
+  const topLevelComments = comments.filter(c => !c.parent);
+  const getReplies = (commentId: number) => comments.filter(c => c.parent === commentId);
+
+  const formatCommentDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
     });
   };
 
@@ -324,6 +370,113 @@ const PostDetailPage = () => {
                   </div>
                 </div>
               </form>
+            </div>
+
+            {/* Comments List */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Comments ({comments.length})
+              </h2>
+              
+              {comments.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No comments yet. Be the first to comment!</p>
+              ) : (
+                <div className="space-y-6">
+                  {topLevelComments.map((comment) => (
+                    <div key={comment.id} className="border-b border-gray-200 last:border-0 pb-6 last:pb-0">
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 bg-[#60308C] rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                          {comment.author?.initials || 'U'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-semibold text-gray-900">
+                                {comment.author?.full_name || comment.author?.email || 'Member'}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {formatCommentDate(comment.created_at)}
+                              </span>
+                            </div>
+                            <p className="text-gray-700">{comment.content}</p>
+                          </div>
+                          <button
+                            onClick={() => setReplyingTo(comment.id)}
+                            className="flex items-center gap-1 text-sm text-gray-600 hover:text-[#60308C] mt-2 transition-colors"
+                          >
+                            <ReplyIcon className="w-4 h-4" />
+                            Reply
+                          </button>
+                          
+                          {/* Reply Form */}
+                          {replyingTo === comment.id && (
+                            <form onSubmit={(e) => handleCommentSubmit(e, comment.id)} className="mt-4">
+                              <div className="flex gap-3">
+                                <div className="w-8 h-8 bg-[#60308C] rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                  {post?.author?.initials || 'U'}
+                                </div>
+                                <div className="flex-1">
+                                  <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder="Write a reply..."
+                                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm"
+                                    rows={2}
+                                    autoFocus
+                                  />
+                                  <div className="flex justify-end gap-2 mt-2">
+                                    <button
+                                      type="button"
+                                      onClick={handleCancelReply}
+                                      className="px-4 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="submit"
+                                      disabled={!replyText.trim() || isSubmitting}
+                                      className="flex items-center gap-1 px-4 py-1.5 text-sm bg-[#60308C] text-white rounded-lg hover:bg-[#60308C]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                      <Send className="w-3 h-3" />
+                                      Reply
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </form>
+                          )}
+                          
+                          {/* Replies */}
+                          {getReplies(comment.id).length > 0 && (
+                            <div className="ml-6 mt-4 space-y-4">
+                              {getReplies(comment.id).map((reply) => (
+                                <div key={reply.id} className="flex gap-3">
+                                  <div className="w-8 h-8 bg-[#60308C] rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                                    {reply.author?.initials || 'U'}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="bg-gray-50 rounded-lg p-3">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="font-semibold text-gray-900 text-sm">
+                                          {reply.author?.full_name || reply.author?.email || 'Member'}
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                          {formatCommentDate(reply.created_at)}
+                                        </span>
+                                      </div>
+                                      <p className="text-gray-700 text-sm">{reply.content}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
