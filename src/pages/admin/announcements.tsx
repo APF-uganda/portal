@@ -100,17 +100,16 @@ export default function CommunicationsDashboard() {
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       
-      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
+      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col w-full`}>
         
         
         <Header title="Communications Dashboard" />
 
         
-        <div className="flex-1 bg-[#F4F7FE] p-8">
-          <div className="max-w-[1200px] mx-auto">
+        <div className="flex-1 bg-[#F4F7FE] py-6 overflow-y-auto">
+          <div className="w-full">
             
-            
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 px-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">Communications</h1>
                 <nav className="text-sm font-medium text-gray-400">
@@ -126,7 +125,7 @@ export default function CommunicationsDashboard() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-6">
               <StatCard 
                 title="Total Announcements" 
                 value={stats?.total || 0} 
@@ -151,7 +150,7 @@ export default function CommunicationsDashboard() {
             </div>
 
             {/* Announcements Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mx-6">
               <div className="p-6 flex justify-between items-center border-b border-gray-50">
                 <h2 className="text-lg font-bold text-gray-800">All Announcements</h2>
                 <div className="flex gap-3">

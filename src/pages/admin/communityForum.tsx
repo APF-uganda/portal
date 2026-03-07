@@ -106,8 +106,12 @@ const CommunityForum = () => {
     setTimeout(() => setSelectedPost(null), 300);
   };
 
-  const handleAddComment = async (postId: number, content: string): Promise<boolean> => {
-    const comment = await createComment({ post: postId, content });
+  const handleAddComment = async (postId: number, content: string, parentId?: number): Promise<boolean> => {
+    const commentData: any = { post: postId, content };
+    if (parentId) {
+      commentData.parent = parentId;
+    }
+    const comment = await createComment(commentData);
     if (comment) {
       refetchComments();
       refetchPosts(); // Refresh to update comment count
@@ -134,13 +138,13 @@ const CommunityForum = () => {
     <div className="flex min-h-screen">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
+      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col w-full`}>
         <Header title="Community Forum" />
 
-        <div className="flex-1 bg-[#F4F7FE] p-8">
-          <div className="max-w-[1200px] mx-auto">
+        <div className="flex-1 bg-[#F4F7FE] py-6 overflow-y-auto">
+          <div className="w-full">
             
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 px-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">Community Forum</h1>
                 <nav className="text-sm font-medium text-gray-400">
@@ -173,7 +177,7 @@ const CommunityForum = () => {
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-6">
               {statsLoading ? (
                 <>
                   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 animate-pulse">
@@ -212,7 +216,7 @@ const CommunityForum = () => {
             </div>
 
             {/* Tabs for Published/Draft */}
-            <div className="mb-6">
+            <div className="mb-6 px-6">
               <div className="flex gap-2 border-b border-gray-200">
                 <button
                   onClick={() => setActiveTab('published')}
@@ -248,6 +252,7 @@ const CommunityForum = () => {
             </div>
 
             {/* Filter Bar */}
+            <div className="px-6">
             <FilterBar 
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
@@ -260,6 +265,7 @@ const CommunityForum = () => {
               categories={categories}
               categoriesLoading={categoriesLoading}
             />
+            </div>
 
             {/* Error Message */}
             {postsError && (
@@ -290,7 +296,7 @@ const CommunityForum = () => {
             )}
 
             {/* Posts Content */}
-            <div className="mt-6">
+            <div className="mt-6 px-6">
               {viewMode === 'table' ? (
                 <PostTable 
                   posts={posts} 
@@ -378,15 +384,20 @@ const CommunityForum = () => {
                         )}
 
                         <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-                          <div className="flex gap-5 text-gray-400 text-xs font-medium">
-                            <span className="flex items-center gap-1.5">
-                              <MessageSquare size={16} /> {post.comment_count} Replies
-                            </span>
+                          <div className="flex gap-5 text-xs font-medium">
+                            <button 
+                              onClick={() => openPostModal(post)}
+                              className="flex items-center gap-1.5 text-gray-400 hover:text-purple-600 transition-colors"
+                              title="View and add comments"
+                            >
+                              <MessageSquare size={16} /> {post.comment_count} Comments
+                            </button>
                             <button 
                               onClick={() => handleToggleLike(post.id, post.is_liked)}
                               className={`flex items-center gap-1.5 transition-colors ${
-                                post.is_liked ? 'text-indigo-600' : 'hover:text-indigo-600'
+                                post.is_liked ? 'text-indigo-600' : 'text-gray-400 hover:text-indigo-600'
                               }`}
+                              title={post.is_liked ? 'Unlike' : 'Like'}
                             >
                               <ThumbsUp size={16} fill={post.is_liked ? 'currentColor' : 'none'} /> 
                               {post.like_count} Likes
