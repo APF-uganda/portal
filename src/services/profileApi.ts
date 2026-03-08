@@ -7,7 +7,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from '../config/api';
-import { getAccessToken } from '../utils/authStorage';
+import { clearAuth, getAccessToken } from '../utils/authStorage';
 
 /**
  * User profile interface - updated to match backend model
@@ -207,9 +207,7 @@ function handleApiError(error: unknown): never {
     
     if (axiosError.response?.status === 401) {
       // Token expired or invalid
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      clearAuth();
       window.location.href = '/login';
     }
     

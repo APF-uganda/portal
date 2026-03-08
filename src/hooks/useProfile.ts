@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { getUser } from '../utils/authStorage';
 import {
   UserProfile,
   ProfileUpdateData,
@@ -63,28 +64,50 @@ interface UseProfileReturn {
 
 const PROFILE_STORAGE_KEY = 'user_profile';
 
+const clearStoredProfile = () => {
+  sessionStorage.removeItem(PROFILE_STORAGE_KEY);
+  localStorage.removeItem(PROFILE_STORAGE_KEY);
+};
+
 const loadProfileFromStorage = (): UserProfile | null => {
-  const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
+  const stored =
+    sessionStorage.getItem(PROFILE_STORAGE_KEY) ||
+    localStorage.getItem(PROFILE_STORAGE_KEY);
   if (!stored) {
     return null;
   }
 
   try {
-    return JSON.parse(stored) as UserProfile;
+    const profile = JSON.parse(stored) as UserProfile;
+    const authUser = getUser();
+    const authEmail = authUser?.email?.toLowerCase?.();
+    const profileEmail = profile?.email?.toLowerCase?.();
+
+    // Never reuse cached profile from a different signed-in user.
+    if (authEmail && profileEmail && authEmail !== profileEmail) {
+      clearStoredProfile();
+      return null;
+    }
+
+    // Standardize storage to sessionStorage to match auth session scope.
+    sessionStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+    localStorage.removeItem(PROFILE_STORAGE_KEY);
+    return profile;
   } catch (error) {
     console.warn('Failed to parse stored profile data:', error);
-    localStorage.removeItem(PROFILE_STORAGE_KEY);
+    clearStoredProfile();
     return null;
   }
 };
 
 const saveProfileToStorage = (profile: UserProfile | null) => {
   if (!profile) {
-    localStorage.removeItem(PROFILE_STORAGE_KEY);
+    clearStoredProfile();
     return;
   }
 
-  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  sessionStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  localStorage.removeItem(PROFILE_STORAGE_KEY);
 };
 
 export const useProfile = (): UseProfileReturn => {

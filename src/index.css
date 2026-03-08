@@ -59,9 +59,9 @@
 }
 
 @layer base {
-  body {
+ body {
     margin: 0;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont;
     overflow-x: hidden;
   }
 
