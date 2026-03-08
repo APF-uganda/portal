@@ -53,10 +53,17 @@ jobs:
             git fetch origin "$BRANCH"
             git checkout "$BRANCH"
             git pull origin "$BRANCH"
-            dc up -d --build frontend
+            dc build frontend
+            dc up -d --no-deps frontend
+            sleep 3
             docker inspect -f '{{.State.Running}}' apf_frontend | grep -qx "true"
-            curl -sS --fail --retry 40 --retry-delay 3 --retry-connrefused \
-              http://localhost/ >/dev/null
+            if ! curl -4 -sS --fail --retry 60 --retry-delay 2 --retry-all-errors \
+              http://127.0.0.1/ >/dev/null; then
+              echo "Frontend health check failed."
+              dc ps frontend || true
+              dc logs --no-color --since "${START_TS}" --tail=200 frontend || true
+              exit 1
+            fi
             echo "Frontend health check passed."
             trap - EXIT
             echo "Frontend deploy completed successfully."
