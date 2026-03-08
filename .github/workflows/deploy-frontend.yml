@@ -26,23 +26,50 @@ jobs:
           port: ${{ secrets.DEP_PORT || 22 }}
           script_stop: true
           script: |
-            set -e
+            set -eu
+            dc() { docker compose -f /var/www/apf/docker-compose.yaml "$@"; }
+            dump_logs() {
+              status="${1:-1}"
+              echo "Deployment failed with exit code ${status}"
+              echo "=== docker compose ps ==="
+              dc ps || true
+              echo "=== frontend logs (last 200 lines) ==="
+              dc logs --no-color --tail=200 frontend || true
+              echo "=== backend logs (last 120 lines) ==="
+              dc logs --no-color --tail=120 backend || true
+            }
+            on_exit() {
+              status=$?
+              if [ "$status" -ne 0 ]; then
+                dump_logs "$status"
+              fi
+              exit "$status"
+            }
+            trap on_exit EXIT
             BRANCH="${{ github.ref_name }}"
             cd /var/www/apf/portal
             git fetch origin "$BRANCH"
             git checkout "$BRANCH"
             git pull origin "$BRANCH"
-            docker compose -f /var/www/apf/docker-compose.yaml up -d --build frontend
+            dc up -d --build frontend
             i=1
-            until [ "$i" -gt 20 ]; do
+            max_attempts=40
+            until [ "$i" -gt "$max_attempts" ]; do
               if curl -fsS http://localhost/ >/dev/null; then
                 echo "Frontend health check passed."
-                exit 0
+                break
               fi
-              echo "Waiting for frontend... attempt $i/20"
+              if [ $((i % 5)) -eq 0 ]; then
+                echo "Frontend not ready yet. Current frontend container state:"
+                dc ps frontend || true
+              fi
+              echo "Waiting for frontend... attempt $i/$max_attempts"
               sleep 3
               i=$((i + 1))
             done
-            echo "Frontend health check failed."
-            docker compose -f /var/www/apf/docker-compose.yaml logs --tail=120 frontend
-            exit 1
+            if [ "$i" -gt "$max_attempts" ]; then
+              echo "Frontend health check failed."
+              exit 1
+            fi
+            trap - EXIT
+            echo "Frontend deploy completed successfully."
