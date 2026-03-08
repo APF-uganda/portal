@@ -22,6 +22,7 @@ jobs:
           host: ${{ secrets.DEP_HOST }}
           username: ${{ secrets.DEP_USER }}
           key: ${{ secrets.DEP_SSH_KEY }}
+          passphrase: ${{ secrets.DEP_SSH_PASSPHRASE }}
           port: ${{ secrets.DEP_PORT || 22 }}
           script_stop: true
           script: |
@@ -32,3 +33,16 @@ jobs:
             git checkout "$BRANCH"
             git pull origin "$BRANCH"
             docker compose -f /var/www/apf/docker-compose.yaml up -d --build frontend
+            i=1
+            until [ "$i" -gt 20 ]; do
+              if curl -fsS http://localhost/ >/dev/null; then
+                echo "Frontend health check passed."
+                exit 0
+              fi
+              echo "Waiting for frontend... attempt $i/20"
+              sleep 3
+              i=$((i + 1))
+            done
+            echo "Frontend health check failed."
+            docker compose -f /var/www/apf/docker-compose.yaml logs --tail=120 frontend
+            exit 1
