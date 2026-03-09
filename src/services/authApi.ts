@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { API_V1_BASE_URL } from '../config/api';
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const API_URL = BASE.endsWith('/api/v1') ? BASE : `${BASE}/api/v1`;
+const API_URL = API_V1_BASE_URL;
 
 console.log("Current API Target:", API_URL); 
 

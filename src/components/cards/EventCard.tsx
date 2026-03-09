@@ -1,5 +1,6 @@
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { useMemo } from 'react';
+import { CMS_BASE_URL } from '../../config/api';
 
 export interface EventCardProps {
   image?: any;
@@ -25,7 +26,6 @@ export default function EventCard({
   isPast = false 
 }: EventCardProps) {
 
-  const STRAPI_URL = "http://localhost:1337";
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
   // FIX: Refined image logic to drill into Strapi attributes while allowing string fallbacks
@@ -36,7 +36,7 @@ export default function EventCard({
     if (!imgPath) return DEFAULT_IMAGE;
     
    
-    return imgPath.startsWith('http') ? imgPath : `${STRAPI_URL}${imgPath}`;
+    return imgPath.startsWith('http') ? imgPath : `${CMS_BASE_URL}${imgPath}`;
   }, [image]);
 
   const displayDate = useMemo(() => {

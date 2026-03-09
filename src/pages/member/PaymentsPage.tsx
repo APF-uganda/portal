@@ -26,6 +26,7 @@ import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/
 import { useRecentTransactions, useReceipts } from "../../hooks/usePaymentHistory"
 import PaymentModal from "../../components/payment-components/PaymentModal"
 import { PaymentProvider } from "../../types/payment"
+import { API_BASE_URL } from "../../config/api"
 
 const PaymentsPage: React.FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mtn')
@@ -51,7 +52,6 @@ const PaymentsPage: React.FC = () => {
     const fetchMembershipFee = async () => {
       try {
         setLoadingFee(true)
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
         const response = await fetch(`${API_BASE_URL}/api/v1/payments/membership-fee/`, {
           method: 'GET',
           headers: {

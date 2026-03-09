@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../utils/cmsapi'; // Verify if
 import { Save, Plus, Trash2, ArrowLeft, UserPlus, Loader2, Camera, Globe, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CMS_BASE_URL } from '../../config/api';
 
 const LeadershipManager = () => {
   const navigate = useNavigate();
@@ -143,7 +144,7 @@ const LeadershipManager = () => {
                 <div className="relative w-24 h-24 flex-shrink-0">
                   <div className="w-full h-full rounded-2xl bg-slate-50 overflow-hidden border-2 border-white shadow-inner">
                     {photoUrl ? (
-                      <img src={`http://localhost:1337${photoUrl}`} className="w-full h-full object-cover" />
+                      <img src={`${CMS_BASE_URL}${photoUrl}`} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-300"><Camera size={28}/></div>
                     )}

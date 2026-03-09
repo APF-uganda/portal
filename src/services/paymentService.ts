@@ -15,6 +15,7 @@ import type {
   PaymentCancelResponse,
   PaymentError,
 } from '../types/payment';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * Error code to user-friendly message mapping
@@ -41,7 +42,7 @@ class PaymentService {
 
   constructor() {
     // Initialize from environment variables (Requirement 1.1, 7.1, 7.2)
-    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    this.baseURL = API_BASE_URL;
     
     // Log API endpoint in development mode (Requirement 7.4)
     if (import.meta.env.DEV) {

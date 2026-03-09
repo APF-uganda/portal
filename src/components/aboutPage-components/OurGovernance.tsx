@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../services/cmsApi';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
+import { CMS_BASE_URL } from '../../config/api';
 
 function OurGovernance() {
   const { elementRef, isVisible } = useScrollAnimation();
@@ -59,7 +60,7 @@ function OurGovernance() {
               const photoObj = data.Photo?.data?.attributes || data.Photo;
               const photoUrl = photoObj?.url;
               const fullImageUrl = photoUrl 
-                ? (photoUrl.startsWith('http') ? photoUrl : `http://localhost:1337${photoUrl}`)
+                ? (photoUrl.startsWith('http') ? photoUrl : `${CMS_BASE_URL}${photoUrl}`)
                 : '/placeholder-profile.png'; 
 
               return (

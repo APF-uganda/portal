@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, User,  FileText, Loader2,  Download,  } from 'lucide-react';
 import { getAccessToken } from '../../utils/authStorage';
+import { API_BASE_URL } from '../../config/api';
 
 interface Application {
   id: number;
@@ -71,8 +72,7 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
       
       let finalUrl = path;
       if (!path.startsWith('http')) {
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const cleanBase = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
         finalUrl = `${cleanBase}${cleanPath}`;
       }
@@ -216,7 +216,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
       }
       
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/applications/${applicationId}/`,
+        `${API_BASE_URL}/api/v1/applications/${applicationId}/`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
