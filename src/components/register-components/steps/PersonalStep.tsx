@@ -73,7 +73,9 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
       newErrors.icpauCertificateNumber = 'ICPAU Practising Certificate Number is required';
     }
 
-    // Organization is optional, no validation needed
+    if (!data.organization || data.address.trim() === '') {
+      newErrors.organization = 'Firm name is required';
+    }
 
     setErrors(newErrors);
 
@@ -85,7 +87,8 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
                     data.phoneNumber.trim() !== '' &&
                     data.address.trim() !== '' &&
                     data.nationalIdNumber.trim() !== '' &&
-                    data.icpauCertificateNumber.trim() !== '';
+                    data.icpauCertificateNumber.trim() !== '' &&
+                    data.organization.trim() !==  '';
     
     onValidationChange(isValid);
   }, [data, onValidationChange]);
@@ -222,6 +225,7 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
           onChange={(e) => handleFieldChange('organization', e.target.value)}
           onBlur={() => handleBlur('organization')}
           error={getFieldError('organization')}
+          required
         />
       </div>
 

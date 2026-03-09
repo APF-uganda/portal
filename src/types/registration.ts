@@ -24,7 +24,7 @@ export interface PersonalInfoData {
   address: string;
   nationalIdNumber: string; // NIN
   icpauCertificateNumber: string; // ICPAU Practising Certificate Number
-  organization?: string; // Optional - Organization/Firm
+  organization: string; // Optional - Organization/Firm
 }
 
 /**
