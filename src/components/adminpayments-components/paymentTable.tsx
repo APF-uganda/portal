@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { RotateCcw, ArrowRight } from 'lucide-react';
 import { Payment } from './types';
 
@@ -7,6 +8,29 @@ interface PaymentTableProps {
 }
 
 export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const totalPages = Math.max(1, Math.ceil(payments.length / rowsPerPage));
+  const clampedPage = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (clampedPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, payments.length);
+
+  const paginatedPayments = useMemo(
+    () => payments.slice(startIndex, endIndex),
+    [payments, startIndex, endIndex]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rowsPerPage]);
+
+  useEffect(() => {
+    if (currentPage !== clampedPage) {
+      setCurrentPage(clampedPage);
+    }
+  }, [currentPage, clampedPage]);
+
   const getStatusColor = (status: string) => {
     const s = status?.toLowerCase();
     if (s === 'completed') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
@@ -55,7 +79,7 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
                 <td colSpan={5} className="py-20 text-center text-slate-400 font-bold">No payment history found.</td>
               </tr>
             ) : (
-              payments.map((p) => (
+              paginatedPayments.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-50/50 transition-all duration-200 group">
                   <td className="px-8 py-5">
                     <div className="font-bold text-slate-800 group-hover:text-[#5E2590] transition-colors">{p.member_name}</div>
@@ -83,6 +107,51 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
           </tbody>
         </table>
       </div>
+
+      {!loading && payments.length > 0 && (
+        <div className="flex flex-col gap-3 border-t border-slate-100 px-8 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-slate-500">
+            Showing {startIndex + 1}-{endIndex} of {payments.length} transactions
+          </p>
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-slate-500" htmlFor="payments-rows-per-page">
+              Rows:
+            </label>
+            <select
+              id="payments-rows-per-page"
+              value={rowsPerPage}
+              onChange={(event) => setRowsPerPage(Number(event.target.value))}
+              className="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-700 focus:border-[#5E2590] focus:outline-none"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={clampedPage === 1}
+              className="rounded-md border border-slate-300 px-3 py-1 text-sm text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+
+            <span className="text-sm font-medium text-slate-600">
+              Page {clampedPage} of {totalPages}
+            </span>
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={clampedPage === totalPages}
+              className="rounded-md border border-slate-300 px-3 py-1 text-sm text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

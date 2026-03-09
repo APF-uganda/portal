@@ -115,7 +115,7 @@ export interface ApplicationDetail {
 /**
  * Fetch applications for admin approval dashboard
  */
-export async function fetchApplications(): Promise<Application[]> {
+export async function fetchApplications(signal?: AbortSignal): Promise<Application[]> {
   try {
     const token = getAccessToken();
     
@@ -134,11 +134,17 @@ export async function fetchApplications(): Promise<Application[]> {
       {
         headers,
         timeout: 30000,
+        signal,
       }
     );
 
     return response.data.map(mapApiApplicationToApplication);
   } catch (error) {
+    // Don't log errors if request was aborted
+    if (axios.isCancel(error) || (error as Error).name === 'AbortError') {
+      return [];
+    }
+    
     console.error('Failed to fetch applications', error);
     if (axios.isAxiosError(error)) {
       console.error('Response status:', error.response?.status);

@@ -1,0 +1,69 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+      
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Deploy frontend to DigitalOcean
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEP_HOST }}
+          username: ${{ secrets.DEP_USER }}
+          key: ${{ secrets.DEP_SSH_KEY }}
+          passphrase: ${{ secrets.DEP_SSH_PASSPHRASE }}
+          port: ${{ secrets.DEP_PORT || 22 }}
+          command_timeout: 30m
+          script_stop: true
+          script: |
+            set -euo pipefail
+            START_TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            dc() { docker compose -f /var/www/apf/docker-compose.yaml "$@"; }
+            dump_logs() {
+              status="${1:-1}"
+              echo "Deployment failed with exit code ${status}"
+              echo "=== docker compose ps ==="
+              dc ps || true
+              echo "=== frontend logs (last 200 lines) ==="
+              dc logs --no-color --since "${START_TS}" --tail=200 frontend || true
+              echo "=== backend logs (last 120 lines) ==="
+              dc logs --no-color --since "${START_TS}" --tail=120 backend || true
+            }
+            on_exit() {
+              status=$?
+              if [ "$status" -ne 0 ]; then
+                dump_logs "$status"
+              fi
+              exit "$status"
+            }
+            trap on_exit EXIT
+            BRANCH="${{ github.ref_name }}"
+            cd /var/www/apf/portal
+            git fetch origin "$BRANCH"
+            git checkout "$BRANCH"
+            git pull origin "$BRANCH"
+            dc build frontend
+            dc up -d --no-deps frontend
+            sleep 3
+            docker inspect -f '{{.State.Running}}' apf_frontend | grep -qx "true"
+            if ! curl -4 -sS --fail --retry 60 --retry-delay 2 --retry-all-errors \
+              http://127.0.0.1/ >/dev/null; then
+              echo "Frontend health check failed."
+              dc ps frontend || true
+              dc logs --no-color --since "${START_TS}" --tail=200 frontend || true
+              exit 1
+            fi
+            echo "Frontend health check passed."
+            trap - EXIT
+            echo "Frontend deploy completed successfully."

@@ -21,8 +21,28 @@ function RecentPayments() {
       'mobile_money': 'Mobile Money',
       'credit_card': 'Credit Card',
       'bank_transfer': 'Bank Transfer',
+      'mtn': 'MTN Mobile Money',
+      'airtel': 'Airtel Money',
     };
-    return methodMap[method] || method;
+    return methodMap[method] || method.toUpperCase();
+  };
+
+  const formatDate = (date: string) => {
+    const diffMs = Date.now() - new Date(date).getTime();
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    
+    // If less than 24 hours, show "hours ago"
+    if (hours < 24) {
+      if (hours < 1) return "Just now";
+      return `${hours} hours ago`;
+    }
+    
+    // If 24 hours or more, show date in dd/mm/yyyy format
+    const dateObj = new Date(date);
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -58,7 +78,7 @@ function RecentPayments() {
               <div>
                 <p className="font-medium">{payment.member_name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {formatPaymentMethod(payment.payment_method)} • {payment.payment_id}
+                  {formatPaymentMethod(payment.payment_method)} • {formatDate(payment.created_at)}
                 </p>
               </div>
               <div className="text-right">

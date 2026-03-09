@@ -30,10 +30,10 @@ const EventCreatePage = () => {
     <div className="flex min-h-screen font-sans bg-[#F4F2FE]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col`}>
-        <Header title="Create Content" />
+      <main className={`transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
+        <Header title="Create Event Content" />
 
-        <div className="flex-1 p-8 md:p-12">
+        <div className="flex-1 p-8 md:p-12 overflow-y-auto">
           <div className="max-w-6xl mx-auto">
             
             <ActionHeader 

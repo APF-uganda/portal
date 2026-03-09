@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, User,  FileText, Eye,  Loader2,  Download,  } from 'lucide-react';
+import { X, User,  FileText, Loader2,  Download,  } from 'lucide-react';
 import { getAccessToken } from '../../utils/authStorage';
 
 interface Application {
@@ -34,34 +34,175 @@ interface ApplicationDetailModalProps {
   onRetry?: (id: number) => Promise<void>;
 }
 
+// Document Preview Component
+const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadDocument();
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [doc.id]);
+
+  const loadDocument = async () => {
+    setLoading(true);
+    setError(null);
+    
+    const path = doc.file_url || doc.file || doc.document;
+    if (!path) {
+      setError("No file path found");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const token = getAccessToken();
+      if (!token) {
+        setError("Authentication required");
+        setLoading(false);
+        return;
+      }
+      
+      let finalUrl = path;
+      if (!path.startsWith('http')) {
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        finalUrl = `${cleanBase}${cleanPath}`;
+      }
+
+      const response = await fetch(finalUrl, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        setError(`Failed to load: ${response.status}`);
+        setLoading(false);
+        return;
+      }
+
+      const blob = await response.blob();
+      const type = blob.type || doc.file_type || 'application/octet-stream';
+      const objectUrl = URL.createObjectURL(blob);
+      
+      setPreviewUrl(objectUrl);
+      setFileType(type);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch document:", err);
+      setError("Failed to load document");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+      <div className="bg-gray-50 px-4 py-3 border-b flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <FileText className="text-[#5C32A3]" size={20} />
+          <div>
+            <p className="text-sm font-bold text-gray-800">{formatDocumentType(doc.document_type)}</p>
+            <p className="text-xs text-gray-500">{doc.file_name}</p>
+          </div>
+        </div>
+        {previewUrl && (
+          <a 
+            href={previewUrl} 
+            download={doc.file_name || 'document'} 
+            className="flex items-center gap-1 text-xs font-bold text-[#5C32A3] bg-white px-3 py-1.5 rounded-lg hover:bg-[#5C32A3] hover:text-white transition-all border"
+          >
+            <Download size={14} />
+            Download
+          </a>
+        )}
+      </div>
+      
+      <div className="p-4 bg-gray-50">
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="animate-spin text-[#5C32A3]" size={32} />
+          </div>
+        ) : error ? (
+          <div className="text-center py-8">
+            <FileText size={48} className="mx-auto mb-3 text-gray-300" />
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        ) : fileType?.startsWith('image/') ? (
+          <div className="flex justify-center">
+            <img 
+              src={previewUrl!} 
+              alt={doc.file_name}
+              className="max-w-full h-auto max-h-96 object-contain rounded-lg shadow-md"
+            />
+          </div>
+        ) : fileType === 'application/pdf' ? (
+          <iframe 
+            src={previewUrl!} 
+            className="w-full h-96 border-none rounded-lg shadow-md"
+            title={doc.file_name}
+          />
+        ) : (
+          <div className="text-center py-8">
+            <FileText size={48} className="mx-auto mb-3 text-gray-400" />
+            <p className="text-sm text-gray-600 mb-3">Preview not available for this file type</p>
+            {previewUrl && (
+              <a 
+                href={previewUrl} 
+                download={doc.file_name || 'document'}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#5C32A3] text-white font-bold rounded-lg hover:bg-[#4A2882] transition-colors text-sm"
+              >
+                <Download size={16} />
+                Download File
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Helper function to format document type names
+const formatDocumentType = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    'passport_photo': 'Passport Photo',
+    'national_id': 'National ID',
+    'icpau_certificate': 'ICPAU Certificate',
+    'cv': 'Curriculum Vitae (CV)',
+    'recommendation_letter': 'Recommendation Letter',
+    'proof_of_employment': 'Proof of Employment',
+    'academic_certificate': 'Academic Certificate',
+    'professional_certificate': 'Professional Certificate',
+  };
+  
+  return typeMap[type] || type.split('_').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+};
+
 const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   applicationId,
   isOpen,
   onClose,
   onApprove,
   onReject,
-  onRetry: _onRetry
+  onRetry
 }) => {
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewFileType, setPreviewFileType] = useState<string | null>(null);
-  const [isPreviewLoading, setIsPreviewLoading] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen && applicationId) {
       fetchApplicationDetails();
     }
-    
-    return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
   }, [isOpen, applicationId]);
 
   const fetchApplicationDetails = async () => {
@@ -90,72 +231,6 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // SECURE FETCH LOGIC
-  const handleViewDocument = async (doc: any) => {
-    setIsPreviewLoading(doc.id);
-    
-    // Get the file path - prefer file_url, then fall back to file or document
-    const path = doc.file_url || doc.file || doc.document;
-    if (!path) {
-      alert("No file path found for this document.");
-      setIsPreviewLoading(null);
-      return;
-    }
-
-    try {
-      const token = getAccessToken();
-      if (!token) {
-        alert("Authentication required. Please log in again.");
-        setIsPreviewLoading(null);
-        return;
-      }
-      
-      // If it's already a full URL, use it directly
-      let finalUrl = path;
-      
-      // If it's a relative path, construct the full URL
-      if (!path.startsWith('http')) {
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        finalUrl = `${cleanBase}${cleanPath}`;
-      }
-
-      const response = await fetch(finalUrl, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          alert("Document file not found on server. The file may have been deleted or moved.");
-        } else if (response.status === 403) {
-          alert("You don't have permission to view this document.");
-        } else {
-          alert(`Failed to load document: ${response.status} ${response.statusText}`);
-        }
-        setIsPreviewLoading(null);
-        return;
-      }
-
-      const blob = await response.blob();
-      const fileType = blob.type || doc.file_type || 'application/octet-stream';
-      
-      // Revoke previous preview URL to prevent memory leaks
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-
-      const objectUrl = URL.createObjectURL(blob);
-      setPreviewUrl(objectUrl);
-      setPreviewFileType(fileType);
-    } catch (err) {
-      console.error("Failed to fetch document:", err);
-      alert("Failed to load document. Please try again or contact support if the problem persists.");
-    } finally {
-      setIsPreviewLoading(null);
     }
   };
 
@@ -254,34 +329,13 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                 {application.documents && application.documents.length > 0 && (
                   <div>
                     <h4 className="text-md font-bold text-[#5C32A3] mb-3 flex items-center gap-2">
-                      <FileText size={18} /> Documents
+                      <FileText size={18} /> Documents ({application.documents.length})
                     </h4>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       {application.documents.map((doc) => (
-                        <div key={doc.id} className="flex items-center justify-between bg-white border p-3 rounded-lg hover:border-[#5C32A3] transition-all shadow-sm">
-                          <div className="flex items-center gap-3">
-                            <FileText className="text-gray-400" size={20} />
-                            <div>
-                              <p className="text-sm font-bold text-gray-800">{doc.file_name || 'Document'}</p>
-                              <p className="text-[10px] text-gray-400 uppercase">{doc.document_type}</p>
-                            </div>
-                          </div>
-                          <button 
-                            type="button"
-                            onClick={() => handleViewDocument(doc)}
-                            disabled={isPreviewLoading !== null}
-                            className="flex items-center gap-1 text-xs font-bold text-[#5C32A3] bg-[#F4F2FE] px-4 py-2 rounded-lg hover:bg-[#5C32A3] hover:text-white transition-all disabled:opacity-50"
-                            title="View document (Note: Some files may be missing from server)"
-                          >
-                            {isPreviewLoading === doc.id ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
-                            View
-                          </button>
-                        </div>
+                        <DocumentPreview key={doc.id} doc={doc} />
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2 italic">
-                      Note: If a document fails to load, the file may be missing from the server. Please contact support.
-                    </p>
                   </div>
                 )}
               </div>
@@ -292,110 +346,69 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
             <button onClick={onClose} className="px-6 py-2 bg-white border text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition-all">
               Close
             </button>
-            {application && !loading && application.status.toLowerCase() === 'pending' && (
+            {application && !loading && (
               <div className="flex gap-3">
-                <button onClick={() => handleAction(onReject)} disabled={submitting} className="px-6 py-2 border-2 border-red-100 text-red-600 font-bold rounded-xl hover:bg-red-50 disabled:opacity-50">
-                  {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Reject'}
-                </button>
-                <button onClick={() => handleAction(onApprove)} disabled={submitting} className="px-6 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] disabled:opacity-50">
-                  {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Approve'}
-                </button>
+                {application.status.toLowerCase() === 'pending' ? (
+                  <>
+                    <button 
+                      onClick={() => handleAction(onReject)} 
+                      disabled={submitting} 
+                      className="flex items-center gap-2 px-6 py-2 border-2 border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Reject'}
+                    </button>
+                    <button 
+                      onClick={() => handleAction(onApprove)} 
+                      disabled={submitting} 
+                      className="flex items-center gap-2 px-6 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                    >
+                      {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Approve'}
+                    </button>
+                  </>
+                ) : application.status.toLowerCase() === 'approved' ? (
+                  <>
+                    <button 
+                      onClick={() => handleAction(onReject)} 
+                      disabled={submitting} 
+                      className="flex items-center gap-2 px-6 py-2 border-2 border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Reject'}
+                    </button>
+                    {onRetry && (
+                      <button 
+                        onClick={() => handleAction(onRetry)} 
+                        disabled={submitting} 
+                        className="flex items-center gap-2 px-6 py-2 border-2 border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Reset to Pending'}
+                      </button>
+                    )}
+                  </>
+                ) : application.status.toLowerCase() === 'rejected' ? (
+                  <>
+                    <button 
+                      onClick={() => handleAction(onApprove)} 
+                      disabled={submitting} 
+                      className="flex items-center gap-2 px-6 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                    >
+                      {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Approve'}
+                    </button>
+                    {onRetry && (
+                      <button 
+                        onClick={() => handleAction(onRetry)} 
+                        disabled={submitting} 
+                        className="flex items-center gap-2 px-6 py-2 border-2 border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Reset to Pending'}
+                      </button>
+                    )}
+                  </>
+                ) : null}
               </div>
             )}
           </div>
         </div>
       </div>
-
-    
-      {previewUrl && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 p-4 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-6xl h-[95vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-            
-            <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
-              <h4 className="font-bold text-gray-700 flex items-center gap-2">
-                <FileText size={20} className="text-[#5C32A3]" /> Document Preview
-              </h4>
-              <div className="flex items-center gap-2">
-                <a 
-                  href={previewUrl} 
-                  download="document" 
-                  className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
-                  title="Download"
-                >
-                  <Download size={20} />
-                </a>
-                <button 
-                  onClick={() => {
-                    setPreviewUrl(null);
-                    setPreviewFileType(null);
-                  }} 
-                  className="p-2 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
-                  title="Close"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex-1 bg-gray-100 overflow-auto relative p-4">
-              <div className="w-full h-full flex items-center justify-center">
-                {previewFileType?.startsWith('image/') ? (
-                  // For images, use img tag with object-fit
-                  <img 
-                    src={previewUrl} 
-                    alt="Document preview"
-                    className="max-w-full max-h-full object-contain shadow-lg"
-                    style={{
-                      width: 'auto',
-                      height: 'auto',
-                      maxWidth: '100%',
-                      maxHeight: '100%'
-                    }}
-                  />
-                ) : previewFileType === 'application/pdf' ? (
-                  // For PDFs, use iframe with proper sizing
-                  <iframe 
-                    src={previewUrl} 
-                    className="w-full h-full border-none bg-white shadow-lg"
-                    title="PDF Preview"
-                  />
-                ) : (
-                  // For other file types, show download option
-                  <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-                    <FileText size={64} className="mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-700 mb-4">Preview not available for this file type</p>
-                    <a 
-                      href={previewUrl} 
-                      download="document"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] transition-colors"
-                    >
-                      <Download size={20} />
-                      Download File
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="p-4 border-t bg-gray-50 flex justify-between items-center">
-              <p className="text-sm text-gray-600">
-                {previewFileType?.startsWith('image/') 
-                  ? 'Image scaled to fit. Download for full quality.' 
-                  : 'Use scroll to navigate, or download for offline viewing.'}
-              </p>
-              <button 
-                onClick={() => {
-                  setPreviewUrl(null);
-                  setPreviewFileType(null);
-                }} 
-                className="px-8 py-2 bg-[#5C32A3] text-white font-bold rounded-xl hover:bg-[#4A2882] shadow-sm transition-colors"
-              >
-                Close Preview
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

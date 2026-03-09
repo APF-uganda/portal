@@ -1,4 +1,4 @@
-import { X, MessageSquare, ThumbsUp, Calendar, Send } from 'lucide-react';
+import { X, MessageSquare, ThumbsUp, Calendar, Send, Reply as ReplyIcon } from 'lucide-react';
 import { ForumPost, Comment } from './types';
 import { useState } from 'react';
 
@@ -8,7 +8,7 @@ interface PostDetailModalProps {
   onClose: () => void;
   onToggleLike: (postId: number, isLiked: boolean) => void;
   comments: Comment[];
-  onAddComment: (postId: number, content: string) => Promise<boolean>;
+  onAddComment: (postId: number, content: string, parentId?: number) => Promise<boolean>;
   loadingComments: boolean;
 }
 
@@ -23,6 +23,8 @@ const PostDetailModal = ({
 }: PostDetailModalProps) => {
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
 
   if (!isOpen) return null;
 
@@ -69,12 +71,41 @@ const PostDetailModal = ({
     setIsSubmitting(false);
   };
 
+  const handleSubmitReply = async (parentId: number) => {
+    if (!replyText.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const success = await onAddComment(post.id, replyText.trim(), parentId);
+    
+    if (success) {
+      setReplyText('');
+      setReplyingTo(null);
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+    setReplyText('');
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmitComment();
     }
   };
+
+  const handleReplyKeyPress = (e: React.KeyboardEvent, parentId: number) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmitReply(parentId);
+    }
+  };
+
+  // Organize comments into parent and replies
+  const topLevelComments = comments.filter(c => !c.parent);
+  const getReplies = (commentId: number) => comments.filter(c => c.parent === commentId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
@@ -196,29 +227,161 @@ const PostDetailModal = ({
                   <p className="text-sm text-gray-400 mt-1">Be the first to comment on this post!</p>
                 </div>
               ) : (
-                comments.map((comment) => (
-                  <div key={comment.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
-                        {comment.author.initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-gray-900 text-sm">
-                            {comment.author.full_name}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {formatCommentDate(comment.created_at)}
-                          </span>
-                          {comment.is_edited && (
-                            <span className="text-xs text-gray-400 italic">(edited)</span>
-                          )}
+                topLevelComments.map((comment) => (
+                  <div key={comment.id} className="space-y-3">
+                    {/* Main Comment */}
+                    <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {comment.author.initials}
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
-                          {comment.content}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-gray-900 text-sm">
+                              {comment.author.full_name}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {formatCommentDate(comment.created_at)}
+                            </span>
+                            {comment.is_edited && (
+                              <span className="text-xs text-gray-400 italic">(edited)</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words mb-2">
+                            {comment.content}
+                          </p>
+                          <button
+                            onClick={() => setReplyingTo(comment.id)}
+                            className="text-xs text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-1"
+                          >
+                            <ReplyIcon size={12} />
+                            Reply
+                          </button>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Reply Input for this comment */}
+                    {replyingTo === comment.id && (
+                      <div className="ml-11 bg-white border border-purple-200 rounded-lg p-3">
+                        <div className="flex gap-2 mb-2">
+                          <textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            onKeyPress={(e) => handleReplyKeyPress(e, comment.id)}
+                            placeholder="Write a reply..."
+                            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5C32A3] focus:border-transparent resize-none text-sm"
+                            rows={2}
+                            disabled={isSubmitting}
+                            autoFocus
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={handleCancelReply}
+                            className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 font-medium"
+                            disabled={isSubmitting}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSubmitReply(comment.id)}
+                            disabled={!replyText.trim() || isSubmitting}
+                            className="bg-[#5C32A3] text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-[#4A2885] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-1"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                Posting...
+                              </>
+                            ) : (
+                              <>
+                                <Send size={12} />
+                                Reply
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Replies to this comment */}
+                    {getReplies(comment.id).map((reply) => (
+                      <div key={reply.id} className="ml-11 bg-purple-50 rounded-lg p-3 hover:bg-purple-100 transition-colors">
+                        <div className="flex items-start gap-3">
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                            {reply.author.initials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-gray-900 text-sm">
+                                {reply.author.full_name}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {formatCommentDate(reply.created_at)}
+                              </span>
+                              {reply.is_edited && (
+                                <span className="text-xs text-gray-400 italic">(edited)</span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words mb-2">
+                              {reply.content}
+                            </p>
+                            <button
+                              onClick={() => setReplyingTo(reply.id)}
+                              className="text-xs text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-1"
+                            >
+                              <ReplyIcon size={12} />
+                              Reply
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Reply Input for nested reply */}
+                        {replyingTo === reply.id && (
+                          <div className="mt-3 bg-white border border-purple-200 rounded-lg p-3">
+                            <div className="flex gap-2 mb-2">
+                              <textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                onKeyPress={(e) => handleReplyKeyPress(e, reply.id)}
+                                placeholder="Write a reply..."
+                                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5C32A3] focus:border-transparent resize-none text-sm"
+                                rows={2}
+                                disabled={isSubmitting}
+                                autoFocus
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={handleCancelReply}
+                                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 font-medium"
+                                disabled={isSubmitting}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => handleSubmitReply(reply.id)}
+                                disabled={!replyText.trim() || isSubmitting}
+                                className="bg-[#5C32A3] text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-[#4A2885] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-1"
+                              >
+                                {isSubmitting ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                    Posting...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Send size={12} />
+                                    Reply
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 ))
               )}

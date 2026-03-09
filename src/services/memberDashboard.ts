@@ -14,6 +14,7 @@ export interface MemberDashboardProfile {
   membership_status: string;
   member_since: string | null;
   next_renewal_date: string | null;
+  subscription_due_date?: string | null;
 }
 
 export interface MemberDashboardDocument {

@@ -90,6 +90,10 @@ function OtpPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
+        // Ensure previous account profile cache is removed before saving new session.
+        sessionStorage.removeItem('user_profile')
+        localStorage.removeItem('user_profile')
+
         // Store tokens using new auth storage
         saveAuth(data.access, data.refresh, data.user);
 

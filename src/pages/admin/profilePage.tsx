@@ -44,10 +44,10 @@ const AdminProfilePage = () => {
     <div className="flex min-h-screen flex-col">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
+      <main className={`bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
         <Header title="My Profile" />
 
-        <div className="flex-1 bg-[#F4F2FE] p-8 space-y-10">
+        <div className="flex-1 bg-[#F4F2FE] p-8 space-y-10 overflow-y-auto">
           <div className="max-w-[1400px] mx-auto space-y-10">
             
             {/* Page Header */}

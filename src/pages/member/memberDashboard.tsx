@@ -52,6 +52,7 @@ const MemberDashboard: React.FC = () => {
   const documents = dashboardData?.documents ?? [];
   const recentActivity = dashboardData?.recent_activity ?? [];
   const notifications = dashboardData?.notifications ?? [];
+  const nextRenewalDate = profile?.next_renewal_date || profile?.subscription_due_date || null;
 
   // Get display name from dashboard profile
   const displayName = profile?.display_name || 'Member';
@@ -202,7 +203,7 @@ const MemberDashboard: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Next Renewal</span>
                 <span className="font-semibold text-gray-900 text-sm">
-                  {formatDate(profile?.next_renewal_date)}
+                  {formatDate(nextRenewalDate)}
                 </span>
               </div>
               <div className="flex justify-between items-center">

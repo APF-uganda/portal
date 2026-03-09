@@ -39,11 +39,11 @@ const CreatePost = () => {
     <div className="flex min-h-screen">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
+      <main className={`flex-1 min-w-0 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} min-h-screen flex flex-col`}>
         <Header title="Create Post" />
 
-        <div className="flex-1 bg-[#F4F7FE] p-8">
-          <div className="max-w-[900px] mx-auto">
+        <div className="flex-1 bg-[#F4F7FE] px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto overflow-x-hidden">
+          <div className="w-full max-w-5xl mx-auto">
             
             {/* Header Section */}
             <div className="mb-8">
@@ -56,7 +56,7 @@ const CreatePost = () => {
               </button>
               
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Create New Post</h1>
-              <nav className="text-sm font-medium text-gray-400">
+              <nav className="text-sm font-medium text-gray-400 break-words">
                 Admin Dashboard <span className="mx-1">&gt;</span> Community Forum <span className="mx-1">&gt;</span> Create Post
               </nav>
             </div>
@@ -73,7 +73,7 @@ const CreatePost = () => {
             )}
 
             {/* Main Form Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 lg:p-8">
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-2">Post Details</h2>
                 <p className="text-sm text-gray-500">
@@ -99,23 +99,23 @@ const CreatePost = () => {
             </div>
 
             {/* Tips Section */}
-            <div className="mt-6 bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+            <div className="mt-6 bg-indigo-50 border border-indigo-100 rounded-xl p-5 sm:p-6">
               <h3 className="text-lg font-bold text-indigo-900 mb-3">Tips for Creating Great Posts</h3>
               <ul className="space-y-2 text-sm text-indigo-800">
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 font-bold">•</span>
+                  <span className="text-indigo-600 font-bold">*</span>
                   <span><strong>Be clear and descriptive:</strong> Use a title that accurately describes your post content</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 font-bold">•</span>
+                  <span className="text-indigo-600 font-bold">*</span>
                   <span><strong>Provide context:</strong> Include relevant details and background information</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 font-bold">•</span>
+                  <span className="text-indigo-600 font-bold">*</span>
                   <span><strong>Use categories and tags:</strong> Help users find your post by selecting appropriate categories and tags</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-600 font-bold">•</span>
+                  <span className="text-indigo-600 font-bold">*</span>
                   <span><strong>Save as draft:</strong> Not ready to publish? Save your post as a draft and come back later</span>
                 </li>
               </ul>

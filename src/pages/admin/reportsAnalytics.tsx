@@ -49,11 +49,11 @@ const ReportsAnalytics = () => {
     <div className="flex min-h-screen">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen min-w-0`}>
+      <main className={`flex-1 bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col w-full`}>
         <Header title="Reports & Analytics" />
 
-        <div className="flex-1 bg-[#F4F2FE] p-8 space-y-10">
-          <div className="max-w-[1400px] mx-auto space-y-10">
+        <div className="flex-1 bg-[#F4F2FE] py-6 space-y-10 overflow-y-auto">
+          <div className="w-full space-y-10 px-6">
             
             <div>
               <h1 className="text-[26px] font-bold text-slate-800 tracking-tight">Reports & Analytics</h1>
@@ -114,7 +114,7 @@ const ReportsAnalytics = () => {
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Active Users (30d)</p>
+                      <p className="text-sm font-medium text-gray-600">Active Users (Approved)</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {analytics.system.active_users_30d || 0}
                       </p>

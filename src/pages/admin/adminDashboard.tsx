@@ -13,6 +13,7 @@ import Footer from "../../components/layout/Footer";
 import { fetchDashboardStats, DashboardStats } from "../../services/dashboard";
 import { requireAdmin } from "../../utils/auth";
 import { useProfile } from "../../hooks/useProfile";
+import { getDisplayName } from "../../utils/displayName";
 
 function AdminDashboard(){
     const [collapsed, setCollapsed] = useState(false);
@@ -60,8 +61,8 @@ function AdminDashboard(){
       return () => clearInterval(intervalId);
    }, []);
 
-  // Get display name from profile or fallback to email
-  const displayName = profile?.full_name || profile?.first_name || profile?.email?.split('@')[0] || 'Admin';
+  const displayName = getDisplayName(profile, "Admin");
+
 
   // Format last updated time
   const formatLastUpdated = () => {
@@ -108,11 +109,11 @@ function AdminDashboard(){
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       {/* Content wrapper with margin to avoid overlap */}
-      <div className={`flex flex-1 flex-col transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} min-h-screen`}>
-        {/* Top Bar */}
+      <div className={`flex flex-col transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden`}>
+        {/* Top Bar - Fixed */}
         <Header title="Dashboard Overview" />
 
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 overflow-y-auto">
           {/* Welcome Banner with Refresh */}
           <div className="flex items-center justify-between mb-6">
             <WelcomeBanner name={displayName} />

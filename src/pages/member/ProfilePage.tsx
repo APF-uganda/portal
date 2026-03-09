@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import {
   User,
   Mail,
@@ -20,7 +20,18 @@ import { useProfile } from '../../hooks/useProfile';
 import { toastMessages } from '../../utils/toast-helpers';
 
 const ProfilePage = () => {
-  const { profile, loading, error, updating, updateProfile, updatePassword, changingPassword } = useProfile();
+  const {
+    profile,
+    loading,
+    error,
+    updating,
+    updateProfile,
+    updatePassword,
+    changingPassword,
+    uploadPicture,
+    removePicture,
+    uploadingPicture
+  } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [avatarError, setAvatarError] = useState(false);
@@ -47,6 +58,7 @@ const ProfilePage = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!profile) {
@@ -67,6 +79,10 @@ const ProfilePage = () => {
       specializations: profile.specializations || ''
     });
   }, [profile]);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [profile?.profile_picture_url]);
 
   const displayName = useMemo(() => {
     if (profile?.full_name) {
@@ -143,6 +159,35 @@ const ProfilePage = () => {
     }
   };
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePictureChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const success = await uploadPicture(file);
+    if (success) {
+      toastMessages.profile.updated();
+      setAvatarError(false);
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemovePicture = async () => {
+    const success = await removePicture();
+    if (success) {
+      toastMessages.profile.updated();
+      setAvatarError(false);
+    }
+  };
+
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
@@ -203,9 +248,25 @@ const ProfilePage = () => {
                   {initials}
                 </div>
               )}
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
-                <Camera className="w-4 h-4 text-gray-600" />
+              <button
+                onClick={handleUploadClick}
+                disabled={uploadingPicture}
+                className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                title="Upload profile photo"
+              >
+                {uploadingPicture ? (
+                  <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4 text-gray-600" />
+                )}
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={handlePictureChange}
+              />
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900">
@@ -213,8 +274,17 @@ const ProfilePage = () => {
               </h2>
               <p className="text-gray-600">{membershipType}</p>
               <p className="text-sm text-gray-500 mt-1">
-                Member ID: {membershipId} • Joined {joinDate}
+                Member ID: {membershipId} - Joined {joinDate}
               </p>
+              {profile?.profile_picture_url && (
+                <button
+                  onClick={handleRemovePicture}
+                  disabled={uploadingPicture}
+                  className="mt-3 text-sm text-red-600 hover:text-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Remove photo
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -591,3 +661,7 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
+
+
+
+

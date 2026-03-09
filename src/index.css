@@ -1,3 +1,5 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
 
 
 /* Custom animations */
@@ -57,7 +59,7 @@
 }
 
 @layer base {
-  body {
+ body {
     margin: 0;
     font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont;
     overflow-x: hidden;
@@ -111,3 +113,8 @@
     opacity: 0.6;
   }
 }
+
+
+
+
+

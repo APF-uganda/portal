@@ -37,6 +37,10 @@ function LoginPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
+        // Prevent cross-user profile cache leaks between sessions.
+        sessionStorage.removeItem('user_profile')
+        localStorage.removeItem('user_profile')
+
         // Check if OTP was bypassed (test users)
         if (data.otp_bypassed) {
           // Direct login - store tokens using authStorage
