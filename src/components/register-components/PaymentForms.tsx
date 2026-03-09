@@ -45,6 +45,7 @@ export function PaymentForms({
 
   // Mobile money fields
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [detectedProvider, setDetectedProvider] = useState<'mtn' | 'airtel' | null>(null);
   
   // Credit card fields
   const [cardNumber, setCardNumber] = useState('');
@@ -62,6 +63,22 @@ export function PaymentForms({
 
 const MTN_PREFIXES = ['25677', '25678', '25676'];
 const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
+
+  // Auto-detect network provider based on phone number
+  useEffect(() => {
+    if (phoneNumber.length >= 5) {
+      const prefix = phoneNumber.substring(0, 5);
+      if (MTN_PREFIXES.includes(prefix)) {
+        setDetectedProvider('mtn');
+      } else if (AIRTEL_PREFIXES.includes(prefix)) {
+        setDetectedProvider('airtel');
+      } else {
+        setDetectedProvider(null);
+      }
+    } else {
+      setDetectedProvider(null);
+    }
+  }, [phoneNumber]);
 
   // Integrate payment polling hook 
   const { isPolling, elapsedSeconds } = usePaymentPolling({
@@ -146,7 +163,10 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
   const isFormValid = (): boolean => {
     if (!selectedMethod) return false;
 
-    if (selectedMethod === 'mtn' || selectedMethod === 'airtel') {
+    if (selectedMethod === 'mobile_money') {
+      // For mobile money, phone must be valid and network must be detected
+      return phoneNumber !== '' && paymentService.validatePhoneNumber(phoneNumber) && detectedProvider !== null;
+    } else if (selectedMethod === 'mtn' || selectedMethod === 'airtel') {
       return phoneNumber !== '' && paymentService.validatePhoneNumber(phoneNumber);
     } else if (selectedMethod === 'credit_card') {
       return (
@@ -177,17 +197,27 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
     setErrorMessage(undefined);
 
     try {
-      // For mobile money payments, use PaymentService
-      if (selectedMethod === 'mtn' || selectedMethod === 'airtel') {
+      // For mobile money payments, use PesaPal via PaymentService
+      if (selectedMethod === 'mobile_money' || selectedMethod === 'mtn' || selectedMethod === 'airtel') {
+        // Use 'pesapal' as the provider for all mobile money payments
         const response = await paymentService.initiatePayment(
           phoneNumber,
-          selectedMethod,
+          'pesapal', // Always use PesaPal for mobile money
           50000 // UGX 50,000 for registration
         );
 
         if (response.success && response.payment_id) {
           setPaymentId(response.payment_id);
           setTransactionReference(response.transaction_reference);
+          
+          // If PesaPal returns a redirect_url, redirect user to complete payment
+          if (response.redirect_url) {
+            // Redirect to PesaPal payment page
+            window.location.href = response.redirect_url;
+            return; // Stop here, user will be redirected
+          }
+          
+          // If no redirect_url (shouldn't happen with PesaPal), start polling
           setPaymentStatus('pending');
           setIsInitiating(false);
           // Status will be updated by polling hook
@@ -219,7 +249,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
   // Handle retry payment
   const handleRetry = async () => {
     // If we have a paymentId, use retry API 
-    if (paymentId && (selectedMethod === 'mtn' || selectedMethod === 'airtel')) {
+    if (paymentId && (selectedMethod === 'mobile_money' || selectedMethod === 'mtn' || selectedMethod === 'airtel')) {
       setIsInitiating(true);
       setErrorMessage(undefined);
 
@@ -305,6 +335,8 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
   // Get method display name
   const getMethodName = () => {
     switch (selectedMethod) {
+      case 'mobile_money':
+        return 'Mobile Money';
       case 'mtn':
         return 'MTN Mobile Money';
       case 'airtel':
@@ -316,7 +348,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
     }
   };
 
-  // Render mobile money form (MTN/Airtel)
+  // Render mobile money form (unified for all networks)
   const renderMobileMoneyForm = () => (
     <div className="space-y-4">
       <Input
@@ -331,20 +363,34 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
         disabled={isInitiating || paymentStatus === 'pending'}
         required
       />
-      {selectedMethod === 'mtn' &&
-          AIRTEL_PREFIXES.some(p => phoneNumber.startsWith(p)) && (
-           <p className="text-sm text-red-700 mt-1">
-             Please enter an MTN number
-          </p>
-         )}
-
-     {selectedMethod === 'airtel' &&
-         MTN_PREFIXES.some(p => phoneNumber.startsWith(p)) && (
-         <p className="text-sm text-red-700 mt-1">
-             Please enter an Airtel number
-        </p>
-     )}
-
+      
+      {/* Network detection indicator */}
+      {phoneNumber.length >= 5 && detectedProvider && (
+        <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-green-800 font-medium">
+              {detectedProvider === 'mtn' ? 'MTN' : 'Airtel'} number detected
+            </span>
+          </div>
+        </div>
+      )}
+      
+      {/* Warning if network not detected */}
+      {phoneNumber.length >= 5 && !detectedProvider && (
+        <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span className="text-yellow-800">
+              Network not recognized. Please check your number.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* User instruction text (Requirement 9.1) */}
       <div className="text-sm text-gray-700 bg-blue-50 border border-blue-200 p-4 rounded-lg">
@@ -352,7 +398,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
           <svg className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>Enter your phone number. You will receive a payment prompt on your phone.</span>
+          <span>Enter your MTN or Airtel mobile money number. You will be redirected to complete the payment securely.</span>
         </p>
       </div>
 
@@ -492,7 +538,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
         {/* Input Form (idle state) */}
         {paymentStatus === 'idle' && (
           <>
-            {(selectedMethod === 'mtn' || selectedMethod === 'airtel') && renderMobileMoneyForm()}
+            {(selectedMethod === 'mobile_money' || selectedMethod === 'mtn' || selectedMethod === 'airtel') && renderMobileMoneyForm()}
             {selectedMethod === 'credit_card' && renderCreditCardForm()}
           </>
         )}

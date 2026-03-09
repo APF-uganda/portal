@@ -9,7 +9,7 @@
 /**
  * Mobile money payment provider types
  */
-export type PaymentProvider = 'mtn' | 'airtel';
+export type PaymentProvider = 'mtn' | 'airtel' | 'pesapal';
 
 /**
  * Payment status types representing the lifecycle of a payment
@@ -65,6 +65,7 @@ export interface PaymentInitiationResponse {
   message?: string;
   amount?: string;
   currency?: string;
+  redirect_url?: string; // PesaPal redirect URL
   error?: PaymentError;
 }
 

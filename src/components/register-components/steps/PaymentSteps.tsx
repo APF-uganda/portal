@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import PaymentOption from "./PaymentOption";
 import { PaymentForms } from "../PaymentForms";
-import mtnLogo from "../../../assets/images/registerPage-images/mtn.png";
-import airtelLogo from "../../../assets/images/registerPage-images/airtel.png";
+import mobileMoneyLogo from "../../../assets/images/registerPage-images/mtn.png"; // Using MTN logo as generic mobile money icon
 import dfcuLogo from "../../../assets/images/registerPage-images/dfcu.jpg";
 import { PaymentData, PaymentMethod } from "../../../types/registration";
 
@@ -144,19 +143,11 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
               Payment Options
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <PaymentOption
-                label="MTN Mobile Money"
-                value="mtn"
-                logo={mtnLogo}
-                selected={paymentMethod}
-                onSelect={handlePaymentMethodSelect}
-              />
-
-              <PaymentOption
-                label="Airtel Money"
-                value="airtel"
-                logo={airtelLogo}
+                label="Mobile Money"
+                value="mobile_money"
+                logo={mobileMoneyLogo}
                 selected={paymentMethod}
                 onSelect={handlePaymentMethodSelect}
               />
