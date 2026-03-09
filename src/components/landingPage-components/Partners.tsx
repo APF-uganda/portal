@@ -12,8 +12,7 @@ function Partners({ data }: { data?: PartnerItem[] }) {
 
   const defaultPartners = [
     { name: 'ICPAU', logo: '/ICPAU.jfif' },
-    { name: 'ACCA', logo: '/ACCA.jfif' },
-    { name: 'UBA', logo: '/uba.png' },
+    { name: 'ICPAU', logo: '/ICPAU.jfif' },
   ]
 
   const items = Array.isArray(data) && data.length > 0 ? data : defaultPartners;
