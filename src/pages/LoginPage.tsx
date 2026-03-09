@@ -23,7 +23,11 @@ function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch(`${API_V1_BASE_URL}/auth/login/`, {
+      const apiUrl = `${API_V1_BASE_URL}/auth/login/`
+      console.log('🔵 Attempting login to:', apiUrl)
+      console.log('🔵 Email:', email)
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -34,7 +38,11 @@ function LoginPage() {
         }),
       })
 
+      console.log('🔵 Response status:', response.status)
+      console.log('🔵 Response ok:', response.ok)
+      
       const data = await response.json()
+      console.log('🔵 Response data:', data)
 
       if (response.ok && data.success) {
         // Prevent cross-user profile cache leaks between sessions.
@@ -74,7 +82,9 @@ function LoginPage() {
         setError(data.error?.message || 'Invalid email or password')
       }
     } catch (err) {
-      console.error('Login error:', err)
+      console.error('❌ Login error:', err)
+      console.error('❌ Error type:', err instanceof TypeError ? 'TypeError (Network)' : typeof err)
+      console.error('❌ Error message:', err instanceof Error ? err.message : String(err))
       setError('Unable to connect to server. Please try again.')
     } finally {
       setLoading(false)

@@ -1,7 +1,6 @@
 function ContactMap() {
   // Kampala coordinates: 0.328568, 32.590748
-  const mapUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.7571234567!2d32.590748!3d0.328568!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMMKwMTknNDIuOCJOIDMywrAzNScyNi43IkU!5e0!3m2!1sen!2sug!4v1234567890123!5m2!1sen!2sug`
-
+  const mapUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.7554283319328!2d32.61472767363893!3d0.3217061640205008!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177dbbf07cc4477f%3A0xc7b9a06ce9e18e20!2sMUTUMBA%20MUKOBE%20AND%20ASSOCIATES!5e0!3m2!1sen!2sug!4v1773045744968!5m2!1sen!2sug`
   return (
     <div className="py-0">
       <div className="w-full h-[300px] md:h-[450px] relative overflow-hidden">

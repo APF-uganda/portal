@@ -27,8 +27,19 @@ export interface NewsArticle {
 }
 
 const api = axios.create({ 
-  baseURL: CMS_API_URL, 
-  headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
+  baseURL: CMS_API_URL
+});
+
+// Keep public reads unauthenticated; add admin token only for write operations.
+api.interceptors.request.use((config) => {
+  const method = (config.method || 'get').toLowerCase();
+
+  if (method !== 'get' && ADMIN_TOKEN) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${ADMIN_TOKEN}`;
+  }
+
+  return config;
 });
 
 /**
