@@ -5,23 +5,18 @@ const faqs = [
   {
     question: "What are the eligibility criteria for professional membership",
     answer:
-      "Professional membership is open to individuals who hold a recognized accountancy qualification (e.g. CPA, ACCA, CIMA) and possess a minimum of three years of relevant post-qualification experience.",
+      "Professional membership is open to all accountants with a valid ICPAU practicing certificate",
   },
   {
     question: "How do I apply for membership",
     answer:
-      "You can apply for membership through our online portal. The process involves submitting your academic and professional qualifications, a detailed resume, and two professional references. Our team will review your application within 10 business days.",
+      "You can apply for membership through our online portal. The process involves submitting your valid ICPAU Certificate, and firm license. Our team will review your application within 10 business days.",
   },
   {
     question: "What are the annual membership fees",
     answer:
-      "The annual membership fees depend on the membership category. Detailed fee information is provided during the application process.",
-  },
-  {
-    question: "What CPD requirements are there for members",
-    answer:
-      "Members are required to complete Continuing Professional Development (CPD) hours annually to maintain professional competence and membership status.",
-  },
+      "The annual membership fees is UGX 150.000, paid on every 1st April. Detailed fee information is provided during the application process.",
+  }
 ];
 
 export default function FAQ() {
