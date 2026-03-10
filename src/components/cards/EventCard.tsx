@@ -1,6 +1,6 @@
 import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
 import { useMemo } from 'react';
-import { CMS_API_URL } from '../../config/api'; 
+import { CMS_BASE_URL } from '../../config/api'; 
 
 export interface EventCardProps {
   image?: any;
@@ -9,8 +9,9 @@ export interface EventCardProps {
   time: string;
   location: string;
   description: string;
-  isPaid?: boolean;           
-  memberPrice?: number;       
+  isPaid?: boolean | string;           
+  memberPrice?: number | string;
+  nonMemberPrice?: number | string; 
   onRegister?: () => void;
   delay?: number;
   isPast?: boolean; 
@@ -25,6 +26,7 @@ export default function EventCard({
   description, 
   isPaid,
   memberPrice,
+  nonMemberPrice,
   onRegister,
   delay = 0,
   isPast = false 
@@ -32,13 +34,13 @@ export default function EventCard({
 
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  
+ 
+  const paidStatus = isPaid === true || isPaid === 'true';
+
   const imageUrl = useMemo(() => {
     const imgPath = image?.data?.attributes?.url || image?.url || image?.attributes?.url || (typeof image === 'string' ? image : null);
-    
     if (!imgPath) return DEFAULT_IMAGE;
-    
-    return imgPath.startsWith('http') ? imgPath : `${CMS_API_URL}${imgPath}`;
+    return imgPath.startsWith('http') ? imgPath : `${CMS_BASE_URL}${imgPath}`;
   }, [image]);
 
   const displayDate = useMemo(() => {
@@ -71,7 +73,7 @@ export default function EventCard({
           className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isPast ? 'grayscale-[0.5]' : ''}`} 
         />
         
-        {/*  Status Badges */}
+        {/* Status Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {isPast ? (
             <span className="bg-gray-800/90 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm">
@@ -79,15 +81,17 @@ export default function EventCard({
             </span>
           ) : (
             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm ${
-              isPaid ? 'bg-purple-600/90 text-white' : 'bg-green-500/90 text-white'
+              paidStatus ? 'bg-purple-600 text-white' : 'bg-green-500 text-white'
             }`}>
-              {isPaid ? `UGX ${Number(memberPrice).toLocaleString()}+` : 'Free Event'}
+              {paidStatus 
+                ? `UGX ${Number(nonMemberPrice || memberPrice || 0).toLocaleString()}` 
+                : 'Free Event'
+              }
             </span>
           )}
         </div>
       </div>
 
-      {/* Content Section */}
       <div className="p-6 flex flex-col flex-grow">
         <h3 className="text-lg font-bold text-gray-900 mb-3 min-h-[3.5rem] line-clamp-2 group-hover:text-purple-700 transition-colors">
           {title}

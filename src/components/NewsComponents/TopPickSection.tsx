@@ -12,8 +12,11 @@ const TopPickSection = ({ article }: TopPickProps) => {
   if (!article) return null;
 
   const handleReadMore = () => {
-    
-    navigate(`/news/${article.id}`);
+  
+    const targetId = article.documentId || article.id;
+    if (targetId) {
+      navigate(`/news/${targetId}`);
+    }
   };
 
   return (
@@ -27,7 +30,6 @@ const TopPickSection = ({ article }: TopPickProps) => {
 
       <div className="flex flex-col md:flex-row gap-8 items-center justify-center bg-gray-50 rounded-[1.5rem] p-4 md:p-6 border border-gray-100 min-h-[300px]">
         
-        {/* Image Container */}
         <div className="w-full md:w-5/12 flex justify-center">
           <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm">
             <img 
@@ -38,10 +40,9 @@ const TopPickSection = ({ article }: TopPickProps) => {
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="w-full md:w-6/12 flex flex-col justify-center space-y-3">
           <div className="flex items-center gap-2 text-[#5C32A3] font-bold text-[9px] uppercase tracking-widest">
-            <span className="w-5 h-[1.5px] bg-[#ffffff]"></span>
+            <span className="w-5 h-[1.5px] bg-[#5C32A3]"></span>
             Featured Story
           </div>
           
