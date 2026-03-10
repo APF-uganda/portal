@@ -1,9 +1,7 @@
 import React, { useState } from "react"
 import {
   Bell,
-  Filter,
   CheckCheck,
-  Search,
   CreditCard,
   Server,
   Star,
@@ -23,18 +21,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Button } from "../../components/ui/button"
 import { useNotifications, useNotificationStats } from "../../hooks/useNotifications"
 import { useMemberDashboard } from "../../hooks/useMemberDashboard"
+import NotificationSummary from "../../components/notifications/NotificationSummary"
+import NotificationFilter from "../../components/notifications/NotificationFilter"
 
 const NotificationsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all')
   const [activeTab, setActiveTab] = useState<'notifications' | 'activities'>('notifications')
   
-  // Get notifications from backend
+  // NOTIFICATIONS TAB: System-generated messages with read/unread states
+  // Source: /api/v1/notifications/user-notifications/
   const { notifications, loading, markAsRead, markAllAsRead } = useNotifications(activeFilter)
   
-  // Get notification statistics
+  // Get notification statistics (only for notifications, not activities)
   const { stats, loading: statsLoading } = useNotificationStats()
   
-  // Get activities from dashboard data
+  // RECENT ACTIVITY TAB: User action history (display-only, no read states)
+  // Source: /api/v1/applications/member-dashboard/ -> recent_activity
   const { data: dashboardData, loading: dashboardLoading } = useMemberDashboard()
   const allActivities = dashboardData?.recent_activity ?? []
 
@@ -157,6 +159,18 @@ const NotificationsPage: React.FC = () => {
     return date < weekAgo
   })
 
+  // Create filter options with counts
+  const filterOptions = [
+    { key: 'all', label: 'All Notifications', count: stats.total },
+    { key: 'unread', label: 'Unread Only', count: stats.unread },
+    { key: 'read', label: 'Read Only', count: stats.read },
+    { key: 'announcement', label: 'Announcements', count: stats.byType.announcement },
+    { key: 'membership', label: 'Membership', count: stats.byType.membership },
+    { key: 'payment', label: 'Payments', count: stats.byType.payment },
+    { key: 'system', label: 'System Alerts', count: stats.byType.system },
+    { key: 'security', label: 'Security Alerts', count: stats.byType.security },
+  ]
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -184,10 +198,13 @@ const NotificationsPage: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
-              Filter
-            </Button>
+            {/* Filter only applies to Notifications tab, not Recent Activity */}
+            <NotificationFilter
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+              options={filterOptions}
+              loading={loading || statsLoading}
+            />
             {activeTab === 'notifications' && (
               <Button 
                 onClick={handleMarkAllAsRead}
@@ -257,32 +274,6 @@ const NotificationsPage: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             {activeTab === 'notifications' ? (
               <>
-                {/* Notification Filters */}
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-2">
-                    {[
-                      { key: 'all', label: 'All' },
-                      { key: 'unread', label: 'Unread' },
-                      { key: 'payment', label: 'Payments' },
-                      { key: 'membership', label: 'Membership' },
-                    ].map((filter) => (
-                      <Button
-                        key={filter.key}
-                        variant={activeFilter === filter.key ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setActiveFilter(filter.key)}
-                        className={activeFilter === filter.key ? "bg-purple-600 hover:bg-purple-700" : ""}
-                      >
-                        {filter.label}
-                      </Button>
-                    ))}
-                  </div>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <Search className="w-4 h-4" />
-                    Search
-                  </Button>
-                </div>
-
                 {/* Today's Notifications */}
                 <Card className="bg-white shadow-lg border border-gray-200">
                   <CardHeader>
@@ -464,64 +455,7 @@ const NotificationsPage: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Notification Summary */}
-            <Card className="bg-white shadow-lg border border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-800">Notification Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Simple Chart */}
-                <div className="h-32 flex items-end gap-2 mb-4">
-                  {[80, 60, 90, 40, 70, 50, 85].map((height, index) => (
-                    <div
-                      key={index}
-                      className="flex-1 bg-gradient-to-t from-purple-200 to-purple-400 rounded-t transition-all hover:opacity-80"
-                      style={{ height: `${height}%` }}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-between text-xs text-gray-500 mb-6">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                    <span key={day}>{day}</span>
-                  ))}
-                </div>
-                
-                {/* Summary Stats */}
-                <div className="pt-6 border-t border-gray-200 space-y-3">
-                  {statsLoading ? (
-                    <>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Announcements</span>
-                        <span className="font-semibold">{stats.byType.announcement || 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Membership Updates</span>
-                        <span className="font-semibold">{stats.byType.membership || 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Payment Notifications</span>
-                        <span className="font-semibold">{stats.byType.payment || 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">System Alerts</span>
-                        <span className="font-semibold">{stats.byType.system || 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Security Alerts</span>
-                        <span className="font-semibold">{stats.byType.security || 0}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <NotificationSummary stats={stats} loading={statsLoading} />
           </div>
         </div>
       </div>
