@@ -8,11 +8,7 @@ const requirements = [
     content:
       "Applicants must hold a current and valid practising certificate issued by ICPAU.",
   },
-  {
-    title: "Identification & Qualifications",
-    content:
-      "National ID or passport and certified academic/professional qualifications are required for verification.",
-  },
+
   {
     title: "Completed Online Application",
     content:
