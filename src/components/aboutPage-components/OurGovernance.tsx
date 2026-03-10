@@ -1,28 +1,16 @@
+import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
-import leader1 from '../../assets/images/aboutPage-images/leader1.jpeg';
-import leader2 from '../../assets/images/aboutPage-images/leader2.jpeg';
-import leader3 from '../../assets/images/aboutPage-images/leader3.jpeg';
-import leader4 from '../../assets/images/aboutPage-images/leader4.jpeg';
-import leader5 from '../../assets/images/aboutPage-images/leader5.jpeg';
-import leader6 from '../../assets/images/aboutPage-images/leader6.jpeg';
-import leader7 from '../../assets/images/aboutPage-images/leader7.jpeg';
+import { boardMembers } from '../../data/boardMembers';
 
 function OurGovernance() {
+  const navigate = useNavigate();
   const { elementRef, isVisible } = useScrollAnimation();
-
-  const leaders = [
-    { id: 1, name: 'CPA Michael Tugyetwena', role: 'Board Chairman', photo: leader1 },
-    { id: 2, name: 'CPA Ronald Mutumba', role: 'Implementing Director/ Board Member', photo: leader2 },
-    { id: 7, name: 'CPA Charles Lutimba', role: 'ICPAU Representative /Ex Official Board Member', photo: leader7 },
-    { id: 5, name: 'CPA Silver Boss Mwebesa', role: 'Treasurer', photo: leader5 },
-    { id: 3, name: 'CPA Prof. Twaha Kigongo Kaawaase (PHD)',role: 'Board Member',  photo: leader3 },
-    { id: 4, name: ' CPA Joseph Gonzaga Kalinda', role: 'Board Member', photo: leader4 },    
-    { id: 6, name: 'CPA David Nyende', role: 'Board Member', photo: leader6 },
-    
-  ];
+  const imageClass =
+    'w-[220px] h-[220px] rounded-[2.5rem] mx-auto bg-slate-50 shadow-md overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]';
+  const leaders = boardMembers;
 
   return (
-    <section className="bg-[#FBFAFF] py-20 px-6">
+    <section id="governance" className="bg-[#FBFAFF] py-20 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h3 
@@ -45,17 +33,30 @@ function OurGovernance() {
               key={leader.id} 
               className="group text-center p-8 rounded-[2.5rem] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(92,50,163,0.1)] border border-transparent hover:border-purple-50"
             >
-              <div className="relative mb-8 inline-block">
+              <button
+                type="button"
+                onClick={() => navigate(`/about?member=${leader.slug}`)}
+                className="relative mb-8 inline-block"
+                aria-label={`View profile for ${leader.name}`}
+              >
                 <div className="absolute inset-0 bg-purple-200 rounded-[2.5rem] rotate-6 group-hover:rotate-12 transition-transform duration-500 -z-10 opacity-30"></div>
-                <img
-                  src={leader.photo}
-                  alt={leader.name}
-                  className="w-[220px] h-[220px] rounded-[2.5rem] mx-auto object-contain bg-slate-50 shadow-md transition-transform duration-500 group-hover:scale-[1.02]"
-                />
-              </div>
+                <div className={imageClass}>
+                  <img
+                    src={leader.photo}
+                    alt={leader.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+              </button>
               
-              <h6 className="text-secondary text-xl font-bold mb-1 tracking-tight">
-                {leader.name}
+              <h6 className="text-xl font-bold mb-1 tracking-tight">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/about?member=${leader.slug}`)}
+                  className="text-black hover:text-black transition-colors"
+                >
+                  {leader.name}
+                </button>
               </h6>
               <p className="text-purple-600 font-bold text-sm uppercase tracking-widest opacity-80">
                 {leader.role}
@@ -68,17 +69,30 @@ function OurGovernance() {
         {leaders[6] && (
           <div className="flex justify-center mt-10">
             <div className="group text-center p-8 rounded-[2.5rem] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(92,50,163,0.1)] border border-transparent hover:border-purple-50 w-full max-w-[400px]">
-              <div className="relative mb-8 inline-block">
+              <button
+                type="button"
+                onClick={() => navigate(`/about?member=${leaders[6].slug}`)}
+                className="relative mb-8 inline-block"
+                aria-label={`View profile for ${leaders[6].name}`}
+              >
                 <div className="absolute inset-0 bg-purple-200 rounded-[2.5rem] rotate-6 group-hover:rotate-12 transition-transform duration-500 -z-10 opacity-30"></div>
-                <img
-                  src={leaders[6].photo}
-                  alt={leaders[6].name}
-                  className="w-[220px] h-[220px] rounded-[2.5rem] mx-auto object-contain bg-slate-50 shadow-md transition-transform duration-500 group-hover:scale-[1.02]"
-                />
-              </div>
+                <div className={imageClass}>
+                  <img
+                    src={leaders[6].photo}
+                    alt={leaders[6].name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+              </button>
               
-              <h6 className="text-secondary text-xl font-bold mb-1 tracking-tight">
-                {leaders[6].name}
+              <h6 className="text-xl font-bold mb-1 tracking-tight">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/about?member=${leaders[6].slug}`)}
+                  className="text-black hover:text-black transition-colors"
+                >
+                  {leaders[6].name}
+                </button>
               </h6>
               <p className="text-purple-600 font-bold text-sm uppercase tracking-widest opacity-80">
                 {leaders[6].role}
