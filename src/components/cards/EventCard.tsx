@@ -1,5 +1,6 @@
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
 import { useMemo } from 'react';
+import { CMS_API_URL } from '../../config/api'; 
 
 export interface EventCardProps {
   image?: any;
@@ -8,6 +9,8 @@ export interface EventCardProps {
   time: string;
   location: string;
   description: string;
+  isPaid?: boolean;           
+  memberPrice?: number;       
   onRegister?: () => void;
   delay?: number;
   isPast?: boolean; 
@@ -20,23 +23,22 @@ export default function EventCard({
   time, 
   location, 
   description, 
+  isPaid,
+  memberPrice,
   onRegister,
   delay = 0,
   isPast = false 
 }: EventCardProps) {
 
-  const STRAPI_URL = "http://localhost:1337";
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  // FIX: Refined image logic to drill into Strapi attributes while allowing string fallbacks
+  
   const imageUrl = useMemo(() => {
-    // Check all possible Strapi locations for the URL string
     const imgPath = image?.data?.attributes?.url || image?.url || image?.attributes?.url || (typeof image === 'string' ? image : null);
     
     if (!imgPath) return DEFAULT_IMAGE;
     
-   
-    return imgPath.startsWith('http') ? imgPath : `${STRAPI_URL}${imgPath}`;
+    return imgPath.startsWith('http') ? imgPath : `${CMS_API_URL}${imgPath}`;
   }, [image]);
 
   const displayDate = useMemo(() => {
@@ -58,7 +60,7 @@ export default function EventCard({
 
   return (
     <div 
-      className={`bg-white rounded-lg overflow-hidden shadow-md group w-full h-full flex flex-col transition-all duration-500 ${isPast ? 'opacity-80' : ''}`}
+      className={`bg-white rounded-lg overflow-hidden shadow-md group w-full h-full flex flex-col transition-all duration-500 border border-transparent hover:border-purple-200 ${isPast ? 'opacity-80' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Image Section */}
@@ -68,12 +70,21 @@ export default function EventCard({
           alt={title} 
           className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isPast ? 'grayscale-[0.5]' : ''}`} 
         />
-        {isPast && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="bg-white text-gray-800 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">Past Event</span>
-          </div>
-        )}
         
+        {/*  Status Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {isPast ? (
+            <span className="bg-gray-800/90 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm">
+              Past Event
+            </span>
+          ) : (
+            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm ${
+              isPaid ? 'bg-purple-600/90 text-white' : 'bg-green-500/90 text-white'
+            }`}>
+              {isPaid ? `UGX ${Number(memberPrice).toLocaleString()}+` : 'Free Event'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Content Section */}
@@ -85,7 +96,7 @@ export default function EventCard({
         <div className="space-y-2 mb-4 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-purple-600" />
-            <span className=" text-gray-900">{displayDate}</span>
+            <span className="font-medium text-gray-900">{displayDate}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-purple-600" />
@@ -97,22 +108,19 @@ export default function EventCard({
           </div>
         </div>
         
-        <p className="text-xs text-gray-500 mb-6 line-clamp-3 ">
+        <p className="text-xs text-gray-500 mb-6 line-clamp-3 leading-relaxed">
           {description}
         </p>
         
         <div className="mt-auto">
-          {!isPast ? (
+          {!isPast && (
             <button 
               onClick={onRegister}
-              className="w-full bg-purple-700 text-white py-2.5 rounded-full font-semibold hover:bg-purple-800 transition-all transform active:scale-95"
+              className="w-full bg-purple-700 text-white py-2.5 rounded-full font-semibold hover:bg-purple-800 transition-all transform active:scale-95 flex items-center justify-center gap-2"
             >
+              <Tag size={16} />
               Register Now
             </button>
-          ) : (
-            <div className="pt-4 ">
-             
-            </div>
           )}
         </div>
       </div>
