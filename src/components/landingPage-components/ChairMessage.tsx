@@ -1,27 +1,14 @@
 import { useState } from 'react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import defaultChairmanImg from '../../assets/images/landingPage-image/chair.jpg'
-import { CMS_BASE_URL } from '../../config/api';
+import chairmanImg from '../../assets/images/landingPage-image/chair.jpeg'
 
-interface ChairMessageProps {
-  data?: {
-    name?: string;
-    role?: string;
-    fullMessage?: string;
-    photo?: {
-      url: string;
-    };
-  };
-}
-
-function ChairMessage({ data }: ChairMessageProps) {
+function ChairMessage() {
   const { elementRef, isVisible } = useScrollAnimation()
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Handle dynamic photo from Strapi
-  const photoUrl = data?.photo?.url 
-    ? `${CMS_BASE_URL}${data.photo.url}` 
-    : defaultChairmanImg;
+  const chairName = "CPA Micheal Tugyetwena"
+  const chairRole = "Board Chairperson - APF Uganda"
+  const fullMessage = "Welcome to the Accountancy Professionals Forum Uganda. As the leading professional body for accountants in Uganda, we are committed to advancing excellence, integrity, and innovation in the accountancy profession. Our mission is to support our members through continuous professional development, advocacy, and creating opportunities for networking and collaboration. Together, we are building a stronger, more ethical financial sector that contributes to Uganda's economic growth and development."
 
   return (
     <section className="bg-[#e9d5ff] py-12 sm:py-16 px-4 sm:px-6 md:px-8">
@@ -30,8 +17,8 @@ function ChairMessage({ data }: ChairMessageProps) {
         {/* Profile Image Container */}
         <div className="relative overflow-hidden rounded-lg w-full max-w-[300px] h-[350px] flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] group flex-shrink-0 shadow-lg">
           <img
-            src={photoUrl}
-            alt={data?.name || "Chairperson"}
+            src={chairmanImg}
+            alt={chairName}
             className="w-full h-full object-cover rounded-lg transition-transform duration-300 relative z-0 group-hover:scale-105"
           />
         </div>
@@ -48,15 +35,15 @@ function ChairMessage({ data }: ChairMessageProps) {
           
          
 
-          {/* Dynamic Message Content */}
+          {/* Message Content */}
           <div className="leading-relaxed text-[#333] text-sm sm:text-base whitespace-pre-line">
             {isExpanded 
-              ? (data?.fullMessage || "Welcome to the Accountancy Professionals Forum Uganda. As the leading professional body for accountants in Uganda, we are committed to advancing excellence, integrity, and innovation in the accountancy profession. Our mission is to support our members through continuous professional development, advocacy, and creating opportunities for networking and collaboration. Together, we are building a stronger, more ethical financial sector that contributes to Uganda's economic growth and development.")
-              : `${(data?.fullMessage || "Welcome to the Accountancy Professionals Forum Uganda. As the leading professional body for accountants in Uganda, we are committed to advancing excellence, integrity, and innovation in the accountancy profession. Our mission is to support our members through continuous professional development, advocacy, and creating opportunities for networking and collaboration. Together, we are building a stronger, more ethical financial sector that contributes to Uganda's economic growth and development.").substring(0, 350)}...`}
+              ? fullMessage
+              : `${fullMessage.substring(0, 350)}...`}
           </div>
           
           {/* Read More Button */}
-          {((data?.fullMessage || "Welcome to the Accountancy Professionals Forum Uganda. As the leading professional body for accountants in Uganda, we are committed to advancing excellence, integrity, and innovation in the accountancy profession. Our mission is to support our members through continuous professional development, advocacy, and creating opportunities for networking and collaboration. Together, we are building a stronger, more ethical financial sector that contributes to Uganda's economic growth and development.").length > 350) && (
+          {fullMessage.length > 350 && (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
               className="text-primary font-semibold mt-4 mb-4 p-0 transition-all duration-300 bg-transparent text-sm sm:text-base hover:underline hover:translate-x-1.5"
@@ -67,10 +54,10 @@ function ChairMessage({ data }: ChairMessageProps) {
           
           <div className="mt-4 sm:mt-6 border-t border-purple-200 pt-4">
             <p className="font-bold text-sm sm:text-base">
-              {data?.name || "CPA Ronald Mutumba"}
+              {chairName}
             </p>
             <p className="text-[#666] text-[0.85rem] sm:text-[0.9rem]">
-              {data?.role || "Board Chairperson - APF Uganda"}
+              {chairRole}
             </p>
           </div>
         </div>
