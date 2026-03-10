@@ -119,8 +119,8 @@ const CmsContentPage = () => {
                 <PageCard 
                   title="About Us" 
                   icon={<Info size={24}/>} 
-                  desc="Our history, mission, and leadership team" 
-                  onClick={() => navigate('/leadership')} 
+                  desc="Our leadership team" 
+                  onClick={() => navigate('admincms/leadership')} 
                 />
                 
                 <PageCard 
