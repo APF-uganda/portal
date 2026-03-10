@@ -131,8 +131,9 @@ function Benefits(): JSX.Element {
           mb-10
         ">
           By joining APF Uganda, you will be part of a professional community
-          that connects accounting practitioners, supports their growth, and
-          represents their interests across Uganda.
+          that connects accounting practitioners, supports their growth,
+          represent your interests, protects your space and enhances
+          public recognition of the accountancy profession in Uganda and Beyond.
       </p>
       </div>
      

@@ -98,7 +98,7 @@ function Footer() {
           <p>© {new Date().getFullYear()} APF Uganda. All rights reserved.</p>
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#5E2590]"></span>
-            1234 APF Street, Kampala, Uganda
+            C/0 Plot 6 Bunyonyi Lane, Off kataza Close, Bugolobi, Kampala
           </div>
         </div>
       </div>

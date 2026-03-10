@@ -55,49 +55,66 @@ const NewsManagement = () => {
     fetchNews();
   }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
     setLoading(true);
-    
+  
+    // Helper to convert your custom blocks into Strapi's "Blocks" format
+    const strapiBlocks = formData.contentBlocks.map((block: any) => {
+      if (block.type === 'text') {
+        return {
+          type: 'paragraph',
+          children: [{ type: 'text', text: block.value || "" }],
+        };
+      }
+      if (block.type === 'image') {
+        
+        return {
+          type: 'paragraph',
+          children: [{ type: 'text', text: `Image: ${block.value}` }],
+        };
+      }
+      // Default fallback for other types
+      return {
+        type: 'paragraph',
+        children: [{ type: 'text', text: block.value || "" }],
+      };
+    });
+  
     const payload = {
       data: {
         title: formData.title,
         description: formData.summary,
         
-        // 1. IMAGE: Ensure the field API ID in Strapi is exactly 'image'
-        image: formData.imageId || null, 
-
-        // 2. RELATION: Strapi expects an array of IDs for the relation field
-        news_categories: formData.categoryId ? [formData.categoryId] : [],
-
-        isTopic: !!formData.isTopPick,
-        readTime: parseInt(formData.readTime) || 5,
-        publishDate: formData.date || new Date().toISOString().split('T')[0],
-        contentBlocks: formData.contentBlocks || [],
         
-        // Force publish for public-facing visibility
-        publishedAt: new Date().toISOString(), 
+        
+        content: strapiBlocks, 
+  
+        featuredImage: formData.imageId ? [formData.imageId] : [],
+        publishDate: formData.date || new Date().toISOString().split('T')[0],
+        readTime: parseInt(formData.readTime) || 5,
+        isTopic: !!formData.isTopPick,
+        author: "APF Admin",
+        publishedAt: status === 'published' ? new Date().toISOString() : null, 
       }
     };
-
+  
     try {
+      const id = selectedArticle?.documentId || selectedArticle?.id;
       if (selectedArticle) {
-        const id = selectedArticle.documentId || selectedArticle.id;
         await api.put(`/news-articles/${id}`, payload);
       } else {
         await api.post('/news-articles', payload);
       }
-      
       setIsEditing(false);
       fetchNews();
     } catch (err: any) {
-      console.error("Payload Debug:", payload);
-      console.error("Strapi Response Error:", err.response?.data);
-      alert(`Save Failed: ${err.response?.data?.error?.message || "Check field names in Strapi"}`);
+      console.error("Payload sent:", payload);
+      console.error("Strapi Response:", err.response?.data);
+      alert("Save failed. Check console for block structure errors.");
     } finally {
       setLoading(false);
     }
   };
-
   const handleDelete = async (id: string | number) => {
     if (!window.confirm("Are you sure you want to delete this article?")) return;
     try {
