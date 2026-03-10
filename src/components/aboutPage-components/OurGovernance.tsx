@@ -50,7 +50,7 @@ function OurGovernance() {
                 <img
                   src={leader.photo}
                   alt={leader.name}
-                  className="w-[220px] h-[220px] rounded-[2.5rem] mx-auto object-cover bg-slate-50 shadow-md transition-transform duration-500 group-hover:scale-[1.02]"
+                  className="w-[220px] h-[220px] rounded-[2.5rem] mx-auto object-contain bg-slate-50 shadow-md transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               </div>
               
@@ -73,7 +73,7 @@ function OurGovernance() {
                 <img
                   src={leaders[6].photo}
                   alt={leaders[6].name}
-                  className="w-[220px] h-[220px] rounded-[2.5rem] mx-auto object-cover bg-slate-50 shadow-md transition-transform duration-500 group-hover:scale-[1.02]"
+                  className="w-[220px] h-[220px] rounded-[2.5rem] mx-auto object-contain bg-slate-50 shadow-md transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               </div>
               
