@@ -120,7 +120,7 @@ const CmsContentPage = () => {
                   title="About Us" 
                   icon={<Info size={24}/>} 
                   desc="Our history, mission, and leadership team" 
-                  onClick={() => navigate('/editAbout')} 
+                  onClick={() => navigate('/leadership')} 
                 />
                 
                 <PageCard 
