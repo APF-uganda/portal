@@ -77,7 +77,7 @@ const LeadershipManager = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
        <div className="text-center space-y-4">
          <Loader2 className="animate-spin text-purple-600 mx-auto" size={40} />
-         <p className="font-black text-slate-400 uppercase tracking-widest text-xs">Syncing Governance...</p>
+         <p className="font-black text-slate-400 uppercase tracking-widest text-xs"> Governance...</p>
        </div>
     </div>
   );
@@ -86,7 +86,7 @@ const LeadershipManager = () => {
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b p-4 flex justify-between items-center px-10">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/admin/about')} className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 pr-4 rounded-full transition-all">
+          <button onClick={() => navigate('/cmsPage')} className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 p-2 pr-4 rounded-full transition-all">
             <ArrowLeft size={18} />
             <span className="text-xs font-bold">BACK </span>
           </button>
