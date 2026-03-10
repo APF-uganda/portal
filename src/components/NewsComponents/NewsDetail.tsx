@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
 import api from '../../services/cmsApi';
+import { CMS_BASE_URL } from '../../config/api';
 
 const NewsDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const STRAPI_URL = "http://localhost:1337";
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -19,7 +19,7 @@ const NewsDetail = () => {
         
         // Format the featured image URL
         const featuredImage = data.image?.data?.attributes?.url 
-          ? `${STRAPI_URL}${data.image.data.attributes.url}` 
+          ? `${CMS_BASE_URL}${data.image.data.attributes.url}` 
           : null;
 
         setArticle({ ...data, featuredImage });

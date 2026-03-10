@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Layout, Quote, BarChart3, Building2, Plus, Trash2, Upload } from 'lucide-react';
 import * as cms from '../../services/cmsApi';
-import { CMS_BASE_URL } from '../../config/api';
+import { CMS_API_URL, CMS_BASE_URL } from '../../config/api';
 
 const HomepageEditor = () => {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const HomepageEditor = () => {
     formData.append('files', file);
     setSaving(true);
     try {
-      const response = await fetch(`${CMS_BASE_URL}/api/upload`, {
+      const response = await fetch(`${CMS_API_URL}/upload`, {
         method: 'POST',
         body: formData,
       });

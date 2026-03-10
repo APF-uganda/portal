@@ -50,10 +50,22 @@ jobs:
             trap on_exit EXIT
             BRANCH="${{ github.ref_name }}"
             cd /var/www/apf/portal
+            ENV_FILE=".env.production"
+            ENV_BACKUP=""
+            if [ -f "$ENV_FILE" ]; then
+              ENV_BACKUP="$(mktemp)"
+              cp "$ENV_FILE" "$ENV_BACKUP"
+              echo "Backed up ${ENV_FILE} before git sync."
+            fi
             git fetch origin "$BRANCH"
             git checkout "$BRANCH"
-            git pull origin "$BRANCH"
-            dc build frontend
+            git reset --hard "origin/$BRANCH"
+            if [ -n "$ENV_BACKUP" ] && [ -f "$ENV_BACKUP" ]; then
+              cp "$ENV_BACKUP" "$ENV_FILE"
+              rm -f "$ENV_BACKUP"
+              echo "Restored ${ENV_FILE} after git sync."
+            fi
+            dc build --build-arg VITE_API_URL= --build-arg VITE_CMS_URL= --build-arg VITE_CMS_ADMIN_URL= frontend
             dc up -d --no-deps frontend
             sleep 3
             docker inspect -f '{{.State.Running}}' apf_frontend | grep -qx "true"
