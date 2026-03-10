@@ -13,6 +13,7 @@ import { isAuthenticated, getUser, migrateFromLocalStorage } from "./utils/authS
 import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
 import BoardMemberProfilePage from "./pages/BoardMemberProfilePage";
+import ChairpersonMessagePage from "./pages/ChairpersonMessagePage";
 import MembershipPage from "./pages/MembershipPage";
 import EventsPage from "./pages/EventsPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
@@ -99,6 +100,9 @@ const App: React.FC = () => {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/chairperson-message" element={<ChairpersonMessagePage />} />
+          {/* <Route path="/chairperson-message/" element={<ChairpersonMessagePage />} /> */}
+          <Route path="/chair-message" element={<ChairpersonMessagePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/about/governance/:slug" element={<BoardMemberProfilePage />} />
           <Route path="/board-member/:slug" element={<BoardMemberProfilePage />} />
