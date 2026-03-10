@@ -15,8 +15,8 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
     <section className="py-16 px-6 max-w-6xl mx-auto border-t border-gray-100">
       {/* Centered Title Area */}
       <div className="flex flex-col items-center mb-12 text-center">
-        <h3 className="text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">
-          Other News
+        <h3 className="text-xl font-black text-[#1A1A1A] center uppercase tracking-tighter">
+          Our Other News
         </h3>
         <div className="w-12 h-[2px] bg-[#5C32A3] mt-2"></div>
       </div>

@@ -21,11 +21,15 @@ const EventEditor = () => {
     cpdPoints: 0,
     registrationLink: '',
     isFeatured: false, 
+    // ADDED NEW FIELDS HERE
+    isPaid: false,
+    memberPrice: 0,
+    nonMemberPrice: 0,
+    // IMAGE FIELDS
     imageId: null as number | null,
     imagePreview: ''
   });
 
- 
   const handleUpdate = (field: string, value: any) => {
     setEventData(prev => {
       const next = { ...prev, [field]: value };
@@ -63,7 +67,6 @@ const EventEditor = () => {
   };
 
   const handlePublish = async () => {
-   
     if (!eventData.title || !eventData.startDate || !eventData.location || !eventData.imageId || !eventData.description) {
       alert("⚠️ Strapi Error: Please fill all required fields (Title, Date, Description, Location, and Image).");
       return;
@@ -75,14 +78,17 @@ const EventEditor = () => {
         data: {
           title: eventData.title,
           description: eventData.description,
-          
           date: new Date(`${eventData.startDate}T${eventData.startTime}:00`).toISOString(),
-        
           time: `${eventData.startTime} - ${eventData.endTime}`,
           location: eventData.location,
           registrationLink: eventData.registrationLink,
           cpdPoints: Number(eventData.cpdPoints),
           isFeatured: eventData.isFeatured,
+          // ADDED NEW FIELDS TO PAYLOAD
+          isPaid: eventData.isPaid,
+          memberPrice: Number(eventData.memberPrice),
+          nonMemberPrice: Number(eventData.nonMemberPrice),
+          // IMAGE MAPPING
           image: eventData.imageId, 
           publishedAt: new Date().toISOString() 
         }
@@ -116,7 +122,6 @@ const EventEditor = () => {
               onChange={(e) => handleUpdate('title', e.target.value)}
             />
             
-            {/* Featured Toggle */}
             <button 
               onClick={() => handleUpdate('isFeatured', !eventData.isFeatured)}
               className={`p-3 rounded-2xl border transition-all flex items-center gap-2 ${eventData.isFeatured ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white border-slate-200 text-slate-400'}`}
@@ -126,7 +131,6 @@ const EventEditor = () => {
             </button>
           </div>
 
-          {/* Time & Date Pickers */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-[30px] shadow-sm border border-slate-100">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-1"><Calendar size={12}/> Start Date</label>
@@ -146,7 +150,6 @@ const EventEditor = () => {
             </div>
           </div>
 
-          {/* Image Upload */}
           <div className="relative group h-80 bg-white rounded-[40px] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all hover:border-purple-300">
             {eventData.imagePreview ? (
               <img src={eventData.imagePreview} className="w-full h-full object-cover" alt="Preview" />

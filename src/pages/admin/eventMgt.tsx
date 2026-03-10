@@ -27,6 +27,11 @@ const EventCreatePage = () => {
     cpdPoints: 0,
     registrationLink: '',
     isFeatured: false,
+    // NEW FIELDS
+    isPaid: false,
+    memberPrice: 0,
+    nonMemberPrice: 0,
+    // IMAGE FIELDS
     imageId: null as number | null,
     imagePreview: ''
   });
@@ -48,7 +53,6 @@ const EventCreatePage = () => {
     });
   };
 
-  // UPDATED: Image Upload Logic to ensure URL is captured correctly
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -61,7 +65,6 @@ const EventCreatePage = () => {
       const res = await api.post('/upload', formData);
       const uploadedFile = res.data[0];
       
-      // We set the full URL for the preview
       const fullImageUrl = uploadedFile.url.startsWith('http') 
         ? uploadedFile.url 
         : `http://localhost:1337${uploadedFile.url}`;
@@ -100,13 +103,16 @@ const EventCreatePage = () => {
           cpdPoints: Number(eventData.cpdPoints),
           registrationLink: eventData.registrationLink,
           isFeatured: eventData.isFeatured,
-          // FIX: Explicitly send imageId. If null, frontend fallback kicks in.
+          // NEW PAYLOAD MAPPINGS
+          isPaid: eventData.isPaid,
+          memberPrice: Number(eventData.memberPrice),
+          nonMemberPrice: Number(eventData.nonMemberPrice),
+          // IMAGE MAPPING
           image: eventData.imageId, 
           publishedAt: new Date().toISOString()
         }
       };
   
-      console.log("Payload sent to Strapi:", payload);
       const res = await api.post('/events', payload);
       
       if (res.status === 201 || res.status === 200) {
@@ -182,6 +188,7 @@ const EventCreatePage = () => {
                 </div>
               </div>
 
+              {/* LogisticsSidebar will now receive isPaid, memberPrice, and nonMemberPrice within the 'data' prop */}
               <LogisticsSidebar 
                 data={eventData} 
                 onChange={updateField} 

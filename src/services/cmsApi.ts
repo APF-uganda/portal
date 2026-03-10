@@ -1,19 +1,25 @@
 import axios from 'axios';
 
 
-const STRAPI_URL = 'http://localhost:1337';
+ 
+const STRAPI_URL = import.meta.env.VITE_CMS_URL || 'http://localhost:1337';
 const ADMIN_TOKEN = '0889ca4cdbb55fdeddaa95f0dfca91eb8bb3dc15664b0912f4d1eeb661e9b905391c39fe965054160282519bf8fa7e8570b53b98d4a6f6427e53c7887e63e6f317a8f128fa7c44b33de19ce94db7b2ae72d3d3468fa0ac64e1d35e12d69d56a62cb8c485f4a6df25ba661cf97d7ca070db2e83cf3dcb687b3df73f18f21269ab';
-
 
 export interface Event {
   id: number;
   documentId: string;
   title: string;
   date: string;
+  time: string;
   location: string;
   description: string;
   cpdPoints: number;
   registrationLink: string;
+  isFeatured: boolean;
+  // NEW PAYMENT FIELDS
+  isPaid: boolean;
+  memberPrice: number;
+  nonMemberPrice: number;
   image?: any;
 }
 
@@ -30,6 +36,17 @@ const api = axios.create({
   baseURL: `${STRAPI_URL}/api`, 
   headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
 });
+
+/**
+ * UTILITY: Resolves image URLs based on environment
+ */
+const getImageUrl = (url: string | undefined): string => {
+  if (!url) return '/images/placeholder.jpg';
+  // If the URL is already absolute (starts with http), return it
+  if (url.startsWith('http')) return url;
+  // Otherwise, prepend the dynamic STRAPI_URL
+  return `${STRAPI_URL}${url}`;
+};
 
 /**
  * HOMEPAGE
@@ -65,14 +82,11 @@ export const getNews = async () => {
     }
   });
 
- 
   return res.data.data.map((item: any) => ({
     id: item.id,
     documentId: item.documentId,
     ...item,
-    image: item.image?.url 
-      ? `${STRAPI_URL}${item.image.url}` 
-      : '/images/placeholder-news.jpg'
+    image: getImageUrl(item.image?.url)
   }));
 };
 
@@ -81,7 +95,6 @@ export const createNews = async (payload: any) => {
 };
 
 export const updateNews = async (id: number, payload: any) => {
- 
   return api.put(`/news-items/${id}`, { data: payload });
 };
 
@@ -92,13 +105,11 @@ export const deleteNews = async (id: number) => {
 /**
  * EVENTS
  */
-
-export const getEvents = async (): Promise<any[]> => {
+export const getEvents = async (): Promise<Event[]> => {
   try {
     const res = await api.get('/events', { 
       params: { populate: '*' } 
     });
-
 
     return (res.data.data || []).map((item: any) => ({
       id: item.id,
@@ -109,10 +120,13 @@ export const getEvents = async (): Promise<any[]> => {
       time: item.time,
       location: item.location,
       registrationLink: item.registrationLink,
-      //  image path
-      image: item.image?.url 
-        ? `http://localhost:1337${item.image.url}` 
-        : '/images/placeholder.jpg',
+      cpdPoints: item.cpdPoints,
+      isFeatured: item.isFeatured,
+      
+      isPaid: item.isPaid,
+      memberPrice: item.memberPrice,
+      nonMemberPrice: item.nonMemberPrice,
+      image: getImageUrl(item.image?.url),
     }));
   } catch (error) {
     console.error("Error fetching events:", error);
@@ -120,15 +134,12 @@ export const getEvents = async (): Promise<any[]> => {
   }
 };
 
-
-
 export const createEvent = async (payload: any) => {
  
   const response = await api.post('/events', { 
     data: {
       ...payload,
-      
-      date: payload.date ? new Date(payload.date).toISOString().split('T')[0] : null
+      date: payload.date ? new Date(payload.date).toISOString() : null
     } 
   });
   return response.data.data; 

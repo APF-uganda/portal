@@ -1,16 +1,23 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface TopPickProps {
   article?: any;
 }
 
 const TopPickSection = ({ article }: TopPickProps) => {
+  const navigate = useNavigate();
+
   if (!article) return null;
+
+  const handleReadMore = () => {
+    
+    navigate(`/news/${article.id}`);
+  };
 
   return (
     <section className="py-6 px-6 max-w-5xl mx-auto">
-     
       <div className="flex items-center gap-3 mb-6">
         <h3 className="text-xl font-black text-[#1A1A1A] center uppercase tracking-tighter">
           Our Latest News: Top Pick
@@ -31,7 +38,7 @@ const TopPickSection = ({ article }: TopPickProps) => {
           </div>
         </div>
 
-        {/* Content Area - Vertically Centered */}
+        {/* Content Area */}
         <div className="w-full md:w-6/12 flex flex-col justify-center space-y-3">
           <div className="flex items-center gap-2 text-[#5C32A3] font-bold text-[9px] uppercase tracking-widest">
             <span className="w-5 h-[1.5px] bg-[#ffffff]"></span>
@@ -47,7 +54,10 @@ const TopPickSection = ({ article }: TopPickProps) => {
           </p>
           
           <div className="pt-2">
-            <button className="flex items-center gap-2 text-[#5C32A3] font-black text-[10px] uppercase tracking-widest group">
+            <button 
+              onClick={handleReadMore}
+              className="flex items-center gap-2 text-[#5C32A3] font-black text-[10px] uppercase tracking-widest group"
+            >
               Read Full Story 
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </button>
