@@ -29,6 +29,7 @@ import { useRecentTransactions } from "../../hooks/usePaymentHistory"
 import { useSpendingOverview } from "../../hooks/useSpending"
 import { useMemberDashboard } from "../../hooks/useMemberDashboard"
 import { dashboardEvents } from "../../utils/dashboardEvents"
+import SpendingChart from "../../components/charts/SpendingChart"
 
 const MemberDashboard: React.FC = () => {
   const { data: dashboardData, loading: dashboardLoading, refetch: refetchDashboard } = useMemberDashboard();
@@ -438,21 +439,10 @@ const MemberDashboard: React.FC = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="h-40 md:h-56 flex items-end justify-center gap-3 md:gap-6 px-2 md:px-4 py-4 md:py-6">
-                  {/* Chart bars - responsive sizing */}
-                  {spendingData.breakdown.map((item) => (
-                    <div key={item.year} className="flex flex-col items-center flex-1 max-w-12 md:max-w-16">
-                      <div className="text-xs font-semibold text-purple-600 mb-1 md:mb-2">{item.formattedAmount}</div>
-                      <div 
-                        className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all duration-300 hover:opacity-90"
-                        style={{ 
-                          height: `${Math.max((item.amount / spendingData.totalSpent) * 100, 10)}%` 
-                        }}
-                      ></div>
-                      <div className="text-xs text-gray-500 mt-1 md:mt-2">{item.year}</div>
-                    </div>
-                  ))}
-                </div>
+                <SpendingChart 
+                  data={spendingData.breakdown} 
+                  totalSpent={spendingData.totalSpent}
+                />
               )}
             </CardContent>
           </Card>

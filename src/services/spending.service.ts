@@ -20,18 +20,19 @@ export interface SpendingOverview {
  * @returns Promise with spending overview
  */
 export const getSpendingOverview = async (): Promise<SpendingOverview> => {
+  console.log('🔍 Spending Overview - Starting calculation...')
+  
   try {
     const transactions = await getPaymentHistory()
-    
-    console.log('Spending Overview - Total transactions:', transactions.length)
+    console.log('📊 Spending Overview - Total transactions:', transactions.length)
     
     // Filter only completed transactions
     const completedTransactions = transactions.filter(t => t.status.toLowerCase() === 'completed')
+    console.log('✅ Spending Overview - Completed transactions:', completedTransactions.length)
     
-    console.log('Spending Overview - Completed transactions:', completedTransactions.length)
-    
+    // If no completed transactions, return empty overview
     if (completedTransactions.length === 0) {
-      console.log('Spending Overview - No completed transactions found')
+      console.log('⚠️ Spending Overview - No completed transactions found')
       return {
         totalSpent: 0,
         breakdown: []
@@ -43,11 +44,11 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
       // Extract numeric amount from string like "UGX 150,000"
       const amountStr = transaction.amount.replace(/[^0-9]/g, '')
       const amount = Number(amountStr)
-      console.log(`Processing transaction: ${transaction.reference}, amount: ${amountStr} -> ${amount}`)
+      console.log(`💰 Processing transaction: ${transaction.reference}, amount: ${amountStr} -> ${amount}`)
       return sum + amount
     }, 0)
     
-    console.log('Spending Overview - Total spent:', totalSpent)
+    console.log('💵 Spending Overview - Total spent:', totalSpent)
     
     // Group by year and calculate breakdown
     const yearlySpending: { [key: string]: number } = {}
@@ -64,7 +65,7 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
       }
     })
     
-    console.log('Spending Overview - Yearly breakdown:', yearlySpending)
+    console.log('📅 Spending Overview - Yearly breakdown:', yearlySpending)
     
     // Convert to array and format
     const breakdown: SpendingData[] = Object.entries(yearlySpending)
@@ -75,14 +76,15 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
       }))
       .sort((a, b) => b.year.localeCompare(a.year)) // Sort by year descending
     
-    console.log('Spending Overview - Final breakdown:', breakdown)
+    console.log('✅ Spending Overview - Final breakdown:', breakdown)
     
     return {
       totalSpent,
       breakdown
     }
   } catch (error) {
-    console.error('Failed to calculate spending overview:', error)
+    console.error('❌ Failed to calculate spending overview:', error)
+    // Return empty overview on error
     return {
       totalSpent: 0,
       breakdown: []

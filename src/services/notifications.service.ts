@@ -115,10 +115,11 @@ export const getNotifications = async (filter?: string): Promise<Notification[]>
       filtered = data.filter(n => n.is_read);
     }
 
-    return filtered.map(transformNotification);
+    const notifications = filtered.map(transformNotification);
+    return notifications;
   } catch (error) {
     console.error('Failed to fetch notifications:', error);
-    throw error;
+    return [];
   }
 }
 
