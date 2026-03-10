@@ -11,8 +11,8 @@ function Partners({ data }: { data?: PartnerItem[] }) {
   const { elementRef, isVisible } = useScrollAnimation()
 
   const defaultPartners = [
-    { name: 'ICPAU', logo: '/ICPAU.jfif' },
-    { name: 'ICPAU', logo: '/ICPAU.jfif' },
+    { name: 'ICPAU', logo: '/ICPAU.png' },
+    { name: 'ICPAU', logo: '/ICPAU.png' },
   ]
 
   const items = Array.isArray(data) && data.length > 0 ? data : defaultPartners;
