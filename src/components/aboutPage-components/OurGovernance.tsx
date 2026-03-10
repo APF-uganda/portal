@@ -5,19 +5,20 @@ import leader3 from '../../assets/images/aboutPage-images/leader3.jpeg';
 import leader4 from '../../assets/images/aboutPage-images/leader4.jpeg';
 import leader5 from '../../assets/images/aboutPage-images/leader5.jpeg';
 import leader6 from '../../assets/images/aboutPage-images/leader6.jpeg';
-// import leader7 from '../../assets/images/aboutPage-images/leader7.jpeg';
+import leader7 from '../../assets/images/aboutPage-images/leader7.jpeg';
 
 function OurGovernance() {
   const { elementRef, isVisible } = useScrollAnimation();
 
   const leaders = [
-    { id: 1, name: 'CPA Michael Tugyetwena',  photo: leader1 },
-    { id: 2, name: 'CPA Ronald Mutumba',  photo: leader2 },
-    { id: 3, name: 'CPA Prof. Twaha Kigongo Kaawaase (PHD)',  photo: leader3 },
-    { id: 4, name: ' CPA Joseph Gonzaga Kalinda',  photo: leader4 },
-    { id: 5, name: 'CPA Silver Boss Mwebesa',  photo: leader5 },
-    { id: 6, name: 'CPA David Nyende',  photo: leader6 },
-    // { id: 7, name: 'Leader Name 7', role: 'Board Member', photo: leader7 },
+    { id: 1, name: 'CPA Michael Tugyetwena', role: 'Board Chairman', photo: leader1 },
+    { id: 2, name: 'CPA Ronald Mutumba', role: 'Implementing Director/ Board Member', photo: leader2 },
+    { id: 7, name: 'CPA Charles Lutimba', role: 'ICPAU Representative /Ex Official Board Member', photo: leader7 },
+    { id: 5, name: 'CPA Silver Boss Mwebesa', role: 'Treasurer', photo: leader5 },
+    { id: 3, name: 'CPA Prof. Twaha Kigongo Kaawaase (PHD)',role: 'Board Member',  photo: leader3 },
+    { id: 4, name: ' CPA Joseph Gonzaga Kalinda', role: 'Board Member', photo: leader4 },    
+    { id: 6, name: 'CPA David Nyende', role: 'Board Member', photo: leader6 },
+    
   ];
 
   return (
@@ -39,7 +40,7 @@ function OurGovernance() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-          {leaders.map((leader) => (
+          {leaders.slice(0, 6).map((leader) => (
             <div 
               key={leader.id} 
               className="group text-center p-8 rounded-[2.5rem] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(92,50,163,0.1)] border border-transparent hover:border-purple-50"
@@ -62,6 +63,29 @@ function OurGovernance() {
             </div>
           ))}
         </div>
+
+        {/* Centered 7th leader */}
+        {leaders[6] && (
+          <div className="flex justify-center mt-10">
+            <div className="group text-center p-8 rounded-[2.5rem] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(92,50,163,0.1)] border border-transparent hover:border-purple-50 w-full max-w-[400px]">
+              <div className="relative mb-8 inline-block">
+                <div className="absolute inset-0 bg-purple-200 rounded-[2.5rem] rotate-6 group-hover:rotate-12 transition-transform duration-500 -z-10 opacity-30"></div>
+                <img
+                  src={leaders[6].photo}
+                  alt={leaders[6].name}
+                  className="w-[220px] h-[220px] rounded-[2.5rem] mx-auto object-cover bg-slate-50 shadow-md transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+              </div>
+              
+              <h6 className="text-secondary text-xl font-bold mb-1 tracking-tight">
+                {leaders[6].name}
+              </h6>
+              <p className="text-purple-600 font-bold text-sm uppercase tracking-widest opacity-80">
+                {leaders[6].role}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
