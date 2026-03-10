@@ -8,7 +8,15 @@ import { baseEvents } from '../components/EventComponents/eventsData';
 const EventRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const eventData = location.state as { eventTitle: string; eventId: string } | null;
+
+  
+  const eventData = location.state as { 
+    eventTitle: string; 
+    eventId: string;
+    location?: string;
+    date?: string;
+    image?: string;
+  } | null;
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -36,8 +44,12 @@ const EventRegistrationPage: React.FC = () => {
     return null;
   }
 
-  // Find the full event details
-  const event = baseEvents.find(e => e.id === eventData.eventId);
+  // Find the local event details for fallback 
+  const localEvent = baseEvents.find(e => e.id === eventData.eventId);
+
+  const displayLocation = eventData.location || localEvent?.location || 'TBA';
+  const displayDate = eventData.date || localEvent?.date || 'TBA';
+  const displayImage = eventData.image || localEvent?.image || '';
 
   const validateForm = () => {
     const newErrors = {
@@ -47,23 +59,14 @@ const EventRegistrationPage: React.FC = () => {
       agreeToTerms: ''
     };
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
-
+    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    }
-
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and conditions';
-    }
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
+    if (!formData.agreeToTerms) newErrors.agreeToTerms = 'You must agree to the terms and conditions';
 
     setErrors(newErrors);
     return !newErrors.fullName && !newErrors.email && !newErrors.phoneNumber && !newErrors.agreeToTerms;
@@ -71,7 +74,6 @@ const EventRegistrationPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (validateForm()) {
       console.log(`Registering for Event ${eventData.eventId}:`, formData);
       setStep(2);
@@ -91,7 +93,7 @@ const EventRegistrationPage: React.FC = () => {
           {/* Hero Section - Full Width */}
           <section
             className="relative h-[500px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
-            style={{ backgroundImage: `url(${event?.image || ''})` }}
+            style={{ backgroundImage: `url(${displayImage})` }}
           >
             {/* Dark Overlay */}
             <div className="absolute inset-0 bg-[#171a1f]/50" />
@@ -102,49 +104,32 @@ const EventRegistrationPage: React.FC = () => {
                 {eventData.eventTitle}
               </h1>
               <p className="text-lg md:text-xl mb-6 fade-in-up delay-400">
-                {event?.description || 'Join us for this exciting event'}
+                {localEvent?.description || 'Join us for this exciting event'}
               </p>
               <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base fade-in-up delay-600">
                 <div className="flex items-center gap-2">
                   <MapPin size={20} />
-                  <span className="font-medium">{event?.location || 'TBA'}</span>
+                  {/* Pulls from Calendar or Local */}
+                  <span className="font-medium">{displayLocation}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar size={20} />
-                  <span className="font-medium">{event?.date || 'TBA'}</span>
+                  {/* Pulls from Calendar or Local */}
+                  <span className="font-medium">{displayDate}</span>
                 </div>
               </div>
             </div>
 
-            {/* Animations */}
             <style>
               {`
                 @keyframes fadeInUp {
-                  0% {
-                    opacity: 0;
-                    transform: translateY(30px);
-                  }
-                  100% {
-                    opacity: 1;
-                    transform: translateY(0);
-                  }
+                  0% { opacity: 0; transform: translateY(30px); }
+                  100% { opacity: 1; transform: translateY(0); }
                 }
-
-                .fade-in-up {
-                  animation: fadeInUp 1s ease-out both;
-                }
-
-                .delay-200 {
-                  animation-delay: 0.2s;
-                }
-
-                .delay-400 {
-                  animation-delay: 0.4s;
-                }
-
-                .delay-600 {
-                  animation-delay: 0.6s;
-                }
+                .fade-in-up { animation: fadeInUp 1s ease-out both; }
+                .delay-200 { animation-delay: 0.2s; }
+                .delay-400 { animation-delay: 0.4s; }
+                .delay-600 { animation-delay: 0.6s; }
               `}
             </style>
           </section>
@@ -152,7 +137,6 @@ const EventRegistrationPage: React.FC = () => {
           {/* Form Section */}
           <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-              {/* Back Button */}
               <button
                 onClick={handleBackToEvents}
                 className="flex items-center text-purple-600 hover:text-purple-700 mb-6 transition-colors"
@@ -161,13 +145,9 @@ const EventRegistrationPage: React.FC = () => {
                 Back to Events
               </button>
 
-              {/* Registration Card */}
               <div className="bg-white rounded-lg shadow-md border border-purple-300 overflow-hidden">
-
-                {/* Registration Form */}
                 <form onSubmit={handleSubmit} className="p-6 sm:p-8">
                   <div className="space-y-5">
-                    {/* Full Name and Email - Side by Side */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
@@ -187,9 +167,7 @@ const EventRegistrationPage: React.FC = () => {
                             setErrors({...errors, fullName: ''});
                           }}
                         />
-                        {errors.fullName && (
-                          <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>
-                        )}
+                        {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
                       </div>
 
                       <div className="space-y-1">
@@ -210,13 +188,10 @@ const EventRegistrationPage: React.FC = () => {
                             setErrors({...errors, email: ''});
                           }}
                         />
-                        {errors.email && (
-                          <p className="text-xs text-red-500 mt-1">{errors.email}</p>
-                        )}
+                        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
                       </div>
                     </div>
 
-                    {/* Phone Number and Company Name - Side by Side */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
@@ -226,24 +201,18 @@ const EventRegistrationPage: React.FC = () => {
                           <select
                             value={formData.countryCode}
                             onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
-                            className="w-24 px-2 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                            className="w-24 px-2 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500 outline-none transition text-sm"
                           >
                             <option value="+256">+256</option>
                             <option value="+254">+254</option>
-                            <option value="+255">+255</option>
-                            <option value="+250">+250</option>
                             <option value="+1">+1</option>
-                            <option value="+44">+44</option>
-                            <option value="+91">+91</option>
-                            <option value="+234">+234</option>
-                            <option value="+27">+27</option>
                           </select>
                           <input
                             id="phoneNumber"
                             type="tel"
                             required
                             placeholder="Enter your Phone number"
-                            className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm ${
+                            className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition text-sm ${
                               errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
                             }`}
                             value={formData.phoneNumber}
@@ -253,9 +222,7 @@ const EventRegistrationPage: React.FC = () => {
                             }}
                           />
                         </div>
-                        {errors.phoneNumber && (
-                          <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>
-                        )}
+                        {errors.phoneNumber && <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>}
                       </div>
 
                       <div className="space-y-1">
@@ -266,14 +233,13 @@ const EventRegistrationPage: React.FC = () => {
                           id="companyName"
                           type="text"
                           placeholder="Enter your company name"
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm"
                           value={formData.companyName}
                           onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                         />
                       </div>
                     </div>
 
-                    {/* Attendance Mode and Sessions - Side by Side */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label htmlFor="attendanceMode" className="block text-sm font-medium text-gray-700">
@@ -282,11 +248,10 @@ const EventRegistrationPage: React.FC = () => {
                         <select
                           id="attendanceMode"
                           required
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm bg-white"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm bg-white"
                           value={formData.attendanceMode}
                           onChange={(e) => setFormData({...formData, attendanceMode: e.target.value})}
                         >
-                          <option value="">Select your category</option>
                           <option value="Physical">Physical Attendance</option>
                           <option value="Virtual">Virtual Attendance</option>
                         </select>
@@ -299,7 +264,7 @@ const EventRegistrationPage: React.FC = () => {
                         <select
                           id="sessions"
                           required
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm bg-white"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm bg-white"
                           value={formData.sessions}
                           onChange={(e) => setFormData({...formData, sessions: e.target.value})}
                         >
@@ -311,7 +276,6 @@ const EventRegistrationPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Accessibility Requests - Full Width */}
                     <div className="space-y-1">
                       <label htmlFor="accessibilityRequests" className="block text-sm font-medium text-gray-700">
                         Accessibility requests <span className="text-red-500">*</span>
@@ -319,24 +283,18 @@ const EventRegistrationPage: React.FC = () => {
                       <select
                         id="accessibilityRequests"
                         required
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm bg-white"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none text-sm bg-white"
                         value={formData.accessibilityRequests}
                         onChange={(e) => setFormData({...formData, accessibilityRequests: e.target.value})}
                       >
                         <option value="">Select your answer</option>
                         <option value="None">No special requirements</option>
                         <option value="Wheelchair">Wheelchair access</option>
-                        <option value="Hearing">Hearing assistance</option>
-                        <option value="Visual">Visual assistance</option>
                         <option value="Other">Other requirements</option>
                       </select>
                     </div>
 
-                    {/* Terms and Conditions */}
                     <div className="pt-2">
-                      {errors.agreeToTerms && (
-                        <p className="text-xs text-red-500 mb-2">Please review your registration details before submitting.</p>
-                      )}
                       <div className="flex items-start gap-2">
                         <input
                           id="agreeToTerms"
@@ -346,26 +304,17 @@ const EventRegistrationPage: React.FC = () => {
                             setFormData({...formData, agreeToTerms: e.target.checked});
                             setErrors({...errors, agreeToTerms: ''});
                           }}
-                          className="mt-1 w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                          className="mt-1 w-4 h-4 text-purple-600"
                         />
                         <label htmlFor="agreeToTerms" className="text-sm text-gray-700">
-                          I agree to the event{' '}
-                          <a href="#" className="text-purple-600 underline hover:text-purple-700">
-                            terms and conditions
-                          </a>
-                          {' '}and{' '}
-                          <a href="#" className="text-purple-600 underline hover:text-purple-700">
-                            privacy policy
-                          </a>
-                          .
+                          I agree to the terms and conditions.
                         </label>
                       </div>
                     </div>
 
-                    {/* Submit Button */}
                     <button
                       type="submit"
-                      className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 active:bg-purple-800 transition-colors mt-6"
+                      className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6"
                     >
                       Register
                     </button>
@@ -393,13 +342,12 @@ const EventRegistrationPage: React.FC = () => {
                   {eventData.eventTitle}
                 </p>
                 <p className="text-gray-500 pt-4">
-                  A confirmation for your <span className="font-semibold">{formData.attendanceMode}</span> attendance 
-                  has been sent to <span className="font-semibold">{formData.email}</span>.
+                  A confirmation has been sent to <span className="font-semibold">{formData.email}</span>.
                 </p>
               </div>
               <button
                 onClick={handleBackToEvents}
-                className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
               >
                 Back to Events
               </button>

@@ -35,7 +35,7 @@ const PageCard = ({ title, icon, desc, onClick }: PageCardProps) => (
       <h3 className="font-black text-slate-800 text-base tracking-tight group-hover:text-[#5C32A3] transition-colors">
         {title}
       </h3>
-      <p className="text-[12px] text-slate-400 font-bold mt-1.5 leading-snug">
+      <p className="text-[12px] text-slate-400  mt-1.5 leading-snug">
         {desc}
       </p>
     </div>
@@ -52,20 +52,20 @@ const CmsContentPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen selection:bg-purple-100 selection:text-[#5C32A3] bg-[#F4F2FE]">
+    <div className="flex min-h-screen selection:bg-purple-100 selection:text-[#5C32A3] bg-[#FDFDFF]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col w-full bg-[#F4F2FE]`}>
+      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-h-screen`}>
         <Header title="CMS Control Center" />
 
-        <div className="flex-1 overflow-y-auto py-6">
-          <div className="w-full px-6 space-y-10">
+        <div className="flex-1 p-8 lg:p-12">
+          <div className="max-w-[1200px] mx-auto space-y-12">
             
             {/* Header Section */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
               <div>
-                <h1 className="text-[26px] font-bold text-slate-800 tracking-tight">Portal Management</h1>
-                <p className="text-slate-500 mt-1">Live content control for the APF public website.</p>
+                <h1 className="text-4xl font-[800] text-slate-900 tracking-tight">Portal Management</h1>
+                <p className="text-slate-400 mt-2 text-sm font-bold">Live content control for the APF public website</p>
               </div>
               
               <div className="relative">
@@ -115,30 +115,14 @@ const CmsContentPage = () => {
                   desc="Main entrance, Hero banners, and Value propositions" 
                   onClick={() => navigate('/editLandingpage')} 
                 />
-                {/* <PageCard 
-                  title="Membership" 
-                  icon={<Users size={24}/>} 
-                  desc="Tiers, benefits, and registration workflow" 
-                  onClick={() => navigate('/editMembership')} 
-                /> */}
-                 {/* <PageCard 
-                  title="Insights" 
-                  icon={<Lightbulb size={24}/>} 
-                  desc="Research, News archives, and Data reports" 
-                  onClick={() => navigate('/admin/edit-page/insights')} 
-                /> */}
+               
                 <PageCard 
                   title="About Us" 
                   icon={<Info size={24}/>} 
-                  desc="Our  leadership team" 
-                  onClick={() => navigate('/admincms/leadership')} 
+                  desc="Our leadership team" 
+                  onClick={() => navigate('admincms/leadership')} 
                 />
-                {/* <PageCard 
-                  title="Contact Us" 
-                  icon={<Phone size={24}/>} 
-                  desc="Location details, Map settings, and Inquiries" 
-                  onClick={() => navigate('/admin/edit-page/contact')} 
-                /> */}
+                
                 <PageCard 
                   title="Site Config" 
                   icon={<Settings size={24}/>} 
