@@ -59,7 +59,8 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
     }
 
     const data = await response.json()
-    return (data.results || []).map(mapPaymentToTransaction)
+    const transactions = (data.results || []).map(mapPaymentToTransaction)
+    return transactions
   } catch (error) {
     console.error('Error fetching payment history:', error)
     return []
@@ -84,7 +85,8 @@ export const getRecentTransactions = async (limit: number = 3): Promise<Transact
     }
 
     const data = await response.json()
-    return (data.results || []).map(mapPaymentToTransaction)
+    const transactions = (data.results || []).map(mapPaymentToTransaction)
+    return transactions
   } catch (error) {
     console.error('Error fetching recent transactions:', error)
     return []
@@ -109,8 +111,7 @@ export const getReceipts = async (): Promise<Receipt[]> => {
     }
 
     const data = await response.json()
-    // Force UGX currency
-    return (data.results || []).map((payment: any): Receipt => ({
+    const receipts = (data.results || []).map((payment: any): Receipt => ({
       id: payment.id,
       title: 'Membership Fee Payment',
       date: payment.completed_at || payment.created_at,
@@ -118,8 +119,137 @@ export const getReceipts = async (): Promise<Receipt[]> => {
       type: 'receipt',
       reference: payment.transaction_reference,
     }))
+    
+    return receipts
   } catch (error) {
     console.error('Error fetching receipts:', error)
+    return []
+  }
+}
+
+/**
+ * Get payment ledger for account statement view
+ * Converts payment history into ledger format with debits, credits, and running balance
+ * 
+ * LEDGER ACCOUNTING LOGIC FOR MEMBERSHIP RENEWALS:
+ * 
+ * 1. When a membership renewal invoice is generated (e.g., on 1st April):
+ *    - Create a DEBIT entry for the invoice amount
+ *    - Use the membership renewal invoice number as the reference
+ *    - Balance increases by the invoice amount (amount owed)
+ *    - Example: DR: 150,000 | CR: 0 | Balance: 150,000
+ * 
+ * 2. When the member makes a payment:
+ *    - Create a CREDIT entry against the same invoice number
+ *    - Balance decreases by the payment amount
+ *    - If fully paid: Balance becomes 0
+ *    - If partially paid: Balance reduces but remains positive
+ *    - Example: DR: 0 | CR: 150,000 | Balance: 0
+ * 
+ * 3. Ledger entries should show:
+ *    - Date: When the transaction occurred
+ *    - Invoice Number: The membership renewal invoice reference
+ *    - Description: What the entry represents
+ *    - DR (UGX): Amount billed to the member
+ *    - CR (UGX): Amount the member has paid
+ *    - Balance (UGX): Outstanding amount still owed (or 0 if cleared)
+ * 
+ * @returns Promise with array of ledger entries
+ */
+export const getPaymentLedger = async (): Promise<any[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    })
+
+    if (!response.ok) {
+      console.error(`Failed to fetch payment ledger: ${response.status}`)
+      return []
+    }
+
+    const data = await response.json()
+    const payments = data.results || []
+
+    // Convert payments to ledger entries with proper double-entry accounting
+    let runningBalance = 0
+    const ledgerEntries: any[] = []
+
+    payments.forEach((payment: any) => {
+      const amount = Number(payment.amount)
+      const date = new Date(payment.created_at)
+      const formattedDate = date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: '2-digit'
+      }).replace(/ /g, '-')
+
+      // Use membership renewal invoice number if available, otherwise generate from transaction reference
+      const invoiceNumber = payment.invoice_number 
+        || (payment.transaction_reference ? `INV-${payment.transaction_reference.substring(4, 16)}` : 'N/A')
+
+      const providerLabel = payment.provider === 'mtn' ? 'MTN Mobile Money' : 'Airtel Money'
+
+      // MEMBERSHIP RENEWAL LEDGER LOGIC:
+      // For membership renewals, we need two entries per transaction:
+      // 1. DEBIT entry when invoice is raised (amount owed)
+      // 2. CREDIT entry when payment is made (amount paid)
+
+      if (payment.status === 'completed') {
+        // Step 1: Create DEBIT entry for the invoice (amount billed)
+        ledgerEntries.push({
+          date: formattedDate,
+          invoiceNumber: invoiceNumber,
+          description: payment.description || 'Membership Renewal Fee',
+          debit: amount,
+          credit: null,
+          balance: 0, // Will be calculated below
+          transactionRef: payment.transaction_reference,
+          hasReceipt: false,
+          hasInvoice: true,
+        })
+        runningBalance += amount
+
+        // Step 2: Create CREDIT entry for the payment (amount paid)
+        ledgerEntries.push({
+          date: formattedDate,
+          invoiceNumber: invoiceNumber,
+          description: `Payment for ${payment.description || 'Membership Renewal'} - ${providerLabel}`,
+          debit: null,
+          credit: amount,
+          balance: 0, // Will be calculated below
+          transactionRef: payment.transaction_reference,
+          hasReceipt: true,
+          hasInvoice: false,
+        })
+        runningBalance -= amount
+      } else if (payment.status === 'pending' || payment.status === 'processing') {
+        // For pending payments, only create DEBIT entry (invoice raised but not paid)
+        ledgerEntries.push({
+          date: formattedDate,
+          invoiceNumber: invoiceNumber,
+          description: payment.description || `Membership Renewal Fee - Payment ${payment.status}`,
+          debit: amount,
+          credit: null,
+          balance: 0, // Will be calculated below
+          transactionRef: payment.transaction_reference,
+          hasReceipt: false,
+          hasInvoice: true,
+        })
+        runningBalance += amount
+      }
+      // Note: Failed payments are not included in the ledger
+    })
+
+    // Calculate running balance for each entry
+    let balance = 0
+    return ledgerEntries.map(entry => {
+      if (entry.debit) balance += entry.debit
+      if (entry.credit) balance -= entry.credit
+      return { ...entry, balance }
+    })
+  } catch (error) {
+    console.error('Error fetching payment ledger:', error)
     return []
   }
 }

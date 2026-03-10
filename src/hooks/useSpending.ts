@@ -16,21 +16,26 @@ export const useSpendingOverview = () => {
   useEffect(() => {
     const fetchSpending = async () => {
       try {
+        console.log('🚀 useSpendingOverview - Starting fetch...')
         setLoading(true)
         setError(null)
         
         const spendingData = await getSpendingOverview()
+        console.log('📊 useSpendingOverview - Received data:', spendingData)
         setData(spendingData)
       } catch (err) {
+        console.error('❌ useSpendingOverview - Error:', err)
         setError('Failed to load spending data')
-        console.error('Spending error:', err)
       } finally {
         setLoading(false)
+        console.log('✅ useSpendingOverview - Fetch complete')
       }
     }
 
     fetchSpending()
   }, [])
+
+  console.log('🔍 useSpendingOverview - Current state:', { data, loading, error })
 
   return {
     data,

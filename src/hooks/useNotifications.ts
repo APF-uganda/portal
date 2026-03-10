@@ -42,20 +42,25 @@ export const useNotifications = (filter?: string) => {
 
   /**
    * Mark a notification as read
-   * Note: This updates backend state, not local state
+   * Updates both local state and triggers stats refresh
    */
   const markAsRead = async (notificationId: string) => {
     try {
-      const success = await markAsReadService(notificationId)
-      if (success) {
-        // Optimistically update local state
+      const updatedNotification = await markAsReadService(notificationId)
+      if (updatedNotification) {
+        // Update local state with the actual response from backend
         setNotifications(prev => 
           prev.map(n => 
-            n.id === notificationId ? { ...n, isRead: true } : n
+            n.id === notificationId ? updatedNotification : n
           )
         )
+        
+        // Trigger stats refresh by dispatching custom event
+        window.dispatchEvent(new CustomEvent('notificationStatsChanged'))
+        
+        return true
       }
-      return success
+      return false
     } catch (err) {
       console.error('Failed to mark notification as read:', err)
       return false
@@ -64,17 +69,23 @@ export const useNotifications = (filter?: string) => {
 
   /**
    * Mark all notifications as read
+   * Updates both local state and triggers stats refresh
    */
   const markAllAsRead = async () => {
     try {
-      const success = await markAllAsReadService()
-      if (success) {
-        // Optimistically update local state
+      const markedCount = await markAllAsReadService()
+      if (markedCount > 0) {
+        // Update local state - mark all as read
         setNotifications(prev => 
-          prev.map(n => ({ ...n, isRead: true }))
+          prev.map(n => ({ ...n, isRead: true, readAt: new Date().toISOString() }))
         )
+        
+        // Trigger stats refresh by dispatching custom event
+        window.dispatchEvent(new CustomEvent('notificationStatsChanged'))
+        
+        return true
       }
-      return success
+      return false
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err)
       return false
@@ -100,6 +111,7 @@ export const useNotifications = (filter?: string) => {
 
 /**
  * Custom hook for notification statistics
+ * Automatically refreshes when notifications are marked as read
  */
 export const useNotificationStats = () => {
   const [stats, setStats] = useState<NotificationStats>({
@@ -118,28 +130,40 @@ export const useNotificationStats = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        const data = await getNotificationStats()
-        setStats(data)
-      } catch (err) {
-        setError('Failed to load notification stats')
-        console.error('Notification stats error:', err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchStats = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const data = await getNotificationStats()
+      setStats(data)
+    } catch (err) {
+      setError('Failed to load notification stats')
+      console.error('Notification stats error:', err)
+    } finally {
+      setLoading(false)
     }
-
-    fetchStats()
   }, [])
+
+  useEffect(() => {
+    fetchStats()
+    
+    // Listen for notification changes to refresh stats
+    const handleStatsChange = () => {
+      fetchStats()
+    }
+    
+    window.addEventListener('notificationStatsChanged', handleStatsChange)
+    
+    return () => {
+      window.removeEventListener('notificationStatsChanged', handleStatsChange)
+    }
+  }, [fetchStats])
 
   return {
     stats,
     loading,
-    error
+    error,
+    refresh: fetchStats
   }
 }

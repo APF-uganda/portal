@@ -1,77 +1,85 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
-  History,
   Calendar,
-  Filter,
   Download,
-  RefreshCw,
-  Search,
   ChevronLeft,
-  FileText,
-  CreditCard,
+  Printer,
+  Loader2,
 } from "lucide-react"
 
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
-import { Badge } from "../../components/ui/badge"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
-import { ReceiptGenerator, TransactionData, showNotification } from "../../services/receiptGenerator"
-import { usePaymentHistory } from "../../hooks/usePaymentHistory"
+import { showNotification } from "../../services/receiptGenerator"
+import { getPaymentLedger } from "../../services/payments.service"
+
+// Ledger entry type for financial statement
+interface LedgerEntry {
+  date: string
+  invoiceNumber: string
+  description: string
+  debit: number | null  // DR (UGX)
+  credit: number | null // CR (UGX)
+  balance: number
+  transactionRef: string
+  hasReceipt: boolean
+  hasInvoice: boolean
+}
 
 const PaymentHistoryPage: React.FC = () => {
-  const [dateRange, setDateRange] = useState('last30')
-  const [paymentType, setPaymentType] = useState('all')
-  const [status, setStatus] = useState('all')
-  const [isLoading, setIsLoading] = useState(false)
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Use hook to fetch transactions
-  const { transactions, loading, error } = usePaymentHistory()
-
-  const handleDownloadReceipt = async (transaction: any) => {
-    try {
-      showNotification('Generating PDF receipt...', 'success')
-      
-      const transactionData: TransactionData = {
-        reference: transaction.reference,
-        type: transaction.type,
-        date: transaction.date,
-        description: transaction.description,
-        method: transaction.method,
-        amount: transaction.amount,
-        status: transaction.status
+  // Fetch payment history from backend
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const entries = await getPaymentLedger()
+        setLedgerEntries(entries)
+      } catch (err) {
+        console.error('Error fetching payment history:', err)
+        setError('Failed to load payment history')
+        setLedgerEntries([])
+      } finally {
+        setIsLoading(false)
       }
-      
-      const pdf = await ReceiptGenerator.generateTransactionReceiptPDF(transactionData)
-      const filename = `APF_${transaction.reference}_Receipt.pdf`
-      ReceiptGenerator.downloadPDF(pdf, filename)
-      
-      showNotification(`Receipt for ${transaction.reference} downloaded successfully`, 'success')
-    } catch (error) {
-      console.error('Download error:', error)
-      showNotification('Failed to generate PDF receipt', 'error')
     }
+
+    fetchPaymentHistory()
+  }, [])
+
+  const handlePrintReceipt = (entry: LedgerEntry) => {
+    showNotification(`Printing receipt for ${entry.invoiceNumber}...`, 'success')
+    // TODO: Implement receipt printing with backend integration
   }
 
-  const handleExportTransactions = () => {
-    if (transactions.length === 0) {
+  const handlePrintInvoice = (entry: LedgerEntry) => {
+    showNotification(`Printing invoice ${entry.invoiceNumber}...`, 'success')
+    // TODO: Implement invoice printing with backend integration
+  }
+
+  const handleExportStatement = () => {
+    if (ledgerEntries.length === 0) {
       showNotification('No transactions to export', 'error')
       return
     }
 
     try {
-      let csvContent = 'Date,Type,Reference,Amount,Method,Status,Description\n'
+      let csvContent = 'Date,Invoice Number,Description,DR (UGX),CR (UGX),Balance (UGX)\n'
       
-      transactions.forEach(transaction => {
+      ledgerEntries.forEach(entry => {
         const row = [
-          transaction.date,
-          transaction.type,
-          transaction.reference,
-          transaction.amount.replace(',', ''),
-          transaction.method,
-          transaction.status,
-          `"${transaction.description}"`
+          entry.date,
+          entry.invoiceNumber,
+          `"${entry.description}"`,
+          entry.debit || '',
+          entry.credit || '',
+          entry.balance
         ].join(',')
         csvContent += row + '\n'
       })
@@ -80,95 +88,29 @@ const PaymentHistoryPage: React.FC = () => {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `APF_Payment_History_${new Date().toISOString().split('T')[0]}.csv`
+      link.download = `APF_Payment_Statement_${new Date().toISOString().split('T')[0]}.csv`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
       
-      showNotification('Payment history exported successfully', 'success')
+      showNotification('Payment statement exported successfully', 'success')
     } catch (error) {
       console.error('Export error:', error)
-      showNotification('Failed to export payment history', 'error')
+      showNotification('Failed to export payment statement', 'error')
     }
   }
 
-  const handleLoadMore = () => {
-    // TODO: Implement pagination with backend API
-    showNotification('All transactions loaded', 'success')
+  const formatAmount = (amount: number | null): string => {
+    if (amount === null) return '-'
+    return amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return 'bg-green-100 text-green-700'
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'failed':
-        return 'bg-red-100 text-red-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
+  const formatBalance = (balance: number): string => {
+    if (balance < 0) {
+      return `(${Math.abs(balance).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })})`
     }
-  }
-
-  const getTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'membership fee':
-        return 'bg-purple-100 text-purple-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
-    }
-  }
-
-  // Loading state
-  if (loading) {
-    return (
-      <DashboardLayout
-        headerContent={
-          <Link 
-            to="/payments" 
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back to Payments
-          </Link>
-        }
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading payment history...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <DashboardLayout
-        headerContent={
-          <Link 
-            to="/payments" 
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back to Payments
-          </Link>
-        }
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-red-600" />
-            </div>
-            <p className="text-gray-900 font-semibold mb-2">Failed to load payment history</p>
-            <p className="text-gray-600 text-sm">{error}</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
+    return balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
   }
 
   return (
@@ -183,219 +125,177 @@ const PaymentHistoryPage: React.FC = () => {
         </Link>
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment History</h1>
-            <p className="text-gray-600">Complete transaction history and detailed payment records</p>
+            <p className="text-gray-600">Complete account statement and transaction ledger</p>
           </div>
-          <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            {getCurrentDateFormatted()}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportStatement}
+              disabled={isLoading || ledgerEntries.length === 0}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export Statement
+            </Button>
+            <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {getCurrentDateFormatted()}
+            </div>
           </div>
         </div>
 
-        {/* Empty State */}
-        {transactions.length === 0 ? (
-          <Card className="bg-white shadow-lg border border-gray-200">
+        {/* Loading State */}
+        {isLoading ? (
+          <Card className="bg-white shadow-sm border border-gray-300">
+            <CardContent className="py-16">
+              <div className="flex flex-col items-center justify-center">
+                <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
+                <p className="text-gray-600">Loading payment history...</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : error ? (
+          <Card className="bg-white shadow-sm border border-gray-300">
             <CardContent className="py-16">
               <div className="text-center">
-                <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <History className="w-10 h-10 text-purple-600" />
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ChevronLeft className="w-8 h-8 text-red-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Payment History Yet</h3>
-                <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  You haven't made any payments yet. Once you complete a transaction, it will appear here.
-                </p>
-                <Link to="/payments">
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    Make a Payment
-                  </Button>
-                </Link>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading History</h3>
+                <p className="text-gray-600 mb-6">{error}</p>
+                <Button onClick={() => window.location.reload()}>
+                  Try Again
+                </Button>
               </div>
             </CardContent>
           </Card>
         ) : (
           <>
-            {/* Filters Card */}
-            <Card className="bg-white shadow-lg border border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <Filter className="w-5 h-5" />
-                  Filter Transactions
+            {/* Ledger Table */}
+            <Card className="bg-white shadow-sm border border-gray-300">
+              <CardHeader className="border-b border-gray-300 bg-gray-50">
+                <CardTitle className="text-lg font-semibold text-gray-900">
+                  Account Statement
                 </CardTitle>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleExportTransactions}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Export CSV
-                </Button>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date Range</label>
-                    <select 
-                      value={dateRange}
-                      onChange={(e) => setDateRange(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    >
-                      <option value="last30">Last 30 Days</option>
-                      <option value="last90">Last 90 Days</option>
-                      <option value="last12">Last 12 Months</option>
-                      <option value="custom">Custom Range</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Type</label>
-                    <select 
-                      value={paymentType}
-                      onChange={(e) => setPaymentType(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    >
-                      <option value="all">All Types</option>
-                      <option value="membership">Membership Fee</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                    <select 
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    >
-                      <option value="all">All Status</option>
-                      <option value="completed">Completed</option>
-                      <option value="pending">Pending</option>
-                      <option value="failed">Failed</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Search</label>
-                    <div className="relative">
-                      <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input 
-                        type="text"
-                        placeholder="Reference number..."
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                      />
-                    </div>
-                  </div>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100 border-b-2 border-gray-300">
+                        <th className="text-left py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
+                          Date
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
+                          Invoice Number
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
+                          Description
+                        </th>
+                        <th className="text-right py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
+                          DR (UGX)
+                        </th>
+                        <th className="text-right py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
+                          CR (UGX)
+                        </th>
+                        <th className="text-right py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
+                          Balance (UGX)
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-gray-800 text-sm">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ledgerEntries.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="text-center py-12 text-gray-500">
+                            No transactions found
+                          </td>
+                        </tr>
+                      ) : (
+                        ledgerEntries.map((entry, index) => (
+                          <tr 
+                            key={index} 
+                            className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 whitespace-nowrap">
+                              {entry.date}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 font-mono">
+                              {entry.invoiceNumber}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-700 border-r border-gray-200">
+                              {entry.description}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 text-right font-medium">
+                              {formatAmount(entry.debit)}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 text-right font-medium">
+                              {formatAmount(entry.credit)}
+                            </td>
+                            <td className={`py-3 px-4 text-sm border-r border-gray-200 text-right font-semibold ${
+                              entry.balance < 0 ? 'text-red-600' : 'text-gray-900'
+                            }`}>
+                              {formatBalance(entry.balance)}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                {entry.hasReceipt && (
+                                  <button
+                                    onClick={() => handlePrintReceipt(entry)}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
+                                  >
+                                    <Printer className="w-3 h-3" />
+                                    Print Receipt
+                                  </button>
+                                )}
+                                {entry.hasInvoice && (
+                                  <button
+                                    onClick={() => handlePrintInvoice(entry)}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
+                                  >
+                                    <Printer className="w-3 h-3" />
+                                    Print Invoice
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Transactions Table */}
-            <Card className="bg-white shadow-lg border border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <History className="w-5 h-5" />
-                  Transaction History
-                </CardTitle>
-                <div className="text-sm text-gray-600">
-                  Showing {transactions.length} transactions
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[800px]">
-                    <thead>
-                      <tr className="border-b-2 border-gray-200">
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Date</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Type</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Reference</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Description</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Amount</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Method</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                        <th className="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactions.map((transaction, index) => {
-                        const MethodIcon = transaction.methodIcon || CreditCard
-                        return (
-                          <tr key={index} className="border-b hover:bg-purple-50/30 transition-colors">
-                            <td className="py-4 px-4 text-sm font-medium text-gray-900">
-                              {transaction.date}
-                            </td>
-                            <td className="py-4 px-4">
-                              <Badge className={`text-xs ${getTypeColor(transaction.type)}`}>
-                                {transaction.type}
-                              </Badge>
-                            </td>
-                            <td className="py-4 px-4 text-sm text-gray-600 font-mono">
-                              {transaction.reference}
-                            </td>
-                            <td className="py-4 px-4 text-sm text-gray-600 max-w-xs">
-                              <div className="truncate" title={transaction.description}>
-                                {transaction.description}
-                              </div>
-                            </td>
-                            <td className="py-4 px-4 text-sm font-semibold text-gray-900">
-                              {transaction.amount}
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                                  <MethodIcon className="w-3 h-3 text-purple-600" />
-                                </div>
-                                <span className="text-sm text-gray-600">{transaction.method}</span>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <Badge className={`text-xs ${getStatusColor(transaction.status)}`}>
-                                {transaction.status}
-                              </Badge>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleDownloadReceipt(transaction)}
-                                  aria-label="Download Receipt"
-                                >
-                                  <Download className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                
-                <div className="mt-6 text-center">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleLoadMore}
-                    disabled={isLoading}
-                    className="flex items-center gap-2"
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-4 h-4" />
-                        Load More Transactions
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Summary Footer */}
+            {ledgerEntries.length > 0 && (
+              <Card className="bg-gray-50 border border-gray-300">
+                <CardContent className="py-4">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                      Total Transactions: <span className="font-semibold text-gray-900">{ledgerEntries.length}</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Current Balance: 
+                      <span className={`ml-2 font-bold text-lg ${
+                        ledgerEntries[ledgerEntries.length - 1].balance < 0 ? 'text-red-600' : 'text-green-600'
+                      }`}>
+                        UGX {formatBalance(ledgerEntries[ledgerEntries.length - 1].balance)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>
