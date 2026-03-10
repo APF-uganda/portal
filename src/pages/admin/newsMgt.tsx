@@ -1,176 +1,285 @@
 import { useState, useEffect } from 'react';
 import { 
-  FileText, CheckCircle, Edit3, Clock, 
-  Search, Plus, ArrowLeft, Trash2, Image as ImageIcon 
+  Edit3, Search, Plus, ArrowLeft, Trash2, Image as ImageIcon, Loader2 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/cmsApi';
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
-import { NewsArticle, ArticleStatus } from '../../components/createcms-components/newstypes';
-import { StatCard } from '../../components/createcms-components/statCard';
-import { StatusBadge } from '../../components/createcms-components/status';
 import { ArticleForm } from '../../components/createcms-components/article';
-import { requireAdmin } from '../../utils/auth';
-import { useNavigate } from 'react-router-dom';
-
-const INITIAL_DATA: NewsArticle[] = [
-  { 
-    id: '1', 
-    title: 'New Community Guidelines Released', 
-    subtitle: 'Updated financial community standards for 2026', 
-    category: 'News', 
-    status: 'Published', 
-    publishDate: '2026-01-24', 
-    views: '1,248',
-    featuredImage: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&q=80',
-    contentBlocks: [{ id: 'b1', type: 'text', value: 'This is the start of the article...' }]
-  }
-];
 
 const NewsManagement = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [articles, setArticles] = useState<NewsArticle[]>(INITIAL_DATA);
+  const [articles, setArticles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | undefined>();
-  const [filter, setFilter] = useState<ArticleStatus | 'All'>('All');
+  const [selectedArticle, setSelectedArticle] = useState<any | undefined>();
+  const [filter, setFilter] = useState<string>('All');
   const [search, setSearch] = useState('');
+  
+  // NEW: Added publication state for the toggle functionality
+  const [publicationState, setPublicationState] = useState<'published' | 'preview'>('published');
+  
   const navigate = useNavigate();
+  const STRAPI_URL = "http://localhost:1337";
+
+  const fetchNews = async () => {
+    setLoading(true);
+    try {
+      // Added publicationState to the query for the toggle functionality
+      const res = await api.get(`/news-articles?publicationState=${publicationState}&populate=*&sort=createdAt:desc`);
+      
+      const formatted = res.data.data.map((item: any) => {
+        const data = item.attributes || item;
+        return {
+          id: item.id,
+          documentId: item.documentId,
+          ...data,
+          displayCategory: data.news_categories?.data?.[0]?.attributes?.name || 'General',
+          featuredImage: data.image?.data?.attributes?.url 
+            ? `${STRAPI_URL}${data.image.data.attributes.url}` 
+            : data.imageLink || null
+        };
+      });
+      setArticles(formatted);
+    } catch (err) {
+      console.error("Failed to fetch news:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    requireAdmin();
-  }, []);
+    fetchNews();
+  }, [publicationState]); // Re-fetch when toggle changes
 
-  const handleSave = (data: Partial<NewsArticle>) => {
-    if (selectedArticle) {
-      setArticles(articles.map(a => a.id === selectedArticle.id ? { ...a, ...data } as NewsArticle : a));
-    } else {
-      const newArt: NewsArticle = {
-        ...data,
-        id: Math.random().toString(36).substr(2, 9),
-        publishDate: data.status === 'Published' ? new Date().toISOString().split('T')[0] : null,
-        views: '0',
-        contentBlocks: data.contentBlocks || []
-      } as NewsArticle;
-      setArticles([newArt, ...articles]);
+  const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
+    setLoading(true);
+  
+    const strapiBlocks = formData.contentBlocks.map((block: any) => {
+      if (block.type === 'text') {
+        return { type: 'paragraph', children: [{ type: 'text', text: block.value || "" }] };
+      }
+      if (block.type === 'image') {
+        return { type: 'paragraph', children: [{ type: 'text', text: block.value ? `Image: ${block.value}` : "" }] };
+      }
+      if (block.type === 'video') {
+        return { type: 'paragraph', children: [{ type: 'text', text: block.value ? `Video: ${block.value}` : "" }] };
+      }
+      return { type: 'paragraph', children: [{ type: 'text', text: block.value || "" }] };
+    });
+  
+    const payload = {
+      data: {
+        title: formData.title,
+        description: formData.summary,
+        content: strapiBlocks, 
+        featuredImage: formData.imageId ? [formData.imageId] : [],
+        imageLink: formData.imageLink || null, 
+        publishDate: formData.date || new Date().toISOString().split('T')[0],
+        readTime: parseInt(formData.readTime) || 5,
+        isTopic: !!formData.isTopPick,
+        displayCategory: formData.category, 
+        author: "APF Admin",
+        publishedAt: status === 'published' ? new Date().toISOString() : null, 
+      }
+    };
+  
+    try {
+      const id = selectedArticle?.documentId || selectedArticle?.id;
+      if (selectedArticle && id) {
+        await api.put(`/news-articles/${id}`, payload);
+      } else {
+        await api.post('/news-articles', payload);
+      }
+      setIsEditing(false);
+      fetchNews(); 
+      alert(status === 'published' ? "Article Published!" : "Draft Saved!");
+    } catch (err: any) {
+      console.error("Payload sent:", payload);
+      alert(`Save Failed: ${err.response?.data?.error?.message || "Unknown Error"}`);
+    } finally {
+      setLoading(false);
     }
-    setIsEditing(false);
+  };
+
+  const handleDelete = async (id: string | number) => {
+    if (!window.confirm("Are you sure you want to delete this article?")) return;
+    try {
+      await api.delete(`/news-articles/${id}`);
+      fetchNews();
+    } catch (err) {
+      alert("Delete failed.");
+    }
   };
 
   const filteredArticles = articles.filter(a => {
-    const matchesFilter = filter === 'All' || a.status === filter;
-    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = filter === 'All' || a.displayCategory === filter;
+    const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen bg-[#F4F2FE]">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
-      <main className={`transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
+      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col`}>
         <Header title="News Management" />
-        
 
-        <div className="flex-1 p-10 md:p-14 overflow-y-auto">
+        <div className="flex-1 p-10 md:p-14">
           <div className="max-w-[1600px] mx-auto space-y-10">
             
-            {/* Back Button Fix */}
-            <button 
-              onClick={() => navigate(-1)} 
-              className="flex items-center gap-2 text-slate-500 hover:text-[#5C32A3] font-bold text-xs uppercase tracking-widest transition-colors mb-2"
-            >
-              <ArrowLeft size={16} /> Back to Portal
-            </button>
+            {!isEditing && (
+              <button 
+                onClick={() => navigate(-1)} 
+                className="group flex items-center gap-3 text-slate-400 hover:text-purple-700 transition-all"
+              >
+                <div className="p-2 rounded-xl bg-white border border-slate-100 group-hover:border-purple-200 shadow-sm">
+                  <ArrowLeft size={16} />
+                </div>
+                <span className="font-black text-[10px] uppercase tracking-[0.2em]">Return to Dashboard</span>
+              </button>
+            )}
             
             {isEditing ? (
-              <ArticleForm initialData={selectedArticle} onSave={handleSave} onCancel={() => setIsEditing(false)} />
+              <ArticleForm 
+                initialData={selectedArticle} 
+                onSave={handleSave} 
+                onCancel={() => setIsEditing(false)} 
+                isLoading={loading}
+              />
             ) : (
-              <>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h1 className="text-[26px] font-bold tracking-tight text-[#5C32A3]">Manage News</h1>
-                    <p className="text-slate-500 mt-1">Create News for your platform community.</p>
+              <div className="max-w-7xl mx-auto space-y-6">
+                {/* TOP ACTION BAR */}
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter border-r border-slate-200 pr-4">Articles</h2>
+                    <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                      <button 
+                        onClick={() => setPublicationState('published')}
+                        className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${publicationState === 'published' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-400'}`}
+                      >
+                        Live
+                      </button>
+                      <button 
+                        onClick={() => setPublicationState('preview')}
+                        className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'}`}
+                      >
+                        Drafts
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    
-                    <button 
-                      onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
-                      className="flex items-center gap-2 px-6 py-2.5 bg-purple-700 text-white rounded-xl hover:bg-purple-800 transition text-sm font-black shadow-lg shadow-purple-200"
-                    >
-                      <Plus size={18} /> Create News
-                    </button>
-                  </div>
+
+                  <button 
+                    onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
+                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-purple-700 transition-all text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+                  >
+                    <Plus size={14} strokeWidth={3} /> Create New
+                  </button>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <StatCard title="Stories" value={articles.length.toString()} change="10%" isUp={true} Icon={FileText} />
-                  <StatCard title="Live" value={articles.filter(a=>a.status==='Published').length.toString()} change="12%" isUp={true} Icon={CheckCircle} />
-                  <StatCard title="Drafts" value={articles.filter(a=>a.status==='Draft').length.toString()} change="2%" isUp={false} Icon={Edit3} />
-                  <StatCard title="Waitlist" value={articles.filter(a=>a.status==='Scheduled').length.toString()} change="5%" isUp={true} Icon={Clock} />
-                </div>
+                {/* MAIN CONTENT AREA */}
+                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
+                  <div className="p-4 border-b border-slate-50 flex flex-col lg:flex-row justify-between items-center gap-4 bg-slate-50/30">
+                    <div className="flex bg-white p-1 rounded-xl border border-slate-100 overflow-x-auto w-full lg:w-auto">
+                      {['All', 'Policy Update', 'Thought Leadership', 'Announcements', 'SME Support'].map((t) => (
+                        <button 
+                          key={t} 
+                          onClick={() => setFilter(t)} 
+                          className={`px-5 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap ${filter === t ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="relative w-full lg:w-[300px]">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                      <input 
+                        placeholder="Quick search..." 
+                        value={search} 
+                        onChange={(e) => setSearch(e.target.value)} 
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl focus:ring-2 focus:ring-purple-100 outline-none text-[11px] font-bold text-slate-900 placeholder:text-slate-300" 
+                      />
+                    </div>
+                  </div>
 
-                {/* List Container */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                   <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-white">
-                      <div className="flex bg-gray-100/50 p-1.5 rounded-2xl">
-                        {['All', 'Published', 'Draft', 'Scheduled'].map((t) => (
-                          <button key={t} onClick={() => setFilter(t as any)} className={`px-5 py-2 text-xs font-black rounded-xl transition ${filter === t ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-400 hover:text-gray-900'}`}>{t}</button>
-                        ))}
+                  <div className="overflow-x-auto">
+                    {loading && articles.length === 0 ? (
+                      <div className="h-[300px] flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="animate-spin text-purple-600" size={32} />
+                        <span className="font-black text-[9px] uppercase tracking-widest text-slate-400">Loading Strapi Data...</span>
                       </div>
-                      <div className="relative w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-                        <input placeholder="Search stories..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-100 outline-none text-sm font-medium" />
-                      </div>
-                   </div>
-
-                   <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50/30 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
-                          <tr>
-                            <th className="px-8 py-5 text-left">Article Overview</th>
-                            <th className="px-8 py-5 text-center">Engagement</th>
-                            <th className="px-8 py-5 text-left">Status</th>
-                            <th className="px-8 py-5 text-right">Actions</th>
+                    ) : (
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50/80 text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
+                            <th className="px-6 py-4 text-left">Article</th>
+                            <th className="px-4 py-4 text-center">Category</th>
+                            <th className="px-4 py-4 text-center">Status</th>
+                            <th className="px-6 py-4 text-right">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-slate-50">
                           {filteredArticles.map((article) => (
-                            <tr key={article.id} className="hover:bg-gray-50/40 transition group">
-                              <td className="px-8 py-5">
-                                <div className="flex items-center gap-5">
-                                  <div className="w-16 h-12 rounded-xl bg-gray-100 border overflow-hidden shadow-inner flex-shrink-0">
-                                    {article.featuredImage ? <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={16} className="text-gray-200"/></div>}
+                            <tr key={article.id} className="hover:bg-slate-50/30 transition-all group">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-16 h-10 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 relative">
+                                    {article.featuredImage ? (
+                                      <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/>
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center"><ImageIcon size={16} className="text-slate-300"/></div>
+                                    )}
                                   </div>
-                                  <div>
-                                    <h4 className="font-black text-gray-900 text-sm">{article.title}</h4>
-                                    <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tighter">{article.category} • {article.publishDate || 'Not Live'}</p>
+                                  <div className="max-w-md">
+                                    <h4 className="font-bold text-slate-900 text-sm line-clamp-1 mb-0.5 group-hover:text-purple-700 transition-colors">{article.title}</h4>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{article.publishDate || "Unpublished"}</p>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-8 py-5 text-center">
-                                <span className="text-xs font-black text-gray-700">{article.views} Views</span>
+                              <td className="px-4 py-4 text-center">
+                                 <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                                   {article.displayCategory || 'General'}
+                                 </span>
                               </td>
-                              <td className="px-8 py-5"><StatusBadge status={article.status} /></td>
-                              <td className="px-8 py-5 text-right">
+                              <td className="px-4 py-4 text-center">
+                                {article.isTopic ? (
+                                  <span className="text-amber-600 text-[9px] font-black uppercase">Priority</span>
+                                ) : (
+                                  <span className="text-slate-300 text-[9px] font-black uppercase">Standard</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-right">
                                 <div className="flex justify-end gap-2">
-                                  <button onClick={() => { setSelectedArticle(article); setIsEditing(true); }} className="p-2.5 bg-gray-50 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition"><Edit3 size={18} /></button>
-                                  <button className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition"><Trash2 size={18} /></button>
+                                  <button 
+                                    onClick={() => { setSelectedArticle(article); setIsEditing(true); }} 
+                                    className="p-2 text-slate-400 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-all"
+                                  >
+                                    <Edit3 size={16} />
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDelete(article.documentId || article.id)}
+                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
                                 </div>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
-                   </div>
+                    )}
+                  </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
-
-        <div className="mt-auto"><Footer /></div>
+        <Footer />
       </main>
     </div>
   );
