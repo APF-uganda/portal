@@ -139,37 +139,8 @@ const ReportsAnalytics = () => {
               <DailyActivityChart />
             </div>
 
-            {/* Available Reports Section */}
-            <div>
-              <h2 className="text-xl font-bold text-slate-800 mb-6">Available Templates</h2>
-              
-              {templatesLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5E2590]"></div>
-                </div>
-              ) : templatesError ? (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                  <p className="text-red-600 font-medium mb-2">Failed to load report templates</p>
-                  <p className="text-sm text-red-500">{templatesError}</p>
-                </div>
-              ) : templates.length === 0 ? (
-                <div className="bg-white/50 border border-dashed border-slate-300 rounded-xl p-8 text-center">
-                  <p className="text-slate-600 font-medium">No templates found</p>
-                  <p className="text-sm text-slate-400 mt-2">Use the generator below to create your first report template.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-                  {templates.map((template) => (
-                    <ReportCard 
-                      key={template.id}
-                      template={template}
-                      date={getCurrentDate()}
-                      onSuccess={handleRefreshReports}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            
+            
 
             {/* Generator Section */}
             <CustomGenerator onSuccess={handleRefreshReports} />

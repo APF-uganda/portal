@@ -21,11 +21,9 @@ const EventEditor = () => {
     cpdPoints: 0,
     registrationLink: '',
     isFeatured: false, 
-    // ADDED NEW FIELDS HERE
     isPaid: false,
     memberPrice: 0,
     nonMemberPrice: 0,
-    // IMAGE FIELDS
     imageId: null as number | null,
     imagePreview: ''
   });
@@ -47,6 +45,10 @@ const EventEditor = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    
+    const localUrl = URL.createObjectURL(file);
+    setEventData(prev => ({ ...prev, imagePreview: localUrl }));
+
     setUploading(true);
     const formData = new FormData();
     formData.append('files', file);
@@ -54,13 +56,21 @@ const EventEditor = () => {
     try {
       const res = await api.post('/upload', formData);
       const uploadedFile = res.data[0];
+      
+      const fullImageUrl = uploadedFile.url.startsWith('http') 
+        ? uploadedFile.url 
+        : `http://localhost:1337${uploadedFile.url}`;
+
+      // Update state with the official Strapi ID and URL
       setEventData(prev => ({ 
         ...prev, 
         imageId: uploadedFile.id,
-        imagePreview: `http://localhost:1337${uploadedFile.url}`
+        imagePreview: fullImageUrl
       }));
     } catch (err) {
       alert("Image upload failed. Ensure Strapi is running.");
+    
+      setEventData(prev => ({ ...prev, imagePreview: '' }));
     } finally {
       setUploading(false);
     }
@@ -84,11 +94,9 @@ const EventEditor = () => {
           registrationLink: eventData.registrationLink,
           cpdPoints: Number(eventData.cpdPoints),
           isFeatured: eventData.isFeatured,
-          // ADDED NEW FIELDS TO PAYLOAD
           isPaid: eventData.isPaid,
           memberPrice: Number(eventData.memberPrice),
           nonMemberPrice: Number(eventData.nonMemberPrice),
-          // IMAGE MAPPING
           image: eventData.imageId, 
           publishedAt: new Date().toISOString() 
         }
@@ -109,14 +117,14 @@ const EventEditor = () => {
   };
 
   return (
-    <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans">
+    <div className="p-8 bg-[#F8FAFC] min-h-screen">
       <ActionHeader onPublish={handlePublish} onBack={() => navigate(-1)} loading={loading} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
         <div className="lg:col-span-2 space-y-6">
           <div className="flex justify-between items-start gap-4">
             <input 
-              className="w-full text-4xl font-black bg-transparent border-b-2 border-slate-200 outline-none pb-4 text-slate-800"
+              className="w-full text-4xl font-bold bg-transparent border-b-2 border-slate-200 outline-none pb-4 text-slate-800"
               placeholder="Event Title..."
               value={eventData.title}
               onChange={(e) => handleUpdate('title', e.target.value)}
@@ -127,42 +135,50 @@ const EventEditor = () => {
               className={`p-3 rounded-2xl border transition-all flex items-center gap-2 ${eventData.isFeatured ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white border-slate-200 text-slate-400'}`}
             >
               <Star size={20} fill={eventData.isFeatured ? "currentColor" : "none"} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Featured</span>
+              <span className="text-xs font-bold uppercase tracking-widest">Featured</span>
             </button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-[30px] shadow-sm border border-slate-100">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-1"><Calendar size={12}/> Start Date</label>
+              <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1"><Calendar size={12}/> Start Date</label>
               <input type="date" value={eventData.startDate} onChange={e => handleUpdate('startDate', e.target.value)} className="w-full bg-slate-50 p-2 rounded-xl text-sm font-bold outline-none"/>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-1"><Calendar size={12}/> End Date</label>
+              <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1"><Calendar size={12}/> End Date</label>
               <input type="date" value={eventData.endDate} min={eventData.startDate} onChange={e => handleUpdate('endDate', e.target.value)} className="w-full bg-slate-50 p-2 rounded-xl text-sm font-bold outline-none"/>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-1"><Clock size={12}/> Start Time</label>
+              <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1"><Clock size={12}/> Start Time</label>
               <input type="time" value={eventData.startTime} onChange={e => handleUpdate('startTime', e.target.value)} className="w-full bg-slate-50 p-2 rounded-xl text-sm font-bold outline-none"/>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-1"><Clock size={12}/> End Time</label>
+              <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1"><Clock size={12}/> End Time</label>
               <input type="time" value={eventData.endTime} onChange={e => handleUpdate('endTime', e.target.value)} className="w-full bg-slate-50 p-2 rounded-xl text-sm font-bold outline-none"/>
             </div>
           </div>
 
           <div className="relative group h-80 bg-white rounded-[40px] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all hover:border-purple-300">
             {eventData.imagePreview ? (
-              <img src={eventData.imagePreview} className="w-full h-full object-cover" alt="Preview" />
+              <div className="relative w-full h-full">
+                <img src={eventData.imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                {uploading && (
+                   <div className="absolute inset-0 bg-white/40 flex items-center justify-center backdrop-blur-[2px]">
+                      <Loader2 className="animate-spin text-purple-600" size={32} />
+                   </div>
+                )}
+              </div>
             ) : (
               <div className="text-center">
-                {uploading ? <Loader2 className="animate-spin text-purple-500 mx-auto" /> : <ImageIcon className="mx-auto text-slate-300 mb-2" size={40} />}
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {uploading ? 'Uploading...' : 'Click to Upload Poster (Required)'}
+                <ImageIcon className="mx-auto text-slate-300 mb-2" size={40} />
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  Click to Upload Poster
                 </p>
               </div>
             )}
             <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageChange} accept="image/*" />
           </div>
+          
 
           <textarea 
             className="w-full h-64 p-8 rounded-[40px] bg-white border border-slate-100 shadow-sm outline-none text-slate-600 leading-relaxed"
