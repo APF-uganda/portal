@@ -12,7 +12,7 @@ function Hero({ data }: { data?: any }) {
 
   return (
     <section 
-      className="min-h-[500px] flex items-center relative overflow-hidden pt-16 -mt-16 bg-cover bg-center"
+      className="min-h-[700px] flex items-center relative overflow-hidden pt-16 -mt-16 bg-cover bg-center"
       style={{
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${bgUrl})`,
       }}

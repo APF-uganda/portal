@@ -5,10 +5,15 @@ import logoPurple from '../../assets/logo_purple.png'
 import whitelogo from '../../assets/whitelogo.png'
 import { isAuthenticated, getUser } from '../../utils/authStorage'
 
-function Navbar() {
+type NavbarProps = {
+  forceSolid?: boolean
+}
+
+function Navbar({ forceSolid = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const location = useLocation()
+  const isSolid = forceSolid || isScrolled
 
   // Check if user is logged in
   const loggedIn = isAuthenticated()
@@ -47,7 +52,7 @@ function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
+        isSolid
           ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-white/20'
           : 'bg-white/15 backdrop-blur-md'
       }`}
@@ -57,7 +62,7 @@ function Navbar() {
         {/* LOGO */}
         <Link to="/" className="flex items-center">
           <img
-            src={isScrolled ? logoPurple : whitelogo}
+            src={isSolid ? logoPurple : whitelogo}
             alt="APF Logo"
             className="h-[38px] sm:h-[42px] md:h-[48px] transition-opacity duration-300"
           />
@@ -71,10 +76,10 @@ function Navbar() {
               to={link.path}
               className={`text-[0.9rem] font-medium transition-colors ${
                 isActive(link.path)
-                  ? isScrolled
+                  ? isSolid
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-white border-b-2 border-white'
-                  : isScrolled
+                  : isSolid
                   ? 'text-secondary hover:text-primary'
                   : 'text-white hover:text-white/80'
               }`}
@@ -89,7 +94,7 @@ function Navbar() {
           <Link to="/register">
             <button
               className={`rounded-full px-6 py-2 font-medium transition-all ${
-                isScrolled
+                isSolid
                   ? 'border-2 border-secondary text-secondary hover:bg-[#5F1C9F] hover:text-white'
                   : 'border-2 border-white text-white hover:bg-[#5F1C9F]'
               }`}
@@ -116,7 +121,7 @@ function Navbar() {
         {/* MOBILE MENU BUTTON */}
         <button
           className={`lg:hidden p-2 rounded-lg ${
-            isScrolled
+            isSolid
               ? 'text-secondary hover:bg-black/5'
               : 'text-white hover:bg-white/10'
           }`}
