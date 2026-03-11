@@ -21,10 +21,6 @@ function ChairpersonMessagePage() {
           </div>
 
           <section className="border border-slate-200 bg-white rounded-sm p-5 sm:p-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-8">
-              A Message from the Board Chairperson
-            </h1>
-
             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8 items-start">
               <div>
                 <div className="relative overflow-hidden rounded-lg w-full max-w-[300px] h-[350px] flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] group flex-shrink-0 shadow-lg mx-auto lg:mx-0">
@@ -37,6 +33,9 @@ function ChairpersonMessagePage() {
               </div>
 
               <div className="space-y-4">
+                <h4 className="text-secondary text-[1.75rem] sm:text-[2rem] mb-4 sm:mb-6 font-bold relative inline-block">
+                  A Message from the Board Chairperson
+                </h4>
                 <p className="text-slate-700 leading-relaxed whitespace-pre-line">{fullMessage}</p>
                 <div className="pt-4 border-t border-slate-200">
                   <p className="font-bold text-base sm:text-lg text-slate-900">{name}</p>

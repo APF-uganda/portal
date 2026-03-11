@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, ShieldCheck, Loader2, X,AlertCircle, Mail } from 'lucide-react';
 import Input from '../Input';
 import { AccountDetailsData } from '../../../types/registration';
 import { validateEmail } from '../../../lib/validators';
 import { requestVerificationEmail, confirmVerificationCode } from '../../../services/authApi';
+import { checkApplicationAvailability } from '../../../services/applicationApi';
 
 interface AccountDetailsStepProps {
   data: AccountDetailsData;
@@ -49,6 +50,51 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
     
     onValidationChange(isValid);
   }, [data, availabilityErrors, isEmailVerified, isPasswordStrong, onValidationChange]);
+
+  // Keep account availability checks server-backed to prevent duplicate submissions.
+  useEffect(() => {
+    const trimmedEmail = data.email.trim();
+    const trimmedUsername = data.username.trim();
+    const shouldCheckEmail = validateEmail(trimmedEmail).isValid;
+    const shouldCheckUsername = trimmedUsername.length > 0;
+
+    if (!shouldCheckEmail && !shouldCheckUsername) {
+      setAvailabilityErrors({});
+      return;
+    }
+
+    let cancelled = false;
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const availability = await checkApplicationAvailability({
+          email: shouldCheckEmail ? trimmedEmail : undefined,
+          username: shouldCheckUsername ? trimmedUsername : undefined,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        const nextErrors: Record<string, string> = {};
+        if (shouldCheckEmail && !availability.email_available) {
+          nextErrors.email = 'An account with this email already exists';
+        }
+        if (shouldCheckUsername && !availability.username_available) {
+          nextErrors.username = 'This username is already taken';
+        }
+        setAvailabilityErrors(nextErrors);
+      } catch {
+        if (!cancelled) {
+          setAvailabilityErrors({});
+        }
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [data.email, data.username]);
 
   // 2. Send OTP Logic
   const handleSendOTP = async () => {

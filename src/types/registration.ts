@@ -48,7 +48,7 @@ export type PaymentMethod = 'mtn' | 'airtel' | 'credit_card';
 /**
  * Payment status types
  */
-export type PaymentStatus = 'idle' | 'pending' | 'success' | 'completed' | 'failed' | 'cancelled' | 'timeout';
+export type PaymentStatus = 'idle' | 'pending' | 'processing' | 'success' | 'completed' | 'failed' | 'cancelled' | 'timeout';
 
 /**
  * Payment data collected in step 4
