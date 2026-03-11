@@ -68,33 +68,39 @@ const UpcomingEvents = () => {
             </button>
            
             <div ref={scrollRef} className="flex overflow-x-auto snap-x snap-mandatory pb-6 scroll-smooth [&::-webkit-scrollbar]:hidden flex-grow gap-6 items-stretch">
-              {upcomingEvents.map((event, idx) => {
-                // Determine the correct image URL 
-                const imageUrl = event.image?.data?.attributes?.url || event.image || "";
-                
-                return (
-                  <div key={event.id || idx} className="w-[85vw] md:w-[350px] snap-start flex-shrink-0 flex">
-                    <EventCard
-                      image={imageUrl}
-                      title={event.title}
-                      date={event.date}
-                      time={event.time}
-                      location={event.location || "Location TBD"}
-                      description={event.description}
-                      isPast={false}
-                      onRegister={() => navigate('/event-registration', { 
-                        state: { 
-                          eventTitle: event.title, 
-                          eventId: event.documentId || event.id,
-                          location: event.location || "Location TBD",
-                          date: formatReadableDate(event.date), // Sends formatted date
-                          image: imageUrl // Sends corrected image path
-                        } 
-                      })}
-                    />
-                  </div>
-                );
-              })}
+            {upcomingEvents.map((event, idx) => {
+  
+  const rawImage = event.image?.data?.attributes?.url || event.image?.url || event.image;
+  
+  
+  const API_URL = "http://64.225.121.230/cms-api"; 
+  const finalImageUrl = rawImage 
+    ? (rawImage.startsWith('http') ? rawImage : `${API_URL}${rawImage}`) 
+    : null; 
+
+  return (
+    <div key={event.id || idx} className="w-[85vw] md:w-[350px] snap-start flex-shrink-0 flex">
+      <EventCard
+        image={finalImageUrl} 
+        title={event.title}
+        date={event.date}
+        time={event.time}
+        location={event.location || "Location TBD"}
+        description={event.description}
+        isPast={false}
+        onRegister={() => navigate('/event-registration', { 
+          state: { 
+            eventTitle: event.title, 
+            eventId: event.documentId || event.id,
+            location: event.location || "Location TBD",
+            date: formatReadableDate(event.date),
+            image: finalImageUrl
+          } 
+        })}
+      />
+    </div>
+  );
+})}
             </div>
 
             <button onClick={() => scroll('right')} className="hidden md:flex bg-[#7E49B3] text-white rounded-full p-3 hover:bg-[#3C096C] shadow-lg transition-all flex-shrink-0">

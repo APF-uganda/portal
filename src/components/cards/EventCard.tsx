@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
+import { Calendar, Clock, MapPin, Tag, Award } from 'lucide-react';
 import { useMemo } from 'react';
 import { CMS_BASE_URL } from '../../config/api'; 
 
@@ -12,6 +12,7 @@ export interface EventCardProps {
   isPaid?: boolean | string;           
   memberPrice?: number | string;
   nonMemberPrice?: number | string; 
+  cpdPoints?: number | string; 
   onRegister?: () => void;
   delay?: number;
   isPast?: boolean; 
@@ -27,6 +28,7 @@ export default function EventCard({
   isPaid,
   memberPrice,
   nonMemberPrice,
+  cpdPoints, 
   onRegister,
   delay = 0,
   isPast = false 
@@ -34,9 +36,10 @@ export default function EventCard({
 
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  // Robust check: considered paid if boolean true, string "true", or if price > 0
+  
   const paidStatus = useMemo(() => {
-    return isPaid === true || isPaid === 'true' || Number(nonMemberPrice) > 0 || Number(memberPrice) > 0;
+    const hasPrice = (nonMemberPrice && Number(nonMemberPrice) > 0) || (memberPrice && Number(memberPrice) > 0);
+    return isPaid === true || isPaid === 'true' || hasPrice;
   }, [isPaid, nonMemberPrice, memberPrice]);
 
   const imageUrl = useMemo(() => {
@@ -68,7 +71,7 @@ export default function EventCard({
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Image Section */}
-      <div className="h-40 sm:h-48 overflow-hidden relative flex-shrink-0">
+      <div className="h-40 sm:h-48 overflow-hidden relative flex-shrink-0 bg-slate-100">
         <img 
           src={imageUrl} 
           alt={title} 
@@ -82,14 +85,25 @@ export default function EventCard({
               Past Event
             </span>
           ) : (
-            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm ${
-              paidStatus ? 'bg-purple-600 text-white' : 'bg-green-500 text-white'
-            }`}>
-              {paidStatus 
-                ? `UGX ${Number(nonMemberPrice || memberPrice || 0).toLocaleString()}` 
-                : 'Free Event'
-              }
-            </span>
+            <>
+              {/* PRICE BADGE */}
+              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm flex items-center gap-1 ${
+                paidStatus ? 'bg-purple-600 text-white' : 'bg-green-500 text-white'
+              }`}>
+                {paidStatus 
+                  ? `UGX ${Number(nonMemberPrice || memberPrice || 0).toLocaleString()}` 
+                  : 'Free Event'
+                }
+              </span>
+
+              {/* CPD POINTS BADGE   */}
+              {cpdPoints && Number(cpdPoints) > 0 && (
+                <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm flex items-center gap-1">
+                  <Award size={12} className="text-white" />
+                  {cpdPoints} CPD Points
+                </span>
+              )}
+            </>
           )}
         </div>
       </div>
