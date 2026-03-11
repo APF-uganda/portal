@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Clock, Mail, LogOut, FileText } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail } from 'lucide-react';
 
-// Common Components (assuming you have these)
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
-import { clearAuth, getUser } from '../../utils/authStorage';
+import Navbar from '../common/Navbar';
+import Footer from '../common/Footer';
+import { getUser } from '../../utils/authStorage';
 
 // APF Logo Asset
 import logoPurple from '../../assets/logo_purple.png';
 
 function PendingApprovalPage() {
-  const navigate = useNavigate();
   const [userName, setUserName] = useState("Member");
 
   useEffect(() => {
@@ -22,26 +20,12 @@ function PendingApprovalPage() {
     }
   }, []);
 
-  const handleLogOut = () => {
-    clearAuth(); // Clear sessionStorage using your utility
-    navigate('/login');
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* minimal header for branding */}
-      <header className="bg-white border-b border-gray-100 py-4 px-6 sm:px-10 flex items-center justify-between">
-      <Link 
-              to="/" 
-              className="px-8 py-3 rounded-xl bg-[#5E2590] text-white font-bold hover:bg-[#4a1d72] transition shadow-lg shadow-purple-200 min-h-[48px]"
-            >
-              Return to Homepage
-            </Link>
-       
-      </header>
+      <Navbar forceSolid />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-10">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-10 pt-24">
         <div className="w-full max-w-2xl bg-white border border-purple-100 rounded-3xl shadow-xl shadow-purple-50 p-8 sm:p-12 md:p-16 text-center">
           
           {/* Branded Icon with Pulse Animation */}
@@ -87,8 +71,12 @@ function PendingApprovalPage() {
 
           {/* Action Buttons */}
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-           
-            
+            <Link 
+              to="/" 
+              className="px-8 py-3 rounded-xl bg-[#5E2590] text-white font-bold hover:bg-[#4a1d72] transition shadow-lg shadow-purple-200 min-h-[48px]"
+            >
+              Return to Homepage
+            </Link>
           </div>
 
         </div>

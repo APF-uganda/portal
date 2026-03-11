@@ -1,26 +1,10 @@
-import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import chairmanImg from '../../assets/images/landingPage-image/chair.jpeg'
+import { chairpersonMessage } from '../../data/chairpersonMessage'
 
 function ChairMessage() {
   const { elementRef, isVisible } = useScrollAnimation()
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  const chairName = 'CPA Micheal Tugyetwena'
-  const chairRole = 'Board Chairperson - APF Uganda'
-  const fullMessage = `Dear Colleagues and Partners,
-
-It is a privilege to lead the Accountancy Practitioners Forum (APF) at such a transformative time for our profession. Our vision is clear: to be the premier catalyst for accountancy excellence in Uganda. We aspire to build a future where every licensed practice  regardless of size  is a beacon of integrity, innovation, and global professional trust.
-
-Our commitment to the community is at the heart of everything we do. We are more than just a forum, we are a unified voice for the practitioners who safeguard the financial health of our nation. By championing advocacy, fostering a collaborative learning environment, and investing in "practice enablers" like AI and modern software, we ensure that our members are not just keeping pace with change, but leading it.
-
-Looking ahead, our future goals are ambitious. We are focused on expanding our impact by influencing enabling policies that support high-quality services and nurturing the next generation of talent through mentorship. We aim to create a professional ecosystem where Ugandan practitioners are recognized as indispensable partners in the banking, insurance, and industrial sectors - driving sustainable economic growth across the region.
-
-I invite you to join us on this journey as we elevate the standard of practice and redefine the impact of the accountancy profession in Uganda and beyond.
-
-Together, we empower the profession.
-
-Best regards,`
+  const { name: chairName, role: chairRole, fullMessage, photo } = chairpersonMessage
 
   return (
     <section className="bg-[#e9d5ff] py-12 sm:py-16 px-4 sm:px-6 md:px-8">
@@ -28,7 +12,7 @@ Best regards,`
         {/* Profile Image Container */}
         <div className="relative overflow-hidden rounded-lg w-full max-w-[300px] h-[350px] flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] group flex-shrink-0 shadow-lg md:self-start">
           <img
-            src={chairmanImg}
+            src={photo}
             alt={chairName}
             className="w-full h-full object-cover rounded-lg transition-transform duration-300 relative z-0 group-hover:scale-105"
           />
@@ -46,17 +30,17 @@ Best regards,`
 
           {/* Message Content */}
           <div className="leading-relaxed text-[#333] text-sm sm:text-base whitespace-pre-line">
-            {isExpanded ? fullMessage : `${fullMessage.substring(0, 350)}...`}
+            {`${fullMessage.substring(0, 350)}...`}
           </div>
 
-          {/* Read More Button */}
+          {/* Read Full Message Button */}
           {fullMessage.length > 350 && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
+            <Link
+              to="/chairperson-message"
               className="text-primary font-semibold mt-4 mb-4 p-0 transition-all duration-300 bg-transparent text-sm sm:text-base hover:underline hover:translate-x-1.5"
             >
-              {isExpanded ? 'Show Less <-' : 'Read Full Message ->'}
-            </button>
+              Read Full Message {'\u2192'}
+            </Link>
           )}
 
           <div className="mt-4 sm:mt-6 border-t border-purple-200 pt-4">

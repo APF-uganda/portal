@@ -14,7 +14,7 @@ export type PaymentProvider = 'mtn' | 'airtel';
 /**
  * Payment status types representing the lifecycle of a payment
  */
-export type PaymentStatus = 'idle' | 'pending' | 'completed' | 'failed' | 'cancelled' | 'timeout';
+export type PaymentStatus = 'idle' | 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'timeout';
 
 // ============================================================================
 // API Request Types

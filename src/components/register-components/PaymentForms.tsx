@@ -96,7 +96,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
       setPaymentStatus('timeout');
       setErrorMessage('Payment verification timed out. Please check your phone and try again.');
     },
-    enabled: paymentStatus === 'pending' && paymentId !== null,
+    enabled: (paymentStatus === 'pending' || paymentStatus === 'processing') && paymentId !== null,
   });
 
 
@@ -328,7 +328,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
         onChange={(e) => setPhoneNumber(e.target.value)}
         onBlur={() => handleBlur('phoneNumber')}
         error={getFieldError('phoneNumber')}
-        disabled={isInitiating || paymentStatus === 'pending'}
+        disabled={isInitiating || paymentStatus === 'pending' || paymentStatus === 'processing'}
         required
       />
       {selectedMethod === 'mtn' &&
@@ -365,9 +365,9 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
       <button
         type="button"
         onClick={handlePayment}
-        disabled={!isFormValid() || isInitiating || paymentStatus === 'pending'}
+        disabled={!isFormValid() || isInitiating || paymentStatus === 'pending' || paymentStatus === 'processing'}
         className={`w-full py-3 rounded-lg text-sm font-medium transition-all touch-manipulation min-h-[44px] flex items-center justify-center ${
-          isFormValid() && !isInitiating && paymentStatus !== 'pending'
+          isFormValid() && !isInitiating && paymentStatus !== 'pending' && paymentStatus !== 'processing'
             ? 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
@@ -463,9 +463,9 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
       <button
         type="button"
         onClick={handlePayment}
-        disabled={!isFormValid() || isInitiating || paymentStatus === 'pending'}
+        disabled={!isFormValid() || isInitiating || paymentStatus === 'pending' || paymentStatus === 'processing'}
         className={`w-full py-3 rounded-lg text-sm font-medium transition-all touch-manipulation min-h-[44px] flex items-center justify-center ${
-          isFormValid() && !isInitiating && paymentStatus !== 'pending'
+          isFormValid() && !isInitiating && paymentStatus !== 'pending' && paymentStatus !== 'processing'
             ? 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
@@ -498,7 +498,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
         )}
 
         {/* Pending Status */}
-        {paymentStatus === 'pending' && (
+        {(paymentStatus === 'pending' || paymentStatus === 'processing') && (
           <div className="space-y-4">
             <div className="flex flex-col items-center justify-center py-8">
               {/* Spinner */}

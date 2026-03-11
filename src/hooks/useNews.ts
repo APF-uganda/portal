@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/cmsApi';
+import { CMS_BASE_URL } from '../config/api';
 
 export const useNews = () => {
   const [news, setNews] = useState<any[]>([]);
@@ -9,7 +10,6 @@ export const useNews = () => {
     const fetchNews = async () => {
       try {
         const res = await api.get('/news-articles?populate=*'); 
-        const STRAPI_URL = "http://localhost:1337";
 
         const formattedData = res.data.data.map((item: any) => {
          
@@ -31,7 +31,7 @@ export const useNews = () => {
             isTopPick: !!data.isTopic || !!data.isFeatured, 
            
             image: relativeUrl 
-              ? (relativeUrl.startsWith('http') ? relativeUrl : `${STRAPI_URL}${relativeUrl}`) 
+              ? (relativeUrl.startsWith('http') ? relativeUrl : `${CMS_BASE_URL}${relativeUrl}`) 
               : "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80"
           };
         });

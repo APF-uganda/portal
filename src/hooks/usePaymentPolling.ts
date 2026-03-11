@@ -46,7 +46,7 @@ export interface UsePaymentPollingReturn {
 /**
  * Terminal payment statuses that should stop polling
  */
-const TERMINAL_STATUSES: PaymentStatus[] = ['completed', 'failed', 'cancelled'];
+const TERMINAL_STATUSES: PaymentStatus[] = ['completed', 'failed', 'cancelled', 'timeout'];
 
 /**
  * Polling configuration constants

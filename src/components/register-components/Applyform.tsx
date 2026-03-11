@@ -19,6 +19,10 @@ const STEPS = [
   "Payments",
 ];
 
+const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+const FILE_SIZE_ERROR_MESSAGE =
+  "One or more files are too large. Maximum file size is 5MB.";
+
 function ApplyForm() {
   const navigate = useNavigate(); 
   
@@ -88,6 +92,23 @@ function ApplyForm() {
     if (!accountData || !personalData || documentsData.length === 0 || !paymentData) {
       console.log('[Applyform] Validation failed: missing data');
       setSubmissionError('Please complete all required fields');
+      return;
+    }
+
+    const uploadedDocuments = documentsData.filter(
+      (doc) => doc.file instanceof File
+    );
+
+    const hasOversizedFile = uploadedDocuments.some(
+      (doc) => doc.file.size > MAX_UPLOAD_SIZE_BYTES
+    );
+    const totalUploadSize = uploadedDocuments.reduce(
+      (sum, doc) => sum + doc.file.size,
+      0
+    );
+
+    if (hasOversizedFile || totalUploadSize > MAX_UPLOAD_SIZE_BYTES) {
+      setSubmissionError(FILE_SIZE_ERROR_MESSAGE);
       return;
     }
 
