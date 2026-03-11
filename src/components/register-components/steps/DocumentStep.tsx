@@ -21,11 +21,20 @@ const REQUIRED_DOCUMENT_IDS = [
   DOCUMENT_FIELDS.PASSPORT_PHOTO,
 ] as const;
 
+const MAX_UPLOAD_SIZE_MB = 5;
+const MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
+
 
 function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsStepProps) {
   // Helper to find document by field ID
   const getDocumentByField = (fieldId: string): DocumentData | undefined => {
     return documents.find(doc => doc.id === fieldId);
+  };
+
+  const getUploadedFiles = () => {
+    return documents.filter(
+      (doc) => doc.uploadStatus === "uploaded" && doc.file instanceof File
+    );
   };
 
   // Helper to check if at least one document is uploaded
@@ -44,10 +53,22 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
   );
 };
 
+  const hasOversizedFile = (): boolean => {
+    return getUploadedFiles().some((doc) => doc.file.size > MAX_UPLOAD_SIZE_BYTES);
+  };
+
+  const exceedsCombinedUploadSize = (): boolean => {
+    const totalSize = getUploadedFiles().reduce((sum, doc) => sum + doc.file.size, 0);
+    return totalSize > MAX_UPLOAD_SIZE_BYTES;
+  };
+
 
   // Update validation state whenever documents change
   useEffect(() => {
-    const isValid = hasAllRequiredDocuments();
+    const isValid =
+      hasAllRequiredDocuments() &&
+      !hasOversizedFile() &&
+      !exceedsCombinedUploadSize();
     onValidationChange(isValid);
   }, [documents, onValidationChange]);
 
@@ -123,6 +144,11 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
       {documents.length === 0 && (
         <p className="text-xs text-gray-500 mt-4">
           Please upload at least one document to continue
+        </p>
+      )}
+      {(hasOversizedFile() || exceedsCombinedUploadSize()) && (
+        <p className="text-xs text-red-600 mt-3">
+          One or more files are too large. Maximum file size is 5MB.
         </p>
       )}
     </>
