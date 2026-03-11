@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/cmsApi';
+import { CMS_BASE_URL } from '../../config/api'; 
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
@@ -19,28 +20,24 @@ const NewsManagement = () => {
   const [selectedArticle, setSelectedArticle] = useState<any | undefined>();
   const [filter, setFilter] = useState<string>('All');
   const [search, setSearch] = useState('');
-  
-  // NEW: Added publication state for the toggle functionality
   const [publicationState, setPublicationState] = useState<'published' | 'preview'>('published');
   
   const navigate = useNavigate();
-  const STRAPI_URL = "http://localhost:1337";
 
   const fetchNews = async () => {
     setLoading(true);
     try {
-      // Added publicationState to the query for the toggle functionality
       const res = await api.get(`/news-articles?publicationState=${publicationState}&populate=*&sort=createdAt:desc`);
       
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
         return {
           id: item.id,
-          documentId: item.documentId,
+          documentId: item.documentId || item.id, // Fallback to id if documentId isn't present
           ...data,
-          displayCategory: data.news_categories?.data?.[0]?.attributes?.name || 'General',
+          displayCategory: data.news_categories?.data?.[0]?.attributes?.name || data.displayCategory || 'General',
           featuredImage: data.image?.data?.attributes?.url 
-            ? `${STRAPI_URL}${data.image.data.attributes.url}` 
+            ? `${CMS_BASE_URL}${data.image.data.attributes.url}` 
             : data.imageLink || null
         };
       });
@@ -54,22 +51,17 @@ const NewsManagement = () => {
 
   useEffect(() => {
     fetchNews();
-  }, [publicationState]); // Re-fetch when toggle changes
+  }, [publicationState]);
 
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
     setLoading(true);
   
+    
     const strapiBlocks = formData.contentBlocks.map((block: any) => {
-      if (block.type === 'text') {
-        return { type: 'paragraph', children: [{ type: 'text', text: block.value || "" }] };
-      }
-      if (block.type === 'image') {
-        return { type: 'paragraph', children: [{ type: 'text', text: block.value ? `Image: ${block.value}` : "" }] };
-      }
-      if (block.type === 'video') {
-        return { type: 'paragraph', children: [{ type: 'text', text: block.value ? `Video: ${block.value}` : "" }] };
-      }
-      return { type: 'paragraph', children: [{ type: 'text', text: block.value || "" }] };
+      return { 
+        type: 'paragraph', 
+        children: [{ type: 'text', text: block.value || "" }] 
+      };
     });
   
     const payload = {
@@ -77,30 +69,35 @@ const NewsManagement = () => {
         title: formData.title,
         description: formData.summary,
         content: strapiBlocks, 
-        featuredImage: formData.imageId ? [formData.imageId] : [],
+      
+        image: formData.imageId || null, 
         imageLink: formData.imageLink || null, 
         publishDate: formData.date || new Date().toISOString().split('T')[0],
         readTime: parseInt(formData.readTime) || 5,
         isTopic: !!formData.isTopPick,
         displayCategory: formData.category, 
         author: "APF Admin",
+        
         publishedAt: status === 'published' ? new Date().toISOString() : null, 
       }
     };
   
     try {
-      const id = selectedArticle?.documentId || selectedArticle?.id;
-      if (selectedArticle && id) {
-        await api.put(`/news-articles/${id}`, payload);
+     
+      const targetId = selectedArticle?.documentId || selectedArticle?.id;
+      
+      if (selectedArticle && targetId) {
+        await api.put(`/news-articles/${targetId}`, payload);
       } else {
         await api.post('/news-articles', payload);
       }
+      
       setIsEditing(false);
       fetchNews(); 
-      alert(status === 'published' ? "Article Published!" : "Draft Saved!");
+      alert(status === 'published' ? "Article Published Successfully!" : "Draft Saved!");
     } catch (err: any) {
-      console.error("Payload sent:", payload);
-      alert(`Save Failed: ${err.response?.data?.error?.message || "Unknown Error"}`);
+      console.error("Error Detail:", err.response?.data);
+      alert(`Save Failed: ${err.response?.data?.error?.message || "Forbidden - Check Strapi Permissions"}`);
     } finally {
       setLoading(false);
     }
@@ -112,7 +109,7 @@ const NewsManagement = () => {
       await api.delete(`/news-articles/${id}`);
       fetchNews();
     } catch (err) {
-      alert("Delete failed.");
+      alert("Delete failed. You may not have delete permissions.");
     }
   };
 
@@ -153,10 +150,9 @@ const NewsManagement = () => {
               />
             ) : (
               <div className="max-w-7xl mx-auto space-y-6">
-                {/* TOP ACTION BAR */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter border-r border-slate-200 pr-4">Articles</h2>
+                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter border-r border-slate-200 pr-4">News List</h2>
                     <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
                       <button 
                         onClick={() => setPublicationState('published')}
@@ -177,11 +173,10 @@ const NewsManagement = () => {
                     onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
                     className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-purple-700 transition-all text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
                   >
-                    <Plus size={14} strokeWidth={3} /> Create New
+                    <Plus size={14} strokeWidth={3} /> Create News
                   </button>
                 </div>
 
-                {/* MAIN CONTENT AREA */}
                 <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
                   <div className="p-4 border-b border-slate-50 flex flex-col lg:flex-row justify-between items-center gap-4 bg-slate-50/30">
                     <div className="flex bg-white p-1 rounded-xl border border-slate-100 overflow-x-auto w-full lg:w-auto">
@@ -198,7 +193,7 @@ const NewsManagement = () => {
                     <div className="relative w-full lg:w-[300px]">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                       <input 
-                        placeholder="Quick search..." 
+                        placeholder="Search articles..." 
                         value={search} 
                         onChange={(e) => setSearch(e.target.value)} 
                         className="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl focus:ring-2 focus:ring-purple-100 outline-none text-[11px] font-bold text-slate-900 placeholder:text-slate-300" 
@@ -210,20 +205,20 @@ const NewsManagement = () => {
                     {loading && articles.length === 0 ? (
                       <div className="h-[300px] flex flex-col items-center justify-center gap-2">
                         <Loader2 className="animate-spin text-purple-600" size={32} />
-                        <span className="font-black text-[9px] uppercase tracking-widest text-slate-400">Loading Strapi Data...</span>
+                        <span className="font-black text-[9px] uppercase tracking-widest text-slate-400">Loading Data...</span>
                       </div>
                     ) : (
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="bg-slate-50/80 text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
-                            <th className="px-6 py-4 text-left">Article</th>
+                            <th className="px-6 py-4 text-left">Article Details</th>
                             <th className="px-4 py-4 text-center">Category</th>
-                            <th className="px-4 py-4 text-center">Status</th>
+                            <th className="px-4 py-4 text-center">Type</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                          {filteredArticles.map((article) => (
+                          {filteredArticles.length > 0 ? filteredArticles.map((article) => (
                             <tr key={article.id} className="hover:bg-slate-50/30 transition-all group">
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-4">
@@ -236,7 +231,7 @@ const NewsManagement = () => {
                                   </div>
                                   <div className="max-w-md">
                                     <h4 className="font-bold text-slate-900 text-sm line-clamp-1 mb-0.5 group-hover:text-purple-700 transition-colors">{article.title}</h4>
-                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{article.publishDate || "Unpublished"}</p>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{article.publishDate || "No Date"}</p>
                                   </div>
                                 </div>
                               </td>
@@ -247,9 +242,9 @@ const NewsManagement = () => {
                               </td>
                               <td className="px-4 py-4 text-center">
                                 {article.isTopic ? (
-                                  <span className="text-amber-600 text-[9px] font-black uppercase">Priority</span>
+                                  <span className="text-amber-600 text-[9px] font-black uppercase">Top Pick</span>
                                 ) : (
-                                  <span className="text-slate-300 text-[9px] font-black uppercase">Standard</span>
+                                  <span className="text-slate-300 text-[9px] font-black uppercase">Regular</span>
                                 )}
                               </td>
                               <td className="px-6 py-4 text-right">
@@ -269,7 +264,13 @@ const NewsManagement = () => {
                                 </div>
                               </td>
                             </tr>
-                          ))}
+                          )) : (
+                            <tr>
+                                <td colSpan={4} className="py-20 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">
+                                    No articles found
+                                </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     )}

@@ -86,23 +86,9 @@ export default function EventCard({
             </span>
           ) : (
             <>
-              {/* PRICE BADGE */}
-              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm flex items-center gap-1 ${
-                paidStatus ? 'bg-purple-600 text-white' : 'bg-green-500 text-white'
-              }`}>
-                {paidStatus 
-                  ? `UGX ${Number(nonMemberPrice || memberPrice || 0).toLocaleString()}` 
-                  : 'Free Event'
-                }
-              </span>
+              
 
-              {/* CPD POINTS BADGE   */}
-              {cpdPoints && Number(cpdPoints) > 0 && (
-                <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm flex items-center gap-1">
-                  <Award size={12} className="text-white" />
-                  {cpdPoints} CPD Points
-                </span>
-              )}
+              
             </>
           )}
         </div>
