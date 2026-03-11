@@ -9,7 +9,9 @@ const EventRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Integrated the CMS price/paid data into the original state structure
+  // Fallback image constant
+  const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
+
   const eventData = location.state as { 
     eventTitle: string; 
     eventId: string;
@@ -49,7 +51,8 @@ const EventRegistrationPage: React.FC = () => {
 
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
   const displayDate = eventData.date || localEvent?.date || 'TBA';
-  const displayImage = eventData.image || localEvent?.image || '';
+  // Applied fallback image logic here
+  const displayImage = eventData.image || localEvent?.image || DEFAULT_FALLBACK;
 
   const validateForm = () => {
     const newErrors = { fullName: '', email: '', phoneNumber: '', agreeToTerms: '' };
@@ -70,7 +73,6 @@ const EventRegistrationPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      // If paid, you could trigger your payment gateway here
       setStep(2);
     }
   };
@@ -85,7 +87,6 @@ const EventRegistrationPage: React.FC = () => {
       
       {step === 1 ? (
         <>
-          {/* Restored Original Hero Section */}
           <section
             className="relative h-[500px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
             style={{ backgroundImage: `url(${displayImage})` }}
@@ -125,7 +126,6 @@ const EventRegistrationPage: React.FC = () => {
             </style>
           </section>
 
-          {/* Restored Original Purple Background Section */}
           <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
               <button
@@ -139,8 +139,8 @@ const EventRegistrationPage: React.FC = () => {
               <div className="bg-white rounded-lg shadow-md border border-purple-300 overflow-hidden">
                 <form onSubmit={handleSubmit} className="p-6 sm:p-8">
                   <div className="space-y-5">
-                    {/* Optional Price Banner for Paid Events */}
-                    {eventData.isPaid && (
+                    {/* Check both isPaid flag and price for banner visibility */}
+                    {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
                       <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg flex justify-between items-center mb-6">
                         <span className="text-sm font-bold text-purple-700 uppercase tracking-wider">Registration Fee</span>
                         <span className="text-xl font-bold text-purple-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
@@ -272,8 +272,8 @@ const EventRegistrationPage: React.FC = () => {
                       type="submit"
                       className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6 flex items-center justify-center gap-2"
                     >
-                      {eventData.isPaid && <CreditCard size={18} />}
-                      {eventData.isPaid ? 'Proceed to Payment' : 'Register'}
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && <CreditCard size={18} />}
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Proceed to Payment' : 'Register'}
                     </button>
                   </div>
                 </form>
@@ -282,7 +282,6 @@ const EventRegistrationPage: React.FC = () => {
           </main>
         </>
       ) : (
-        /* Success State - Restored Design */
         <main className="flex-1 py-12 pt-24" style={{ backgroundColor: '#d0c9ea' }}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-white rounded-lg shadow-md border border-purple-300 p-12 text-center">
@@ -290,7 +289,7 @@ const EventRegistrationPage: React.FC = () => {
                 <CheckCircle size={48} />
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {eventData.isPaid ? 'Payment Successful!' : 'Registration Successful!'}
+                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Payment Successful!' : 'Registration Successful!'}
               </h2>
               <div className="space-y-3 mb-8">
                 <p className="text-gray-600 text-lg">

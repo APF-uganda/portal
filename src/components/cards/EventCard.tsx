@@ -34,8 +34,10 @@ export default function EventCard({
 
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
- 
-  const paidStatus = isPaid === true || isPaid === 'true';
+  // Robust check: considered paid if boolean true, string "true", or if price > 0
+  const paidStatus = useMemo(() => {
+    return isPaid === true || isPaid === 'true' || Number(nonMemberPrice) > 0 || Number(memberPrice) > 0;
+  }, [isPaid, nonMemberPrice, memberPrice]);
 
   const imageUrl = useMemo(() => {
     const imgPath = image?.data?.attributes?.url || image?.url || image?.attributes?.url || (typeof image === 'string' ? image : null);
