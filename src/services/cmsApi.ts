@@ -1,8 +1,8 @@
 import axios from 'axios';
+import { CMS_API_URL, CMS_BASE_URL } from '../config/api';
 
 
  
-const STRAPI_URL = import.meta.env.VITE_CMS_URL || 'http://localhost:1337';
 const ADMIN_TOKEN = '0889ca4cdbb55fdeddaa95f0dfca91eb8bb3dc15664b0912f4d1eeb661e9b905391c39fe965054160282519bf8fa7e8570b53b98d4a6f6427e53c7887e63e6f317a8f128fa7c44b33de19ce94db7b2ae72d3d3468fa0ac64e1d35e12d69d56a62cb8c485f4a6df25ba661cf97d7ca070db2e83cf3dcb687b3df73f18f21269ab';
 
 export interface Event {
@@ -33,7 +33,7 @@ export interface NewsArticle {
 }
 
 const api = axios.create({ 
-  baseURL: `${STRAPI_URL}/api`, 
+  baseURL: CMS_API_URL, 
   headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
 });
 
@@ -44,8 +44,8 @@ const getImageUrl = (url: string | undefined): string => {
   if (!url) return '/images/placeholder.jpg';
   // If the URL is already absolute (starts with http), return it
   if (url.startsWith('http')) return url;
-  // Otherwise, prepend the dynamic STRAPI_URL
-  return `${STRAPI_URL}${url}`;
+  // Otherwise, prepend the configured CMS base URL
+  return `${CMS_BASE_URL}${url}`;
 };
 
 /**

@@ -155,7 +155,7 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
           required
         />
 
-        <div className="relative">
+        <div>
           <Input
             label="Email Address"
             name="email"
@@ -170,17 +170,19 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
             required
           />
           {!isEmailVerified && !otpSent && validateEmail(data.email).isValid && !availabilityErrors.email && (
-            <button 
-              type="button"
-              onClick={handleSendOTP}
-              disabled={isVerifying}
-              className="absolute right-2 top-[34px] text-xs font-bold text-[#5E2590] hover:underline disabled:opacity-50"
-            >
-              {isVerifying ? "Sending..." : "Verify Email"}
-            </button>
+            <div className="mt-1 flex justify-end">
+              <button 
+                type="button"
+                onClick={handleSendOTP}
+                disabled={isVerifying}
+                className="text-xs font-bold text-[#5E2590] hover:underline disabled:opacity-50"
+              >
+                {isVerifying ? "Sending..." : "Verify Email"}
+              </button>
+            </div>
           )}
           {isEmailVerified && (
-            <div className="absolute right-3 top-10 flex items-center gap-1 text-xs font-bold text-green-600">
+            <div className="mt-1 flex items-center justify-end gap-1 text-xs font-bold text-green-600">
               <Check size={14} /> Verified
             </div>
           )}
