@@ -116,22 +116,22 @@ const ForumPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Community Forum</h1>
-            <p className="text-gray-600">Connect, share, and discover insights with the APF community.</p>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Community Forum</h1>
+            <p className="text-gray-600 text-sm sm:text-base">Connect, share, and discover insights with the APF community.</p>
           </div>
-          <div className="flex gap-4">
-            <Link to="/forum/create-post">
-              <button className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto">
+            <Link to="/forum/create-post" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                 <Plus className="w-5 h-5" />
                 Create New Post
               </button>
             </Link>
-            <Link to="/forum/my-posts">
-              <button className="flex items-center gap-2 px-6 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <Link to="/forum/my-posts" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                 <List className="w-5 h-5" />
                 My Posts
               </button>
@@ -144,7 +144,7 @@ const ForumPage = () => {
           {/* Forum Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Categories */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-4 border-b border-gray-200">
                 Forum Categories
               </h3>
@@ -161,11 +161,11 @@ const ForumPage = () => {
                           : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="min-w-0 flex items-center gap-3">
                         <div className="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center">
                           <IconComponent className="w-5 h-5 text-purple-600" />
                         </div>
-                        <span className="font-medium">{category.name}</span>
+                        <span className="font-medium text-left break-words">{category.name}</span>
                       </div>
                       <span className="bg-gray-100 text-gray-600 text-sm font-semibold px-2 py-1 rounded-full min-w-[32px] text-center">
                         {category.count}
@@ -177,7 +177,7 @@ const ForumPage = () => {
             </div>
 
             {/* Active Members */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-4 border-b border-gray-200">
                 Active Members
               </h3>
@@ -188,8 +188,8 @@ const ForumPage = () => {
                       <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                         {user.initials}
                       </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900 text-sm">{user.name}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-900 text-sm break-words">{user.name}</div>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           <div
                             className={`w-2 h-2 rounded-full ${
@@ -201,7 +201,7 @@ const ForumPage = () => {
                             }`}
                           ></div>
                           <span className="capitalize">{user.status}</span>
-                          <span>•</span>
+                          <span>&middot;</span>
                           <span>{user.lastSeen}</span>
                         </div>
                       </div>
@@ -219,14 +219,14 @@ const ForumPage = () => {
           {/* Forum Content */}
           <div className="lg:col-span-3">
             {/* Forum Actions */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2">
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 mb-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap gap-2">
                   {['all', 'popular', 'recent', 'unanswered'].map((filter) => (
                     <button
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
-                      className={`px-5 py-2 rounded-lg font-semibold text-sm transition-colors ${
+                      className={`px-3 sm:px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors ${
                         activeFilter === filter
                           ? 'bg-purple-600 text-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-600'
@@ -236,9 +236,9 @@ const ForumPage = () => {
                     </button>
                   ))}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                   <span className="text-sm text-gray-600">Sort by:</span>
-                  <select className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <select className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                     <option>Latest Activity</option>
                     <option>Most Replies</option>
                     <option>Most Likes</option>
@@ -251,7 +251,7 @@ const ForumPage = () => {
             {/* Forum Posts */}
             <div className="space-y-6">
               {forumPosts.length === 0 ? (
-                <div className="bg-white rounded-lg p-12 shadow-sm border border-gray-200 text-center">
+                <div className="bg-white rounded-lg p-8 sm:p-12 shadow-sm border border-gray-200 text-center">
                   <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No posts yet</h3>
                   <p className="text-gray-600 mb-6">
@@ -266,10 +266,10 @@ const ForumPage = () => {
                 </div>
               ) : (
                 forumPosts.map((post) => (
-                <div key={post.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div key={post.id} className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                   {/* Post Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden relative">
                         {post.authorProfilePictureUrl ? (
                           <>
@@ -289,12 +289,12 @@ const ForumPage = () => {
                           <span>{post.authorInitials}</span>
                         )}
                       </div>
-                      <div>
-                        <div className="font-semibold text-gray-900">{post.author}</div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 break-words">{post.author}</div>
                         <div className="text-sm text-gray-500">{post.time}</div>
                       </div>
                     </div>
-                    <span className="px-3 py-1 bg-purple-50 text-purple-600 text-sm font-semibold rounded-full">
+                    <span className="self-start sm:self-auto px-3 py-1 bg-purple-50 text-purple-600 text-xs sm:text-sm font-semibold rounded-full">
                       {post.category}
                     </span>
                   </div>
@@ -302,17 +302,17 @@ const ForumPage = () => {
                   {/* Post Content */}
                   <div className="mb-6">
                     <Link to={`/forum/post/${post.id}`}>
-                      <h2 className="text-xl font-bold text-gray-900 mb-3 line-height-tight hover:text-purple-600 transition-colors cursor-pointer">
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 line-height-tight hover:text-purple-600 transition-colors cursor-pointer break-words">
                         {post.title}
                       </h2>
                     </Link>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-gray-600 leading-relaxed break-words">
                       {post.excerpt}
                     </p>
                   </div>
 
                   {/* Post Stats */}
-                  <div className="flex items-center gap-6 mb-5 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-5 text-sm text-gray-500">
                     <div className="flex items-center gap-2">
                       <MessageSquare className="w-4 h-4 text-purple-600" />
                       <span>{post.replies} Replies</span>
@@ -368,17 +368,17 @@ const ForumPage = () => {
                   </div>
 
                   {/* Post Actions */}
-                  <div className="flex items-center justify-between pt-5 border-t border-gray-200">
-                    <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between pt-5 border-t border-gray-200">
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                       <Link to={`/forum/post/${post.id}`}>
-                        <button className="flex items-center gap-2 px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        <button className="flex items-center gap-2 px-3 sm:px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
                           <Reply className="w-4 h-4" />
                           Reply
                         </button>
                       </Link>
                       <button 
                         onClick={() => handleLike(post.id)}
-                        className={`flex items-center gap-2 px-5 py-2 border rounded-lg transition-colors ${
+                        className={`flex items-center gap-2 px-3 sm:px-5 py-2 border rounded-lg transition-colors text-sm ${
                           likedPosts.includes(post.id)
                             ? 'border-red-200 bg-red-50 text-red-600'
                             : 'border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -389,7 +389,7 @@ const ForumPage = () => {
                       </button>
                       <button 
                         onClick={() => handleBookmark(post.id)}
-                        className={`flex items-center gap-2 px-5 py-2 border rounded-lg transition-colors ${
+                        className={`flex items-center gap-2 px-3 sm:px-5 py-2 border rounded-lg transition-colors text-sm ${
                           bookmarkedPosts.includes(post.id)
                             ? 'border-purple-200 bg-purple-50 text-purple-600'
                             : 'border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -399,7 +399,7 @@ const ForumPage = () => {
                         {bookmarkedPosts.includes(post.id) ? 'Bookmarked' : 'Bookmark'}
                       </button>
                     </div>
-                    <Link to={`/forum/post/${post.id}`} className="flex items-center gap-1 text-purple-600 font-semibold hover:underline">
+                    <Link to={`/forum/post/${post.id}`} className="inline-flex items-center gap-1 text-purple-600 font-semibold hover:underline self-start sm:self-auto">
                       Read More
                       <ChevronRight className="w-4 h-4" />
                     </Link>

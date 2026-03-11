@@ -46,22 +46,22 @@ const NotificationFilter: React.FC<NotificationFilterProps> = ({
   const activeOption = options.find(option => option.key === activeFilter)
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative w-full sm:w-auto" ref={dropdownRef}>
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
-        className="flex items-center gap-2 min-w-[120px] justify-between"
+        className="w-full sm:w-auto max-w-full flex items-center gap-2 justify-between min-w-0 sm:min-w-[120px]"
       >
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4" />
-          <span>{activeOption?.label || 'Filter'}</span>
+        <div className="min-w-0 flex items-center gap-2">
+          <Filter className="w-4 h-4 shrink-0" />
+          <span className="truncate">{activeOption?.label || 'Filter'}</span>
         </div>
-        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </Button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+        <div className="absolute top-full left-0 mt-2 w-full sm:w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
           <div className="py-2">
             <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
               Filter Notifications
@@ -74,7 +74,7 @@ const NotificationFilter: React.FC<NotificationFilterProps> = ({
                   activeFilter === option.key ? 'bg-purple-50 text-purple-600' : 'text-gray-700'
                 }`}
               >
-                <span>{option.label}</span>
+                <span className="pr-2 break-words">{option.label}</span>
                 <div className="flex items-center gap-2">
                   {typeof option.count === 'number' && (
                     <span className={`text-xs px-2 py-1 rounded-full ${

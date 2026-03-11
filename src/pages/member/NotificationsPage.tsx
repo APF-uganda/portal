@@ -171,18 +171,54 @@ const NotificationsPage: React.FC = () => {
     { key: 'security', label: 'Security Alerts', count: stats.byType.security },
   ]
 
+  const renderNotificationItem = (notification: (typeof notifications)[number]) => {
+    const Icon = getNotificationIcon(notification.type)
+
+    return (
+      <div
+        key={notification.id}
+        className={`p-4 rounded-lg border-l-4 transition-all hover:bg-gray-50 ${
+          !notification.isRead
+            ? 'bg-purple-50/50 border-l-purple-600'
+            : 'border-l-transparent'
+        }`}
+      >
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${getTypeColor(notification.type)}`}>
+            <Icon className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-gray-900 mb-1 break-words">{notification.title}</div>
+            <div className="text-gray-600 text-sm mb-2 leading-relaxed break-words">{notification.message}</div>
+            <div className="text-xs text-gray-500">{formatNotificationTime(notification.createdAt)}</div>
+          </div>
+        </div>
+        <div className="mt-2 flex justify-start sm:justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleNotificationRead(notification.id)}
+            className="h-auto px-0 sm:px-2 text-gray-500 hover:text-purple-600 text-xs"
+          >
+            {!notification.isRead ? 'Mark as read' : 'Mark as unread'}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Notifications & Activity</h1>
-            <div className="flex gap-2 mt-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Notifications & Activity</h1>
+            <div className="mt-4 flex flex-wrap gap-2">
               <Button
                 variant={activeTab === 'notifications' ? "default" : "outline"}
                 onClick={() => setActiveTab('notifications')}
-                className={activeTab === 'notifications' ? "bg-purple-600 hover:bg-purple-700" : ""}
+                className={`w-full sm:w-auto ${activeTab === 'notifications' ? "bg-purple-600 hover:bg-purple-700" : ""}`}
               >
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications
@@ -190,14 +226,14 @@ const NotificationsPage: React.FC = () => {
               <Button
                 variant={activeTab === 'activities' ? "default" : "outline"}
                 onClick={() => setActiveTab('activities')}
-                className={activeTab === 'activities' ? "bg-purple-600 hover:bg-purple-700" : ""}
+                className={`w-full sm:w-auto ${activeTab === 'activities' ? "bg-purple-600 hover:bg-purple-700" : ""}`}
               >
                 <Activity className="w-4 h-4 mr-2" />
                 Recent Activity
               </Button>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
             {/* Filter only applies to Notifications tab, not Recent Activity */}
             <NotificationFilter
               activeFilter={activeFilter}
@@ -208,7 +244,7 @@ const NotificationsPage: React.FC = () => {
             {activeTab === 'notifications' && (
               <Button 
                 onClick={handleMarkAllAsRead}
-                className="bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
+                className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 flex items-center justify-center gap-2"
                 disabled={loading || stats.unread === 0}
               >
                 <CheckCheck className="w-4 h-4" />
@@ -291,38 +327,7 @@ const NotificationsPage: React.FC = () => {
                         <p className="text-gray-500 text-xs mt-1">You're all caught up!</p>
                       </div>
                     ) : (
-                      todayNotifications.map((notification) => {
-                        const Icon = getNotificationIcon(notification.type)
-                        return (
-                          <div
-                            key={notification.id}
-                            className={`flex p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:bg-gray-50 ${
-                              !notification.isRead 
-                                ? 'bg-purple-50/50 border-l-purple-600' 
-                                : 'border-l-transparent'
-                            }`}
-                          >
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0 ${getTypeColor(notification.type)}`}>
-                              <Icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-900 mb-1">{notification.title}</div>
-                              <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.message}</div>
-                              <div className="text-xs text-gray-500">{formatNotificationTime(notification.createdAt)}</div>
-                            </div>
-                            <div className="flex items-center">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => toggleNotificationRead(notification.id)}
-                                className="text-gray-500 hover:text-purple-600 text-xs"
-                              >
-                                {!notification.isRead ? 'Mark as read' : 'Mark as unread'}
-                              </Button>
-                            </div>
-                          </div>
-                        )
-                      })
+                      todayNotifications.map((notification) => renderNotificationItem(notification))
                     )}
                   </CardContent>
                 </Card>
@@ -334,38 +339,7 @@ const NotificationsPage: React.FC = () => {
                       <CardTitle className="text-lg font-semibold text-gray-800">This Week</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {weekNotifications.map((notification) => {
-                        const Icon = getNotificationIcon(notification.type)
-                        return (
-                          <div
-                            key={notification.id}
-                            className={`flex p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:bg-gray-50 ${
-                              !notification.isRead 
-                                ? 'bg-purple-50/50 border-l-purple-600' 
-                                : 'border-l-transparent'
-                            }`}
-                          >
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0 ${getTypeColor(notification.type)}`}>
-                              <Icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-900 mb-1">{notification.title}</div>
-                              <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.message}</div>
-                              <div className="text-xs text-gray-500">{formatNotificationTime(notification.createdAt)}</div>
-                            </div>
-                            <div className="flex items-center">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => toggleNotificationRead(notification.id)}
-                                className="text-gray-500 hover:text-purple-600 text-xs"
-                              >
-                                {!notification.isRead ? 'Mark as read' : 'Mark as unread'}
-                              </Button>
-                            </div>
-                          </div>
-                        )
-                      })}
+                      {weekNotifications.map((notification) => renderNotificationItem(notification))}
                     </CardContent>
                   </Card>
                 )}
@@ -377,38 +351,7 @@ const NotificationsPage: React.FC = () => {
                       <CardTitle className="text-lg font-semibold text-gray-800">Older</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {olderNotifications.map((notification) => {
-                        const Icon = getNotificationIcon(notification.type)
-                        return (
-                          <div
-                            key={notification.id}
-                            className={`flex p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:bg-gray-50 ${
-                              !notification.isRead 
-                                ? 'bg-purple-50/50 border-l-purple-600' 
-                                : 'border-l-transparent'
-                            }`}
-                          >
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 flex-shrink-0 ${getTypeColor(notification.type)}`}>
-                              <Icon className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-900 mb-1">{notification.title}</div>
-                              <div className="text-gray-600 text-sm mb-2 leading-relaxed">{notification.message}</div>
-                              <div className="text-xs text-gray-500">{formatNotificationTime(notification.createdAt)}</div>
-                            </div>
-                            <div className="flex items-center">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => toggleNotificationRead(notification.id)}
-                                className="text-gray-500 hover:text-purple-600 text-xs"
-                              >
-                                {!notification.isRead ? 'Mark as read' : 'Mark as unread'}
-                              </Button>
-                            </div>
-                          </div>
-                        )
-                      })}
+                      {olderNotifications.map((notification) => renderNotificationItem(notification))}
                     </CardContent>
                   </Card>
                 )}
@@ -435,12 +378,12 @@ const NotificationsPage: React.FC = () => {
                       const activityType = getActivityType(activity.action)
                       const { icon: IconComponent, bgColor } = getActivityDisplay(activityType)
                       return (
-                        <div key={activity.id} className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div key={activity.id} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                           <div className={`w-10 h-10 ${bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
                             <IconComponent className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{activity.message}</p>
+                            <p className="text-sm font-medium text-gray-900 break-words">{activity.message}</p>
                             <p className="text-xs text-gray-500">{formatNotificationTime(activity.timestamp)}</p>
                           </div>
                         </div>
