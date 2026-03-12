@@ -56,13 +56,13 @@ export async function processPayment(request: PaymentRequest): Promise<PaymentRe
     // Simulate various failure reasons based on payment method
     let errorMessages: string[];
     
-    if (request.method === 'credit_card') {
+    if (request.method === 'bank') {
       errorMessages = [
-        'Card declined by issuer',
+        'Bank transfer failed',
+        'Invalid account details',
         'Insufficient funds',
-        'Invalid card number',
-        'Card expired',
-        'CVV verification failed',
+        'Bank service unavailable',
+        'Transaction timeout',
         'Transaction limit exceeded',
       ];
     } else {
