@@ -8,24 +8,34 @@ import api from '../../services/cmsApi';
 import { CMS_BASE_URL } from '../../config/api';
 
 export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) => {
+  
+  const CATEGORY_MAP: Record<string, number> = {
+    'Policy Update': 1,
+    'Thought Leadership': 2,
+    'Announcements': 3,
+    'SME Support': 4
+  };
+
+ 
+  const getInitialCategory = () => {
+    if (initialData?.news_categories?.[0]?.name) return initialData.news_categories[0].name;
+    return initialData?.displayCategory || 'Policy Update';
+  };
+
   const [title, setTitle] = useState(initialData?.title || "");
   const [summary, setSummary] = useState(initialData?.description || initialData?.summary || "");
-  const [category, setCategory] = useState(initialData?.displayCategory || 'Policy Update');
+  const [category, setCategory] = useState(getInitialCategory());
   const [isTopPick, setIsTopPick] = useState(initialData?.isTopic || initialData?.isFeatured || false);
   const [blocks, setBlocks] = useState(initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }]);
   
-  // New State for Read Time (Required for your CMS Schema)
   const [readTime, setReadTime] = useState(initialData?.readTime || 5);
-  
   const [imagePreview, setImagePreview] = useState(initialData?.featuredImage || "");
   const [imageId, setImageId] = useState<number | null>(initialData?.imageId || null);
   const [useCoverLink, setUseCoverLink] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [blockUploading, setBlockUploading] = useState<string | null>(null);
 
-  // Use the imported CMS_BASE_URL instead of hardcoded localhost
   const STRAPI_URL = CMS_BASE_URL;
-  const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=2070&auto=format&fit=crop";
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,10 +95,14 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     if (!title) return alert("Title is required.");
     if (!imageId && !useCoverLink) return alert("Featured Image is required for the News Card.");
     
+    // Pass the numeric ID to the parent handleSave
+    const categoryId = CATEGORY_MAP[category] || 1;
+
     onSave({ 
       title, 
       summary, 
-      category, 
+      category,     
+      categoryId,   
       isTopPick, 
       readTime: Number(readTime), 
       imageId,
@@ -99,7 +113,6 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
 
   return (
     <div className="max-w-5xl mx-auto pb-20 space-y-8 animate-in fade-in duration-500">
-      {/* HEADER SECTION */}
       <div className="flex justify-between items-center py-4 border-b border-slate-200">
         <button onClick={onCancel} className="flex items-center gap-2 text-slate-400 hover:text-purple-700 text-[10px] font-black uppercase tracking-widest transition-colors">
           <ArrowLeft size={16} strokeWidth={3} /> Exit Editor
@@ -124,7 +137,6 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-        {/* MAIN EDITOR */}
         <div className="lg:col-span-3 space-y-8">
           <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100">
             <input 
@@ -202,7 +214,6 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
               ))}
             </div>
 
-            {/* TOOLBAR */}
             <div className="flex justify-center gap-10 mt-12 py-8 border-t border-slate-50">
               <ToolbarButton icon={<Type size={20}/>} label="Add Text" onClick={() => addBlock('text')} />
               <ToolbarButton icon={<ImageIcon size={20}/>} label="Add Image" onClick={() => addBlock('image')} />
@@ -211,9 +222,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
           </div>
         </div>
 
-        {/* SIDEBAR SETTINGS */}
         <div className="lg:col-span-1 space-y-6">
-          {/* COVER IMAGE */}
           <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Card Cover</label>
@@ -249,7 +258,6 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
             )}
           </div>
 
-          {/* READ TIME SETTING */}
           <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-3 flex items-center gap-2">
               <Clock size={12} /> Read Time
@@ -265,7 +273,6 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
             </div>
           </div>
 
-          {/* CATEGORY SETTING */}
           <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-3">Category</label>
             <select 
@@ -273,7 +280,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
               onChange={(e) => setCategory(e.target.value)} 
               className="w-full p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors"
             >
-              {['Policy Update', 'Thought Leadership', 'Announcements', 'SME Support'].map(c => <option key={c} value={c}>{c}</option>)}
+              {Object.keys(CATEGORY_MAP).map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>

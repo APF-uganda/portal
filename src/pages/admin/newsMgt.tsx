@@ -40,11 +40,14 @@ const NewsManagement = () => {
         const data = item.attributes || item;
         const imageObj = data.featuredImage?.data?.[0]?.attributes || data.featuredImage?.[0];
         
+        // UPDATED: Accessing news_categories instead of news
+        const categoryData = data.news_categories?.data?.[0]?.attributes || data.news_categories?.[0];
+        
         return {
           id: item.id,
           documentId: item.documentId || item.id,
           ...data,
-          displayCategory: data.news?.data?.attributes?.name || data.news?.name || 'General',
+          displayCategory: categoryData?.name || 'General',
           featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null
         };
       });
@@ -82,13 +85,13 @@ const NewsManagement = () => {
         children: [{ type: 'text', text: block.value.trim() }] 
       }));
   
-    // 3. Construct Payload 
+   
     const payload = {
       data: {
         title: formData.title.trim(),
         description: formData.summary || "", 
         content: strapiBlocks, 
-        // Force Number array for media relation
+       
         featuredImage: formData.imageId ? [Number(formData.imageId)] : [], 
         author: formData.author || "APF Admin",
         publishDate: formData.date || new Date().toISOString().split('T')[0],
@@ -96,8 +99,10 @@ const NewsManagement = () => {
         readTime: Number(formData.readTime) || 5,
         isTopic: !!formData.isTopPick,
         isFeatured: !!formData.isTopPick, 
-        // Relation must be ID Number or null
-        news: formData.categoryId ? Number(formData.categoryId) : null,
+        
+        
+        news_categories: formData.categoryId ? [Number(formData.categoryId)] : [],
+        
         publishedAt: status === 'published' ? new Date().toISOString() : null, 
       }
     };
