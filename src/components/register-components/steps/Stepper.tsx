@@ -1,4 +1,12 @@
-function Stepper({ steps, currentStep }: { steps: string[]; currentStep: number }) {
+function Stepper({ 
+  steps, 
+  currentStep, 
+  completedSteps = [] 
+}: { 
+  steps: string[]; 
+  currentStep: number;
+  completedSteps?: number[];
+}) {
   return (
     <div className="w-full overflow-x-auto mb-10">
       <div className="flex items-center justify-center gap-4 sm:gap-6 whitespace-nowrap px-2">
@@ -8,7 +16,9 @@ function Stepper({ steps, currentStep }: { steps: string[]; currentStep: number 
               className={`px-4 py-1.5 rounded-full text-xs font-medium ${
                 index === currentStep
                   ? "bg-purple-600 text-white"
-                  : "bg-purple-200 text-purple-700"
+                  : completedSteps.includes(index)
+                  ? "bg-gray-500 text-white"
+                  : "bg-gray-500 text-white"
               }`}
             >
               {step}

@@ -11,7 +11,6 @@ interface Application {
   phoneNumber: string;
   age_range: string;
   address: string;
-  nationalIdNumber: string;
   icpauCertificateNumber: string;
   organization: string;
   status: string;
@@ -82,7 +81,11 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
       });
 
       if (!response.ok) {
-        setError(`Failed to load: ${response.status}`);
+        if (response.status === 404) {
+          setError("Document file not found on server");
+        } else {
+          setError(`Failed to load: ${response.status}`);
+        }
         setLoading(false);
         return;
       }
@@ -96,7 +99,7 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch document:", err);
-      setError("Failed to load document");
+      setError("Document file not found or network error");
       setLoading(false);
     }
   };
@@ -171,9 +174,10 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
 // Helper function to format document type names
 const formatDocumentType = (type: string): string => {
   const typeMap: Record<string, string> = {
-    'passport_photo': 'Passport Photo',
-    'national_id': 'National ID',
     'icpau_certificate': 'ICPAU Certificate',
+    'firm_license': 'Firm License',
+    'proof_of_payment': 'Proof of Payment',
+    'passport_photo': 'Passport Photo',
     'cv': 'Curriculum Vitae (CV)',
     'recommendation_letter': 'Recommendation Letter',
     'proof_of_employment': 'Proof of Employment',
@@ -311,15 +315,27 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                       </p>
                     </div>
                     <div>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Email</label>
+                      <p className="text-gray-900">{application.email || 'N/A'}</p>
+                    </div>
+                    <div>
                       <label className="text-[10px] font-bold text-gray-400 uppercase">Phone</label>
                       <p className="text-gray-900">{application.phoneNumber || (application as any).phone_number || 'N/A'}</p>
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-gray-400 uppercase">National ID</label>
-                      <p className="text-gray-900 font-mono text-sm">{application.nationalIdNumber || (application as any).national_id_number || 'N/A'}</p>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Age Range</label>
+                      <p className="text-gray-900">{application.age_range || 'N/A'}</p>
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-gray-400 uppercase">Organization</label>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Address</label>
+                      <p className="text-gray-900">{application.address || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">ICPAU Certificate Number</label>
+                      <p className="text-gray-900 font-mono text-sm">{application.icpauCertificateNumber || (application as any).icpau_certificate_number || 'N/A'}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase">Organization/Firm</label>
                       <p className="text-gray-900">{application.organization || (application as any).employer_name || 'N/A'}</p>
                     </div>
                   </div>
