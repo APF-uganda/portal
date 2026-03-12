@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/cmsApi'; 
+import { CMS_BASE_URL } from '../../config/api'; 
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
@@ -8,13 +9,16 @@ import Footer from "../../components/layout/Footer";
 
 import { ActionHeader } from '../../components/adminEvents/actionHeader';
 import { LogisticsSidebar } from '../../components/adminEvents/logistics';
-import { ImageIcon, Loader2, Star } from 'lucide-react';
+import { ImageIcon, Loader2, Star, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 const EventCreatePage = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
+
+  
+  const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
 
   const [eventData, setEventData] = useState({
     title: '',
@@ -34,30 +38,22 @@ const EventCreatePage = () => {
     imagePreview: '' 
   });
 
+  const showToast = (msg: string, type: 'success' | 'error') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 5000); 
+  };
+
   const updateField = (field: string, value: any) => {
-    setEventData(prev => {
-      let newState = { ...prev, [field]: value };
-      if (field === 'startDate' && newState.endDate && value > newState.endDate) {
-        newState.endDate = value;
-      }
-      if (field === 'endDate' && newState.startDate && value < newState.startDate) {
-        alert("End date cannot be earlier than the start date.");
-        return prev; 
-      }
-      return newState;
-    });
+    setEventData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // STEP 1: INSTANT PREVIEW
-    // Create a local URL immediately so the user sees the image while it uploads
     const localPreview = URL.createObjectURL(file);
     setEventData(prev => ({ ...prev, imagePreview: localPreview }));
 
-    // STEP 2: ACTUAL UPLOAD
     setUploading(true);
     const formData = new FormData();
     formData.append('files', file);
@@ -66,19 +62,19 @@ const EventCreatePage = () => {
       const res = await api.post('/upload', formData);
       const uploadedFile = res.data[0];
       
+     
       const fullImageUrl = uploadedFile.url.startsWith('http') 
         ? uploadedFile.url 
-        : `http://localhost:1337${uploadedFile.url}`;
+        : `${CMS_BASE_URL}${uploadedFile.url}`;
 
-     
       setEventData(prev => ({ 
         ...prev, 
         imageId: uploadedFile.id,
-        imagePreview: fullImageUrl 
+        imagePreview: fullImageUrl // Updates to the server URL once done
       }));
+      showToast("Poster uploaded successfully", "success");
     } catch (err) {
-      alert("Image upload failed. Check Strapi port 1337.");
-    
+      showToast("Upload failed. Check server connection.", "error");
       setEventData(prev => ({ ...prev, imagePreview: '' }));
     } finally {
       setUploading(false);
@@ -86,12 +82,8 @@ const EventCreatePage = () => {
   };
 
   const handlePublish = async () => {
-    const hasTitle = !!eventData.title.trim();
-    const hasDate = !!eventData.startDate;
-    const hasLocation = !!eventData.location.trim();
-  
-    if (!hasTitle || !hasDate || !hasLocation) {
-      alert(`⚠️ Missing Required Fields:\n${!hasTitle ? '- Title\n' : ''}${!hasDate ? '- Start Date\n' : ''}${!hasLocation ? '- Location/Link' : ''}`);
+    if (!eventData.title.trim() || !eventData.startDate || !eventData.location) {
+      showToast("Please fill in all required fields", "error");
       return;
     }
   
@@ -115,22 +107,37 @@ const EventCreatePage = () => {
         }
       };
   
-      const res = await api.post('/events', payload);
-      
-      if (res.status === 201 || res.status === 200) {
-        alert("Published successfully!");
-        navigate('/events');
-      }
+      await api.post('/events', payload);
+      showToast("Event Published Successfully! 🚀", "success");
+      setTimeout(() => navigate('/events'), 1500);
     } catch (err: any) {
-      console.error("API Error:", err.response?.data || err);
-      alert("Strapi Error: " + (err.response?.data?.error?.message || "Check fields"));
+      showToast("Publishing Failed", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F4F2FE]">
+    <div className="flex min-h-screen bg-[#F4F2FE] relative">
+      
+      {/* PREMIUM NOTIFICATION POP */}
+      {notification && (
+        <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 px-8 py-5 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-2 transition-all animate-in fade-in slide-in-from-top-10 duration-500 ${
+          notification.type === 'success' ? 'bg-white border-emerald-50 text-emerald-900' : 'bg-white border-red-50 text-red-900'
+        }`}>
+          <div className={`p-2 rounded-full ${notification.type === 'success' ? 'bg-emerald-50' : 'bg-red-50'}`}>
+            {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={24}/> : <AlertCircle className="text-red-500" size={24}/>}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 leading-none mb-1">Notification</span>
+            <span className="text-xs font-black uppercase tracking-wider">{notification.msg}</span>
+          </div>
+          <button onClick={() => setNotification(null)} className="ml-4 p-2 hover:bg-slate-50 rounded-xl transition-colors">
+            <X size={16} className="text-slate-300" />
+          </button>
+        </div>
+      )}
+
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
 
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col`}>
@@ -152,7 +159,7 @@ const EventCreatePage = () => {
                     <input 
                       type="text"
                       placeholder="Event Headline..."
-                      className="w-full text-4xl font-bold text-slate-900 outline-none border-none placeholder:text-slate-200"
+                      className="w-full text-4xl font-black text-slate-900 outline-none border-none placeholder:text-slate-200 uppercase tracking-tighter"
                       value={eventData.title}
                       onChange={(e) => updateField('title', e.target.value)}
                     />
@@ -166,20 +173,35 @@ const EventCreatePage = () => {
                     </button>
                   </div>
                   
-                  <div className="relative h-64 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden mb-8 group transition-colors hover:border-purple-300">
+                  {/* PREVIEW BOX FIXED */}
+                  <div className="relative h-80 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden mb-8 group transition-all hover:border-purple-300 hover:bg-purple-50/30">
                     {eventData.imagePreview ? (
                       <div className="relative w-full h-full">
-                        <img src={eventData.imagePreview} className="w-full h-full object-cover" alt="Event preview" />
+                        <img 
+                          src={eventData.imagePreview} 
+                          className="w-full h-full object-cover" 
+                          alt="Event preview" 
+                          onLoad={() => {
+                           
+                            if (!uploading) console.log("Image Loaded");
+                          }}
+                        />
                         {uploading && (
-                          <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-                            <Loader2 className="animate-spin text-purple-600" />
+                          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                            <Loader2 className="animate-spin text-purple-600" size={32} />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-purple-700">Syncing to Server...</span>
                           </div>
                         )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                           <p className="text-white text-[10px] font-black uppercase tracking-widest">Click to Replace Poster</p>
+                        </div>
                       </div>
                     ) : (
-                      <div className="text-center">
-                        <ImageIcon size={40} className="text-slate-300 mx-auto" />
-                        <p className="text-xs font-bold text-slate-400 uppercase mt-2">Upload Poster</p>
+                      <div className="text-center pointer-events-none">
+                        <div className="p-5 bg-white rounded-3xl shadow-sm mb-3 inline-block">
+                          <ImageIcon size={32} className="text-purple-500" />
+                        </div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Upload Event Poster</p>
                       </div>
                     )}
                     <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageUpload} accept="image/*" />
@@ -189,7 +211,7 @@ const EventCreatePage = () => {
 
                   <textarea 
                     placeholder="Describe the event, agenda, and speakers..."
-                    className="w-full h-80 bg-transparent text-slate-600 leading-relaxed outline-none resize-none text-lg"
+                    className="w-full h-80 bg-transparent text-slate-600 leading-relaxed outline-none resize-none text-lg font-medium"
                     value={eventData.description}
                     onChange={(e) => updateField('description', e.target.value)}
                   />

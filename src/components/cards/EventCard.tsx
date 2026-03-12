@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Tag, Award } from 'lucide-react';
+import { Calendar, Clock, MapPin, Tag, Award, ArrowRight } from 'lucide-react';
 import { useMemo } from 'react';
 import { CMS_BASE_URL } from '../../config/api'; 
 
@@ -36,12 +36,6 @@ export default function EventCard({
 
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  
-  const paidStatus = useMemo(() => {
-    const hasPrice = (nonMemberPrice && Number(nonMemberPrice) > 0) || (memberPrice && Number(memberPrice) > 0);
-    return isPaid === true || isPaid === 'true' || hasPrice;
-  }, [isPaid, nonMemberPrice, memberPrice]);
-
   const imageUrl = useMemo(() => {
     const imgPath = image?.data?.attributes?.url || image?.url || image?.attributes?.url || (typeof image === 'string' ? image : null);
     if (!imgPath) return DEFAULT_IMAGE;
@@ -56,7 +50,7 @@ export default function EventCard({
       const eventDate = new Date(Number(year), Number(month) - 1, Number(day));
       
       return eventDate.toLocaleDateString('en-US', {
-        month: 'long',
+        month: 'short',
         day: 'numeric',
         year: 'numeric'
       });
@@ -67,65 +61,87 @@ export default function EventCard({
 
   return (
     <div 
-      className={`bg-white rounded-lg overflow-hidden shadow-md group w-full h-full flex flex-col transition-all duration-500 border border-transparent hover:border-purple-200 ${isPast ? 'opacity-80' : ''}`}
+      className={`bg-white rounded-[2.5rem] overflow-hidden shadow-sm group w-full h-full flex flex-col transition-all duration-500 border border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:-translate-y-2 ${isPast ? 'opacity-75 grayscale-[0.3]' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Image Section */}
-      <div className="h-40 sm:h-48 overflow-hidden relative flex-shrink-0 bg-slate-100">
+      <div className="h-52 overflow-hidden relative flex-shrink-0 bg-slate-100">
         <img 
           src={imageUrl} 
           alt={title} 
-          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isPast ? 'grayscale-[0.5]' : ''}`} 
+          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
         />
         
-        {/* Status Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        {/* Top Badges */}
+        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
           {isPast ? (
-            <span className="bg-gray-800/90 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm backdrop-blur-sm">
-              Past Event
+            <span className="bg-slate-900/90 backdrop-blur-md text-white px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest">
+              Concluded
             </span>
           ) : (
             <>
-              
-
-              
+              {Number(cpdPoints) > 0 && (
+                <span className="bg-white/95 backdrop-blur-md text-purple-700 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-sm flex items-center gap-1.5 border border-purple-50">
+                  <Award size={12} strokeWidth={3} /> {cpdPoints} CPD Points
+                </span>
+              )}
             </>
           )}
         </div>
       </div>
 
-      <div className="p-6 flex flex-col flex-grow">
-        <h3 className="text-lg font-bold text-gray-900 mb-3 min-h-[3.5rem] line-clamp-2 group-hover:text-purple-700 transition-colors">
+      {/* Content Section */}
+      <div className="p-8 flex flex-col flex-grow">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] bg-purple-50 px-3 py-1 rounded-lg">
+            Upcoming Event
+          </span>
+        </div>
+
+        <h3 className="text-xl font-black text-slate-900 mb-4 leading-tight line-clamp-2 group-hover:text-purple-700 transition-colors uppercase tracking-tight">
           {title}
         </h3>
         
-        <div className="space-y-2 mb-4 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-purple-600" />
-            <span className="font-medium text-gray-900">{displayDate}</span>
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-slate-500">
+            <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+              <Calendar size={14} strokeWidth={3} />
+            </div>
+            <span className="text-xs font-black uppercase tracking-widest">{displayDate}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-purple-600" />
-            <span>{time}</span>
+          
+          <div className="flex items-center gap-3 text-slate-500">
+            <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+              <Clock size={14} strokeWidth={3} />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-widest">{time}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-purple-600" />
-            <span className="truncate">{location}</span>
+
+          <div className="flex items-center gap-3 text-slate-500">
+            <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+              <MapPin size={14} strokeWidth={3} />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-widest truncate">{location}</span>
           </div>
         </div>
         
-        <p className="text-xs text-gray-500 mb-6 line-clamp-3 leading-relaxed">
+        <p className="text-sm text-slate-400 mb-8 line-clamp-3 leading-relaxed font-medium">
           {description}
         </p>
         
         <div className="mt-auto">
-          {!isPast && (
+          {isPast ? (
+            <button disabled className="w-full bg-slate-100 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] cursor-not-allowed">
+              Registration Closed
+            </button>
+          ) : (
             <button 
               onClick={onRegister}
-              className="w-full bg-purple-700 text-white py-2.5 rounded-full font-semibold hover:bg-purple-800 transition-all transform active:scale-95 flex items-center justify-center gap-2"
+              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-purple-700 transition-all transform active:scale-95 flex items-center justify-center gap-3 shadow-xl shadow-slate-200 group/btn"
             >
-              <Tag size={16} />
-              Register Now
+              <Tag size={14} strokeWidth={3} />
+              Secure My Spot
+              <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" strokeWidth={3} />
             </button>
           )}
         </div>

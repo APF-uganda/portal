@@ -112,8 +112,8 @@ const NavItem: FC<NavItemProps> = ({ icon, label, to, badgeCount, collapsed }) =
     className={({ isActive }) =>
       `group relative flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-all ${
         isActive
-          ? "bg-[#5f1c9f] text-black font-bold"
-          : "hover:bg-[#5f1c9f] hover:text-black"
+          ? "bg-[#4B1D91] text-white font-bold shadow-md"
+          : "text-[#6A7270] hover:bg-purple-100 hover:text-purple-700"
       } ${collapsed ? "justify-center" : ""}`
     }
     title={collapsed ? label : ""}
