@@ -27,20 +27,19 @@ const NewsManagement = () => {
   const fetchNews = async () => {
     setLoading(true);
     try {
+      
       const res = await api.get(`/news-articles?publicationState=${publicationState}&populate=*&sort=createdAt:desc`);
       
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
-        
-        
         const imageObj = data.featuredImage?.data?.[0]?.attributes || data.featuredImage?.[0];
         
         return {
           id: item.id,
           documentId: item.documentId || item.id,
           ...data,
-          
-          displayCategory: data.news?.data?.attributes?.name || 'General',
+         
+          displayCategory: data.news?.data?.attributes?.name || data.news?.name || 'General',
           featuredImage: imageObj?.url 
             ? `${CMS_BASE_URL}${imageObj.url}` 
             : null
@@ -61,6 +60,7 @@ const NewsManagement = () => {
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
     setLoading(true);
   
+    // Strapi Blocks format
     const strapiBlocks = formData.contentBlocks.map((block: any) => ({
       type: 'paragraph', 
       children: [{ type: 'text', text: block.value || "" }] 
@@ -73,12 +73,15 @@ const NewsManagement = () => {
         content: strapiBlocks, 
         
         featuredImage: formData.imageId ? [formData.imageId] : [], 
-        author: "APF Admin",
+        author: formData.author || "APF Admin",
         publishDate: formData.date || new Date().toISOString().split('T')[0],
-        readTime: parseInt(formData.readTime) || 5,
+        readTime: Number(formData.readTime) || 5,
         isTopic: !!formData.isTopPick,
         isFeatured: !!formData.isTopPick, 
-        news: formData.categoryId || null,
+        
+        
+        news: formData.categoryId ? formData.categoryId : null,
+        
         publishedAt: status === 'published' ? new Date().toISOString() : null, 
       }
     };
@@ -96,10 +99,15 @@ const NewsManagement = () => {
       fetchNews(); 
       alert(status === 'published' ? "News Article Published!" : "Draft Saved!");
     } catch (err: any) {
-      console.error("Payload sent:", payload);
-      console.error("Server Error:", err.response?.data);
-      const msg = err.response?.data?.error?.message || "Check fields and permissions";
-      alert(`Save Failed: ${msg}`);
+      console.error("Payload sent:", JSON.stringify(payload, null, 2));
+      const errorData = err.response?.data?.error;
+      console.error("Server Error:", errorData);
+      
+      // Detailed error logging to see exactly which field failed
+      const msg = errorData?.message || "Check fields and permissions";
+      const details = errorData?.details?.errors ? `: ${errorData.details.errors[0].path[0]} field error` : "";
+      
+      alert(`Save Failed: ${msg}${details}`);
     } finally {
       setLoading(false);
     }
@@ -128,8 +136,8 @@ const NewsManagement = () => {
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col`}>
         <Header title="News Management" />
 
-        <div className="flex-1 p-10 md:p-14">
-          <div className="max-w-[1600px] mx-auto space-y-10">
+        <div className="flex-1 p-10">
+          <div className="max-w-[1600px] mx-auto space-y-8">
             
             {!isEditing && (
               <button 
@@ -139,7 +147,7 @@ const NewsManagement = () => {
                 <div className="p-2 rounded-xl bg-white border border-slate-100 group-hover:border-purple-200 shadow-sm">
                   <ArrowLeft size={16} />
                 </div>
-                <span className="font-black text-[10px] uppercase tracking-[0.2em]">Return to Dashboard</span>
+                <span className="font-bold text-xs uppercase tracking-widest">Return to Dashboard</span>
               </button>
             )}
             
@@ -154,17 +162,17 @@ const NewsManagement = () => {
               <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter border-r border-slate-200 pr-4">Articles</h2>
+                    <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tighter border-r border-slate-200 pr-4">Articles</h2>
                     <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
                       <button 
                         onClick={() => setPublicationState('published')}
-                        className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${publicationState === 'published' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${publicationState === 'published' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-400'}`}
                       >
                         Live
                       </button>
                       <button 
                         onClick={() => setPublicationState('preview')}
-                        className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'}`}
                       >
                         Drafts
                       </button>
@@ -173,7 +181,7 @@ const NewsManagement = () => {
 
                   <button 
                     onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} 
-                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-purple-700 transition-all text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-purple-700 transition-all text-xs font-bold uppercase shadow-lg active:scale-95"
                   >
                     <Plus size={14} strokeWidth={3} /> Create News
                   </button>
@@ -186,7 +194,7 @@ const NewsManagement = () => {
                         <button 
                           key={t} 
                           onClick={() => setFilter(t)} 
-                          className={`px-5 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap ${filter === t ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
+                          className={`px-5 py-2 text-xs font-bold uppercase rounded-lg transition-all whitespace-nowrap ${filter === t ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-900'}`}
                         >
                           {t}
                         </button>
@@ -198,7 +206,7 @@ const NewsManagement = () => {
                         placeholder="Search titles..." 
                         value={search} 
                         onChange={(e) => setSearch(e.target.value)} 
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl focus:ring-2 focus:ring-purple-100 outline-none text-[11px] font-bold text-slate-900 placeholder:text-slate-300" 
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl focus:ring-2 focus:ring-purple-100 outline-none text-xs font-bold text-slate-900" 
                       />
                     </div>
                   </div>
@@ -207,12 +215,12 @@ const NewsManagement = () => {
                     {loading && articles.length === 0 ? (
                       <div className="h-[300px] flex flex-col items-center justify-center gap-2">
                         <Loader2 className="animate-spin text-purple-600" size={32} />
-                        <span className="font-black text-[9px] uppercase tracking-widest text-slate-400">Fetching Content...</span>
+                        <span className="font-bold text-xs uppercase text-slate-400">Fetching Content...</span>
                       </div>
                     ) : (
                       <table className="w-full border-collapse">
                         <thead>
-                          <tr className="bg-slate-50/80 text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
+                          <tr className="bg-slate-50/80 text-xs font-bold text-slate-400 uppercase border-b border-slate-100">
                             <th className="px-6 py-4 text-left">News Article</th>
                             <th className="px-4 py-4 text-center">Category</th>
                             <th className="px-4 py-4 text-center">Featured</th>
@@ -224,29 +232,29 @@ const NewsManagement = () => {
                             <tr key={article.id} className="hover:bg-slate-50/30 transition-all group">
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-4">
-                                  <div className="w-16 h-10 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 relative">
+                                  <div className="w-16 h-10 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0">
                                     {article.featuredImage ? (
                                       <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/>
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center"><ImageIcon size={16} className="text-slate-300"/></div>
                                     )}
                                   </div>
-                                  <div className="max-w-md">
-                                    <h4 className="font-bold text-slate-900 text-sm line-clamp-1 mb-0.5 group-hover:text-purple-700 transition-colors">{article.title}</h4>
-                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{article.publishDate}</p>
+                                  <div>
+                                    <h4 className="font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-purple-700 transition-colors">{article.title}</h4>
+                                    <p className="text-xs text-slate-400 font-bold uppercase">{article.publishDate}</p>
                                   </div>
                                 </div>
                               </td>
                               <td className="px-4 py-4 text-center">
-                                 <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                                 <span className="text-xs font-bold uppercase text-slate-500 bg-slate-100 px-2 py-1 rounded">
                                    {article.displayCategory}
                                  </span>
                               </td>
                               <td className="px-4 py-4 text-center">
                                 {article.isTopic || article.isFeatured ? (
-                                  <span className="text-amber-600 text-[9px] font-black uppercase">Yes</span>
+                                  <span className="text-amber-600 text-xs font-bold uppercase">Yes</span>
                                 ) : (
-                                  <span className="text-slate-300 text-[9px] font-black uppercase">No</span>
+                                  <span className="text-slate-300 text-xs font-bold uppercase">No</span>
                                 )}
                               </td>
                               <td className="px-6 py-4 text-right">
@@ -268,7 +276,7 @@ const NewsManagement = () => {
                             </tr>
                           )) : (
                             <tr>
-                                <td colSpan={4} className="py-20 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">
+                                <td colSpan={4} className="py-20 text-center text-slate-300 font-bold text-xs uppercase">
                                     No news articles to show
                                 </td>
                             </tr>

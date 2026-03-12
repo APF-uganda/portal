@@ -1,12 +1,14 @@
+import { ArrowRight } from 'lucide-react';
+
 interface NewsCardProps {
-  image: string
-  tag: string
-  title: string
-  description: string
-  date: string
-  readTime: string
-  onReadMore?: () => void
-  delay?: number
+  image: string;
+  tag: string;
+  title: string;
+  description: string;
+  date: string;
+  readTime: string | number; 
+  onReadMore?: () => void;
+  delay?: number;
 }
 
 function NewsCard({ 
@@ -19,48 +21,57 @@ function NewsCard({
   onReadMore,
   delay = 0 
 }: NewsCardProps) {
+  
+  const imageUrl = image || 'https://via.placeholder.com/400x300?text=No+Image';
+
   return (
     <div 
-      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group opacity-0 translate-y-12 animate-fade-in-up w-full"
+      className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group w-full"
       style={{ 
         animationDelay: `${delay}ms`,
-        animationFillMode: 'forwards'
+        
       }}
     >
-      <div className="h-40 sm:h-44 md:h-48 overflow-hidden">
+      {/* Image Container */}
+      <div className="h-48 overflow-hidden relative">
         <img
-          src={image}
+          src={imageUrl}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
+        <div className="absolute top-4 left-4">
+          <span className="bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wider">
+            {tag}
+          </span>
+        </div>
       </div>
-      <div className="p-4 sm:p-5 md:p-6">
-        <span className="inline-block bg-gray-100 text-gray-700 text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1 rounded mb-2 sm:mb-3 transition-all duration-300 group-hover:bg-purple-100 group-hover:text-purple-700">
-          {tag}
-        </span>
+
+      {/* Content Container */}
+      <div className="p-6">
+        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+          <span>{date}</span>
+          <span>•</span>
+          <span>{readTime} Min Read</span>
+        </div>
         
-        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[3.5rem] leading-tight transition-colors duration-300 group-hover:text-purple-700">
+        <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 leading-tight transition-colors duration-300 group-hover:text-purple-700">
           {title}
         </h3>
         
-        <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 min-h-[3rem] sm:min-h-[3.5rem] md:min-h-[4.5rem] leading-relaxed">
+        <p className="text-sm text-slate-500 mb-6 line-clamp-3 leading-relaxed">
           {description}
         </p>
         
-        <div className="text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3">
-          {date} • {readTime}
-        </div>
-        
         <button 
           onClick={onReadMore}
-          className="text-purple-700 font-semibold text-xs sm:text-sm hover:underline transition-all duration-300 hover:translate-x-2 inline-flex items-center group/btn"
+          className="flex items-center gap-2 text-purple-700 font-bold text-xs uppercase tracking-widest transition-all duration-300 hover:gap-4 group/btn"
         >
-          Read More
-          <span className="ml-1 transition-transform duration-300 group-hover/btn:translate-x-1">→</span>
+          Read Article
+          <ArrowRight size={14} className="transition-transform duration-300 group-hover/btn:translate-x-1" />
         </button>
       </div>
     </div>
-  )
+  );
 }
 
-export default NewsCard
+export default NewsCard;
