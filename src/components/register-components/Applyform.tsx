@@ -47,6 +47,9 @@ function ApplyForm() {
   const [isDocumentsValid, setIsDocumentsValid] = useState(false);
   const [isPaymentValid, setIsPaymentValid] = useState(false);
 
+  // Track completed steps
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -68,7 +71,6 @@ function ApplyForm() {
     ageRange: '',
     phoneNumber: '',
     address: '',
-    nationalIdNumber: '',
     icpauCertificateNumber: '',
     organization: '',
   };
@@ -112,9 +114,9 @@ function ApplyForm() {
       return;
     }
 
-    // Validate payment is successful - check both status and isValidated flag
-    if ((paymentData.status !== 'success' && paymentData.status !== 'completed') || !paymentData.isValidated) {
-      setSubmissionError('Please complete payment before submitting');
+    // Validate payment is successful - check isValidated flag (proof of payment uploaded)
+    if (!paymentData.isValidated) {
+      setSubmissionError('Please complete payment and upload proof of payment before submitting');
       return;
     }
 
@@ -136,7 +138,6 @@ function ApplyForm() {
         age_range: personalData.ageRange,
         phoneNumber: personalData.phoneNumber,
         address: personalData.address,
-        nationalIdNumber: personalData.nationalIdNumber,
         icpauCertificateNumber: personalData.icpauCertificateNumber,
         organization: personalData.organization,
         
@@ -155,6 +156,18 @@ function ApplyForm() {
         // Documents with IDs
         documents: documentsData.filter((doc) => doc.file instanceof File),
       };
+
+      // Add proof of payment to documents if it exists
+      if (paymentData.proofOfPayment) {
+        submissionData.documents.push({
+          id: 'proof_of_payment',
+          file: paymentData.proofOfPayment,
+          fileName: paymentData.proofOfPayment.name,
+          fileSize: paymentData.proofOfPayment.size,
+          fileType: paymentData.proofOfPayment.type,
+          uploadStatus: 'uploaded' as const,
+        });
+      }
 
       // Submit application
       const result = await submitApplication(submissionData);
@@ -183,6 +196,10 @@ function ApplyForm() {
     if (isLastStep) {
       handleSubmit();
     } else {
+      // Mark current step as completed when moving to next step
+      if (canProceed() && !completedSteps.includes(currentStep)) {
+        setCompletedSteps(prev => [...prev, currentStep]);
+      }
       setCurrentStep(currentStep + 1);
     }
   };
@@ -226,7 +243,7 @@ function ApplyForm() {
 
           {/* Desktop: full stepper */}
           <div className="hidden sm:block">
-            <Stepper steps={STEPS} currentStep={currentStep} />
+            <Stepper steps={STEPS} currentStep={currentStep} completedSteps={completedSteps} />
           </div>
         </div>
 

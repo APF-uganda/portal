@@ -3,8 +3,8 @@
  * Feature: membership-registration-payment (Rebuilt)
  * 
  * Payment forms with different inputs based on payment method:
- * - Mobile Money (MTN/Airtel): Phone number only
- * - Credit Card: Standard card fields (number, expiry, CVV, name)
+ * - Mobile Money (MTN/Airtel): Phone number only with dummy merchant codes
+ * - Bank Transfer: Bank account details with proof of payment upload
  * 
  * All methods use the same processing flow with visual status feedback.
  * 
@@ -13,15 +13,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { PaymentData, PaymentMethod, PaymentStatus } from '../../types/registration';
-import { 
-  validateCardNumber,
-  validateExpiryDate,
-  validateCVV,
-  validateCardholderName
-} from '../../services/paymentApi';
-import { paymentService } from '../../services/paymentService';
-import { getAccessToken } from '../../utils/auth';
-import { usePaymentPolling } from '../../hooks/usePaymentPolling';
 import Input from './Input';
 
 interface PaymentFormsProps {
@@ -46,58 +37,31 @@ export function PaymentForms({
   // Mobile money fields
   const [phoneNumber, setPhoneNumber] = useState('');
   
-  // Credit card fields
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardholderName, setCardholderName] = useState('');
+  // Bank transfer fields
+  const [proofOfPayment, setProofOfPayment] = useState<File | null>(null);
   
   // Payment status
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
-  const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [transactionReference, setTransactionReference] = useState<string | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [isInitiating, setIsInitiating] = useState(false); // Loading state for payment initiation 
 
-const MTN_PREFIXES = ['25677', '25678', '25676'];
-const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
+  const MTN_PREFIXES = ['25677', '25678', '25676'];
+  const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
 
-  // Integrate payment polling hook 
-  const { isPolling, elapsedSeconds } = usePaymentPolling({
-    paymentId,
-    onStatusChange: (status: PaymentStatus, message: string) => {
-      setPaymentStatus(status);
-      if (status === 'failed' || status === 'timeout') {
-        setErrorMessage(message);
-      }
-    },
-    onComplete: (txRef: string) => {
-      console.log('[PaymentForms] Payment completed, txRef:', txRef);
-      setPaymentStatus('completed');
-      setTransactionReference(txRef);
-      // Trigger automatic submission when payment completes
-      // Use setTimeout to ensure state updates have propagated to parent
-      if (onPaymentComplete) {
-        console.log('[PaymentForms] Triggering onPaymentComplete callback in 500ms');
-        setTimeout(() => {
-          console.log('[PaymentForms] Executing onPaymentComplete callback now');
-          onPaymentComplete();
-        }, 500);
-      } else {
-        console.log('[PaymentForms] No onPaymentComplete callback provided');
-      }
-    },
-    onFailed: (error: string) => {
-      setPaymentStatus('failed');
-      setErrorMessage(error);
-    },
-    onTimeout: () => {
-      setPaymentStatus('timeout');
-      setErrorMessage('Payment verification timed out. Please check your phone and try again.');
-    },
-    enabled: (paymentStatus === 'pending' || paymentStatus === 'processing') && paymentId !== null,
-  });
+  // Dummy merchant codes
+  const MERCHANT_CODES = {
+    mtn: '123456',
+    airtel: '789012',
+    bank: 'DFCU-APF-2024'
+  };
+
+  // Bank account details
+  const BANK_DETAILS = {
+    accountName: 'Accountants Professional Forum',
+    accountNumber: '01410017142250',
+    bankName: 'DFCU Bank',
+    branch: 'Main Branch'
+  };
 
 
   // Clear payment data when method changes
@@ -105,16 +69,10 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
     if (selectedMethod && prevMethodRef.current !== null && selectedMethod !== prevMethodRef.current) {
       // Clear all fields
       setPhoneNumber('');
-      setCardNumber('');
-      setExpiryDate('');
-      setCvv('');
-      setCardholderName('');
+      setProofOfPayment(null);
       setPaymentStatus('idle');
-      setPaymentId(null);
-      setTransactionReference(undefined);
       setErrorMessage(undefined);
       setTouched({});
-      setIsInitiating(false);
     }
     prevMethodRef.current = selectedMethod;
   }, [selectedMethod]);
@@ -126,139 +84,49 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
     const paymentData: PaymentData = {
       method: selectedMethod,
       phoneNumber: phoneNumber || undefined,
-      cardNumber: cardNumber || undefined,
-      expiryDate: expiryDate || undefined,
-      cvv: cvv || undefined,
-      cardholderName: cardholderName || undefined,
       status: paymentStatus,
-      transactionReference,
       errorMessage,
-      // Enable form submission only when payment is completed 
-      isValidated: paymentStatus === 'completed' || paymentStatus === 'success',
+      // Mark as validated when proof of payment is uploaded for all methods
+      isValidated: proofOfPayment !== null,
+      // Include proof of payment file for submission
+      proofOfPayment: proofOfPayment || undefined,
     };
 
     onPaymentDataChange(paymentData);
-    // Only validate as true when payment is completed
-    onPaymentValidated(paymentStatus === 'completed' || paymentStatus === 'success');
-  }, [selectedMethod, phoneNumber, cardNumber, expiryDate, cvv, cardholderName, paymentStatus, transactionReference, errorMessage, onPaymentDataChange, onPaymentValidated]);
+    onPaymentValidated(proofOfPayment !== null);
+  }, [selectedMethod, phoneNumber, proofOfPayment, paymentStatus, errorMessage, onPaymentDataChange, onPaymentValidated]);
 
-  // Check if form is valid for payment
-  const isFormValid = (): boolean => {
-    if (!selectedMethod) return false;
-
-    if (selectedMethod === 'mtn' || selectedMethod === 'airtel') {
-      return phoneNumber !== '' && paymentService.validatePhoneNumber(phoneNumber);
-    } else if (selectedMethod === 'credit_card') {
-      return (
-        cardNumber !== '' && validateCardNumber(cardNumber) &&
-        expiryDate !== '' && validateExpiryDate(expiryDate) &&
-        cvv !== '' && validateCVV(cvv) &&
-        cardholderName !== '' && validateCardholderName(cardholderName)
-      );
-    }
-
-    return false;
-  };
-
-  // Handle payment processing
-  const handlePayment = async () => {
-    if (!selectedMethod || !isFormValid()) return;
-
-    // For registration payments, we don't require authentication
-    // The payment will be associated with the application when it's submitted
-    const token = getAccessToken();
-    if (token) {
-      // Set authentication token if available (for logged-in users)
-      paymentService.setAuthToken(token);
-    }
-
-    // Set loading state for initiation 
-    setIsInitiating(true);
-    setErrorMessage(undefined);
-
-    try {
-      // For mobile money payments, use PaymentService
-      if (selectedMethod === 'mtn' || selectedMethod === 'airtel') {
-        const response = await paymentService.initiatePayment(
-          phoneNumber,
-          selectedMethod,
-          50000 // UGX 50,000 for registration
-        );
-
-        if (response.success && response.payment_id) {
-          setPaymentId(response.payment_id);
-          setTransactionReference(response.transaction_reference);
-          setPaymentStatus('pending');
-          setIsInitiating(false);
-          // Status will be updated by polling hook
-        } else {
-          setPaymentStatus('failed');
-          setIsInitiating(false);
-          setErrorMessage(
-            response.error?.message || 
-            paymentService.getErrorMessage(response.error || { code: 'PAYMENT_INITIATION_FAILED', message: 'Payment initiation failed' })
-          );
-        }
-      } else {
-        // Credit card still uses mock for now
-        setPaymentStatus('failed');
-        setIsInitiating(false);
-        setErrorMessage('Credit card payment not yet implemented');
+  // Handle proof of payment file selection
+  const handleProofOfPaymentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage('File size must be less than 5MB');
+        return;
       }
-    } catch (error) {
-      setPaymentStatus('failed');
-      setIsInitiating(false);
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage('Network error. Please check your connection and try again.');
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        setErrorMessage('Please upload a JPG, PNG, or PDF file');
+        return;
       }
+      
+      setProofOfPayment(file);
+      setErrorMessage(undefined);
+      setPaymentStatus('completed');
     }
   };
 
-  // Handle retry payment
-  const handleRetry = async () => {
-    // If we have a paymentId, use retry API 
-    if (paymentId && (selectedMethod === 'mtn' || selectedMethod === 'airtel')) {
-      setIsInitiating(true);
-      setErrorMessage(undefined);
-
-      try {
-        const token = getAccessToken();
-        if (token) {
-          // Set authentication token if available
-          paymentService.setAuthToken(token);
-        }
-
-        const response = await paymentService.retryPayment(paymentId);
-
-        if (response.success && response.new_payment_id) {
-          // Start new polling cycle with new payment ID
-          setPaymentId(response.new_payment_id);
-          setTransactionReference(response.transaction_reference);
-          setPaymentStatus('pending');
-          setIsInitiating(false);
-        } else {
-          setPaymentStatus('failed');
-          setIsInitiating(false);
-          setErrorMessage(response.message || 'Retry failed. Please try again.');
-        }
-      } catch (error) {
-        setPaymentStatus('failed');
-        setIsInitiating(false);
-        if (error instanceof Error) {
-          setErrorMessage(error.message);
-        } else {
-          setErrorMessage('Network error. Please check your connection and try again.');
-        }
-      }
-    } else {
-      // Reset to idle state to allow phone number modification
-      setPaymentStatus('idle');
-      setPaymentId(null);
-      setErrorMessage(undefined);
-      setTransactionReference(undefined);
-      setIsInitiating(false);
+  // Handle proof of payment removal
+  const handleRemoveProofOfPayment = () => {
+    setProofOfPayment(null);
+    setPaymentStatus('idle');
+    // Reset file input
+    const fileInput = document.getElementById('proofOfPayment') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   };
 
@@ -269,23 +137,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
     switch (field) {
       case 'phoneNumber':
         if (!phoneNumber) return 'Phone number is required';
-        if (!paymentService.validatePhoneNumber(phoneNumber)) return 'Phone number must be in format 256XXXXXXXXX';
-        break;
-      case 'cardNumber':
-        if (!cardNumber) return 'Card number is required';
-        if (!validateCardNumber(cardNumber)) return 'Invalid card number';
-        break;
-      case 'expiryDate':
-        if (!expiryDate) return 'Expiry date is required';
-        if (!validateExpiryDate(expiryDate)) return 'Invalid or expired date (MM/YY)';
-        break;
-      case 'cvv':
-        if (!cvv) return 'CVV is required';
-        if (!validateCVV(cvv)) return 'CVV must be 3 or 4 digits';
-        break;
-      case 'cardholderName':
-        if (!cardholderName) return 'Cardholder name is required';
-        if (!validateCardholderName(cardholderName)) return 'Invalid name format';
+        if (!/^256\d{9}$/.test(phoneNumber)) return 'Phone number must be in format 256XXXXXXXXX';
         break;
     }
 
@@ -300,7 +152,7 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
   // Don't render anything if no method selected
   if (!selectedMethod) {
     return null;
-  }
+  };
 
   // Get method display name
   const getMethodName = () => {
@@ -309,8 +161,8 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
         return 'MTN Mobile Money';
       case 'airtel':
         return 'Airtel Money';
-      case 'credit_card':
-        return 'Credit Card';
+      case 'bank':
+        return 'Bank Transfer';
       default:
         return 'Payment';
     }
@@ -319,8 +171,25 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
   // Render mobile money form (MTN/Airtel)
   const renderMobileMoneyForm = () => (
     <div className="space-y-4">
+      {/* Merchant Code Display */}
+      <div className="bg-white border border-[#5F1C9F] rounded-lg p-4">
+        <h4 className="font-medium text-[#5F1C9F] mb-2">Payment Details</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-black">Merchant Code:</span>
+            <span className="font-mono font-bold text-black">
+              {selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-black">Amount:</span>
+            <span className="font-bold text-black">UGX 50,000</span>
+          </div>
+        </div>
+      </div>
+
       <Input
-        label="Phone Number"
+        label="Your Phone Number"
         type="tel"
         placeholder="256XXXXXXXXX"
         name="phoneNumber"
@@ -328,9 +197,9 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
         onChange={(e) => setPhoneNumber(e.target.value)}
         onBlur={() => handleBlur('phoneNumber')}
         error={getFieldError('phoneNumber')}
-        disabled={isInitiating || paymentStatus === 'pending' || paymentStatus === 'processing'}
         required
       />
+
       {selectedMethod === 'mtn' &&
           AIRTEL_PREFIXES.some(p => phoneNumber.startsWith(p)) && (
            <p className="text-sm text-red-700 mt-1">
@@ -345,140 +214,168 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
         </p>
      )}
 
-
-      {/* User instruction text (Requirement 9.1) */}
-      <div className="text-sm text-gray-700 bg-blue-50 border border-blue-200 p-4 rounded-lg">
-        <p className="flex items-start">
-          <svg className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>Enter your phone number. You will receive a payment prompt on your phone.</span>
-        </p>
+      {/* Instructions */}
+      <div className="text-sm text-black bg-white border border-l-4 border-[#9333EA] p-4 rounded-lg">
+        <p className="font-medium mb-2">Payment Instructions:</p>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Dial *165# (MTN) or *185# (Airtel)</li>
+          <li>Select "Pay Bill"</li>
+          <li>Enter Merchant Code: <span className="font-mono font-bold">{selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}</span></li>
+          <li>Enter Amount: <span className="font-bold">50000</span></li>
+          <li>Enter your name as Reference: <span className="font-mono">Your Full Name</span></li>
+          <li>Confirm payment</li>
+          <li>Upload proof of payment below</li>
+        </ol>
       </div>
 
-      {/* Display payment amount prominently  */}
-      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-        <p className="text-sm text-gray-600 mb-1">Registration Fee</p>
-        <p className="text-2xl font-bold text-purple-600">50,000 UGX</p>
+      {/* Proof of Payment Upload */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Upload Proof of Payment <span className="text-red-500">*</span>
+        </label>
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+          {!proofOfPayment ? (
+            <div className="text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="mt-2">
+                <label htmlFor="proofOfPayment" className="cursor-pointer">
+                  <span className="text-purple-600 hover:text-purple-500">Upload a file</span>
+                  <input
+                    id="proofOfPayment"
+                    type="file"
+                    className="sr-only"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={handleProofOfPaymentChange}
+                  />
+                </label>
+                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 5MB</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <svg className="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="ml-2 text-sm text-gray-900">{proofOfPayment.name}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveProofOfPayment}
+                className="text-red-600 hover:text-red-500"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-
-      <button
-        type="button"
-        onClick={handlePayment}
-        disabled={!isFormValid() || isInitiating || paymentStatus === 'pending' || paymentStatus === 'processing'}
-        className={`w-full py-3 rounded-lg text-sm font-medium transition-all touch-manipulation min-h-[44px] flex items-center justify-center ${
-          isFormValid() && !isInitiating && paymentStatus !== 'pending' && paymentStatus !== 'processing'
-            ? 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        }`}
-      >
-        {isInitiating ? (
-          <>
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-            Initiating Payment...
-          </>
-        ) : (
-          'Pay Now - UGX 50,000'
-        )}
-      </button>
     </div>
   );
 
-  // Render credit card form
-  const renderCreditCardForm = () => (
+  // Render bank transfer form
+  const renderBankTransferForm = () => (
     <div className="space-y-4">
-      <Input
-        label="Card Number"
-        type="text"
-        placeholder="1234 5678 9012 3456"
-        name="cardNumber"
-        value={cardNumber}
-        onChange={(e) => {
-          // Auto-format card number with spaces (max 19 chars)
-          const value = e.target.value.replace(/\s/g, '');
-          if (value.length <= 16) {
-            const formatted = value.match(/.{1,4}/g)?.join(' ') || value;
-            setCardNumber(formatted);
-          }
-        }}
-        onBlur={() => handleBlur('cardNumber')}
-        error={getFieldError('cardNumber')}
-        required
-      />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input
-          label="Expiry Date"
-          type="text"
-          placeholder="MM/YY"
-          name="expiryDate"
-          value={expiryDate}
-          onChange={(e) => {
-            // Auto-format expiry date (max 5 chars)
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-              value = value.slice(0, 2) + '/' + value.slice(2, 4);
-            }
-            setExpiryDate(value);
-          }}
-          onBlur={() => handleBlur('expiryDate')}
-          error={getFieldError('expiryDate')}
-          required
-        />
-
-        <Input
-          label="CVV"
-          type="text"
-          placeholder="123"
-          name="cvv"
-          value={cvv}
-          onChange={(e) => {
-            // Only allow digits (max 4)
-            const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-            setCvv(value);
-          }}
-          onBlur={() => handleBlur('cvv')}
-          error={getFieldError('cvv')}
-          required
-        />
+      {/* Bank Details Display */}
+      <div className="bg-white border  border-[#5F1C9F] rounded-lg p-4">
+        <h4 className="font-medium text-black mb-3">Bank Transfer Details</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-black">Account Name:</span>
+            <span className="font-medium text-black">{BANK_DETAILS.accountName}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-black">Account Number:</span>
+            <span className="font-large font-bold text-black">{BANK_DETAILS.accountNumber}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-black">Bank:</span>
+            <span className="font-medium text-black">{BANK_DETAILS.bankName}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-black">Branch:</span>
+            <span className="font-medium text-black">{BANK_DETAILS.branch}</span>
+          </div>
+          <div className="flex justify-between border-t border-[#5F1C9F] pt-2 mt-3">
+            <span className="text-black">Amount:</span>
+            <span className="font-bold text-black">UGX 50,000</span>
+          </div>
+        </div>
       </div>
 
-      <Input
-        label="Cardholder Name"
-        type="text"
-        placeholder="John Doe"
-        name="cardholderName"
-        value={cardholderName}
-        onChange={(e) => setCardholderName(e.target.value)}
-        onBlur={() => handleBlur('cardholderName')}
-        error={getFieldError('cardholderName')}
-        required
-      />
-
-      <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-        <p className="font-medium mb-1">Secure Payment:</p>
-        <p>Your card information is encrypted and secure. We do not store your card details.</p>
+      {/* Instructions */}
+      <div className="text-sm text-black bg-white border border-l-4 border-[#5F1C9F] p-4 rounded-lg">
+        <p className="font-medium mb-2">Payment Instructions:</p>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Transfer UGX 50,000 to the account details above</li>
+          <li>Use "APF Membership - [Your Name]" as the reference</li>
+          <li>Take a screenshot or photo of the transaction receipt</li>
+          <li>Upload the proof of payment below</li>
+        </ol>
       </div>
 
-      <button
-        type="button"
-        onClick={handlePayment}
-        disabled={!isFormValid() || isInitiating || paymentStatus === 'pending' || paymentStatus === 'processing'}
-        className={`w-full py-3 rounded-lg text-sm font-medium transition-all touch-manipulation min-h-[44px] flex items-center justify-center ${
-          isFormValid() && !isInitiating && paymentStatus !== 'pending' && paymentStatus !== 'processing'
-            ? 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        }`}
-      >
-        {isInitiating ? (
-          <>
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-            Initiating Payment...
-          </>
-        ) : (
-          'Pay Now - UGX 50,000'
-        )}
-      </button>
+      {/* Proof of Payment Upload */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Upload Proof of Payment <span className="text-red-500">*</span>
+        </label>
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+          {!proofOfPayment ? (
+            <div className="text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="mt-2">
+                <label htmlFor="proofOfPayment" className="cursor-pointer">
+                  <span className="text-purple-600 hover:text-purple-500">Upload a file</span>
+                  <input
+                    id="proofOfPayment"
+                    type="file"
+                    className="sr-only"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={handleProofOfPaymentChange}
+                  />
+                </label>
+                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 5MB</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <svg className="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="ml-2 text-sm text-gray-900">{proofOfPayment.name}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveProofOfPayment}
+                className="text-red-600 hover:text-red-500"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Success Status */}
+      {proofOfPayment && paymentStatus === 'completed' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm text-green-800">Proof of payment uploaded successfully!</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -489,163 +386,14 @@ const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
           {getMethodName()} Payment
         </h3>
 
-        {/* Input Form (idle state) */}
-        {paymentStatus === 'idle' && (
-          <>
-            {(selectedMethod === 'mtn' || selectedMethod === 'airtel') && renderMobileMoneyForm()}
-            {selectedMethod === 'credit_card' && renderCreditCardForm()}
-          </>
-        )}
+        {/* Render appropriate form based on method */}
+        {(selectedMethod === 'mtn' || selectedMethod === 'airtel') && renderMobileMoneyForm()}
+        {selectedMethod === 'bank' && renderBankTransferForm()}
 
-        {/* Pending Status */}
-        {(paymentStatus === 'pending' || paymentStatus === 'processing') && (
-          <div className="space-y-4">
-            <div className="flex flex-col items-center justify-center py-8">
-              {/* Spinner */}
-              <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
-              
-              <p className="text-lg font-semibold text-gray-800 mb-2">Processing Payment...</p>
-              
-              {/* User instruction text */}
-              <div className="text-center space-y-2 mb-4">
-                <p className="text-sm text-gray-700">
-                  Please check your phone for the payment prompt.
-                </p>
-                <p className="text-sm text-gray-600">
-                  This may take up to 5 minutes.
-                </p>
-              </div>
-              
-              {isPolling && (
-                <div className="mt-2 text-sm text-gray-500 flex items-center">
-                  <div className="animate-pulse mr-2">●</div>
-                  Checking status... {elapsedSeconds}s
-                </div>
-              )}
-              
-              <div className="mt-4 px-4 py-2 bg-purple-50 border border-purple-200 rounded-lg">
-                <p className="text-sm text-purple-800">
-                  {selectedMethod === 'credit_card' 
-                    ? `Card: •••• •••• •••• ${cardNumber.slice(-4)}`
-                    : `Phone: ${phoneNumber}`}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Success Status */}
-        {(paymentStatus === 'success' || paymentStatus === 'completed') && (
-          <div className="space-y-4">
-            <div className="flex flex-col items-center justify-center py-8">
-              {/* Success Icon */}
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <svg
-                  className="w-10 h-10 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              
-              <p className="text-lg font-semibold text-green-800 mb-2">Payment Successful!</p>
-              
-              {/* User instruction text (Requirement 9.4) */}
-              <p className="text-sm text-gray-700 text-center mb-4">
-                Your payment has been processed successfully. Your application is being submitted automatically...
-              </p>
-              
-              <div className="w-full space-y-2">
-                <div className="px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-800">
-                    <span className="font-medium">Transaction Reference:</span><br />
-                    {transactionReference}
-                  </p>
-                </div>
-                <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    <span className="font-medium">
-                      {selectedMethod === 'credit_card' ? 'Card:' : 'Phone:'}
-                    </span>{' '}
-                    {selectedMethod === 'credit_card' 
-                      ? `•••• •••• •••• ${cardNumber.slice(-4)}`
-                      : phoneNumber}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Failed Status */}
-        {(paymentStatus === 'failed' || paymentStatus === 'timeout') && (
-          <div className="space-y-4">
-            <div className="flex flex-col items-center justify-center py-8">
-              {/* Error Icon */}
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <svg
-                  className="w-10 h-10 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </div>
-              
-              <p className="text-lg font-semibold text-red-800 mb-2">
-                {paymentStatus === 'timeout' ? 'Payment Timeout' : 'Payment Failed'}
-              </p>
-              <p className="text-sm text-gray-600 text-center mb-2">
-                {errorMessage || 'Unable to process payment. Please try again.'}
-              </p>
-              
-              {/* User instruction text for timeout (Requirement 9.6) */}
-              {paymentStatus === 'timeout' && (
-                <p className="text-sm text-gray-700 text-center mb-4">
-                  Please check your phone and try again.
-                </p>
-              )}
-              
-              <div className="w-full px-4 py-2 bg-red-50 border border-red-200 rounded-lg mb-4">
-                <p className="text-sm text-red-800">
-                  <span className="font-medium">
-                    {selectedMethod === 'credit_card' ? 'Card:' : 'Phone:'}
-                  </span>{' '}
-                  {selectedMethod === 'credit_card' 
-                    ? `•••• •••• •••• ${cardNumber.slice(-4)}`
-                    : phoneNumber}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleRetry}
-                disabled={isInitiating}
-                className="w-full py-3 rounded-lg text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all touch-manipulation min-h-[44px] flex items-center justify-center"
-              >
-                {isInitiating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Retrying...
-                  </>
-                ) : (
-                  'Try Again'
-                )}
-              </button>
-            </div>
+        {/* Error message display */}
+        {errorMessage && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{errorMessage}</p>
           </div>
         )}
       </div>

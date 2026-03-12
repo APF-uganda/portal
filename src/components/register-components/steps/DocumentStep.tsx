@@ -10,15 +10,15 @@ interface DocumentsStepProps {
 
 // Document field identifiers
 const DOCUMENT_FIELDS = {
- 
-  PRACTISING_CERTIFICATE: 'practising_certificate',
-  PASSPORT_PHOTO: 'passport_photo',
+  ICPAU_CERTIFICATE: 'icpau_certificate',
+  FIRM_LICENSE: 'firm_license',
+  
 } as const;
 
 const REQUIRED_DOCUMENT_IDS = [
- 
-  DOCUMENT_FIELDS.PRACTISING_CERTIFICATE,
-  DOCUMENT_FIELDS.PASSPORT_PHOTO,
+  DOCUMENT_FIELDS.ICPAU_CERTIFICATE,
+  DOCUMENT_FIELDS.FIRM_LICENSE,
+  
 ] as const;
 
 const MAX_UPLOAD_SIZE_MB = 5;
@@ -114,21 +114,30 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
         Document Uploads
       </h3>
 
-      
-
-       
+      <div className="space-y-6">
         <CloudUpload
-          title="Upload Practising Certificate"
+          title="Upload ICPAU Certificate"
           description="Max file size 5MB · JPG / PNG / PDF"
           accept=".jpg,.jpeg,.png,.pdf"
           maxSizeMB={5}
-          onFileSelected={(file) => handleFileSelected(DOCUMENT_FIELDS.PRACTISING_CERTIFICATE, file)}
-          onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.PRACTISING_CERTIFICATE)}
-          existingFile={getDocumentByField(DOCUMENT_FIELDS.PRACTISING_CERTIFICATE)?.file || null}
-          existingError={getDocumentByField(DOCUMENT_FIELDS.PRACTISING_CERTIFICATE)?.errorMessage || null}
+          onFileSelected={(file) => handleFileSelected(DOCUMENT_FIELDS.ICPAU_CERTIFICATE, file)}
+          onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)}
+          existingFile={getDocumentByField(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)?.file || null}
+          existingError={getDocumentByField(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)?.errorMessage || null}
         />
-        <div>
+
         <CloudUpload
+          title="Upload Firm/Organization License"
+          description="Max file size 5MB · JPG / PNG / PDF"
+          accept=".jpg,.jpeg,.png,.pdf"
+          maxSizeMB={5}
+          onFileSelected={(file) => handleFileSelected(DOCUMENT_FIELDS.FIRM_LICENSE, file)}
+          onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.FIRM_LICENSE)}
+          existingFile={getDocumentByField(DOCUMENT_FIELDS.FIRM_LICENSE)?.file || null}
+          existingError={getDocumentByField(DOCUMENT_FIELDS.FIRM_LICENSE)?.errorMessage || null}
+        />
+
+        {/* <CloudUpload
           title="Upload Passport Photo"
           description="Max file size 2MB · JPG / PNG"
           accept=".jpg,.jpeg,.png"
@@ -137,13 +146,13 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
           onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.PASSPORT_PHOTO)}
           existingFile={getDocumentByField(DOCUMENT_FIELDS.PASSPORT_PHOTO)?.file || null}
           existingError={getDocumentByField(DOCUMENT_FIELDS.PASSPORT_PHOTO)?.errorMessage || null}
-        />
+        /> */}
       </div>
 
       {/* Validation message */}
       {documents.length === 0 && (
         <p className="text-xs text-gray-500 mt-4">
-          Please upload at least one document to continue
+          Please upload all required documents to continue
         </p>
       )}
       {(hasOversizedFile() || exceedsCombinedUploadSize()) && (
