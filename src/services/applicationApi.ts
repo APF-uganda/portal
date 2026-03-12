@@ -285,7 +285,6 @@ export async function submitApplication(
     formData.append('age_range', applicationData.age_range);
     formData.append('phone_number', applicationData.phoneNumber);
     formData.append('address', applicationData.address);
-    formData.append('national_id_number', applicationData.nationalIdNumber);
     formData.append('icpau_certificate_number', applicationData.icpauCertificateNumber);
     
     // Add optional organization field

@@ -58,16 +58,6 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
       newErrors.address = 'Address is required';
     }
 
-    // Validate National ID Number (required, must start with CF or CM and be 13 characters - alphanumeric)
-    if (!data.nationalIdNumber || data.nationalIdNumber.trim() === '') {
-      newErrors.nationalIdNumber = 'National ID Number is required';
-    } else {
-      const nationalIdPattern = /^(CF|CM)[A-Z0-9]{11}$/i;
-      if (!nationalIdPattern.test(data.nationalIdNumber.trim())) {
-        newErrors.nationalIdNumber = 'National ID must start with CF or CM and be exactly 13 characters (letters and numbers, e.g., CF12345ABC67)';
-      }
-    }
-
     // Validate ICPAU Certificate Number (required and format)
     if (!data.icpauCertificateNumber || data.icpauCertificateNumber.trim() === '') {
       newErrors.icpauCertificateNumber = 'ICPAU Practising Certificate Number is required';
@@ -79,8 +69,9 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
       }
     }
 
-    if (!data.organization || data.address.trim() === '') {
-      newErrors.organization = 'Firm name is required';
+    // Validate Organization/Firm (required)
+    if (!data.organization || data.organization.trim() === '') {
+      newErrors.organization = 'Organization/Firm name is required';
     }
 
     setErrors(newErrors);
@@ -92,9 +83,8 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
                     data.ageRange.trim() !== '' &&
                     data.phoneNumber.trim() !== '' &&
                     data.address.trim() !== '' &&
-                    data.nationalIdNumber.trim() !== '' &&
                     data.icpauCertificateNumber.trim() !== '' &&
-                    data.organization.trim() !==  '';
+                    data.organization.trim() !== '';
     
     onValidationChange(isValid);
   }, [data, onValidationChange]);
@@ -199,18 +189,6 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
         />
 
         <Input
-          label="National ID Number (NIN)"
-          type="text"
-          placeholder="CF12345ABC67 or CM1234567890A"
-          name="nationalIdNumber"
-          value={data.nationalIdNumber}
-          onChange={(e) => handleFieldChange('nationalIdNumber', e.target.value.toUpperCase())}
-          onBlur={() => handleBlur('nationalIdNumber')}
-          error={getFieldError('nationalIdNumber')}
-          required
-        />
-
-        <Input
           label="ICPAU Practising Certificate Number"
           type="text"
           placeholder="F123/45"
@@ -223,7 +201,7 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
         />
 
         <Input
-          label="Organization / Firm "
+          label="Organization / Firm"
           type="text"
           placeholder="ABC Accounting Firm"
           name="organization"
