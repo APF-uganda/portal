@@ -322,12 +322,12 @@ const MemberDashboard: React.FC = () => {
                     const IconComponent = getDocumentIcon(doc.name);
                     return (
                       <div key={doc.id} className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                             <IconComponent className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-xs md:text-sm font-medium text-gray-900 truncate">{doc.name}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs md:text-sm font-medium text-gray-900 break-words">{doc.name}</p>
                             <p className="text-xs text-gray-500">Uploaded: {formatDate(doc.uploaded_at)}</p>
                           </div>
                         </div>
