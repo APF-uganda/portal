@@ -1,23 +1,44 @@
 export type ArticleStatus = 'Published' | 'Draft' | 'Scheduled';
-export type Category = 'News' | 'Update' | 'Announcement';
+
+
+export type Category = 'Policy Update' | 'Thought Leadership' | 'Announcements' | 'SME Support';
+
 export type BlockType = 'text' | 'image' | 'video' | 'attachment';
 
 export interface ContentBlock {
   id: string;
   type: BlockType;
-  value: string;      // The actual text, image URL, or video link
-  fileName?: string;  // Specifically for attachments
-  caption?: string;   // For media descriptions
+  value: string;      
+  fileName?: string;  
+  caption?: string;   
 }
 
 export interface NewsArticle {
   id: string;
   title: string;
-  subtitle: string;
-  category: Category;
+  
+ 
+  description: string; 
+  
+  
+  news: Category | number; 
+  
   status: ArticleStatus;
-  publishDate: string | null;
+  
+  
+  publishDate: string | null; 
+  
+  
+  isFeatured: boolean; 
+  
   views: string;
-  featuredImage?: string; 
+  
+ 
+  featuredImage?: string | number; 
+  
+ 
   contentBlocks: ContentBlock[]; 
+  
+ 
+  readTime?: number;
 }

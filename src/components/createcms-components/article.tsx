@@ -16,8 +16,9 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     'SME Support': 4
   };
 
- 
   const getInitialCategory = () => {
+  
+    if (initialData?.news?.name) return initialData.news.name;
     if (initialData?.news_categories?.[0]?.name) return initialData.news_categories[0].name;
     return initialData?.displayCategory || 'Policy Update';
   };
@@ -25,7 +26,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
   const [title, setTitle] = useState(initialData?.title || "");
   const [summary, setSummary] = useState(initialData?.description || initialData?.summary || "");
   const [category, setCategory] = useState(getInitialCategory());
-  const [isTopPick, setIsTopPick] = useState(initialData?.isTopic || initialData?.isFeatured || false);
+  const [isTopPick, setIsTopPick] = useState(initialData?.isFeatured || initialData?.isTopic || false);
   const [blocks, setBlocks] = useState(initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }]);
   
   const [readTime, setReadTime] = useState(initialData?.readTime || 5);
@@ -95,19 +96,18 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     if (!title) return alert("Title is required.");
     if (!imageId && !useCoverLink) return alert("Featured Image is required for the News Card.");
     
-    // Pass the numeric ID to the parent handleSave
     const categoryId = CATEGORY_MAP[category] || 1;
 
+    
     onSave({ 
       title, 
-      summary, 
-      category,     
-      categoryId,   
-      isTopPick, 
+      description: summary,    
+      news: categoryId,         
+      isFeatured: isTopPick,   
       readTime: Number(readTime), 
-      imageId,
-      imageLink: useCoverLink ? imagePreview : null, 
-      contentBlocks: blocks 
+      featuredImage: imageId,  
+      contentBlocks: blocks,   
+      publishDate: new Date().toISOString().split('T')[0] 
     }, status);
   };
 

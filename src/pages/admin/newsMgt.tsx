@@ -22,7 +22,6 @@ const NewsManagement = () => {
   const [search, setSearch] = useState('');
   const [publicationState, setPublicationState] = useState<'published' | 'preview'>('published');
   
-  // Custom Notification State
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
 
   const navigate = useNavigate();
@@ -38,10 +37,10 @@ const NewsManagement = () => {
       const res = await api.get(`/news-articles?publicationState=${publicationState}&populate=*&sort=createdAt:desc`);
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
-        const imageObj = data.featuredImage?.data?.[0]?.attributes || data.featuredImage?.[0];
+        const imageObj = data.featuredImage?.data?.attributes || data.featuredImage;
         
-        // UPDATED: Accessing news_categories instead of news
-        const categoryData = data.news_categories?.data?.[0]?.attributes || data.news_categories?.[0];
+     
+        const categoryData = data.news?.data?.attributes || data.news;
         
         return {
           id: item.id,
@@ -65,19 +64,14 @@ const NewsManagement = () => {
   }, [publicationState]);
 
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
-    // 1. Validation Logic
     if (!formData.title) {
       showToast("Article Title is missing", "error");
-      return;
-    }
-    if (!formData.imageId && !formData.imageLink) {
-      showToast("Featured Image is required for the News Card", "error");
       return;
     }
 
     setLoading(true);
   
-    // Format content for Strapi Blocks
+    // Map internal content blocks to Strapi paragraph blocks
     const strapiBlocks = formData.contentBlocks
       .filter((b: any) => b.value && b.value.trim() !== "")
       .map((block: any) => ({
@@ -85,23 +79,22 @@ const NewsManagement = () => {
         children: [{ type: 'text', text: block.value.trim() }] 
       }));
   
-   
     const payload = {
       data: {
         title: formData.title.trim(),
-        description: formData.summary || "", 
+        description: formData.description || "", 
         content: strapiBlocks, 
-       
-        featuredImage: formData.imageId ? [Number(formData.imageId)] : [], 
+        
+      
+        featuredImage: formData.featuredImage ? Number(formData.featuredImage) : null,
+        
         author: formData.author || "APF Admin",
-        publishDate: formData.date || new Date().toISOString().split('T')[0],
-        // ReadTime must be a Number
+        publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
         readTime: Number(formData.readTime) || 5,
-        isTopic: !!formData.isTopPick,
-        isFeatured: !!formData.isTopPick, 
+        isFeatured: !!formData.isFeatured, // API ID: isFeatured
         
-        
-        news_categories: formData.categoryId ? [Number(formData.categoryId)] : [],
+        // Relationship field ID: news
+        news: formData.news ? Number(formData.news) : null,
         
         publishedAt: status === 'published' ? new Date().toISOString() : null, 
       }
@@ -118,15 +111,11 @@ const NewsManagement = () => {
       
       setIsEditing(false);
       fetchNews(); 
-      showToast(status === 'published' ? "🚀 Article Published Successfully!" : "💾 Draft Saved!", "success");
+      showToast(status === 'published' ? " Article Published Successfully!" : " Draft Saved!", "success");
     } catch (err: any) {
       console.error("Save Error:", err.response?.data);
       const errorData = err.response?.data?.error;
-      const detailMsg = errorData?.details?.errors?.[0]?.path?.[0] 
-        ? `Error in field: ${errorData.details.errors[0].path[0]}` 
-        : errorData?.message || "Check connection and try again";
-      
-      showToast(`Save Failed: ${detailMsg}`, "error");
+      showToast(`Save Failed: ${errorData?.message || "Check connection"}`, "error");
     } finally {
       setLoading(false);
     }
@@ -151,7 +140,6 @@ const NewsManagement = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F4F2FE] relative">
-      {/* IMPROVED PREMIUM TOAST */}
       {notification && (
         <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 px-8 py-5 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-2 transition-all animate-in fade-in slide-in-from-top-10 duration-500 ${
           notification.type === 'success' ? 'bg-white border-emerald-50 text-emerald-900' : 'bg-white border-red-50 text-red-900'
@@ -260,7 +248,7 @@ const NewsManagement = () => {
                                  </span>
                               </td>
                               <td className="px-6 py-6 text-center">
-                                {article.isTopic || article.isFeatured ? (
+                                {article.isFeatured ? (
                                   <div className="flex justify-center"><Star size={16} className="text-amber-400 fill-amber-400" /></div>
                                 ) : (
                                   <span className="text-slate-200 text-[9px] font-black uppercase tracking-widest">Off</span>
