@@ -60,6 +60,7 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
           <thead>
             <tr className="bg-slate-50/50 text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">
               <th className="px-8 py-4 border-b border-slate-50">Member Information</th>
+              <th className="px-8 py-4 border-b border-slate-50">Invoice Number</th>
               <th className="px-8 py-4 border-b border-slate-50">Description</th>
               <th className="px-8 py-4 border-b border-slate-50 text-right">Amount</th>
               <th className="px-8 py-4 border-b border-slate-50 text-center">Status</th>
@@ -69,14 +70,14 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
           <tbody className="divide-y divide-slate-50">
             {loading ? (
               <tr>
-                <td colSpan={5} className="py-20 text-center">
+                <td colSpan={6} className="py-20 text-center">
                   <div className="w-8 h-8 border-3 border-[#5E2590] border-t-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="text-slate-400 mt-4 font-bold text-sm">Fetching records...</p>
                 </td>
               </tr>
             ) : payments.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-20 text-center text-slate-400 font-bold">No payment history found.</td>
+                <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">No payment history found.</td>
               </tr>
             ) : (
               paginatedPayments.map((p) => (
@@ -84,6 +85,15 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
                   <td className="px-8 py-5">
                     <div className="font-bold text-slate-800 group-hover:text-[#5E2590] transition-colors">{p.member_name}</div>
                     <div className="text-xs text-slate-400 font-medium">{p.member_email}</div>
+                  </td>
+                  <td className="px-8 py-5">
+                    {p.invoice_number ? (
+                      <span className="font-mono text-sm text-purple-600 font-semibold bg-purple-50 px-3 py-1 rounded-md border border-purple-100">
+                        {p.invoice_number}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">N/A</span>
+                    )}
                   </td>
                   <td className="px-8 py-5">
                     <span className="text-sm text-slate-600 font-medium bg-slate-100 px-2 py-1 rounded-md">{p.description}</span>

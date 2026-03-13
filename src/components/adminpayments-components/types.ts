@@ -2,6 +2,7 @@ export interface Payment {
     id: number | string;
     member_name: string;
     member_email: string;
+    invoice_number?: string | null;
     description: string;
     amount: number;
     currency: string;

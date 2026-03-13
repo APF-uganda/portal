@@ -12,11 +12,12 @@ import { DashboardLayout } from "../../components/layout/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Button } from "../../components/ui/button"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
-import { showNotification } from "../../services/receiptGenerator"
+import { showNotification, ReceiptGenerator, ReceiptData } from "../../services/receiptGenerator"
 import { getPaymentLedger } from "../../services/payments.service"
 
 // Ledger entry type for financial statement
 interface LedgerEntry {
+  id: string
   date: string
   invoiceNumber: string
   description: string
@@ -26,6 +27,9 @@ interface LedgerEntry {
   transactionRef: string
   hasReceipt: boolean
   hasInvoice: boolean
+  amount: number
+  method?: string
+  status: string
 }
 
 const PaymentHistoryPage: React.FC = () => {
@@ -53,14 +57,65 @@ const PaymentHistoryPage: React.FC = () => {
     fetchPaymentHistory()
   }, [])
 
-  const handlePrintReceipt = (entry: LedgerEntry) => {
-    showNotification(`Printing receipt for ${entry.invoiceNumber}...`, 'success')
-    // TODO: Implement receipt printing with backend integration
+  const handleDownloadReceipt = async (entry: LedgerEntry) => {
+    try {
+      showNotification(`Generating receipt for ${entry.invoiceNumber}...`, 'success')
+      
+      const receiptData: ReceiptData = {
+        id: entry.id,
+        title: entry.description,
+        reference: entry.invoiceNumber,
+        date: new Date(entry.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        amount: entry.amount.toString(),
+        type: 'receipt',
+        description: entry.description,
+        method: entry.method,
+        status: entry.status
+      }
+      
+      const pdf = await ReceiptGenerator.generateReceiptPDF(receiptData)
+      const filename = `APF_Receipt_${entry.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`
+      ReceiptGenerator.downloadPDF(pdf, filename)
+      
+      showNotification(`Receipt downloaded successfully!`, 'success')
+    } catch (error) {
+      console.error('Error generating receipt:', error)
+      showNotification('Failed to generate receipt. Please try again.', 'error')
+    }
   }
 
-  const handlePrintInvoice = (entry: LedgerEntry) => {
-    showNotification(`Printing invoice ${entry.invoiceNumber}...`, 'success')
-    // TODO: Implement invoice printing with backend integration
+  const handleDownloadInvoice = async (entry: LedgerEntry) => {
+    try {
+      showNotification(`Generating invoice ${entry.invoiceNumber}...`, 'success')
+      
+      const invoiceData: ReceiptData = {
+        id: entry.id,
+        title: entry.description,
+        reference: entry.invoiceNumber,
+        date: new Date(entry.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        amount: entry.amount.toString(),
+        type: 'invoice',
+        description: entry.description,
+        status: entry.status
+      }
+      
+      const pdf = await ReceiptGenerator.generateReceiptPDF(invoiceData)
+      const filename = `APF_Invoice_${entry.invoiceNumber}_${new Date().toISOString().split('T')[0]}.pdf`
+      ReceiptGenerator.downloadPDF(pdf, filename)
+      
+      showNotification(`Invoice downloaded successfully!`, 'success')
+    } catch (error) {
+      console.error('Error generating invoice:', error)
+      showNotification('Failed to generate invoice. Please try again.', 'error')
+    }
   }
 
   const handleExportStatement = () => {
@@ -249,20 +304,20 @@ const PaymentHistoryPage: React.FC = () => {
                               <div className="flex items-center justify-center gap-2">
                                 {entry.hasReceipt && (
                                   <button
-                                    onClick={() => handlePrintReceipt(entry)}
+                                    onClick={() => handleDownloadReceipt(entry)}
                                     className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
                                   >
-                                    <Printer className="w-3 h-3" />
-                                    Print Receipt
+                                    <Download className="w-3 h-3" />
+                                    Download Receipt
                                   </button>
                                 )}
                                 {entry.hasInvoice && (
                                   <button
-                                    onClick={() => handlePrintInvoice(entry)}
+                                    onClick={() => handleDownloadInvoice(entry)}
                                     className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
                                   >
-                                    <Printer className="w-3 h-3" />
-                                    Print Invoice
+                                    <Download className="w-3 h-3" />
+                                    Download Invoice
                                   </button>
                                 )}
                               </div>

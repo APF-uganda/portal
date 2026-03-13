@@ -35,38 +35,41 @@ export const usePayments = () => {
       setLoading(true);
       const headers = getAuthHeaders();
 
-      // Fetch statistics and recent payments in parallel
-      const [statsRes, paymentsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/v1/applications/statistics/`, { headers }),
-        fetch(`${API_BASE_URL}/api/v1/applications/recent-payments/?limit=10`, { headers }),
-      ]);
+      // Fetch all payments from the payments API
+      const paymentsRes = await fetch(`${API_BASE_URL}/api/payments/`, { headers });
 
-      if (!statsRes.ok) throw new Error('Failed to fetch payment statistics');
-      if (!paymentsRes.ok) throw new Error('Failed to fetch recent payments');
+      if (!paymentsRes.ok) throw new Error('Failed to fetch payments');
 
-      const statsData = await statsRes.json();
       const paymentsData = await paymentsRes.json();
 
-      // Map backend statistics to DashboardStats shape
+      // Calculate statistics from payments data
+      const completedPayments = paymentsData.filter((p: any) => p.status === 'completed');
+      const pendingPayments = paymentsData.filter((p: any) => p.status === 'pending' || p.status === 'processing');
+      
+      const totalRevenue = completedPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0);
+      const pendingRevenue = pendingPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0);
+
       setStats({
-        total_transactions: statsData.paid_applications || 0,
-        pending_revenue: (statsData.pending_applications || 0) * 50000,
-        total_revenue: statsData.total_revenue || 0,
+        total_transactions: paymentsData.length || 0,
+        pending_revenue: pendingRevenue,
+        total_revenue: totalRevenue,
         growth_rates: {
-          transactions: statsData.trends?.paid_change || 0,
-          pending: statsData.trends?.pending_change || 0,
-          revenue: statsData.trends?.revenue_change || 0,
+          transactions: 0,
+          pending: 0,
+          revenue: 0,
         },
       });
 
       // Map backend payments to Payment shape
-      const mappedPayments: Payment[] = (paymentsData || []).map((p: any) => ({
+      const mappedPayments: Payment[] = (paymentsData || []).slice(0, 10).map((p: any) => ({
         id: p.id,
-        member_name: p.member_name || '',
-        member_email: p.member_email || '',
-        description: `Membership Fee (${p.payment_method || 'N/A'})`,
+        member_name: p.user?.full_name || p.user?.email || 'Unknown',
+        member_email: p.user?.email || '',
+        description: p.invoice_number 
+          ? `Invoice ${p.invoice_number} (${p.payment_method || 'Mobile Money'})` 
+          : `Payment via ${p.payment_method || 'Mobile Money'}`,
         amount: p.amount || 0,
-        currency: 'UGX',
+        currency: p.currency || 'UGX',
         status: p.status || 'unknown',
         created_at: p.created_at || null,
       }));
