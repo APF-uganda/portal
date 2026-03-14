@@ -185,6 +185,7 @@ function Benefits(): JSX.Element {
                     <img
                       src={benefit.image}
                       alt={benefit.title}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>

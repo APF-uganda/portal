@@ -51,6 +51,7 @@ function Partners({ data }: { data?: PartnerItem[] }) {
                 <img
                   src={logoPath}
                   alt={partner.name || 'Partner Logo'}
+                  loading="lazy"
                   className="h-16 sm:h-24 w-auto object-contain block"
                   style={{ minWidth: '140px' }}
                   onError={(e) => { e.currentTarget.style.display = 'none'; }}

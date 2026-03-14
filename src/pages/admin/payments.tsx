@@ -6,7 +6,10 @@ import {
   ChevronRight, 
   Hash, 
   Clock, 
-  Banknote 
+  Banknote,
+  Check,
+  X,
+  ExternalLink
 } from 'lucide-react';
 
 // Layout Components
@@ -14,22 +17,49 @@ import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
-
 import { usePayments } from '../../hooks/usepayment';
 import { PaymentStatCard } from '../../components/payment-components/statcard';
 
 const ManagePayments = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const { payments, stats, loading, error } = usePayments();
+  const { payments, stats, loading, error, verifyPayment, rejectPayment } = usePayments();
+  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
 
- 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'completed': return 'bg-green-100 text-green-700 border-green-200';
+      case 'verified': return 'bg-green-100 text-green-700 border-green-200';
       case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
+      case 'completed': return 'bg-green-100 text-green-700 border-green-200';
       case 'failed': return 'bg-red-100 text-red-700 border-red-200';
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
+  };
+
+  const handleVerifyPayment = async (paymentId: number) => {
+    setActionLoading(prev => ({ ...prev, [`verify-${paymentId}`]: true }));
+    try {
+      await verifyPayment(paymentId);
+    } catch (error) {
+      console.error('Failed to verify payment:', error);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`verify-${paymentId}`]: false }));
+    }
+  };
+
+  const handleRejectPayment = async (paymentId: number) => {
+    setActionLoading(prev => ({ ...prev, [`reject-${paymentId}`]: true }));
+    try {
+      await rejectPayment(paymentId);
+    } catch (error) {
+      console.error('Failed to reject payment:', error);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`reject-${paymentId}`]: false }));
+    }
+  };
+
+  const openProofOfPayment = (proofUrl: string) => {
+    window.open(proofUrl, '_blank');
   };
 
   return (
@@ -98,37 +128,98 @@ const ManagePayments = () => {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="min-w-full leading-normal text-left">
+                  <table className="min-w-full leading-normal text-left" style={{ minWidth: '1000px' }}>
                     <thead>
                       <tr className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        <th className="px-6 py-4 border-b border-gray-100">Member</th>
-                        <th className="px-6 py-4 border-b border-gray-100">Description</th>
-                        <th className="px-6 py-4 border-b border-gray-100 text-right">Amount</th>
-                        <th className="px-6 py-4 border-b border-gray-100 text-center">Status</th>
+                        <th className="px-4 py-4 border-b border-gray-100 min-w-[150px]">Member</th>
+                        <th className="px-4 py-4 border-b border-gray-100 min-w-[140px]">Transaction ID</th>
+                        <th className="px-4 py-4 border-b border-gray-100 min-w-[120px]">Description</th>
+                        <th className="px-4 py-4 border-b border-gray-100 min-w-[120px]">Reference</th>
+                        <th className="px-4 py-4 border-b border-gray-100 text-right min-w-[100px]">Amount</th>
+                        <th className="px-4 py-4 border-b border-gray-100 text-center min-w-[80px]">Status</th>
+                        <th className="px-4 py-4 border-b border-gray-100 text-center min-w-[80px]">Date</th>
+                        <th className="px-4 py-4 border-b border-gray-100 text-center min-w-[120px]">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {loading ? (
                         <tr>
-                          <td colSpan={4} className="text-center py-12">
+                          <td colSpan={8} className="text-center py-12">
                             <div className="w-6 h-6 border-2 border-[#5E2590] border-t-transparent rounded-full animate-spin mx-auto"></div>
                           </td>
                         </tr>
                       ) : (
                         payments.map((p) => (
                           <tr key={p.id} className="hover:bg-gray-50 transition-colors text-sm">
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-4">
                               <div className="font-bold text-gray-800">{p.member_name}</div>
                               <div className="text-[11px] text-gray-400">{p.member_email}</div>
                             </td>
-                            <td className="px-6 py-4 text-gray-600">{p.description}</td>
-                            <td className="px-6 py-4 font-black text-gray-800 text-right">
+                            <td className="px-4 py-4">
+                              <div className="font-mono text-xs text-blue-600 font-semibold">
+                                {p.application_id || p.invoice_number || '-'}
+                              </div>
+                              <div className="text-[10px] text-gray-400 mt-1">
+                                {p.application_id ? 'Application' : p.invoice_number ? 'Invoice' : 'N/A'}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="text-sm text-gray-700">{p.description}</div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="font-mono text-xs text-gray-600">{p.reference}</div>
+                            </td>
+                            <td className="px-4 py-4 font-black text-gray-800 text-right">
                               {p.currency || 'UGX'} {Number(p.amount || 0).toLocaleString()}
                             </td>
-                            <td className="px-6 py-4 text-center">
+                            <td className="px-4 py-4 text-center">
                               <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(p.status)}`}>
                                 {p.status}
                               </span>
+                            </td>
+                            <td className="px-4 py-4 text-center text-xs text-gray-500">
+                              {p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}
+                            </td>
+                            <td className="px-4 py-4 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                {p.proof_of_payment && (
+                                  <button
+                                    onClick={() => openProofOfPayment(p.proof_of_payment!)}
+                                    className="text-blue-600 hover:text-blue-800 p-1"
+                                    title="View Proof"
+                                  >
+                                    <ExternalLink size={14} />
+                                  </button>
+                                )}
+                                {p.status === 'pending' && (
+                                  <>
+                                    <button
+                                      onClick={() => handleVerifyPayment(Number(p.id))}
+                                      disabled={actionLoading[`verify-${p.id}`]}
+                                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium disabled:opacity-50 flex items-center gap-1"
+                                    >
+                                      {actionLoading[`verify-${p.id}`] ? (
+                                        <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                                      ) : (
+                                        <Check size={12} />
+                                      )}
+                                      Verify
+                                    </button>
+                                    <button
+                                      onClick={() => handleRejectPayment(Number(p.id))}
+                                      disabled={actionLoading[`reject-${p.id}`]}
+                                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium disabled:opacity-50 flex items-center gap-1"
+                                    >
+                                      {actionLoading[`reject-${p.id}`] ? (
+                                        <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                                      ) : (
+                                        <X size={12} />
+                                      )}
+                                      Reject
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))

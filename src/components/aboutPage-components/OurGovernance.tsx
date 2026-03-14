@@ -44,6 +44,7 @@ function OurGovernance() {
                   <img
                     src={leader.photo}
                     alt={leader.name}
+                    loading="lazy"
                     className="w-full h-full object-cover object-top"
                   />
                 </div>
@@ -80,6 +81,7 @@ function OurGovernance() {
                   <img
                     src={leaders[6].photo}
                     alt={leaders[6].name}
+                    loading="lazy"
                     className="w-full h-full object-cover object-top"
                   />
                 </div>

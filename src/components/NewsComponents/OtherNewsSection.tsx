@@ -25,7 +25,7 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
         <h3 className="text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">
           Our Other News
         </h3>
-        <div className="w-12 h-[2px] bg-[#5C32A3] mt-2"></div>
+        <div className="w-12 h-[2px] bg-black mt-2"></div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -42,25 +42,25 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
               />
               <div className="absolute top-3 left-3">
-                <span className="bg-white/95 backdrop-blur-sm text-[#5C32A3] px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm">
+                <span className="bg-white/95 backdrop-blur-sm text-black px-3 py-1 rounded-lg text-[9px] font-semibold uppercase tracking-widest shadow-sm">
                   {item.category}
                 </span>
               </div>
             </div>
             
             <div className="flex-1 flex flex-col px-2 pb-2">
-              <h3 className="text-lg font-black text-[#1A1A1A] leading-snug group-hover:text-[#5C32A3] transition-colors mb-3">
+              <h3 className="text-lg font-black text-[#1A1A1A] leading-snug group-hover:text-[#5F1C9F] transition-colors mb-3">
                 {item.title}
               </h3>
               
-              <p className="text-gray-500 line-clamp-2 text-sm leading-relaxed font-normal mb-4">
+              <p className="text-black line-clamp-2 text-sm leading-relaxed  mb-4">
                 {item.description || item.summary}
               </p>
 
               <div className="mt-auto">
                 <div className="mb-4 flex items-center">
-                  <span className="inline-flex items-center gap-1 text-[#5C32A3] font-bold text-[10px] uppercase tracking-widest group-hover:gap-2 transition-all">
-                    Read More <ArrowRight size={12} />
+                  <span className="inline-flex items-center gap-1 text-black font-bold text-sm uppercase tracking-widest group-hover:gap-2 transition-all">
+                    Read More <ArrowRight size={15} />
                   </span>
                 </div>
 

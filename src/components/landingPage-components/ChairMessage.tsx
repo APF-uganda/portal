@@ -14,6 +14,7 @@ function ChairMessage() {
           <img
             src={photo}
             alt={chairName}
+            loading="lazy"
             className="w-full h-full object-cover rounded-lg transition-transform duration-300 relative z-0 group-hover:scale-105"
           />
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RotateCcw, ArrowRight } from 'lucide-react';
-import { Payment } from './types';
+import { Payment } from '../payment-components/types';
 
 interface PaymentTableProps {
   payments: Payment[];
@@ -60,7 +60,7 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
           <thead>
             <tr className="bg-slate-50/50 text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">
               <th className="px-8 py-4 border-b border-slate-50">Member Information</th>
-              <th className="px-8 py-4 border-b border-slate-50">Invoice Number</th>
+              <th className="px-8 py-4 border-b border-slate-50">Transaction ID</th>
               <th className="px-8 py-4 border-b border-slate-50">Description</th>
               <th className="px-8 py-4 border-b border-slate-50 text-right">Amount</th>
               <th className="px-8 py-4 border-b border-slate-50 text-center">Status</th>
@@ -87,13 +87,12 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
                     <div className="text-xs text-slate-400 font-medium">{p.member_email}</div>
                   </td>
                   <td className="px-8 py-5">
-                    {p.invoice_number ? (
-                      <span className="font-mono text-sm text-purple-600 font-semibold bg-purple-50 px-3 py-1 rounded-md border border-purple-100">
-                        {p.invoice_number}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-slate-400 italic">N/A</span>
-                    )}
+                    <div className="font-mono text-sm text-purple-600 font-semibold bg-purple-50 px-3 py-1 rounded-md border border-purple-100">
+                      {p.application_id || p.invoice_number || '-'}
+                    </div>
+                    <div className="text-xs text-slate-400 mt-1">
+                      {p.application_id ? 'Application' : p.invoice_number ? 'Invoice' : 'N/A'}
+                    </div>
                   </td>
                   <td className="px-8 py-5">
                     <span className="text-sm text-slate-600 font-medium bg-slate-100 px-2 py-1 rounded-md">{p.description}</span>

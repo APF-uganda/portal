@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Save, ArrowLeft, Image as ImageIcon, X, 
   Type, Trash2, MoveUp, UploadCloud, Star, Loader2, Link as LinkIcon,
@@ -15,6 +15,53 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     'Announcements': 3,
     'SME Support': 4
   };
+
+  // State for categories
+  const [availableCategories, setAvailableCategories] = useState<any[]>([]);
+
+  // Fetch categories on component mount and create defaults if none exist
+  useEffect(() => {
+    const fetchOrCreateCategories = async () => {
+      try {
+        const res = await api.get('/news-categories?populate=*');
+        const existingCategories = res.data.data || [];
+        
+        if (existingCategories.length === 0) {
+          // Create default categories if none exist
+          console.log('No categories found, creating defaults...');
+          const defaultCategories = [
+            { name: 'Policy Update', description: 'Policy updates and regulatory changes' },
+            { name: 'Thought Leadership', description: 'Industry insights and thought leadership' },
+            { name: 'Announcements', description: 'Official announcements and news' },
+            { name: 'SME Support', description: 'Small and Medium Enterprise support' }
+          ];
+          
+          const createdCategories = [];
+          for (const cat of defaultCategories) {
+            try {
+              const createRes = await api.post('/news-categories', {
+                data: {
+                  ...cat,
+                  publishedAt: new Date().toISOString()
+                }
+              });
+              createdCategories.push(createRes.data.data);
+            } catch (err) {
+              console.error('Failed to create category:', cat.name, err);
+            }
+          }
+          setAvailableCategories(createdCategories);
+        } else {
+          setAvailableCategories(existingCategories);
+        }
+      } catch (err) {
+        console.error('Failed to fetch/create categories:', err);
+        // Use empty array, will fall back to hardcoded mapping
+        setAvailableCategories([]);
+      }
+    };
+    fetchOrCreateCategories();
+  }, []);
 
   const getInitialCategory = () => {
   
@@ -93,20 +140,51 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
   };
 
   const handleSubmit = (status: 'draft' | 'published') => {
-    if (!title) return alert("Title is required.");
-    if (!imageId && !useCoverLink) return alert("Featured Image is required for the News Card.");
+    if (!title.trim()) {
+      alert("Title is required.");
+      return;
+    }
     
-    const categoryId = CATEGORY_MAP[category] || 1;
+    if (!summary.trim()) {
+      alert("Description/Summary is required.");
+      return;
+    }
+    
+    if (!imageId && !useCoverLink) {
+      alert("Featured Image is required for the News Card.");
+      return;
+    }
+    
+    // Filter out image blocks for now to avoid validation issues
+    const textBlocks = blocks.filter(block => block.type === 'text' && block.value.trim());
+    
+    if (textBlocks.length === 0) {
+      alert("Please add at least one text content block.");
+      return;
+    }
+    
+    // Find category ID from available categories or use hardcoded mapping
+    let categoryId = null;
+    if (availableCategories.length > 0) {
+      const foundCategory = availableCategories.find(cat => 
+        cat.attributes?.name === category || cat.name === category
+      );
+      categoryId = foundCategory?.id || foundCategory?.attributes?.id;
+    }
+    
+    // Fallback to hardcoded mapping if no categories found
+    if (!categoryId) {
+      categoryId = CATEGORY_MAP[category] || 1;
+    }
 
-    
     onSave({ 
-      title, 
-      description: summary,    
+      title: title.trim(), 
+      description: summary.trim(),    
       news: categoryId,         
       isFeatured: isTopPick,   
       readTime: Number(readTime), 
       featuredImage: imageId,  
-      contentBlocks: blocks,   
+      contentBlocks: textBlocks, // Only send text blocks
       publishDate: new Date().toISOString().split('T')[0] 
     }, status);
   };
@@ -280,7 +358,13 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
               onChange={(e) => setCategory(e.target.value)} 
               className="w-full p-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors"
             >
-              {Object.keys(CATEGORY_MAP).map(c => <option key={c} value={c}>{c}</option>)}
+              {availableCategories.length > 0 
+                ? availableCategories.map(cat => {
+                    const name = cat.attributes?.name || cat.name;
+                    return <option key={cat.id} value={name}>{name}</option>;
+                  })
+                : Object.keys(CATEGORY_MAP).map(c => <option key={c} value={c}>{c}</option>)
+              }
             </select>
           </div>
         </div>

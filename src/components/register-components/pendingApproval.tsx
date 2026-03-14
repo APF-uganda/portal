@@ -1,24 +1,54 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 
 import Navbar from '../common/Navbar';
 import Footer from '../common/Footer';
-import { getUser } from '../../utils/authStorage';
-
-// APF Logo Asset
-import logoPurple from '../../assets/logo_purple.png';
 
 function PendingApprovalPage() {
   const [userName, setUserName] = useState("Member");
+  const location = useLocation();
 
   useEffect(() => {
-    // Get user details to personalize the greeting
-    const user = getUser();
-    if (user && user.firstName) {
-      setUserName(user.firstName);
+    console.log('=== PendingApproval Debug ===');
+    console.log('Location state:', JSON.stringify(location.state, null, 2));
+    
+    // First try to get username from navigation state (most recent)
+    const navigationState = location.state as { username?: string; firstName?: string } | null;
+    console.log('Navigation state parsed:', JSON.stringify(navigationState, null, 2));
+    
+    if (navigationState?.firstName && navigationState.firstName.trim() !== '') {
+      console.log('Using firstName from navigation:', navigationState.firstName);
+      setUserName(navigationState.firstName);
+      console.log('Final userName will be:', navigationState.firstName);
+      console.log('=== End Debug ===');
+      return;
     }
-  }, []);
+    
+    if (navigationState?.username && navigationState.username.trim() !== '') {
+      console.log('Using username from navigation:', navigationState.username);
+      setUserName(navigationState.username);
+      console.log('Final userName will be:', navigationState.username);
+      console.log('=== End Debug ===');
+      return;
+    }
+
+    console.log('No valid firstName or username in navigation state, using fallback...');
+    
+    // Since we're on the success page, use a generic greeting
+    setUserName("New Member");
+    console.log('Final userName will be: New Member');
+    console.log('=== End Debug ===');
+    
+    // Clear any remaining sessionStorage data since we're on the success page
+    console.log('Clearing any remaining sessionStorage data...');
+    sessionStorage.removeItem('registration_account_details');
+    sessionStorage.removeItem('registration_personal_info');
+    sessionStorage.removeItem('registration_documents');
+    sessionStorage.removeItem('registration_payment');
+    sessionStorage.removeItem('registration_current_step');
+    sessionStorage.removeItem('registration_last_updated');
+  }, [location.state]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -27,14 +57,7 @@ function PendingApprovalPage() {
       {/* Main Content Area */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-10 pt-24">
         <div className="w-full max-w-2xl bg-white border border-purple-100 rounded-3xl shadow-xl shadow-purple-50 p-8 sm:p-12 md:p-16 text-center">
-          
-          {/* Branded Icon with Pulse Animation */}
-          <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-purple-50 mb-10 relative">
-            <div className="absolute inset-0 rounded-full "></div>
-            <Link to="/">
-          <img src={logoPurple} alt="APF Logo" className="h-10 sm:h-12 w-auto" />
-        </Link>
-          </div>
+
 
           {/* Personalized Headline */}
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
