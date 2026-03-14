@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Payment, DashboardStats } from '../components/payment-components/types'; 
-import { API_BASE_URL } from '../config/api';
-import { getAccessToken } from '../utils/authStorage';
+import { adminPaymentService, AdminPaymentResponse } from '../services/adminPaymentService';
 
 export const usePayments = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -19,35 +18,24 @@ export const usePayments = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = getAccessToken();
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    return headers;
-  };
-
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const headers = getAuthHeaders();
-
-      // Fetch all payments from the payments API
-      const paymentsRes = await fetch(`${API_BASE_URL}/api/payments/`, { headers });
-
-      if (!paymentsRes.ok) throw new Error('Failed to fetch payments');
-
-      const paymentsData = await paymentsRes.json();
-
-      // Calculate statistics from payments data
-      const completedPayments = paymentsData.filter((p: any) => p.status === 'completed');
-      const pendingPayments = paymentsData.filter((p: any) => p.status === 'pending' || p.status === 'processing');
       
-      const totalRevenue = completedPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0);
-      const pendingRevenue = pendingPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0);
+      // Fetch payments using the new admin service
+      const paymentsData = await adminPaymentService.fetchPayments();
+      
+      // Fetch revenue and pending count
+      const [revenueData] = await Promise.all([
+        adminPaymentService.getRevenue().catch(() => ({ total_revenue: 0 })),
+        adminPaymentService.getPendingCount().catch(() => ({ pending: 0 }))
+      ]);
+
+      // Calculate statistics
+      const pendingPayments = paymentsData.filter((p: AdminPaymentResponse) => p.status === 'pending');
+      
+      const totalRevenue = revenueData.total_revenue;
+      const pendingRevenue = pendingPayments.reduce((sum: number, p: AdminPaymentResponse) => sum + Number(p.amount || 0), 0);
 
       setStats({
         total_transactions: paymentsData.length || 0,
@@ -61,17 +49,20 @@ export const usePayments = () => {
       });
 
       // Map backend payments to Payment shape
-      const mappedPayments: Payment[] = (paymentsData || []).slice(0, 10).map((p: any) => ({
+      const mappedPayments: Payment[] = (paymentsData || []).slice(0, 10).map((p: AdminPaymentResponse) => ({
         id: p.id,
-        member_name: p.user?.full_name || p.user?.email || 'Unknown',
-        member_email: p.user?.email || '',
-        description: p.invoice_number 
-          ? `Invoice ${p.invoice_number} (${p.payment_method || 'Mobile Money'})` 
-          : `Payment via ${p.payment_method || 'Mobile Money'}`,
+        member_name: p.member_name,
+        member_email: '',
+        description: p.description,
         amount: p.amount || 0,
-        currency: p.currency || 'UGX',
+        currency: 'UGX',
         status: p.status || 'unknown',
         created_at: p.created_at || null,
+        invoice_number: p.invoice_number,
+        application_id: p.application_id,
+        reference: p.reference,
+        proof_of_payment: p.proof_of_payment,
+        user: p.member_name,
       }));
       setPayments(mappedPayments);
 
@@ -83,9 +74,37 @@ export const usePayments = () => {
     }
   };
 
+  const verifyPayment = async (paymentId: number, notes?: string) => {
+    try {
+      await adminPaymentService.verifyPayment(paymentId, notes);
+      await fetchPayments(); // Refresh data
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const rejectPayment = async (paymentId: number, notes?: string) => {
+    try {
+      await adminPaymentService.rejectPayment(paymentId, notes);
+      await fetchPayments(); // Refresh data
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchPayments();
   }, []);
 
-  return { payments, stats, loading, error, refresh: fetchPayments };
+  return { 
+    payments, 
+    stats, 
+    loading, 
+    error, 
+    refresh: fetchPayments,
+    verifyPayment,
+    rejectPayment
+  };
 };

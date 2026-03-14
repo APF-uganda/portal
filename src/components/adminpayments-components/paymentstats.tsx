@@ -1,6 +1,6 @@
 import { Clock, Banknote } from 'lucide-react';
-import { PaymentStatCard } from './statcard';
-import { DashboardStats } from './types';
+import { PaymentStatCard } from '../payment-components/statcard';
+import { DashboardStats } from '../payment-components/types';
 
 interface PaymentStatsProps {
   stats: DashboardStats | null;

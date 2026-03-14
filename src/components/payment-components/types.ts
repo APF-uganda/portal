@@ -18,4 +18,9 @@ export interface Payment {
   currency: string;
   status: string;
   created_at?: string | null;
+  invoice_number?: string;
+  application_id?: string;
+  reference?: string;
+  proof_of_payment?: string;
+  user?: string;
 }
