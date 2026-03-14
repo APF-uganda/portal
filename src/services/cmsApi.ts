@@ -44,11 +44,21 @@ const api = axios.create({
  * UTILITY: Resolves image URLs based on environment
  */
 const getImageUrl = (url: string | undefined): string => {
-  if (!url) return '/images/placeholder.jpg';
+  if (!url) {
+    console.log('No image URL provided, using fallback');
+    return '/images/Hero.jpg'; // Use existing image as fallback
+  }
+  
   // If the URL is already absolute (starts with http), return it
-  if (url.startsWith('http')) return url;
+  if (url.startsWith('http')) {
+    console.log('Using absolute image URL:', url);
+    return url;
+  }
+  
   // Otherwise, prepend the configured CMS base URL
-  return `${CMS_BASE_URL}${url}`;
+  const fullUrl = `${CMS_BASE_URL}${url}`;
+  console.log('Constructed image URL:', fullUrl);
+  return fullUrl;
 };
 
 /**
@@ -78,31 +88,75 @@ export const updateHomepage = async (payload: any) => {
  * NEWS
  */
 export const getNews = async () => {
-  const res = await api.get('/news-items', {
+  const res = await api.get('/news-articles', {
     params: {
       populate: '*',
       sort: 'createdAt:desc'
     }
   });
 
-  return res.data.data.map((item: any) => ({
-    id: item.id,
-    documentId: item.documentId,
-    ...item,
-    image: getImageUrl(item.image?.url)
-  }));
+  return res.data.data.map((item: any) => {
+    // Handle both direct and nested attribute structures
+    const data = item.attributes || item;
+    
+    // Extract content as string from Strapi blocks
+    let contentText = '';
+    if (data.content && Array.isArray(data.content)) {
+      contentText = data.content
+        .map((block: any) => {
+          if (block.type === 'paragraph' && block.children) {
+            return block.children.map((child: any) => child.text || '').join('');
+          }
+          return '';
+        })
+        .filter(Boolean)
+        .join(' ');
+    } else if (typeof data.content === 'string') {
+      contentText = data.content;
+    }
+
+    // Better image URL extraction with debugging
+    let imageUrl = '';
+    if (data.featuredImage?.data?.[0]?.attributes?.url) {
+      imageUrl = data.featuredImage.data[0].attributes.url;
+    } else if (data.featuredImage?.data?.attributes?.url) {
+      imageUrl = data.featuredImage.data.attributes.url;
+    } else if (data.image?.url) {
+      imageUrl = data.image.url;
+    }
+    
+    console.log('News item image processing:', {
+      title: data.title,
+      rawImageData: data.featuredImage,
+      extractedUrl: imageUrl,
+      finalUrl: getImageUrl(imageUrl)
+    });
+
+    return {
+      id: item.id,
+      documentId: item.documentId,
+      title: data.title || '',
+      content: contentText,
+      description: data.description || contentText.substring(0, 200) + '...',
+      image: getImageUrl(imageUrl),
+      category: data.news?.data?.attributes?.name || 'News',
+      readTime: data.readTime || 5,
+      date: data.publishDate || data.createdAt,
+      isFeatured: data.isFeatured || false
+    };
+  });
 };
 
 export const createNews = async (payload: any) => {
-  return api.post('/news-items', { data: payload });
+  return api.post('/news-articles', { data: payload });
 };
 
 export const updateNews = async (id: number, payload: any) => {
-  return api.put(`/news-items/${id}`, { data: payload });
+  return api.put(`/news-articles/${id}`, { data: payload });
 };
 
 export const deleteNews = async (id: number) => {
-  return api.delete(`/news-items/${id}`);
+  return api.delete(`/news-articles/${id}`);
 };
 
 /**
@@ -114,23 +168,43 @@ export const getEvents = async (): Promise<Event[]> => {
       params: { populate: '*' } 
     });
 
-    return (res.data.data || []).map((item: any) => ({
-      id: item.id,
-      documentId: item.documentId,
-      title: item.title,
-      description: item.description,
-      date: item.date,
-      time: item.time,
-      location: item.location,
-      registrationLink: item.registrationLink,
-      cpdPoints: item.cpdPoints,
-      isFeatured: item.isFeatured,
+    return (res.data.data || []).map((item: any) => {
+      // Handle both direct and nested attribute structures
+      const data = item.attributes || item;
       
-      isPaid: item.isPaid,
-      memberPrice: item.memberPrice,
-      nonMemberPrice: item.nonMemberPrice,
-      image: getImageUrl(item.image?.url),
-    }));
+      // Better image URL extraction with debugging
+      let imageUrl = '';
+      if (data.image?.data?.attributes?.url) {
+        imageUrl = data.image.data.attributes.url;
+      } else if (data.image?.url) {
+        imageUrl = data.image.url;
+      }
+      
+      console.log('Event item image processing:', {
+        title: data.title,
+        rawImageData: data.image,
+        extractedUrl: imageUrl,
+        finalUrl: getImageUrl(imageUrl)
+      });
+
+      return {
+        id: item.id,
+        documentId: item.documentId,
+        title: data.title || '',
+        description: data.description || '',
+        date: data.date || '',
+        time: data.time || '',
+        location: data.location || '',
+        registrationLink: data.registrationLink || '',
+        cpdPoints: data.cpdPoints || 0,
+        isFeatured: data.isFeatured || false,
+        
+        isPaid: data.isPaid || false,
+        memberPrice: data.memberPrice || 0,
+        nonMemberPrice: data.nonMemberPrice || 0,
+        image: getImageUrl(imageUrl),
+      };
+    });
   } catch (error) {
     console.error("Error fetching events:", error);
     return [];

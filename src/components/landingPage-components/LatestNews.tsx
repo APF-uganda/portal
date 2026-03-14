@@ -2,25 +2,39 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import NewsCard from '../cards/NewsCard'
-
-import news1Img from '../../assets/images/landingPage-image/news1.webp'
-import news2Img from '../../assets/images/landingPage-image/news2.webp'
-import news3Img from '../../assets/images/landingPage-image/news3.png'
-
-interface NewsItem {
-  image: string
-  tag: string
-  title: string
-  description: string
-  date: string
-  readTime: string
-}
+import { useNews } from '../../hooks/useCMS'
+import ErrorBoundary from '../common/ErrorBoundary'
 
 const CARDS_PER_VIEW = 3
 const AUTO_SCROLL_INTERVAL = 60_000
 
+// Fallback data when CMS is unavailable
+const fallbackNews = [
+  {
+    id: 'fallback-1',
+    title: 'Welcome to APF News',
+    description: 'Stay updated with the latest news and insights from the accounting profession.',
+    image: '/images/Hero.jpg', // Use existing image
+    tag: 'Announcement',
+    readTime: '2 min read',
+    date: new Date().toISOString().split('T')[0]
+  },
+  {
+    id: 'fallback-2', 
+    title: 'Professional Development Opportunities',
+    description: 'Explore continuous learning opportunities to advance your accounting career.',
+    image: '/images/events.jpg', // Use existing image
+    tag: 'Professional Development',
+    readTime: '3 min read',
+    date: new Date().toISOString().split('T')[0]
+  }
+]
+
 function LatestNews() {
   const { elementRef, isVisible } = useScrollAnimation()
+  
+  // Fetch news from CMS
+  const { news, loading, error } = useNews()
 
   const [cardsVisible, setCardsVisible] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -31,64 +45,30 @@ function LatestNews() {
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
-  const news: NewsItem[] = [
-    {
-      image: news1Img,
-      tag: 'Thought Leadership',
-      title: 'The Future of Accountancy: Embracing  Transformation',
-      description:
-        'Digital tools are revolutionizing the accounting landscape. Explore how AI & blockchain are revolutionizing accounting practices .',
-      date: 'October 18, 2024',
-      readTime: '7 min read',
-    },
-    {
-      image: news2Img,
-      tag: 'Ethics & Governance',
-      title: 'Strengthening Ethical Frameworks in Public Practice',
-      description:
-        'A deep dive into the importance of ethical conduct in maintaining public trust and the role of APF in fostering integrity within the profession.',
-      date: 'October 10, 2024',
-      readTime: '5 min read',
-    },
-    {
-      image: news3Img,
-      tag: 'Announcements',
-      title: 'Highlights from the Annual CPD Conference 2024',
-      description:
-        'Recap of the key takeaways, insightful sessions, and networking opportunities from our recent successful CPD conference.',
-      date: 'September 28, 2024',
-      readTime: '5 min read',
-    },
-    {
-      image: news1Img,
-      tag: 'Industry Insights',
-      title: 'Navigating Tax Compliance in 2026',
-      description:
-        'Expert insights on the latest tax regulations and how they impact accounting professionals and their clients.',
-      date: 'September 15, 2024',
-      readTime: '6 min read',
-    },
-    {
-      image: news2Img,
-      tag: 'Member Spotlight',
-      title: 'Success Stories from Our Community',
-      description:
-        'Celebrating the achievements of our members and their contributions to the accounting profession.',
-      date: 'September 5, 2024',
-      readTime: '4 min read',
-    },
-    {
-      image: news3Img,
-      tag: 'Professional Development',
-      title: 'Continuous Learning: The Key to Career Growth',
-      description:
-        'Discover how ongoing professional development can enhance your career prospects and expertise.',
-      date: 'August 28, 2024',
-      readTime: '5 min read',
-    },
-  ]
-
-  const maxIndex = news.length - CARDS_PER_VIEW
+  // Use the latest 6 news items and format them for the NewsCard component
+  // Fall back to dummy data if CMS is unavailable
+  const sourceNews = news.length > 0 ? news : fallbackNews;
+  const displayNews = sourceNews.slice(0, 6).map((item, index) => ({
+    ...item,
+    // Better image fallback logic
+    image: item.image && item.image !== '/images/placeholder.jpg' 
+      ? item.image 
+      : `/images/${['Hero.jpg', 'events.jpg', 'annual.png', 'Digital.jpg', 'Ethics.jpg', 'Tax.jpg'][index % 6]}`,
+    tag: item.category || item.tag || 'News',
+    // Ensure description is always a string, not an object
+    description: typeof item.content === 'string' 
+      ? item.content 
+      : typeof item.description === 'string' 
+        ? item.description 
+        : Array.isArray(item.content) 
+          ? item.content.map((block: any) => 
+              typeof block === 'string' ? block : 
+              block?.children?.map((child: any) => child?.text || '').join('') || ''
+            ).join(' ') 
+          : item.description || 'No description available',
+    readTime: item.readTime || '5 min read'
+  }))
+  const maxIndex = Math.max(0, displayNews.length - CARDS_PER_VIEW)
 
 
   useEffect(() => {
@@ -106,12 +86,12 @@ function LatestNews() {
 
   // Mobile auto-scroll
   useEffect(() => {
-    if (!isMobile) return
+    if (!isMobile || displayNews.length === 0) return
     const interval = setInterval(() => {
-      setMobileIndex((prev) => (prev + 1) % news.length)
+      setMobileIndex((prev) => (prev + 1) % displayNews.length)
     }, AUTO_SCROLL_INTERVAL)
     return () => clearInterval(interval)
-  }, [isMobile, news.length])
+  }, [isMobile, displayNews.length])
 
   // Desktop auto-scroll
   useEffect(() => {
@@ -169,7 +149,15 @@ function LatestNews() {
   }
 
   return (
-    <section className="bg-purple-300 py-16">
+    <ErrorBoundary fallback={
+      <section className="bg-purple-300 py-16">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-white text-3xl font-bold mb-8">Latest News & Insights</h2>
+          <p className="text-white">News content is temporarily unavailable. Please check back later.</p>
+        </div>
+      </section>
+    }>
+      <section className="bg-purple-300 py-16">
       <div className="max-w-6xl mx-auto px-6 relative">
         <h2
           ref={elementRef}
@@ -180,89 +168,112 @@ function LatestNews() {
           Latest News & Insights
         </h2>
 
-        {/*  Mobile View  */}
-        <div className="sm:hidden">
-          <div
-            className="overflow-hidden"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            <div
-              className="flex transition-transform duration-500 ease-out"
-              style={{ transform: `translateX(-${mobileIndex * 100}%)` }}
-            >
-              {news.map((item, index) => (
-                <div key={index} className="w-full flex-shrink-0 px-2">
-                  <NewsCard {...item} delay={0} />
+        {loading && (
+          <div className="text-center py-8 text-white">
+            Loading latest news...
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-8 text-red-200">
+            Failed to load news. Please try again later.
+          </div>
+        )}
+
+        {!loading && !error && displayNews.length === 0 && (
+          <div className="text-center py-8 text-white">
+            No news articles available at the moment.
+          </div>
+        )}
+
+        {!loading && !error && displayNews.length > 0 && (
+          <>
+            {/*  Mobile View  */}
+            <div className="sm:hidden">
+              <div
+                className="overflow-hidden"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div
+                  className="flex transition-transform duration-500 ease-out"
+                  style={{ transform: `translateX(-${mobileIndex * 100}%)` }}
+                >
+                  {displayNews.map((item, index) => (
+                    <div key={item.id || index} className="w-full flex-shrink-0 px-2">
+                      <NewsCard {...item} delay={0} />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              <div className="flex justify-center items-center gap-4 mt-6">
+                <button
+                  onClick={() => setMobileIndex((p) => Math.max(p - 1, 0))}
+                  className="bg-white w-10 h-10 rounded-full shadow flex items-center justify-center"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={() =>
+                    setMobileIndex((p) => Math.min(p + 1, displayNews.length - 1))
+                  }
+                  className="bg-white w-10 h-10 rounded-full shadow flex items-center justify-center"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div className="flex justify-center items-center gap-4 mt-6">
-            <button
-              onClick={() => setMobileIndex((p) => Math.max(p - 1, 0))}
-              className="bg-white w-10 h-10 rounded-full shadow flex items-center justify-center"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+            {/*  Desktop View  */}
+            <div className="hidden sm:block relative">
+              <button
+                onClick={handlePrevious}
+                disabled={currentIndex === 0}
+                className="absolute -left-12 top-1/2 -translate-y-1/2
+                           bg-white w-11 h-11 rounded-full shadow
+                           flex items-center justify-center
+                           hover:scale-110 transition
+                           disabled:opacity-40"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
 
-            <button
-              onClick={() =>
-                setMobileIndex((p) => Math.min(p + 1, news.length - 1))
-              }
-              className="bg-white w-10 h-10 rounded-full shadow flex items-center justify-center"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/*  Desktop View  */}
-        <div className="hidden sm:block relative">
-          <button
-            onClick={handlePrevious}
-            disabled={currentIndex === 0}
-            className="absolute -left-12 top-1/2 -translate-y-1/2
-                       bg-white w-11 h-11 rounded-full shadow
-                       flex items-center justify-center
-                       hover:scale-110 transition
-                       disabled:opacity-40"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-
-          <div className="overflow-hidden">
-            <div
-              className="flex transition-transform duration-500 ease-out"
-              style={{ transform: `translateX(-${currentIndex * (100 / 3)}%)` }}
-            >
-              {news.map((item, index) => (
-                <div key={index} className="w-1/3 flex-shrink-0 px-3">
-                  <NewsCard
-                    {...item}
-                    delay={cardsVisible ? (index % 3) * 150 : 0}
-                  />
+              <div className="overflow-hidden">
+                <div
+                  className="flex transition-transform duration-500 ease-out"
+                  style={{ transform: `translateX(-${currentIndex * (100 / 3)}%)` }}
+                >
+                  {displayNews.map((item, index) => (
+                    <div key={item.id || index} className="w-1/3 flex-shrink-0 px-3">
+                      <NewsCard
+                        {...item}
+                        delay={cardsVisible ? (index % 3) * 150 : 0}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <button
-            onClick={handleNext}
-            disabled={currentIndex >= maxIndex}
-            className="absolute -right-12 top-1/2 -translate-y-1/2
-                       bg-white w-11 h-11 rounded-full shadow
-                       flex items-center justify-center
-                       hover:scale-110 transition
-                       disabled:opacity-40"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
+              <button
+                onClick={handleNext}
+                disabled={currentIndex >= maxIndex}
+                className="absolute -right-12 top-1/2 -translate-y-1/2
+                           bg-white w-11 h-11 rounded-full shadow
+                           flex items-center justify-center
+                           hover:scale-110 transition
+                           disabled:opacity-40"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </section>
+    </ErrorBoundary>
   )
 }
 

@@ -22,9 +22,13 @@ function NewsCard({
   delay = 0 
 }: NewsCardProps) {
   
-  
-  const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=2070&auto=format&fit=crop";
+  const FALLBACK_IMAGE = "/images/Hero.jpg"; // Use local fallback
   const imageUrl = image || FALLBACK_IMAGE;
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.log('Image failed to load:', imageUrl);
+    e.currentTarget.src = FALLBACK_IMAGE;
+  };
 
   return (
     <div 
@@ -38,6 +42,8 @@ function NewsCard({
         <img
           src={imageUrl}
           alt={title}
+          loading="lazy"
+          onError={handleImageError}
           className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
         />
         {/* Category Tag */}

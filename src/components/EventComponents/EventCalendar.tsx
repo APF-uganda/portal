@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react"
-import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Loader2, ChevronDown, ChevronUp } from "lucide-react"
 import { useEvents } from "../../hooks/useCMS"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 const isExpired = (dateStr: string) => {
   if (!dateStr) return true;
@@ -26,9 +26,13 @@ const EventCalendar = () => {
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [selectedDate, setSelectedDate] = useState("")
-  const navigate = useNavigate();
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+  const navigate = useNavigate()
   
   const { events, loading } = useEvents()
+  
+  // Character limit for description
+  const DESCRIPTION_LIMIT = 150
   
   // Maps dates to event objects for easy calendar lookup
   const eventsMap = useMemo(() => {
@@ -67,41 +71,54 @@ const EventCalendar = () => {
     if (month === 0) { setMonth(11); setYear(year - 1) } 
     else { setMonth(month - 1) }
     setSelectedDate("")
+    setIsDescriptionExpanded(false)
   }
 
   const handleNext = () => {
     if (month === 11) { setMonth(0); setYear(year + 1) } 
     else { setMonth(month + 1) }
     setSelectedDate("")
+    setIsDescriptionExpanded(false)
+  }
+
+  // Helper function to truncate description
+  const getTruncatedDescription = (description: string) => {
+    if (!description) return "No description available."
+    if (description.length <= DESCRIPTION_LIMIT) return description
+    return description.substring(0, DESCRIPTION_LIMIT) + "..."
+  }
+
+  const getFullDescription = (description: string) => {
+    return description || "No description available."
   }
 
   // Navigation Logic that matches the working EventCard pattern
-  // Inside EventCalendar.tsx
-const handleRegisterClick = (event: any) => {
-  if (!event) return;
+  const handleRegisterClick = (event: any) => {
+    if (!event) return;
 
-  // Format the date here to be human-readable
-  const readableDate = new Date(event.date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+    // Format the date here to be human-readable
+    const readableDate = new Date(event.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
-  navigate('/event-registration', { 
-    state: { 
-      eventTitle: event.title, 
-      eventId: event.id,
-      location: event.location, 
-      date: readableDate,      
-      image: event.image
-    } 
-  });
-};
+    navigate('/event-registration', { 
+      state: { 
+        eventTitle: event.title, 
+        eventId: event.id,
+        location: event.location, 
+        date: readableDate,      
+        image: event.image
+      } 
+    });
+  };
+
   return (
-    <section className="bg-[#f3e8ff] py-12 -mx-[50vw] px-[50vw]">
-      <div className="max-w-5xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 uppercase tracking-tighter">
+    <section className="bg-[#f3e8ff] py-8 -mx-[50vw] px-[50vw]">
+      <div className="max-w-4xl mx-auto px-4">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
           Event Calendar
         </h2>
         
@@ -111,26 +128,26 @@ const handleRegisterClick = (event: any) => {
             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Fetching Calendar...</p>
           </div>
         ) : (
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* Calendar Grid */}
-            <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-8 border border-purple-100">
-              <div className="flex justify-between items-center mb-6">
-                <button onClick={handlePrev} className="p-2 hover:bg-purple-50 rounded-full transition-colors text-purple-600">
-                  <ChevronLeft className="w-6 h-6" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            {/* Calendar Grid - Compact Height */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 border border-purple-100 h-[420px] flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                <button onClick={handlePrev} className="p-1.5 hover:bg-purple-50 rounded-full transition-colors text-purple-600">
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
-                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">{monthLabel}</h3>
-                <button onClick={handleNext} className="p-2 hover:bg-purple-50 rounded-full transition-colors text-purple-600">
-                  <ChevronRight className="w-6 h-6" />
+                <h3 className="text-lg font-bold text-gray-800">{monthLabel}</h3>
+                <button onClick={handleNext} className="p-1.5 hover:bg-purple-50 rounded-full transition-colors text-purple-600">
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-7 gap-2 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
+              <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-3">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                  <div key={day}>{day}</div>
+                  <div key={day} className="py-1">{day}</div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-7 gap-3">
+              <div className="grid grid-cols-7 gap-1 flex-1">
                 {calendarDates.map((date, i) => {
                   if (!date) return <div key={i}></div>
                   const fullDate = `${year}-${String(month + 1).padStart(2, "0")}-${date.padStart(2, "0")}`
@@ -143,20 +160,23 @@ const handleRegisterClick = (event: any) => {
                   return (
                     <button
                       key={i}
-                      onClick={() => setSelectedDate(fullDate)}
-                      className={`aspect-square flex items-center justify-center rounded-2xl text-sm font-bold transition-all relative
+                      onClick={() => {
+                        setSelectedDate(fullDate)
+                        setIsDescriptionExpanded(false)
+                      }}
+                      className={`aspect-square flex items-center justify-center rounded-lg text-sm font-medium transition-all relative
                         ${isSelected 
-                          ? "bg-[#7E49B3] text-white scale-110 shadow-lg z-10" 
+                          ? "bg-[#7E49B3] text-white scale-105 shadow-md z-10" 
                           : isToday 
-                            ? "bg-purple-700 text-white shadow-md ring-4 ring-purple-100 font-black" // Bold purple highlight for today
-                            : "text-gray-400 hover:bg-gray-100"
+                            ? "bg-purple-600 text-white shadow-sm ring-1 ring-purple-200 font-semibold" 
+                            : "text-gray-600 hover:bg-gray-50"
                         }
-                        ${!isSelected && showEventRing ? "border-2 border-[#7E49B3] text-[#7E49B3]" : ""}
+                        ${!isSelected && showEventRing ? "border-2 border-[#7E49B3] text-[#7E49B3] font-semibold" : ""}
                       `}
                     >
                       {date}
                       {!isSelected && hasEvent && isExpired(hasEvent.date) && (
-                        <div className="absolute bottom-1 w-1 h-1 bg-slate-300 rounded-full"></div>
+                        <div className="absolute bottom-0.5 w-1 h-1 bg-slate-400 rounded-full"></div>
                       )}
                     </button>
                   )
@@ -164,62 +184,91 @@ const handleRegisterClick = (event: any) => {
               </div>
             </div>
 
-            {/* Event Details */}
-            <div className="flex-1 bg-white rounded-[2rem] shadow-sm p-8 min-h-[400px] border border-slate-100">
+            {/* Event Details - Compact Height */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 h-[420px] border border-slate-100 flex flex-col">
               {selectedEvent ? (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                  <span className={`inline-block px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full mb-4 ${isExpired(selectedEvent.date) ? 'bg-slate-100 text-slate-500' : 'bg-purple-100 text-purple-600'}`}>
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col h-full">
+                  <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full mb-3 self-start ${isExpired(selectedEvent.date) ? 'bg-slate-100 text-slate-600' : 'bg-purple-100 text-purple-700'}`}>
                     {isExpired(selectedEvent.date) ? 'Past Event' : 'Upcoming Event'}
                   </span>
-                  <h4 className="text-2xl font-black text-gray-900 mb-6 leading-tight uppercase tracking-tighter">
+                  
+                  <h4 className="text-lg font-bold text-gray-900 mb-3 leading-tight line-clamp-2">
                     {selectedEvent.title}
                   </h4>
                   
-                  <div className="space-y-4 mb-8">
-                    <div className="flex items-center text-gray-600 font-medium">
-                      <Calendar className="w-5 h-5 mr-3 text-purple-500" />
-                      <span>{new Date(selectedEvent.date).toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
+                  <div className="space-y-2.5 mb-4 flex-shrink-0">
+                    <div className="flex items-center text-gray-600 font-medium text-sm">
+                      <Calendar className="w-4 h-4 mr-2.5 text-purple-500 flex-shrink-0" />
+                      <span className="truncate">{new Date(selectedEvent.date).toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
                     </div>
                     
-                    <div className="flex items-center text-gray-600 font-medium">
-                      <Clock className="w-5 h-5 mr-3 text-purple-500" />
-                      <span>
+                    <div className="flex items-center text-gray-600 font-medium text-sm">
+                      <Clock className="w-4 h-4 mr-2.5 text-purple-500 flex-shrink-0" />
+                      <span className="truncate">
                         {typeof selectedEvent.time === 'string' && selectedEvent.time.length > 0 
                           ? selectedEvent.time 
                           : "Time to be announced"}
                       </span>
                     </div>
 
-                    <div className="flex items-center text-gray-600 font-medium">
-                      <MapPin className="w-5 h-5 mr-3 text-purple-500" />
-                      <span>{selectedEvent.location}</span>
+                    <div className="flex items-center text-gray-600 font-medium text-sm">
+                      <MapPin className="w-4 h-4 mr-2.5 text-purple-500 flex-shrink-0" />
+                      <span className="truncate">{selectedEvent.location}</span>
                     </div>
                   </div>
 
-                  <p className="text-gray-500 text-sm leading-relaxed mb-8">
-                    {selectedEvent.description}
-                  </p>
+                  {/* Description with Read More */}
+                  <div className="flex-1 overflow-hidden mb-4">
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {isDescriptionExpanded 
+                        ? getFullDescription(selectedEvent.description)
+                        : getTruncatedDescription(selectedEvent.description)
+                      }
+                    </p>
+                    
+                    {selectedEvent.description && selectedEvent.description.length > DESCRIPTION_LIMIT && (
+                      <button
+                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                        className="mt-2 flex items-center text-purple-600 hover:text-purple-700 text-xs font-medium transition-colors"
+                      >
+                        {isDescriptionExpanded ? (
+                          <>
+                            <ChevronUp className="w-3 h-3 mr-1" />
+                            Read Less
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-3 h-3 mr-1" />
+                            Read More
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
 
-                  {!isExpired(selectedEvent.date) ? (
-                    <button
-                      onClick={() => handleRegisterClick(selectedEvent)}
-                      className="w-full bg-[#7E49B3] text-white rounded-2xl py-4 font-black text-xs uppercase tracking-widest shadow-lg hover:bg-[#3C096C] transition-all"
-                    >
-                      Secure Your Spot
-                    </button>
-                  ) : (
-                    <div className="w-full bg-gray-50 text-gray-400 rounded-2xl py-4 text-center font-bold text-xs uppercase border border-dashed border-slate-200">
-                      Registration Closed
-                    </div>
-                  )}
+                  {/* Register Button - Fixed at bottom */}
+                  <div className="flex-shrink-0">
+                    {!isExpired(selectedEvent.date) ? (
+                      <button
+                        onClick={() => handleRegisterClick(selectedEvent)}
+                        className="w-full bg-[#7E49B3] text-white rounded-full py-3 font-semibold text-sm shadow-md hover:bg-[#3C096C] transition-all"
+                      >
+                        Register
+                      </button>
+                    ) : (
+                      <div className="w-full bg-gray-100 text-gray-500 rounded-lg py-3 text-center font-medium text-sm border border-gray-200">
+                        Registration Closed
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                      <Calendar className="text-slate-300" />
+                <div className="h-full flex flex-col items-center justify-center text-center">
+                   <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                      <Calendar className="text-slate-400 w-6 h-6" />
                    </div>
-                   <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
-                     Select an active date with a <br/> <span className="text-[#7E49B3]">purple ring</span> to view details
+                   <p className="text-slate-500 font-medium text-sm leading-relaxed">
+                     Select a date with a <span className="text-[#7E49B3] font-semibold">purple ring</span> to view event details
                    </p>
                 </div>
               )}
@@ -231,4 +280,4 @@ const handleRegisterClick = (event: any) => {
   )
 }
 
-export default EventCalendar;
+export default EventCalendar

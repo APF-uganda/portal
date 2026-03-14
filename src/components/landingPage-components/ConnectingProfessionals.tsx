@@ -74,6 +74,7 @@ function ConnectingProfessionals({ data }: { data?: any[] }) {
           <img
             src={defaultConnectingImg}
             alt="Connecting Professionals"
+            loading="lazy"
             className="w-full md:w-[500px] h-auto md:h-[350px] object-cover rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
           />
         </div>

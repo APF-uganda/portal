@@ -2,17 +2,37 @@ import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import EventCard from "../common/EventCard"
-import { baseEvents } from "../EventComponents/eventsData"
+import { useEvents } from "../../hooks/useCMS"
+import ErrorBoundary from "../common/ErrorBoundary"
+
+// Fallback data when CMS is unavailable
+const fallbackEvents = [
+  {
+    id: 'fallback-1',
+    title: 'Welcome to APF Events',
+    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+    time: '9:00 AM - 5:00 PM',
+    location: 'Kampala, Uganda',
+    description: 'Stay tuned for upcoming professional development events and conferences.',
+    image: '/images/annual.png', // Use existing image
+    isFeatured: true
+  }
+]
 
 const FeaturedEvents = () => {
   const navigate = useNavigate()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   
-  // Filter for upcoming events (you can add isFeatured property to events if needed)
+  // Fetch events from CMS
+  const { events, loading, error } = useEvents()
+  
+  // Filter for upcoming featured events
+  // Fall back to dummy data if CMS is unavailable
   const today = new Date()
-  const upcomingEvents = baseEvents.filter(
-    (event) => new Date(event.date) >= today
+  const sourceEvents = events.length > 0 ? events : fallbackEvents;
+  const upcomingEvents = sourceEvents.filter(
+    (event) => new Date(event.date) >= today && event.isFeatured
   )
 
   // Auto-scroll: 30s mobile, 60s desktop
@@ -70,19 +90,39 @@ const FeaturedEvents = () => {
   }
 
   return (
-    <section className="bg-white py-12 -mx-[50vw] px-[50vw]">
+    <ErrorBoundary fallback={
+      <section className="bg-white py-12 -mx-[50vw] px-[50vw]">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-8 text-gray-800">Featured Events</h2>
+          <p className="text-gray-600">Events content is temporarily unavailable. Please check back later.</p>
+        </div>
+      </section>
+    }>
+      <section className="bg-white py-12 -mx-[50vw] px-[50vw]">
       <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
           Featured Events
         </h2>
         
-        {upcomingEvents.length === 0 && (
+        {loading && (
+          <div className="text-center py-8 text-gray-600">
+            Loading featured events...
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-8 text-red-600">
+            Failed to load events. Please try again later.
+          </div>
+        )}
+
+        {!loading && !error && upcomingEvents.length === 0 && (
           <div className="text-center py-8 text-gray-600">
             No featured events at the moment.
           </div>
         )}
 
-        {upcomingEvents.length > 0 && (
+        {!loading && !error && upcomingEvents.length > 0 && (
           <>
             <div className="flex items-center gap-4">
               {/* Left Arrow (desktop only) */}
@@ -143,6 +183,7 @@ const FeaturedEvents = () => {
         )}
       </div>
     </section>
+    </ErrorBoundary>
   )
 }
 

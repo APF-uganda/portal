@@ -19,13 +19,22 @@ function EventCard({
   description,
   onRegister,
 }: EventCardProps) {
+  
+  const FALLBACK_IMAGE = "/images/annual.png"; // Use local fallback
+  
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.log('Event image failed to load:', image);
+    e.currentTarget.src = FALLBACK_IMAGE;
+  };
+
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out animate-fade-in-up h-full flex flex-col hover:-translate-y-2.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.2)] group">
       {/* Image */}
       <div className="h-[200px] overflow-hidden flex-shrink-0">
         <img
-          src={image}
+          src={image || FALLBACK_IMAGE}
           alt={title}
+          onError={handleImageError}
           className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
         />
       </div>
