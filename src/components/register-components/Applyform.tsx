@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import Stepper from "./steps/Stepper";
 import AccountStep from "./steps/AccountStep";
 import PersonalStep from "./steps/PersonalStep";
 import DocumentsStep from "./steps/DocumentStep";
 import PaymentSteps from "./steps/PaymentSteps";
-import SuccessModal from "./SuccessModal";
 import { useRegistrationForm } from "../../hooks/useRegistrationForm";
 import { submitApplication } from "../../services/applicationApi";
 import { AccountDetailsData, PersonalInfoData, DocumentData, PaymentData, ApplicationSubmissionData } from "../../types/registration";
@@ -41,6 +40,15 @@ function ApplyForm() {
     clearAllData,
   } = useRegistrationForm();
 
+  // Clear any stale data when component first mounts
+  useEffect(() => {
+    // Check if this is a fresh visit (no current form data)
+    if (!accountDetails && !personalInfo && currentStep === 0) {
+      console.log('[Applyform] Fresh visit detected, clearing any stale sessionStorage');
+      clearAllData();
+    }
+  }, []); // Only run on mount
+
   // Validation states for each step
   const [isAccountValid, setIsAccountValid] = useState(false);
   const [isPersonalInfoValid, setIsPersonalInfoValid] = useState(false);
@@ -52,7 +60,6 @@ function ApplyForm() {
 
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const isLastStep = currentStep === STEPS.length - 1;
@@ -173,11 +180,28 @@ function ApplyForm() {
       const result = await submitApplication(submissionData);
 
       if (result.success) {
-        // Clear session storage on successful submission (Requirement 14.3)
+        // Store the data we want to pass before clearing
+        const usernameToPass = accountData.username;
+        const firstNameToPass = personalData.firstName;
+        
+        // Navigate directly to pending page with form data
+        console.log('=== Navigation Debug ===');
+        console.log('Account data:', JSON.stringify(accountData, null, 2));
+        console.log('Personal data:', JSON.stringify(personalData, null, 2));
+        console.log('Navigating with state:', JSON.stringify({ 
+          username: usernameToPass,
+          firstName: firstNameToPass 
+        }, null, 2));
+        
+        navigate('/apply/pending', { 
+          state: { 
+            username: usernameToPass,
+            firstName: firstNameToPass 
+          } 
+        });
+        
+        // Clear session storage AFTER navigation
         clearAllData();
-
-        // Show success modal (Requirement 9.3)
-        setShowSuccessModal(true);
       } else {
         // Display error message on submission failure (Requirement 9.5)
         setSubmissionError(result.error || 'Failed to submit application. Please try again.');
@@ -209,11 +233,6 @@ function ApplyForm() {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
-  };
-
-  const handleSuccessModalClose = () => {
-    setShowSuccessModal(false);
-    navigate('/apply/pending'); 
   };
 
   return (
@@ -316,12 +335,7 @@ function ApplyForm() {
           )}
         </div>
 
-        {/* Success Modal */}
-        <SuccessModal
-          isOpen={showSuccessModal}
-          onClose={handleSuccessModalClose}
-          message="Your application has been submitted successfully! Please await a confirmation email from the admin."
-        />
+
       </div>
     </section>
   );

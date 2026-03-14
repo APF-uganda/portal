@@ -87,36 +87,6 @@ export function useRegistrationForm(): UseRegistrationFormReturn {
   }, []);
 
   /**
-   * Restore all form data from session storage on mount
-   * Requirement 14.2: Restore all previously entered data from session storage
-   */
-  const restoreFromSession = useCallback(() => {
-    const savedStep = loadFromSessionStorage(STORAGE_KEYS.CURRENT_STEP, 0);
-    const savedAccountDetails = loadFromSessionStorage<AccountDetailsData | null>(
-      STORAGE_KEYS.ACCOUNT_DETAILS,
-      null
-    );
-    const savedPersonalInfo = loadFromSessionStorage<PersonalInfoData | null>(
-      STORAGE_KEYS.PERSONAL_INFO,
-      null
-    );
-    const savedDocuments = loadFromSessionStorage<DocumentData[]>(
-      STORAGE_KEYS.DOCUMENTS,
-      []
-    );
-    const savedPayment = loadFromSessionStorage<PaymentData | null>(
-      STORAGE_KEYS.PAYMENT,
-      null
-    );
-
-    setCurrentStepState(savedStep);
-    setAccountDetailsState(savedAccountDetails);
-    setPersonalInfoState(savedPersonalInfo);
-    setDocumentsState(savedDocuments);
-    setPaymentState(savedPayment);
-  }, [loadFromSessionStorage]);
-
-  /**
    * Clear all session storage data
    * Requirement 14.3: Clear all session storage data on successful submission
    */
@@ -139,6 +109,57 @@ export function useRegistrationForm(): UseRegistrationFormReturn {
       console.error('Failed to clear session storage:', error);
     }
   }, []);
+
+  /**
+   * Restore all form data from session storage on mount
+   * Requirement 14.2: Restore all previously entered data from session storage
+   */
+  const restoreFromSession = useCallback(() => {
+    // Check if we have a recent session (within last 30 minutes)
+    const lastUpdated = sessionStorage.getItem(STORAGE_KEYS.LAST_UPDATED);
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    
+    if (lastUpdated) {
+      const lastUpdateTime = new Date(lastUpdated);
+      if (lastUpdateTime < thirtyMinutesAgo) {
+        // Session is stale, clear it and start fresh
+        console.log('[useRegistrationForm] Clearing stale session data');
+        clearAllData();
+        return;
+      }
+    }
+
+    const savedStep = loadFromSessionStorage(STORAGE_KEYS.CURRENT_STEP, 0);
+    const savedAccountDetails = loadFromSessionStorage<AccountDetailsData | null>(
+      STORAGE_KEYS.ACCOUNT_DETAILS,
+      null
+    );
+    const savedPersonalInfo = loadFromSessionStorage<PersonalInfoData | null>(
+      STORAGE_KEYS.PERSONAL_INFO,
+      null
+    );
+    const savedDocuments = loadFromSessionStorage<DocumentData[]>(
+      STORAGE_KEYS.DOCUMENTS,
+      []
+    );
+    const savedPayment = loadFromSessionStorage<PaymentData | null>(
+      STORAGE_KEYS.PAYMENT,
+      null
+    );
+
+    // Only restore if we have meaningful data
+    if (savedAccountDetails && (savedAccountDetails.username || savedAccountDetails.email)) {
+      setCurrentStepState(savedStep);
+      setAccountDetailsState(savedAccountDetails);
+      setPersonalInfoState(savedPersonalInfo);
+      setDocumentsState(savedDocuments);
+      setPaymentState(savedPayment);
+    } else {
+      // No meaningful data, start fresh
+      console.log('[useRegistrationForm] No meaningful session data, starting fresh');
+      clearAllData();
+    }
+  }, [loadFromSessionStorage, clearAllData]);
 
   /**
    * Restore data from session storage on component mount
