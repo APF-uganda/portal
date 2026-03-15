@@ -12,21 +12,21 @@ export const Badge = ({ label, type }: { label: string; type: string }) => {
   const colorClass = styles[label] || styles[type] || "bg-gray-100 text-gray-600";
   
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${colorClass}`}>
+    <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-medium ${colorClass} whitespace-nowrap`}>
       {label}
     </span>
   );
 };
 
 export const StatCard = ({ title, value, subtext, icon: Icon, color }: any) => (
-  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex justify-between">
-    <div>
-      <p className="text-sm text-gray-500 font-medium">{title}</p>
-      <h3 className="text-4xl font-bold mt-2 text-gray-800">{value}</h3>
-      <p className="text-xs text-gray-400 mt-2">{subtext}</p>
+  <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-start">
+    <div className="min-w-0 flex-1">
+      <p className="text-xs md:text-sm text-gray-500 font-medium truncate">{title}</p>
+      <h3 className="text-2xl md:text-4xl font-bold mt-1 md:mt-2 text-gray-800">{value}</h3>
+      <p className="text-xs text-gray-400 mt-1 md:mt-2">{subtext}</p>
     </div>
-    <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${color}`}>
-      <Icon size={24} />
+    <div className={`h-10 md:h-12 w-10 md:w-12 rounded-xl flex items-center justify-center ${color} flex-shrink-0 ml-2`}>
+      <Icon size={20} className="md:w-6 md:h-6" />
     </div>
   </div>
 );
