@@ -96,29 +96,29 @@ const ReportsCard: React.FC<ReportCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-[20px] p-6 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-md hover:border-indigo-100 transition-all group">
-      <div className="flex justify-between items-start mb-4 gap-x-4"> 
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="p-2 bg-indigo-50 text-[#5E2590] rounded-xl group-hover:bg-[#5E2590] group-hover:text-white transition-colors shrink-0">
+    <div className="bg-white rounded-xl md:rounded-[20px] p-4 md:p-6 shadow-sm border border-slate-100 flex flex-col h-full hover:shadow-md hover:border-indigo-100 transition-all group">
+      <div className="flex justify-between items-start mb-3 md:mb-4 gap-x-3 md:gap-x-4"> 
+        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+          <div className="p-1.5 md:p-2 bg-indigo-50 text-[#5E2590] rounded-lg md:rounded-xl group-hover:bg-[#5E2590] group-hover:text-white transition-colors shrink-0">
             {getIcon()}
           </div>
           <div className="truncate">
-            <h3 className="font-bold text-slate-800 text-[15px] leading-tight truncate">
+            <h3 className="font-bold text-slate-800 text-sm md:text-[15px] leading-tight truncate">
               {title}
             </h3>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+            <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-tight">
               {template?.output_format?.toUpperCase() || 'PDF'} • {date}
             </span>
           </div>
         </div>
       </div>
       
-      <p className="text-[12px] text-slate-500 leading-relaxed mb-6 line-clamp-2 min-h-[32px]">
+      <p className="text-[11px] md:text-[12px] text-slate-500 leading-relaxed mb-4 md:mb-6 line-clamp-2 min-h-[28px] md:min-h-[32px]">
         {description}
       </p>
 
       {/* Mini Chart Visualization */}
-      <div className="flex items-end gap-1.5 h-14 mb-6 px-1">
+      <div className="flex items-end gap-1 md:gap-1.5 h-10 md:h-14 mb-4 md:mb-6 px-1">
         {chartData.map((val: number, i: number) => (
           <div 
             key={i} 
@@ -130,30 +130,31 @@ const ReportsCard: React.FC<ReportCardProps> = ({
         ))}
       </div>
 
-      <div className="flex items-center gap-3 mt-auto">
+      <div className="flex items-center gap-2 md:gap-3 mt-auto">
         <button 
           onClick={onView}
-          className="flex-1 flex items-center justify-center gap-2 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-50 transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 md:gap-2 border border-slate-200 text-slate-600 text-[10px] md:text-[11px] font-bold py-2.5 md:py-3 rounded-lg md:rounded-xl hover:bg-slate-50 transition-all"
         >
-          <Eye size={14} strokeWidth={2.5} /> 
-          <span>Preview</span>
+          <Eye size={12} className="md:w-3.5 md:h-3.5" strokeWidth={2.5} /> 
+          <span className="hidden sm:inline">Preview</span>
+          <span className="sm:hidden">View</span>
         </button>
         
         <button 
           onClick={handleGenerateRequest}
           disabled={isGenerating || !template}
-          className={`flex-1 flex items-center justify-center gap-2 text-white text-[11px] font-bold py-3 rounded-xl transition-all shadow-sm ${
+          className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 text-white text-[10px] md:text-[11px] font-bold py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all shadow-sm ${
             justFinished 
               ? 'bg-green-500 hover:bg-green-600' 
               : 'bg-[#5E2590] hover:bg-[#4a1d72] shadow-indigo-100'
           }`}
         >
           {isGenerating ? (
-            <Loader2 size={14} className="animate-spin" />
+            <Loader2 size={12} className="md:w-3.5 md:h-3.5 animate-spin" />
           ) : justFinished ? (
-            <CheckCircle2 size={14} />
+            <CheckCircle2 size={12} className="md:w-3.5 md:h-3.5" />
           ) : (
-            <Download size={14} strokeWidth={2.5} />
+            <Download size={12} className="md:w-3.5 md:h-3.5" strokeWidth={2.5} />
           )}
           <span>{isGenerating ? 'Processing...' : justFinished ? 'Queued' : 'Generate'}</span>
         </button>
