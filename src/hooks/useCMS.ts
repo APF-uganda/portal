@@ -77,3 +77,47 @@ export const useHomepage = () => {
 
   return { data, loading, error, refresh: fetchHome };
 };
+/**
+ * Hook for fetching a SINGLE News Article by ID
+ */
+export const useNewsArticle = (id: string | undefined) => {
+  const [article, setArticle] = useState<any>(null);
+  const [otherArticles, setOtherArticles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+       
+        const allNews = await getNews();
+        
+      
+        const found = allNews.find((item: any) => 
+          (item.documentId === id || item.id?.toString() === id)
+        );
+
+        if (found) {
+          setArticle(found);
+          
+          setOtherArticles(allNews.filter((item: any) => 
+            (item.documentId !== id && item.id?.toString() !== id)
+          ).slice(0, 3));
+        } else {
+          setError("Article not found");
+        }
+      } catch (err) {
+        setError("Failed to load article");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [id]);
+
+  return { article, otherArticles, loading, error };
+};

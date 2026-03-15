@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/cmsApi';
 import { CMS_BASE_URL } from '../../config/api';
+import { ContentBlock } from '../../components/createcms-components/newstypes';
 
 export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) => {
   
@@ -156,7 +157,8 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     }
     
     // Filter out image blocks for now to avoid validation issues
-    const textBlocks = blocks.filter(block => block.type === 'text' && block.value.trim());
+    const textBlocks = blocks.filter((block: ContentBlock) => 
+      block.type === 'text' && block.value.trim())
     
     if (textBlocks.length === 0) {
       alert("Please add at least one text content block.");
