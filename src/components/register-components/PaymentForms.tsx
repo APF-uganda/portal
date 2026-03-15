@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { PaymentData, PaymentMethod, PaymentStatus } from '../../types/registration';
+import ProofOfPaymentUpload from './ProofOfPaymentUpload';
 import Input from './Input';
 
 interface PaymentFormsProps {
@@ -45,7 +46,7 @@ export function PaymentForms({
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const MTN_PREFIXES = ['25677', '25678', '25676'];
+  const MTN_PREFIXES = ['25677', '25678', '25676', '25679'];
   const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
 
   // Dummy merchant codes
@@ -229,51 +230,11 @@ export function PaymentForms({
       </div>
 
       {/* Proof of Payment Upload */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Upload Proof of Payment <span className="text-red-500">*</span>
-        </label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-          {!proofOfPayment ? (
-            <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <div className="mt-2">
-                <label htmlFor="proofOfPayment" className="cursor-pointer">
-                  <span className="text-purple-600 hover:text-purple-500">Upload a file</span>
-                  <input
-                    id="proofOfPayment"
-                    type="file"
-                    className="sr-only"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={handleProofOfPaymentChange}
-                  />
-                </label>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 5MB</p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <svg className="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="ml-2 text-sm text-gray-900">{proofOfPayment.name}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleRemoveProofOfPayment}
-                className="text-red-600 hover:text-red-500"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <ProofOfPaymentUpload
+        proofOfPayment={proofOfPayment}
+        onFileChange={handleProofOfPaymentChange}
+        onRemoveFile={handleRemoveProofOfPayment}
+      />
     </div>
   );
 
@@ -319,51 +280,11 @@ export function PaymentForms({
       </div>
 
       {/* Proof of Payment Upload */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Upload Proof of Payment <span className="text-red-500">*</span>
-        </label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-          {!proofOfPayment ? (
-            <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <div className="mt-2">
-                <label htmlFor="proofOfPayment" className="cursor-pointer">
-                  <span className="text-purple-600 hover:text-purple-500">Upload a file</span>
-                  <input
-                    id="proofOfPayment"
-                    type="file"
-                    className="sr-only"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={handleProofOfPaymentChange}
-                  />
-                </label>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 5MB</p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <svg className="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="ml-2 text-sm text-gray-900">{proofOfPayment.name}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleRemoveProofOfPayment}
-                className="text-red-600 hover:text-red-500"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <ProofOfPaymentUpload
+        proofOfPayment={proofOfPayment}
+        onFileChange={handleProofOfPaymentChange}
+        onRemoveFile={handleRemoveProofOfPayment}
+      />
 
       {/* Success Status */}
       {proofOfPayment && paymentStatus === 'completed' && (
