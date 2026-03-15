@@ -14,6 +14,7 @@ import { ArticleForm } from '../../components/createcms-components/article';
 
 const NewsManagement = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -188,35 +189,43 @@ const NewsManagement = () => {
   return (
     <div className="flex min-h-screen bg-[#F4F2FE] relative overflow-hidden">
       {notification && (
-        <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 px-8 py-5 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-2 transition-all animate-in fade-in slide-in-from-top-10 duration-500 ${
+        <div className={`fixed top-4 md:top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 md:gap-4 px-4 md:px-8 py-3 md:py-5 rounded-xl md:rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-2 transition-all animate-in fade-in slide-in-from-top-10 duration-500 mx-4 ${
           notification.type === 'success' ? 'bg-white border-emerald-50 text-emerald-900' : 'bg-white border-red-50 text-red-900'
         }`}>
-          <div className={`p-2 rounded-full ${notification.type === 'success' ? 'bg-emerald-50' : 'bg-red-50'}`}>
-            {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={24}/> : <AlertCircle className="text-red-500" size={24}/>}
+          <div className={`p-1.5 md:p-2 rounded-full ${notification.type === 'success' ? 'bg-emerald-50' : 'bg-red-50'}`}>
+            {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={18} className="md:w-6 md:h-6"/> : <AlertCircle className="text-red-500" size={18} className="md:w-6 md:h-6"/>}
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm opacity-40 leading-none mb-1">Status</span>
-            <span className="text-xs">{notification.msg}</span>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-xs md:text-sm opacity-40 leading-none mb-1">Status</span>
+            <span className="text-xs truncate">{notification.msg}</span>
           </div>
-          <button onClick={() => setNotification(null)} className="ml-4 p-2 hover:bg-slate-50 rounded-xl transition-colors">
-            <X size={16} className="text-slate-300" />
+          <button onClick={() => setNotification(null)} className="ml-2 md:ml-4 p-1.5 md:p-2 hover:bg-slate-50 rounded-lg md:rounded-xl transition-colors flex-shrink-0">
+            <X size={14} className="md:w-4 md:h-4 text-slate-300" />
           </button>
         </div>
       )}
 
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <Sidebar 
+        collapsed={collapsed} 
+        onToggle={() => setCollapsed(!collapsed)}
+        isMobileOpen={isMobileOpen}
+        onMobileToggle={() => setIsMobileOpen(!isMobileOpen)}
+      />
 
-      <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} flex flex-col min-w-0 overflow-hidden`}>
-        <Header title="News Management" />
+      <main className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} flex flex-col min-w-0 overflow-hidden`}>
+        <Header 
+          title="News Management" 
+          onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
+        />
 
-        <div className="flex-1 p-4 md:p-6 lg:p-10 overflow-hidden">
-          <div className="max-w-full mx-auto space-y-8 h-full overflow-y-auto">
+        <div className="flex-1 p-3 md:p-6 lg:p-10 overflow-hidden">
+          <div className="max-w-full mx-auto space-y-6 md:space-y-8 h-full overflow-y-auto">
             {!isEditing && (
-              <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-slate-400 hover:text-purple-700 transition-all">
-                <div className="p-2.5 rounded-2xl bg-white border border-slate-100 group-hover:border-purple-200 shadow-sm transition-all group-hover:-translate-x-1">
-                  <ArrowLeft size={16} strokeWidth={3} />
+              <button onClick={() => navigate(-1)} className="group flex items-center gap-2 md:gap-3 text-slate-400 hover:text-purple-700 transition-all">
+                <div className="p-2 md:p-2.5 rounded-xl md:rounded-2xl bg-white border border-slate-100 group-hover:border-purple-200 shadow-sm transition-all group-hover:-translate-x-1">
+                  <ArrowLeft size={14} className="md:w-4 md:h-4" strokeWidth={3} />
                 </div>
-                <span className="text-sm">Return to Dashboard</span>
+                <span className="text-xs md:text-sm">Return to Dashboard</span>
               </button>
             )}
             
