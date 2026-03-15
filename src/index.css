@@ -49,6 +49,71 @@
     word-break: break-all;
   }
 
+  /* Hide scrollbars for governance images */
+  .governance-image-container {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .governance-image-container::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .governance-image-container * {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .governance-image-container *::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Loading border animation for priority tags */
+  .loading-border {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .loading-border::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: conic-gradient(from 0deg, transparent, currentColor, transparent);
+    border-radius: inherit;
+    animation: rotate-border 2s linear infinite;
+    z-index: -1;
+  }
+
+  @keyframes rotate-border {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Alternative pulsing border effect */
+  .pulse-border {
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% {
+      border-opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      border-opacity: 0.5;
+      transform: scale(1.02);
+    }
+  }
+
   .whitespace-normal {
     white-space: normal;
   }

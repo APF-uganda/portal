@@ -1,13 +1,11 @@
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
   FolderCheck,
   Bell,
   CreditCard,
   MessageSquare,
-  LogOut,
   ChevronLeft,
-  User,
   History,
   Plus,
   ChevronDown,
@@ -32,21 +30,9 @@ interface MemberSideNavProps {
 
 function MemberSideNav({ isCollapsed, onToggle, isMobileOpen = false, onMobileToggle }: MemberSideNavProps) {
   const location = useLocation()
-  const navigate = useNavigate()
   const [showPaymentDropdown, setShowPaymentDropdown] = useState(false)
   const [showForumDropdown, setShowForumDropdown] = useState(false)
   const [activeSection, setActiveSection] = useState<string | null>(null)
-
-  const handleLogout = () => {
-    // Clear all authentication data
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    localStorage.removeItem('user')
-    sessionStorage.clear()
-    
-    // Redirect to landing page
-    navigate('/')
-  }
 
   const isPaymentActive = 
     activeSection === 'payments' ||
@@ -299,49 +285,9 @@ function MemberSideNav({ isCollapsed, onToggle, isMobileOpen = false, onMobileTo
           </div>
         </nav>
 
-        {/* BOTTOM SECTION */}
+        {/* BOTTOM SECTION - Reserved for future use */}
         <div className="px-3 pb-4 space-y-2 border-t border-gray-200/50 pt-4">
-          {/* Profile Link */}
-          <Link
-            to="/profile"
-            onClick={handleMobileLinkClick}
-            className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative ${
-              location.pathname === '/profile'
-                ? 'bg-[#D689FF] text-white shadow-lg shadow-[#D689FF]/25'
-                : 'text-gray-600'
-            } ${isCollapsed ? 'justify-center' : ''}`}
-            title={isCollapsed ? 'Profile' : ''}
-          >
-            <User className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span className="font-medium">Profile</span>}
-            {/* Tooltip for collapsed state */}
-            {isCollapsed && (
-              <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
-                Profile
-                <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-              </div>
-            )}
-          </Link>
-
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-600 transition-all duration-200 group relative ${
-              isCollapsed ? 'justify-center' : ''
-            }`}
-            title={isCollapsed ? 'Log Out' : ''}
-          >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span className="font-medium">Log Out</span>}
-            
-            {/* Tooltip for collapsed state */}
-            {isCollapsed && (
-              <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
-                Log Out
-                <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-              </div>
-            )}
-          </button>
+          {/* Future navigation items can be added here */}
         </div>
       </aside>
     </>
