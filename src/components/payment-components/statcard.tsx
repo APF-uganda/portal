@@ -17,24 +17,46 @@ export const PaymentStatCard = ({
   iconBg = "bg-indigo-500", 
   color = "border-gray-200" 
 }: StatCardProps) => {
+  // Debug logging
+  console.log(`=== STATCARD ${title.toUpperCase()} ===`);
+  console.log('Props received:', { title, value, change, iconBg, color });
+  console.log('Change type:', typeof change, 'Change value:', change);
+  console.log('=== END STATCARD ===');
+  
   return (
-    <div className={`bg-white p-6 rounded-[20px] shadow-sm border-l-4 ${color} border border-y-gray-100 border-r-gray-100`}>
+    <div className={`bg-white p-4 md:p-6 rounded-[20px] shadow-sm border-l-4 ${color} border border-y-gray-100 border-r-gray-100`}>
       <div className="flex justify-between items-start">
-        <div className="space-y-1">
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">{title}</p>
-          <h3 className="text-2xl font-black text-slate-800">
+        <div className="space-y-1 flex-1 min-w-0">
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest truncate">{title}</p>
+          <h3 className="text-xl md:text-2xl font-black text-slate-800 truncate">
             {value}
           </h3>
           
-          <div className={`flex items-center mt-1 text-xs font-bold ${change >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-            {change >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-            <span className="ml-1">{Math.abs(change)}% vs last month</span>
+          <div className={`flex items-center mt-2 text-sm font-bold ${
+            change === 0 ? 'text-gray-600' : change > 0 ? 'text-emerald-600' : 'text-red-600'
+          }`}>
+            {change === 0 ? (
+              <div className="flex items-center">
+                <div className="w-4 h-4 rounded-full bg-gray-400 mr-2"></div>
+                <span>0%</span>
+              </div>
+            ) : change > 0 ? (
+              <div className="flex items-center">
+                <ArrowUpRight size={16} className="mr-1 flex-shrink-0" />
+                <span>+{Math.abs(change)}%</span>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <ArrowDownRight size={16} className="mr-1 flex-shrink-0" />
+                <span>-{Math.abs(change)}%</span>
+              </div>
+            )}
           </div>
         </div>
 
         {Icon && (
-          <div className={`${iconBg} p-3 rounded-xl text-white shadow-sm`}>
-            <Icon size={20} />
+          <div className={`${iconBg} p-2 md:p-3 rounded-xl text-white shadow-sm flex-shrink-0 ml-2`}>
+            <Icon size={18} className="md:w-5 md:h-5" />
           </div>
         )}
       </div>

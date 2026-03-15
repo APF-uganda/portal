@@ -33,8 +33,22 @@ export interface RevenueResponse {
   total_revenue: number;
 }
 
-export interface PendingCountResponse {
-  pending: number;
+export interface PaymentStatisticsResponse {
+  total_transactions: number;
+  pending_revenue: number;
+  total_revenue: number;
+  verified_payments: number;
+  pending_payments: number;
+  growth_rates: {
+    transactions: number;
+    pending: number;
+    revenue: number;
+  };
+  last_month_stats: {
+    new_transactions: number;
+    new_revenue: number;
+    verified_payments: number;
+  };
 }
 
 class AdminPaymentService {
@@ -112,9 +126,23 @@ class AdminPaymentService {
   }
 
   /**
+   * Get comprehensive payment statistics with growth rates
+   */
+  async getPaymentStatistics(): Promise<PaymentStatisticsResponse> {
+    const headers = this.getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/v1/payments/statistics/`, { headers });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment statistics');
+    }
+    
+    return response.json();
+  }
+
+  /**
    * Get pending payments count
    */
-  async getPendingCount(): Promise<PendingCountResponse> {
+  async getPendingCount(): Promise<{ pending: number }> {
     const headers = this.getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/api/v1/payments/pending-count/`, { headers });
     
