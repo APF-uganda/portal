@@ -9,10 +9,10 @@ export const useNews = () => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
+       
         const res = await api.get('/news-articles?populate=*'); 
 
         const formattedData = res.data.data.map((item: any) => {
-         
           const data = item.attributes ? item.attributes : item;
          
           const relativeUrl = 
@@ -24,7 +24,13 @@ export const useNews = () => {
             id: item.id,
             documentId: item.documentId,
             title: data.title || "Untitled Article",
-            summary: data.description || "", 
+            
+           
+            summary: data.description || data.summary || "", 
+            content: data.content || data.body || null, 
+            description: data.description || "", 
+           
+
             category: data.category || "General News",
             date: data.publishDate || data.createdAt,
             readTime: data.readTime ? `${data.readTime} min read` : "5 min read",
@@ -36,7 +42,7 @@ export const useNews = () => {
           };
         });
 
-        console.log("SUCCESS! Formatted News:", formattedData); 
+        console.log("SUCCESS! Formatted News with Content:", formattedData); 
         setNews(formattedData);
       } catch (err) {
         console.error("FAILED to fetch news:", err);
