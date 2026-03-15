@@ -17,6 +17,7 @@ import { getDisplayName } from "../../utils/displayName";
 
 function AdminDashboard(){
     const [collapsed, setCollapsed] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -53,10 +54,10 @@ function AdminDashboard(){
    useEffect(() => {
       loadDashboardStats();
       
-      // Auto-refresh every 30 seconds to keep revenue stats current
+      // Auto-refresh every 15 seconds to keep revenue stats current
       const intervalId = setInterval(() => {
         loadDashboardStats(true);
-      }, 30 * 1000); // 30 seconds
+      }, 15 * 1000); // 15 seconds
 
       return () => clearInterval(intervalId);
    }, []);
@@ -106,41 +107,51 @@ function AdminDashboard(){
   return (
     <div className="flex min-h-screen flex-col">
       {/* Sidebar */}
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <Sidebar 
+        collapsed={collapsed} 
+        onToggle={() => setCollapsed(!collapsed)}
+        isMobileOpen={isMobileOpen}
+        onMobileToggle={() => setIsMobileOpen(!isMobileOpen)}
+      />
 
       {/* Content wrapper with margin to avoid overlap */}
-      <div className={`flex flex-col transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden`}>
+      <div className={`flex flex-col transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} h-screen overflow-hidden`}>
         {/* Top Bar - Fixed */}
-        <Header title="Dashboard Overview" />
+        <Header 
+          title="Dashboard Overview" 
+          onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
+        />
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           {/* Welcome Banner with Refresh */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-4">
             <WelcomeBanner name={displayName} />
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
+            <div className="flex items-center gap-2 md:gap-3">
+              <span className="text-xs md:text-sm text-gray-500">
                 Updated: {formatLastUpdated()}
               </span>
               <button
                 onClick={() => loadDashboardStats(true)}
                 disabled={refreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Refresh dashboard data"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                <span className="text-sm font-medium">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+                <span className="text-xs md:text-sm font-medium hidden sm:inline">
+                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                </span>
               </button>
             </div>
           </div>
 
           {/* Stats */}
           {loading ? (
-            <div className="grid gap-6 md:grid-cols-3 mb-6">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-4 md:mb-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-xl border border-gray-200 p-5">
+                <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 md:p-5">
                   <div className="animate-pulse">
                     <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
-                    <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                    <div className="h-6 md:h-8 bg-gray-200 rounded w-16 mb-2"></div>
                     <div className="h-4 bg-gray-200 rounded w-20"></div>
                   </div>
                 </div>
@@ -150,7 +161,7 @@ function AdminDashboard(){
             <StatsGrid stats={stats} />
           )}
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
             {/* Recent Applications */}
             <RecentApplications />
 
@@ -159,7 +170,7 @@ function AdminDashboard(){
           </div>
 
           {/* Quick Actions */}
-          <div className="mt-6 animate-slide-up rounded-xl border border-border bg-card p-4">
+          <div className="mt-4 md:mt-6 animate-slide-up rounded-xl border border-border bg-card p-4">
             <QuickActions />
           </div>
         </main>

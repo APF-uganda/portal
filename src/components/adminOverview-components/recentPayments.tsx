@@ -48,8 +48,8 @@ function RecentPayments() {
   return (
     <div className="animate-slide-up rounded-xl border border-border bg-card p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Recent Payments</h2>
-        <Link to="/admin/payments" className="text-sm text-purple-600 hover:underline">
+        <h2 className="text-sm md:text-base font-semibold">Recent Payments</h2>
+        <Link to="/admin/payments" className="text-xs md:text-sm text-purple-600 hover:underline">
           View All →
         </Link>
       </div>
@@ -58,12 +58,12 @@ function RecentPayments() {
         <div className="space-y-4">
           {[1, 2].map((i) => (
             <div key={i} className="rounded-lg border p-3 animate-pulse">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
                   <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-48"></div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex-shrink-0">
                   <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
                   <div className="h-5 bg-gray-200 rounded w-16"></div>
                 </div>
@@ -74,15 +74,16 @@ function RecentPayments() {
       ) : payments.length > 0 ? (
         <div className="space-y-4">
           {payments.map((payment) => (
-            <div key={payment.id} className="flex items-center justify-between rounded-lg border p-3">
-              <div>
-                <p className="font-medium">{payment.member_name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatPaymentMethod(payment.payment_method)} • {formatDate(payment.created_at)}
+            <div key={payment.id} className="flex items-center justify-between rounded-lg border p-3 gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{payment.member_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  <span className="hidden sm:inline">{formatPaymentMethod(payment.payment_method)} • </span>
+                  {formatDate(payment.created_at)}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="font-medium">{formatAmount(payment.amount)}</p>
+              <div className="text-right flex-shrink-0">
+                <p className="font-medium text-sm">{formatAmount(payment.amount)}</p>
                 <span className="rounded-full border border-green-600 px-2 py-0.5 text-xs text-green-600">
                   {payment.status}
                 </span>

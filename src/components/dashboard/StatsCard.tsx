@@ -26,23 +26,24 @@ const StatsCard: FC<StatsCardProps> = ({ title, value, change, direction, icon }
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4 h-32 flex flex-col justify-between relative">
+    <div className="bg-white shadow rounded-lg p-3 md:p-4 h-24 md:h-32 flex flex-col justify-between relative">
       {/* Icon */}
-      <div className="absolute top-3 right-3 text-xl text-[#5f2f8b]">
+      <div className="absolute top-2 md:top-3 right-2 md:right-3 text-lg md:text-xl text-[#5f2f8b]">
         {icon}
       </div>
 
       {/* Title */}
-      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+      <h3 className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wide pr-6 md:pr-8 truncate">
         {title}
       </h3>
 
       {/* Value */}
-      <p className="text-3xl font-bold text-gray-800 mt-1">{value}</p>
+      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mt-1 truncate">{value}</p>
 
       {/* Change */}
-      <span className={`text-xs mt-1 ${changeColor}`}>
-        {arrow} {formatChange(change)} from last month
+      <span className={`text-xs mt-1 ${changeColor} truncate`}>
+        <span className="hidden sm:inline">{arrow} {formatChange(change)} from last month</span>
+        <span className="sm:hidden">{arrow} {formatChange(change)}</span>
       </span>
     </div>
   );
