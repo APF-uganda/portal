@@ -59,6 +59,7 @@ const CommunityForum = React.lazy(() => import("./pages/admin/communityForum"));
 const CreatePost = React.lazy(() => import("./pages/admin/createPost"));
 const CommunicationsDashboard = React.lazy(() => import("./pages/admin/announcements"));
 const CreateAnnouncement = React.lazy(() => import("./pages/admin/createAnnouncement"));
+const AdminNotificationsPage = React.lazy(() => import("./pages/admin/AdminNotificationsPage"));
 const SearchResults = React.lazy(() => import("./pages/admin/SearchResults"));
 const NewsManagement = React.lazy(() => import("./pages/admin/newsMgt"));
 const ManageUsers = React.lazy(() => import("./pages/admin/manageusers"));
@@ -423,6 +424,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute role="admin">
                   <CommunicationsDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/notifications"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminNotificationsPage />
                 </ProtectedRoute>
               }
             />
