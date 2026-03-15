@@ -14,18 +14,17 @@ export const userManagementApi = {
       headers: getHeaders()
     });
 
-   
     const rawData = response.data.results || [];
 
     return rawData.map((member: any) => ({
       id: member.id.toString(),
-     
       name: member.full_name || member.email || "Unknown Member",
       email: member.email,
-     
       status: member.membership_status === 'SUSPENDED' ? 'Suspended' : 'Active',
-   
       renewalDate: member.subscription_due_date || 'N/A',
+      hasDocuments: member.has_documents || false,
+      documentCount: member.document_count || 0,
+      lastDocumentUpload: member.last_document_upload || null,
     }));
   },
 
@@ -68,5 +67,29 @@ export const userManagementApi = {
       { status, admin_feedback: feedback },
       { headers: getHeaders() }
     );
+  },
+
+  // Send notification to admin when document is uploaded
+  notifyAdminDocumentUpload: async (userId: string, documentType: string, userName: string) => {
+    try {
+      return axios.post(
+        `${API_BASE_URL}/api/v1/notifications/admin-notifications/`,
+        {
+          title: 'New Document Uploaded',
+          message: `${userName} has uploaded a new ${documentType} document for review.`,
+          notification_type: 'system',
+          priority: 'medium',
+          metadata: {
+            userId,
+            documentType,
+            actionUrl: `/admin/manage-users?user=${userId}`
+          }
+        },
+        { headers: getHeaders() }
+      );
+    } catch (error) {
+      console.error('Failed to send admin notification:', error);
+      // Don't throw error to avoid breaking document upload flow
+    }
   }
 };
