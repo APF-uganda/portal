@@ -157,8 +157,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     }
     
     // Filter out image blocks for now to avoid validation issues
-    const textBlocks = blocks.filter((block: ContentBlock) => 
-      block.type === 'text' && block.value.trim())
+    const textBlocks = blocks.filter((block: { type: string; value: string }) => block.type === 'text' && block.value.trim());
     
     if (textBlocks.length === 0) {
       alert("Please add at least one text content block.");
