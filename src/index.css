@@ -1,8 +1,7 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+﻿/* 1. Correct Font Import: Using Montserrat exclusively */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap");
 
-
-
-/* Custom animations */
+/* Custom animations & Utilities */
 @layer utilities {
   .animate-fade-in-up {
     animation: fadeInUp 1s ease-out;
@@ -40,29 +39,34 @@
     text-overflow: ellipsis;
   }
 
-  /* Prevent horizontal overflow */
   .no-overflow {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  /* For long URLs or code */
   .break-all {
     word-break: break-all;
   }
 
-  /* Preserve spaces but wrap */
   .whitespace-normal {
     white-space: normal;
   }
 }
 
 @layer base {
- body {
+  /* 2. Global Font Reset: Applied to body and ALL form elements */
+  body, 
+  button, 
+  input, 
+  select, 
+  textarea, 
+  optgroup {
     margin: 0;
-    font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif !important;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   #root {
@@ -73,8 +77,9 @@
     box-sizing: border-box;
   }
 
-  /* Global text wrapping to prevent horizontal overflow */
+  /* 3. Force Inheritance: Ensures every text tag uses the Montserrat font */
   p, span, div, h1, h2, h3, h4, h5, h6, a, li, td, th, label {
+    font-family: 'Montserrat', sans-serif;
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: break-word;
@@ -82,7 +87,7 @@
   }
 }
 
-/* Keyframes */
+/* Keyframes for your custom animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -113,8 +118,3 @@
     opacity: 0.6;
   }
 }
-
-
-
-
-
