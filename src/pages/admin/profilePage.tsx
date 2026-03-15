@@ -12,6 +12,7 @@ import { requireAdmin } from '../../utils/auth';
 
 const AdminProfilePage = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const {
     profile,
     loading,
@@ -24,6 +25,7 @@ const AdminProfilePage = () => {
     uploadPicture,
     deletePicture,
     updatePassword,
+    updateNotifications,
     clearError
   } = useProfile();
 
@@ -41,25 +43,33 @@ const AdminProfilePage = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+    <div className="flex min-h-screen flex-col overflow-hidden">
+      <Sidebar 
+        collapsed={collapsed} 
+        onToggle={() => setCollapsed(!collapsed)}
+        isMobileOpen={isMobileOpen}
+        onMobileToggle={() => setIsMobileOpen(!isMobileOpen)}
+      />
 
-      <main className={`bg-gray-50 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
-        <Header title="My Profile" />
+      <main className={`bg-gray-50 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} h-screen overflow-hidden flex flex-col min-w-0`}>
+        <Header 
+          title="My Profile" 
+          onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
+        />
 
-        <div className="flex-1 bg-[#F4F2FE] p-8 space-y-10 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto space-y-10">
+        <div className="flex-1 bg-[#F4F2FE] p-3 md:p-6 lg:p-8 space-y-6 md:space-y-10 overflow-y-auto">
+          <div className="max-w-[1400px] mx-auto space-y-6 md:space-y-10">
             
             {/* Page Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
-                <h1 className="text-[26px] font-bold text-slate-800 tracking-tight text-[#5C32A3]">My Profile</h1>
-                <p className="text-slate-500 mt-1">Manage your personal and professional information. Keep your profile updated to ensure seamless communication.</p>
+                <h1 className="text-xl md:text-2xl lg:text-[26px] font-bold text-slate-800 tracking-tight text-[#5C32A3]">My Profile</h1>
+                <p className="text-slate-500 mt-1 text-sm md:text-base">Manage your personal and professional information. Keep your profile updated to ensure seamless communication.</p>
               </div>
               <button
                 onClick={handleRefresh}
                 disabled={loading}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
+                className="px-3 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50 text-xs md:text-sm font-medium w-full sm:w-auto"
               >
                 {loading ? 'Refreshing...' : 'Refresh Profile'}
               </button>
@@ -67,12 +77,12 @@ const AdminProfilePage = () => {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+              <div className="bg-red-50 border border-red-400 text-red-700 px-3 md:px-4 py-3 rounded-lg">
                 <div className="flex justify-between items-start">
-                  <span className="block sm:inline">{error}</span>
+                  <span className="block text-sm md:text-base pr-4">{error}</span>
                   <button
                     onClick={clearError}
-                    className="text-red-700 hover:text-red-900 ml-4"
+                    className="text-red-700 hover:text-red-900 text-lg md:text-xl flex-shrink-0"
                   >
                     ×
                   </button>
@@ -90,7 +100,7 @@ const AdminProfilePage = () => {
             />
 
             {/* Form Sections */}
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               <PersonalInfo 
                 profile={profile}
                 onUpdate={updateProfile}
@@ -105,7 +115,11 @@ const AdminProfilePage = () => {
                 onChangePassword={updatePassword}
                 changingPassword={changingPassword}
               />
-              <NotificationPrefs />
+              <NotificationPrefs 
+                profile={profile}
+                onUpdate={updateNotifications}
+                updating={updating}
+              />
             </div>
 
           </div>

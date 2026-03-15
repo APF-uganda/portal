@@ -60,6 +60,43 @@ export const uploadDocument = async (_file: File): Promise<boolean> => {
     body: formData,
   })
 
+  // If upload successful, send notification to admin
+  if (response.ok) {
+    try {
+      // Get user info for notification
+      const userResponse = await fetch(`${API_V1_BASE_URL}/auth/profile/`, {
+        headers: getAuthHeaders(),
+      });
+      
+      if (userResponse.ok) {
+        const userInfo = await userResponse.json();
+        
+        // Send admin notification
+        await fetch(`${API_V1_BASE_URL}/notifications/admin-notifications/`, {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: 'New Document Uploaded',
+            message: `${userInfo.full_name || userInfo.email} has uploaded a new document for review.`,
+            notification_type: 'system',
+            priority: 'medium',
+            metadata: {
+              userId: userInfo.id,
+              documentType: _file.name.split('.').pop()?.toUpperCase() || 'UNKNOWN',
+              actionUrl: `/admin/manage-users?user=${userInfo.id}`
+            }
+          })
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send admin notification:', error);
+      // Don't fail the upload if notification fails
+    }
+  }
+
   return response.ok
 }
 
@@ -78,6 +115,44 @@ export const replaceDocument = async (_documentId: string, _file: File): Promise
     headers: getAuthHeaders(),
     body: formData,
   })
+
+  // If replacement successful, send notification to admin
+  if (response.ok) {
+    try {
+      // Get user info for notification
+      const userResponse = await fetch(`${API_V1_BASE_URL}/auth/profile/`, {
+        headers: getAuthHeaders(),
+      });
+      
+      if (userResponse.ok) {
+        const userInfo = await userResponse.json();
+        
+        // Send admin notification
+        await fetch(`${API_V1_BASE_URL}/notifications/admin-notifications/`, {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: 'Document Re-uploaded',
+            message: `${userInfo.full_name || userInfo.email} has re-uploaded a document for review.`,
+            notification_type: 'system',
+            priority: 'medium',
+            metadata: {
+              userId: userInfo.id,
+              documentId: _documentId,
+              documentType: _file.name.split('.').pop()?.toUpperCase() || 'UNKNOWN',
+              actionUrl: `/admin/manage-users?user=${userInfo.id}`
+            }
+          })
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send admin notification:', error);
+      // Don't fail the replacement if notification fails
+    }
+  }
 
   return response.ok
 }

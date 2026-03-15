@@ -23,27 +23,27 @@ const FilterBar = ({
   categoriesLoading = false,
 }: FilterBarProps) => {
   return (
-    <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col md:flex-row gap-4 items-center mb-6 shadow-sm">
-      <div className="flex-1 w-full relative">
+    <div className="bg-white p-3 md:p-4 rounded-xl border border-gray-100 flex flex-col gap-3 md:gap-4 shadow-sm">
+      <div className="w-full relative">
         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <Search size={18} className="text-gray-400" />
+          <Search size={16} className="md:w-[18px] md:h-[18px] text-gray-400" />
         </div>
         <input 
           type="text" 
           placeholder="Search posts by title, content, or author..." 
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+          className="w-full pl-9 md:pl-10 pr-4 py-2 md:py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
         />
       </div>
 
-      <div className="flex items-center gap-6 w-full md:w-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-500">Status:</span>
+          <span className="text-sm font-semibold text-gray-500 whitespace-nowrap">Status:</span>
           <select 
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value as PostStatus | 'all')}
-            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer hover:text-indigo-600 transition-colors"
+            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer hover:text-indigo-600 transition-colors min-w-0 flex-1"
           >
             <option value="all">All</option>
             <option value="published">Published</option>
@@ -54,12 +54,12 @@ const FilterBar = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-500">Category:</span>
+          <span className="text-sm font-semibold text-gray-500 whitespace-nowrap">Category:</span>
           <select 
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
             disabled={categoriesLoading}
-            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer hover:text-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer hover:text-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-0 flex-1"
           >
             <option value="all">All</option>
             {categories.map((category) => (

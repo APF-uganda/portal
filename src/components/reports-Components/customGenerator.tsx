@@ -154,47 +154,49 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+    <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-8 shadow-sm border border-slate-100">
      
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6 md:mb-8">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-indigo-50 rounded-lg">
-              <Edit3 size={20} className="text-[#5E2590]" />
+          <div className="flex items-center gap-2 md:gap-3 mb-2">
+            <div className="p-1.5 md:p-2 bg-indigo-50 rounded-lg">
+              <Edit3 size={18} className="md:w-5 md:h-5 text-[#5E2590]" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800">Custom Report Generator</h2>
+            <h2 className="text-lg md:text-xl font-bold text-slate-800">Custom Report Generator</h2>
           </div>
-          <p className="text-sm text-slate-500">Tailor analytics by category and timeframe to generate instant insights.</p>
+          <p className="text-xs md:text-sm text-slate-500">Tailor analytics by category and timeframe to generate instant insights.</p>
         </div>
       </div>
 
       {/* Active Filters Grid */}
-      <div className="bg-slate-50/50 rounded-2xl p-6 mb-8 border border-dashed border-slate-200">
-        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Active Parameters</label>
-        <div className="flex flex-wrap gap-3">
+      <div className="bg-slate-50/50 rounded-xl md:rounded-2xl p-4 md:p-6 mb-6 md:mb-8 border border-dashed border-slate-200">
+        <label className="block text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 md:mb-4">Active Parameters</label>
+        <div className="flex flex-wrap gap-2 md:gap-3">
           {selectedFilters.map((filter) => (
-            <div key={filter.id} className="flex items-center gap-2 bg-white text-[#5E2590] pl-4 pr-2 py-2 rounded-xl text-xs font-bold border border-indigo-100">
-              <Check size={14} className="text-indigo-400" /> 
-              <span className="text-slate-600 font-medium mr-1">{filter.type}:</span>
-              {filter.label}
-              <button onClick={() => removeFilter(filter.id)} className="ml-2 hover:text-red-500 text-slate-300 transition-colors"><X size={14} /></button>
+            <div key={filter.id} className="flex items-center gap-1.5 md:gap-2 bg-white text-[#5E2590] pl-3 md:pl-4 pr-1.5 md:pr-2 py-1.5 md:py-2 rounded-lg md:rounded-xl text-xs font-bold border border-indigo-100">
+              <Check size={12} className="md:w-3.5 md:h-3.5 text-indigo-400" /> 
+              <span className="text-slate-600 font-medium mr-1 text-xs">{filter.type}:</span>
+              <span className="text-xs">{filter.label}</span>
+              <button onClick={() => removeFilter(filter.id)} className="ml-1 md:ml-2 hover:text-red-500 text-slate-300 transition-colors"><X size={12} className="md:w-3.5 md:h-3.5" /></button>
             </div>
           ))}
           
           <div className="relative">
-            <button onClick={() => setShowAddFilter(!showAddFilter)} className="flex items-center gap-2 text-[#5E2590] bg-indigo-50 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors">
-              <Plus size={14} strokeWidth={3} /> Change Filter
+            <button onClick={() => setShowAddFilter(!showAddFilter)} className="flex items-center gap-1.5 md:gap-2 text-[#5E2590] bg-indigo-50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors">
+              <Plus size={12} className="md:w-3.5 md:h-3.5" strokeWidth={3} /> 
+              <span className="hidden sm:inline">Change Filter</span>
+              <span className="sm:hidden">Filter</span>
             </button>
             {showAddFilter && (
-              <div className="absolute top-full left-0 mt-3 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 min-w-[220px] p-2">
-                <p className="text-[10px] font-bold text-slate-400 px-3 py-2 uppercase">Select Category</p>
+              <div className="absolute top-full left-0 mt-2 md:mt-3 bg-white border border-slate-200 rounded-xl md:rounded-2xl shadow-xl z-20 min-w-[200px] md:min-w-[220px] p-2">
+                <p className="text-[9px] md:text-[10px] font-bold text-slate-400 px-2 md:px-3 py-1.5 md:py-2 uppercase">Select Category</p>
                 {availableCategories.map(cat => (
-                  <button key={cat} onClick={() => addFilter('category', cat)} className="w-full text-left px-3 py-2 text-sm text-slate-600 hover:bg-indigo-50 hover:text-[#5E2590] rounded-lg transition-colors">{cat}</button>
+                  <button key={cat} onClick={() => addFilter('category', cat)} className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-slate-600 hover:bg-indigo-50 hover:text-[#5E2590] rounded-lg transition-colors">{cat}</button>
                 ))}
                 <div className="h-px bg-slate-100 my-2 mx-2"></div>
-                <p className="text-[10px] font-bold text-slate-400 px-3 py-2 uppercase">Select Period</p>
+                <p className="text-[9px] md:text-[10px] font-bold text-slate-400 px-2 md:px-3 py-1.5 md:py-2 uppercase">Select Period</p>
                 {availablePeriods.map(per => (
-                  <button key={per} onClick={() => addFilter('period', per)} className="w-full text-left px-3 py-2 text-sm text-slate-600 hover:bg-indigo-50 hover:text-[#5E2590] rounded-lg transition-colors">{per}</button>
+                  <button key={per} onClick={() => addFilter('period', per)} className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-slate-600 hover:bg-indigo-50 hover:text-[#5E2590] rounded-lg transition-colors">{per}</button>
                 ))}
               </div>
             )}
@@ -202,25 +204,27 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-slate-100">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold text-slate-400 uppercase mr-2">Export Format:</span>
-          <div className="flex p-1 bg-slate-100 rounded-xl">
+      <div className="flex flex-col gap-4 md:gap-6 pt-4 md:pt-6 border-t border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <span className="text-xs font-bold text-slate-400 uppercase">Export Format:</span>
+          <div className="flex p-1 bg-slate-100 rounded-lg md:rounded-xl overflow-x-auto">
             {(['PDF', 'Excel', 'CSV', 'JSON'] as FormatType[]).map((format) => (
-              <button key={format} onClick={() => setSelectedFormat(format)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedFormat === format ? 'bg-white text-[#5E2590] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+              <button key={format} onClick={() => setSelectedFormat(format)} className={`px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${selectedFormat === format ? 'bg-white text-[#5E2590] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
                 {format}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <button onClick={() => setShowSaveModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 border border-slate-200 text-slate-600 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50">
-            <Save size={16} /> Save Template
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+          <button onClick={() => setShowSaveModal(true)} className="flex items-center justify-center gap-2 border border-slate-200 text-slate-600 px-4 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold hover:bg-slate-50 transition-colors">
+            <Save size={14} className="md:w-4 md:h-4" /> 
+            <span className="hidden sm:inline">Save Template</span>
+            <span className="sm:hidden">Save</span>
           </button>
           
-          <button onClick={handleGenerateReport} disabled={generating || analyticsLoading} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#5E2590] text-white px-8 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 transition-all">
-            {generating ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <><Wand2 size={16} /> Generate Report</>}
+          <button onClick={handleGenerateReport} disabled={generating || analyticsLoading} className="flex items-center justify-center gap-2 bg-[#5E2590] text-white px-6 md:px-8 py-2.5 rounded-xl text-xs md:text-sm font-bold disabled:opacity-50 transition-all">
+            {generating ? <div className="animate-spin rounded-full h-3 md:h-4 w-3 md:w-4 border-b-2 border-white"></div> : <><Wand2 size={14} className="md:w-4 md:h-4" /> <span className="hidden sm:inline">Generate Report</span><span className="sm:hidden">Generate</span></>}
           </button>
         </div>
       </div>

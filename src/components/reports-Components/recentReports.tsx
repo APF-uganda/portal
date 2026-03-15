@@ -67,52 +67,52 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-      <div className="p-6 border-b border-slate-50 flex justify-between items-center">
+      <div className="p-4 md:p-6 border-b border-slate-50 flex justify-between items-center">
         <div className="flex items-center gap-2 text-[#5E2590]">
-          <History size={18} strokeWidth={2.5} />
-          <h2 className="font-bold text-slate-800">Recently Generated</h2>
+          <History size={16} className="md:w-[18px] md:h-[18px]" strokeWidth={2.5} />
+          <h2 className="font-bold text-slate-800 text-base md:text-lg">Recently Generated</h2>
         </div>
       </div>
 
       <div className="divide-y divide-slate-50">
         {reports.length === 0 ? (
-          <div className="p-12 text-center">
+          <div className="p-8 md:p-12 text-center">
             <p className="text-slate-400 text-sm">No reports generated yet.</p>
           </div>
         ) : (
           reports.map((report) => (
-            <div key={report.id} className="p-4 hover:bg-slate-50 transition-all flex items-center justify-between group">
-              <div className="flex items-center gap-4">
-                <div className={`p-2.5 rounded-lg ${report.file_format === 'pdf' ? 'bg-indigo-50 text-[#5E2590]' : 'bg-emerald-50 text-emerald-600'}`}>
-                  {report.file_format === 'pdf' ? <FileText size={18} /> : <FileSpreadsheet size={18} />}
+            <div key={report.id} className="p-3 md:p-4 hover:bg-slate-50 transition-all flex items-center justify-between group">
+              <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                <div className={`p-2 md:p-2.5 rounded-lg flex-shrink-0 ${report.file_format === 'pdf' ? 'bg-indigo-50 text-[#5E2590]' : 'bg-emerald-50 text-emerald-600'}`}>
+                  {report.file_format === 'pdf' ? <FileText size={16} className="md:w-[18px] md:h-[18px]" /> : <FileSpreadsheet size={16} className="md:w-[18px] md:h-[18px]" />}
                 </div>
-                <div>
-                  <p className="font-bold text-slate-700 text-sm">{report.title}</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-slate-700 text-sm md:text-base truncate">{report.title}</p>
+                  <p className="text-[10px] md:text-[11px] text-slate-400 mt-0.5">
                     {report.status.toUpperCase()} • {new Date(report.created_at).toLocaleString()}
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {report.status === 'processing' ? (
-                  <Loader2 size={16} className="animate-spin text-amber-500 mr-2" />
+                  <Loader2 size={14} className="md:w-4 md:h-4 animate-spin text-amber-500 mr-1 md:mr-2" />
                 ) : report.status === 'failed' ? (
-                  <div className="flex items-center gap-2">
-                    <AlertCircle size={16} className="text-red-500" />
-                    <span className="text-xs text-red-500">Failed</span>
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <AlertCircle size={14} className="md:w-4 md:h-4 text-red-500" />
+                    <span className="text-xs text-red-500 hidden sm:inline">Failed</span>
                   </div>
                 ) : report.status === 'completed' && report.download_url ? (
                   <button
                     onClick={() => handleDownload(report)}
                     disabled={downloading === report.id}
-                    className="p-2 text-slate-400 hover:text-[#5E2590] hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 md:p-2 text-slate-400 hover:text-[#5E2590] hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Download report"
                   >
                     {downloading === report.id ? (
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={14} className="md:w-4 md:h-4 animate-spin" />
                     ) : (
-                      <Download size={16} />
+                      <Download size={14} className="md:w-4 md:h-4" />
                     )}
                   </button>
                 ) : null}

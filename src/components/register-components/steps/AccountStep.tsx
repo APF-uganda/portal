@@ -145,48 +145,63 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
         Account Details
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <Input
-          label="Username"
-          name="username"
-          value={data.username}
-          onChange={(e) => onChange({ ...data, username: e.target.value })}
-          error={availabilityErrors.username || (touched.username ? errors.username : undefined)}
-          required
-        />
-
-        <div>
+      <div className="space-y-4">
+        {/* Username and Email Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Input
-            label="Email Address"
-            name="email"
-            value={data.email}
-            disabled={isEmailVerified || otpSent}
-            onChange={(e) => {
-              onChange({ ...data, email: e.target.value });
-              setIsEmailVerified(false);
-              setOtpSent(false);
-            }}
-            error={availabilityErrors.email || (touched.email ? errors.email : undefined)}
+            label="Username"
+            name="username"
+            value={data.username}
+            onChange={(e) => onChange({ ...data, username: e.target.value })}
+            error={availabilityErrors.username || (touched.username ? errors.username : undefined)}
             required
           />
-          {!isEmailVerified && !otpSent && validateEmail(data.email).isValid && !availabilityErrors.email && (
-            <div className="mt-1 flex justify-end">
-              <button 
-                type="button"
-                onClick={handleSendOTP}
-                disabled={isVerifying}
-                className="text-xs font-bold text-[#5E2590] hover:underline disabled:opacity-50"
-              >
-                {isVerifying ? "Sending..." : "Verify Email"}
-              </button>
-            </div>
-          )}
-          {isEmailVerified && (
-            <div className="mt-1 flex items-center justify-end gap-1 text-xs font-bold text-green-600">
-              <Check size={14} /> Verified
-            </div>
-          )}
+
+          <div>
+            <Input
+              label="Email Address"
+              name="email"
+              value={data.email}
+              disabled={isEmailVerified || otpSent}
+              onChange={(e) => {
+                onChange({ ...data, email: e.target.value });
+                setIsEmailVerified(false);
+                setOtpSent(false);
+              }}
+              error={availabilityErrors.email || (touched.email ? errors.email : undefined)}
+              required
+            />
+            {isEmailVerified && (
+              <div className="mt-1 flex items-center justify-end gap-1 text-xs font-bold text-green-600">
+                <Check size={14} /> Verified
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Email Verification Button - More Prominent */}
+        {!isEmailVerified && !otpSent && validateEmail(data.email).isValid && !availabilityErrors.email && (
+          <div className="flex justify-center">
+            <button 
+              type="button"
+              onClick={handleSendOTP}
+              disabled={isVerifying}
+              className="px-6 py-3 bg-[#5E2590] text-white rounded-lg font-semibold hover:bg-[#4a1d72] disabled:opacity-50 flex items-center gap-2 transition-colors"
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  Sending Verification...
+                </>
+              ) : (
+                <>
+                  <Mail size={18} />
+                  Verify Email Address
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* OTP Input Section */}
@@ -232,36 +247,48 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
         </div>
       )}
         
-        {/* Password Fields */}
-        <div>
-          <Input
-            label="Password"
-            type="password"
-            name="password"
-            value={data.password}
-            onChange={(e) => onChange({ ...data, password: e.target.value })}
-            error={touched.password ? errors.password : undefined}
-            required
-          />
-          <div className="mt-3 grid grid-cols-2 gap-y-2">
-            <StrengthItem label="8+ Characters" met={strength.length} />
-            <StrengthItem label="Number" met={strength.hasNumber} />
-            <StrengthItem label="Special Char" met={strength.hasSpecial} />
-            <StrengthItem label="Uppercase" met={strength.hasUpper} />
+      {/* Password Fields - Only show after email verification */}
+      {isEmailVerified && (
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-4">
+          <div className="border-t pt-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <ShieldCheck className="text-[#5E2590]" size={16} />
+              Create Your Password
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <Input
+                  label="Password"
+                  type="password"
+                  name="password"
+                  value={data.password}
+                  onChange={(e) => onChange({ ...data, password: e.target.value })}
+                  error={touched.password ? errors.password : undefined}
+                  required
+                />
+                <div className="mt-3 grid grid-cols-2 gap-y-2">
+                  <StrengthItem label="8+ Characters" met={strength.length} />
+                  <StrengthItem label="Number" met={strength.hasNumber} />
+                  <StrengthItem label="Special Char" met={strength.hasSpecial} />
+                  <StrengthItem label="Uppercase" met={strength.hasUpper} />
+                </div>
+              </div>
+
+              <Input
+                label="Confirm Password"
+                type="password"
+                name="passwordConfirmation"
+                value={data.passwordConfirmation}
+                onChange={(e) => onChange({ ...data, passwordConfirmation: e.target.value })}
+                error={touched.passwordConfirmation ? errors.passwordConfirmation : undefined}
+                required
+              />
+            </div>
           </div>
         </div>
-
-        <Input
-          label="Confirm Password"
-          type="password"
-          name="passwordConfirmation"
-          value={data.passwordConfirmation}
-          onChange={(e) => onChange({ ...data, passwordConfirmation: e.target.value })}
-          error={touched.passwordConfirmation ? errors.passwordConfirmation : undefined}
-          required
-        />
-      </div>
-   
+      )}
+    </div>
   );
 }
 

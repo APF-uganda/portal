@@ -35,15 +35,15 @@ function RecentApplications() {
 
 
   return (
-    <div className="rounded-xl border border-border bg-white p-5">
+    <div className="rounded-xl border border-border bg-white p-4 md:p-5">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">
+        <h2 className="text-sm md:text-base font-semibold text-gray-700">
           Recent Applications
         </h2>
         <Link
           to="/admin/approval"
-          className="text-sm text-purple-600 hover:underline"
+          className="text-xs md:text-sm text-purple-600 hover:underline"
         >
           View All →
         </Link>
@@ -63,11 +63,11 @@ function RecentApplications() {
   return (
     <div
       key={app.id}
-      className="flex items-center justify-between py-3"
+      className="flex items-center justify-between py-3 gap-2"
     >
       {/* Left */}
-      <div>
-        <p className="text-sm font-medium text-gray-800">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-800 truncate">
           {app.first_name} {app.last_name}
         </p>
         <p className="text-xs text-gray-400">
@@ -77,7 +77,7 @@ function RecentApplications() {
 
       {/* Status */}
       <span
-        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
+        className={`inline-flex items-center gap-1 rounded-full px-2 md:px-3 py-1 text-xs font-medium flex-shrink-0 ${
           isApproved
             ? "bg-green-100 text-green-700"
             : isRejected
@@ -90,7 +90,9 @@ function RecentApplications() {
         ) : (
           <Clock className="h-3 w-3" />
         )}
-        {isApproved ? "Approved" : isRejected ? "Rejected" : "Pending"}
+        <span className="hidden sm:inline">
+          {isApproved ? "Approved" : isRejected ? "Rejected" : "Pending"}
+        </span>
       </span>
     </div>
   );

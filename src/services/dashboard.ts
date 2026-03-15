@@ -201,8 +201,24 @@ export async function fetchRecentPayments(limit: number = 5): Promise<RecentPaym
 }
 
 /**
- * Fetch dashboard stats with trends for UI display
+ * Fetch manual payment revenue for dashboard display
  */
+export async function fetchManualPaymentRevenue(): Promise<number> {
+  try {
+    const response = await axios.get<{ total_revenue: number }>(
+      `${API_BASE_URL}/api/v1/payments/revenue/`,
+      {
+        headers: getAuthHeaders(),
+        timeout: 30000,
+      }
+    );
+
+    return response.data.total_revenue;
+  } catch (error) {
+    console.error('Failed to fetch manual payment revenue:', error);
+    return 0;
+  }
+}
 export async function fetchDashboardStats(): Promise<DashboardStats> {
   try {
     const stats = await fetchDashboardStatistics();

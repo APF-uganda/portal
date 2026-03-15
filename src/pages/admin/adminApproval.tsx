@@ -24,6 +24,7 @@ const AdminApprovals = () => {
     const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [collapsed, setCollapsed] = useState(false); // track sidebar state
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -65,14 +66,15 @@ const AdminApprovals = () => {
         statistics,
         totalRevenue,
         formattedRevenue,
-        hasTotalRevenue: statistics?.total_revenue !== undefined
+        hasTotalRevenue: statistics?.total_revenue !== undefined,
+        rawRevenue: statistics?.total_revenue
     });
 
     
     useEffect(() => {
         const interval = setInterval(() => {
             refetchStats();
-        }, 300000); // Refresh every 5 minutes (300000ms)
+        }, 60000); // Refresh every 1 minute (60000ms)
 
         return () => clearInterval(interval);
     }, [refetchStats]);
@@ -164,30 +166,38 @@ const handleCloseDetailModal = () => {
 };
 
 return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-hidden">
         {/* Sidebar */}
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+        <Sidebar 
+            collapsed={collapsed} 
+            onToggle={() => setCollapsed(!collapsed)}
+            isMobileOpen={isMobileOpen}
+            onMobileToggle={() => setIsMobileOpen(!isMobileOpen)}
+        />
 
         
         <main
-            className={`bg-gray-50 p-0 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"
-                } h-screen overflow-hidden flex flex-col`}
+            className={`bg-gray-50 p-0 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"
+                } h-screen overflow-hidden flex flex-col min-w-0`}
         >
-            <Header title="Application Approval" />
+            <Header 
+                title="Application Approval" 
+                onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
+            />
 
             <div className="flex-1 overflow-y-auto pb-16">
             
             {(successMessage || actionError || fetchError || statsError) && (
-                <div className="mx-6 mt-4">
+                <div className="mx-3 md:mx-6 mt-4">
                     {successMessage && (
                         <div
-                            className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+                            className="bg-green-100 border border-green-400 text-green-700 px-3 md:px-4 py-2 md:py-3 rounded relative text-sm md:text-base"
                             role="alert"
                         >
                             <span className="block sm:inline">{successMessage}</span>
                             <button
                                 onClick={() => setSuccessMessage(null)}
-                                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                                className="absolute top-0 bottom-0 right-0 px-3 md:px-4 py-2 md:py-3"
                             >
                                 <span className="text-green-700">×</span>
                             </button>
@@ -195,13 +205,13 @@ return (
                     )}
                     {actionError && (
                         <div
-                            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                            className="bg-red-100 border border-red-400 text-red-700 px-3 md:px-4 py-2 md:py-3 rounded relative text-sm md:text-base"
                             role="alert"
                         >
                             <span className="block sm:inline">{actionError}</span>
                             <button
                                 onClick={clearError}
-                                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                                className="absolute top-0 bottom-0 right-0 px-3 md:px-4 py-2 md:py-3"
                             >
                                 <span className="text-red-700">×</span>
                             </button>
@@ -209,7 +219,7 @@ return (
                     )}
                     {(fetchError || statsError) && (
                         <div
-                            className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
+                            className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 md:px-4 py-2 md:py-3 rounded relative text-sm md:text-base"
                             role="alert"
                         >
                             <span className="block sm:inline">{fetchError || statsError}</span>
@@ -219,8 +229,8 @@ return (
             )}
 
             
-            <div className="flex-1 bg-[#F4F2FE] p-6 rounded-lg mb-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="flex-1 bg-[#F4F2FE] p-3 md:p-6 rounded-lg mb-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
                     <StatsCard
                         title="Pending Applications"
                         value={pendingCount}
@@ -259,7 +269,7 @@ return (
             </div>
 
             {/* Fixed Footer */}
-            <div className="fixed bottom-0 left-0 right-0 z-30" style={{ marginLeft: collapsed ? '5rem' : '16rem' }}>
+            <div className={`fixed bottom-0 left-0 right-0 z-30 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"}`}>
                 <Footer />
             </div>
         </main>

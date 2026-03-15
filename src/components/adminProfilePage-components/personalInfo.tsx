@@ -110,68 +110,68 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   if (!isEditing) {
     // Display mode - show existing data with modify button
     return (
-      <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-        <div className="border-l-4 border-[#5C32A3] pl-4 mb-8">
-          <div className="flex justify-between items-center">
+      <section className="bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-sm border border-gray-100">
+        <div className="border-l-4 border-[#5C32A3] pl-3 md:pl-4 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div>
-              <h2 className="text-xl font-bold text-gray-800">Personal Information</h2>
-              <p className="text-sm text-gray-400">Your contact and personal details.</p>
+              <h2 className="text-lg md:text-xl font-bold text-gray-800">Personal Information</h2>
+              <p className="text-xs md:text-sm text-gray-400">Your contact and personal details.</p>
             </div>
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-[#5C32A3] text-white px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors text-sm font-medium"
+              className="bg-[#5C32A3] text-white px-3 md:px-4 py-2 rounded-lg hover:bg-purple-800 transition-colors text-xs md:text-sm font-medium w-full sm:w-auto"
             >
               Modify
             </button>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">First Name</label>
+            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border text-sm md:text-base">
               {profile?.first_name || 'Not provided'}
             </p>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Last Name</label>
+            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border text-sm md:text-base">
               {profile?.last_name || 'Not provided'}
             </p>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border text-sm md:text-base">
               {profile?.phone_number || 'Not provided'}
             </p>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border text-sm md:text-base">
               {profile?.date_of_birth || 'Not provided'}
             </p>
           </div>
           
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Email Address</label>
+            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border text-sm md:text-base break-all">
               {profile?.email || 'Loading...'}
             </p>
-            <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+            <p className="text-[9px] md:text-[10px] text-gray-400 mt-2 flex items-center gap-1">
               ℹ️ Email cannot be changed for security reasons
             </p>
           </div>
 
           {profile?.icpau_registration_number && (
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">ICPAU Registration Number</label>
-              <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border font-mono">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">ICPAU Registration Number</label>
+              <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border font-mono text-sm md:text-base">
                 {profile.icpau_registration_number}
               </p>
-              <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+              <p className="text-[9px] md:text-[10px] text-gray-400 mt-2 flex items-center gap-1">
                 ℹ️ Verified and locked for security
               </p>
             </div>
@@ -183,14 +183,14 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
   // Edit mode - show form
   return (
-    <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-      <div className="border-l-4 border-[#5C32A3] pl-4 mb-8">
-        <h2 className="text-xl font-bold text-gray-800">Edit Personal Information</h2>
-        <p className="text-sm text-gray-400">Update your contact and personal details.</p>
+    <section className="bg-white rounded-2xl p-4 md:p-6 lg:p-8 shadow-sm border border-gray-100">
+      <div className="border-l-4 border-[#5C32A3] pl-3 md:pl-4 mb-6 md:mb-8">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800">Edit Personal Information</h2>
+        <p className="text-xs md:text-sm text-gray-400">Update your contact and personal details.</p>
       </div>
       
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
           <Input 
             label="First Name" 
             placeholder="Enter first name"
@@ -218,33 +218,33 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
           />
         </div>
         
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <Input 
             label="Email Address" 
             placeholder={profile?.email || "Loading..."}
             value={profile?.email || ''}
             disabled={true}
           />
-          <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+          <p className="text-[9px] md:text-[10px] text-gray-400 mt-2 flex items-center gap-1">
             ℹ️ Email cannot be changed for security reasons
           </p>
         </div>
 
         {profile?.icpau_registration_number && (
-          <div className="mb-6">
+          <div className="mb-4 md:mb-6">
             <Input 
               label="ICPAU Registration Number" 
               placeholder="CM000000000000"
               value={profile.icpau_registration_number}
               disabled={true}
             />
-            <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+            <p className="text-[9px] md:text-[10px] text-gray-400 mt-2 flex items-center gap-1">
               ℹ️ Verified and locked for security
             </p>
           </div>
         )}
         
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
           <ActionButton 
             text={updating ? "Saving..." : "Save Changes"} 
             disabled={!hasChanges || updating}
@@ -254,7 +254,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
             type="button"
             onClick={handleCancel}
             disabled={updating}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-4 md:px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm md:text-base"
           >
             Cancel
           </button>

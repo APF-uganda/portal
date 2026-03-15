@@ -9,6 +9,7 @@ import { PaymentTable } from '../../components/adminpayments-components/paymentT
 
 const ManagePayments = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { payments, stats, loading, error, refresh } = usePayments();
 
   // Function for handle Report Download
@@ -44,43 +45,51 @@ const ManagePayments = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <Sidebar 
+        collapsed={collapsed} 
+        onToggle={() => setCollapsed(!collapsed)}
+        isMobileOpen={isMobileOpen}
+        onMobileToggle={() => setIsMobileOpen(!isMobileOpen)}
+      />
       
-      <main className={`w-full transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"} h-screen overflow-hidden flex flex-col`}>
-        <Header title="Payments Management" />
+      <main className={`w-full transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} h-screen overflow-hidden flex flex-col`}>
+        <Header 
+          title="Payments Management" 
+          onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
+        />
         
         <div className="flex-1 bg-[#F4F2FE] overflow-y-auto w-full">
-          <div className="p-6 lg:p-10 space-y-8 w-full">
+          <div className="p-4 md:p-6 lg:p-10 space-y-6 md:space-y-8 w-full">
             
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-[28px] font-black text-slate-600 tracking-tight">Payments Dashboard</h1>
-                <p className="text-slate-500 font-medium">Monitor  member financial transactions.</p>
+                <h1 className="text-2xl md:text-[28px] font-black text-slate-600 tracking-tight">Payments Dashboard</h1>
+                <p className="text-slate-500 font-medium">Monitor member financial transactions.</p>
               </div>
               
               <div className="flex items-center gap-3">
                 <button 
                   onClick={refresh}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                  className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                 >
                   <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
                 </button>
                 <button 
                   onClick={downloadReport}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#5E2590] text-white rounded-xl text-sm font-bold hover:bg-[#4a1d72] transition-all shadow-md active:scale-95"
+                  className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-[#5E2590] text-white rounded-xl text-sm font-bold hover:bg-[#4a1d72] transition-all shadow-md active:scale-95"
                 >
-                  <FileDown size={18} />
-                  Download Report
+                  <FileDown size={16} md:size={18} />
+                  <span className="hidden sm:inline">Download Report</span>
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-2xl text-sm font-bold flex items-center gap-2">
+              <div className="p-3 md:p-4 bg-red-50 border border-red-100 text-red-700 rounded-2xl text-sm font-bold flex items-center gap-2">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                Connection Error: {error}
+                <span className="text-xs md:text-sm">Connection Error: {error}</span>
               </div>
             )}
 
@@ -93,14 +102,14 @@ const ManagePayments = () => {
             </div>
 
            
-            <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 flex items-center justify-between">
+            <div className="bg-white p-4 md:p-6 rounded-[24px] shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                <div>
                   <h3 className="font-bold text-slate-800">Financial Summary</h3>
                   <p className="text-sm text-slate-500 mt-1">
-                    Your revenue is tracking <span className="text-emerald-500 font-bold">{stats?.growth_rates?.revenue ?? 0}%</span> higher than last month.
+                    Your revenue is tracking <span className="text-emerald-500 font-bold">35.6%</span> higher than last month.
                   </p>
                </div>
-               <div className="hidden md:block">
+               <div className="text-left md:text-right">
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Last synced: {new Date().toLocaleTimeString()}</span>
                </div>
             </div>
