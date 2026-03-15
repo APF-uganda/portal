@@ -11,9 +11,9 @@ interface ProfileHeaderProps {
 }
 
 const ContactChip = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-  <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg">
-    <span className="text-gray-400 w-4 h-4">{icon}</span>
-    <span className="text-xs text-gray-600 font-medium">{text}</span>
+  <div className="flex items-center gap-1 md:gap-2 bg-gray-50 border border-gray-100 px-2 md:px-3 py-1 md:py-1.5 rounded-lg">
+    <span className="text-gray-400 w-3 md:w-4 h-3 md:h-4 flex-shrink-0">{icon}</span>
+    <span className="text-[10px] md:text-xs text-gray-600 font-medium truncate">{text}</span>
   </div>
 );
 
@@ -56,15 +56,15 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-8 mb-6 border-l-8 border-[#5C32A3]">
-        <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse"></div>
-        <div className="flex-1 space-y-3">
-          <div className="h-6 bg-gray-200 rounded animate-pulse w-48"></div>
-          <div className="h-4 bg-gray-200 rounded animate-pulse w-64"></div>
-          <div className="flex gap-3">
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-32"></div>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-32"></div>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-32"></div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 md:gap-8 mb-6 border-l-8 border-[#5C32A3]">
+        <div className="w-20 md:w-24 h-20 md:h-24 rounded-full bg-gray-200 animate-pulse mx-auto sm:mx-0"></div>
+        <div className="flex-1 space-y-3 text-center sm:text-left">
+          <div className="h-5 md:h-6 bg-gray-200 rounded animate-pulse w-32 md:w-48 mx-auto sm:mx-0"></div>
+          <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-40 md:w-64 mx-auto sm:mx-0"></div>
+          <div className="flex flex-wrap justify-center sm:justify-start gap-2 md:gap-3">
+            <div className="h-5 md:h-6 bg-gray-200 rounded animate-pulse w-24 md:w-32"></div>
+            <div className="h-5 md:h-6 bg-gray-200 rounded animate-pulse w-24 md:w-32"></div>
+            <div className="h-5 md:h-6 bg-gray-200 rounded animate-pulse w-24 md:w-32"></div>
           </div>
         </div>
       </div>
@@ -73,16 +73,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   if (!profile) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-center mb-6 border-l-8 border-[#5C32A3]">
-        <p className="text-gray-500">Failed to load profile</p>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 flex items-center justify-center mb-6 border-l-8 border-[#5C32A3]">
+        <p className="text-gray-500 text-sm md:text-base">Failed to load profile</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-8 mb-6 border-l-8 border-[#5C32A3]">
-      <div className="relative">
-        <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-200">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 md:gap-8 mb-6 border-l-8 border-[#5C32A3]">
+      <div className="relative mx-auto sm:mx-0">
+        <div className="w-20 md:w-24 h-20 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-200">
           {profile.profile_picture_url ? (
             <img 
               src={profile.profile_picture_url}
@@ -91,7 +91,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#5C32A3] to-[#4A2882] flex items-center justify-center">
-              <span className="text-white text-xl font-bold">
+              <span className="text-white text-lg md:text-xl font-bold">
                 {profile.initials}
               </span>
             </div>
@@ -145,25 +145,25 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         />
       </div>
       
-      <div className="flex-1">
-        <h1 className="text-2xl font-bold text-gray-900">{profile.full_name}</h1>
-        <div className="flex items-center gap-2 mt-1">
+      <div className="flex-1 text-center sm:text-left">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{profile.full_name}</h1>
+        <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
           <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-xs md:text-sm">
             {profile.user_role === '1' ? 'Admin' : 'Member'} • 
             {profile.icpau_registration_number && (
-              <span className="font-mono ml-1">ICPAU Reg. No: {profile.icpau_registration_number}</span>
+              <span className="font-mono ml-1 break-all">ICPAU Reg. No: {profile.icpau_registration_number}</span>
             )}
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-3 mt-4">
-          <ContactChip icon={<Mail size={14} />} text={profile.email} />
+        <div className="flex flex-wrap justify-center sm:justify-start gap-2 md:gap-3 mt-3 md:mt-4">
+          <ContactChip icon={<Mail size={12} className="md:w-[14px] md:h-[14px]" />} text={profile.email} />
           {profile.phone_number && (
-            <ContactChip icon={<Phone size={14} />} text={profile.phone_number} />
+            <ContactChip icon={<Phone size={12} className="md:w-[14px] md:h-[14px]" />} text={profile.phone_number} />
           )}
           {profile.organization && (
-            <ContactChip icon={<User size={14} />} text={profile.organization} />
+            <ContactChip icon={<User size={12} className="md:w-[14px] md:h-[14px]" />} text={profile.organization} />
           )}
         </div>
       </div>
