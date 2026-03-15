@@ -127,7 +127,7 @@ const EventCreatePage = () => {
           notification.type === 'success' ? 'bg-white border-emerald-50 text-emerald-900' : 'bg-white border-red-50 text-red-900'
         }`}>
           <div className={`p-1.5 md:p-2 rounded-full ${notification.type === 'success' ? 'bg-emerald-50' : 'bg-red-50'}`}>
-            {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={18} className="md:w-6 md:h-6"/> : <AlertCircle className="text-red-500" size={18} className="md:w-6 md:h-6"/>}
+            {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500 w-4.5 h-4.5 md:w-6 md:h-6"/> : <AlertCircle className="text-red-500 w-4.5 h-4.5 md:w-6 md:h-6"/>}
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-xs md:text-sm opacity-40 leading-none mb-1">Status</span>
@@ -197,7 +197,7 @@ const EventCreatePage = () => {
                         />
                         {uploading && (
                           <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-                            <Loader2 className="animate-spin text-purple-600" size={24} className="md:w-8 md:h-8" />
+                            <Loader2 className="animate-spin text-purple-600 w-6 h-6 md:w-8 md:h-8" />
                             <span className="text-xs md:text-sm font-black uppercase tracking-widest text-purple-700">Syncing...</span>
                           </div>
                         )}

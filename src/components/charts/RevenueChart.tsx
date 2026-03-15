@@ -131,7 +131,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
 
   const totalRevenue = chartData?.data.reduce((a, b) => a + b, 0) || 0;
   const averageRevenue = totalRevenue > 0 ? Math.round(totalRevenue / chartData!.data.length) : 0;
-  const growth = chartData?.data.length > 1 
+  const growth = chartData?.data && chartData.data.length > 1 
     ? ((chartData.data[chartData.data.length - 1] - chartData.data[chartData.data.length - 2]) / chartData.data[chartData.data.length - 2] * 100)
     : 0;
 

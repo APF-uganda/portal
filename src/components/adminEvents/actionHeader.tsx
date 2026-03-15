@@ -26,13 +26,13 @@ export const ActionHeader = ({ onPublish, onBack, loading }: any) => (
       >
         {loading ? (
           <>
-            <Loader2 className="animate-spin" size={16} className="md:w-5 md:h-5" />
+            <Loader2 className="animate-spin w-4 h-4 md:w-5 md:h-5" />
             <span className="hidden sm:inline">Connecting...</span>
             <span className="sm:hidden">...</span>
           </>
         ) : (
           <>
-            <Save size={16} className="md:w-5 md:h-5" />
+            <Save className="w-4 h-4 md:w-5 md:h-5" />
             <span className="hidden sm:inline">Publish Event</span>
             <span className="sm:hidden">Publish</span>
           </>

@@ -242,7 +242,7 @@ const ManageUsers = () => {
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-gray-800 truncate">{user.name}</span>
                                 {user.hasDocuments && (
-                                  <FileText className="w-4 h-4 text-green-500 flex-shrink-0" title="Has uploaded documents" />
+                                  <FileText className="w-4 h-4 text-green-500 flex-shrink-0" />
                                 )}
                               </div>
                             </td>

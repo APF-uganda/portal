@@ -193,7 +193,7 @@ const NewsManagement = () => {
           notification.type === 'success' ? 'bg-white border-emerald-50 text-emerald-900' : 'bg-white border-red-50 text-red-900'
         }`}>
           <div className={`p-1.5 md:p-2 rounded-full ${notification.type === 'success' ? 'bg-emerald-50' : 'bg-red-50'}`}>
-            {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={18} className="md:w-6 md:h-6"/> : <AlertCircle className="text-red-500" size={18} className="md:w-6 md:h-6"/>}
+            {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500 w-4.5 h-4.5 md:w-6 md:h-6"/> : <AlertCircle className="text-red-500 w-4.5 h-4.5 md:w-6 md:h-6"/>}
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-xs md:text-sm opacity-40 leading-none mb-1">Status</span>

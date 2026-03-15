@@ -161,30 +161,30 @@ function OtpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black/60 to-black/60 bg-center bg-cover flex items-center justify-center p-4"
+    <div className="min-h-screen bg-gradient-to-b from-black/60 to-black/60 bg-center bg-cover flex items-center justify-center p-3 md:p-4"
     style={{ backgroundImage: `url(${loginImage})` }}>
-      <div className="bg-white backdrop-blur-sm p-12 rounded-2xl w-full max-w-md text-center shadow-2xl shadow-black/35">
+      <div className="bg-white backdrop-blur-sm p-6 md:p-8 lg:p-12 rounded-xl md:rounded-2xl w-full max-w-sm md:max-w-md text-center shadow-2xl shadow-black/35">
         
         {/* Logo Wrapper */}
-        <div className="w-full flex justify-center items-center mb-6">
-          <img src={apfLogo} alt="APF Logo" className="w-36 mb-5" />
+        <div className="w-full flex justify-center items-center mb-4 md:mb-6">
+          <img src={apfLogo} alt="APF Logo" className="w-28 md:w-36 mb-3 md:mb-5" />
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Account</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Verify Your Account</h2>
         
-        <p className="text-gray-600 text-sm mb-8">
+        <p className="text-gray-600 text-xs md:text-sm mb-6 md:mb-8 px-2">
           Enter the 6-digit code sent to <strong className="font-medium">{email || 'your email'}</strong>
         </p>
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 md:px-4 py-2 md:py-3 rounded-lg text-xs md:text-sm mb-4 md:mb-6">
             {error}
           </div>
         )}
 
         {/* OTP Inputs */}
-        <div className="flex justify-between mb-8 gap-2">
+        <div className="flex justify-between mb-6 md:mb-8 gap-1 md:gap-2">
           {code.map((digit, index) => (
             <input
               key={index}
@@ -196,20 +196,20 @@ function OtpPage() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
               disabled={isVerifying}
-              className="w-12 h-14 text-2xl font-mono text-center rounded-xl border-2 border-gray-200 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-200 bg-white shadow-sm hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-10 h-12 md:w-12 md:h-14 text-lg md:text-2xl font-mono text-center rounded-lg md:rounded-xl border-2 border-gray-200 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-200 bg-white shadow-sm hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           ))}
         </div>
 
         {/* Verify Button */}
         <button 
-          className="w-full py-4 rounded-xl bg-purple-600 text-white font-semibold text-lg shadow-lg hover:bg-purple-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2" 
+          className="w-full py-3 md:py-4 rounded-lg md:rounded-xl bg-purple-600 text-white font-semibold text-base md:text-lg shadow-lg hover:bg-purple-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2" 
           onClick={handleVerify} 
           disabled={isVerifying}
         >
           {isVerifying ? (
             <>
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 w-4 md:h-5 md:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -221,18 +221,18 @@ function OtpPage() {
         </button>
 
         {/* Action Links */}
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-4 md:mt-6 px-2">
           <button 
             onClick={() => navigate('/login')} 
             disabled={isVerifying}
-            className="text-purple-600 hover:text-purple-700 font-medium text-sm hover:underline transition-colors duration-200 bg-transparent border-none cursor-pointer p-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-purple-600 hover:text-purple-700 font-medium text-xs md:text-sm hover:underline transition-colors duration-200 bg-transparent border-none cursor-pointer p-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Back to Login
           </button>
           <button 
             onClick={handleResendOTP}
             disabled={isVerifying}
-            className="text-purple-600 hover:text-purple-700 font-medium text-sm hover:underline transition-colors duration-200 bg-transparent border-none cursor-pointer p-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-purple-600 hover:text-purple-700 font-medium text-xs md:text-sm hover:underline transition-colors duration-200 bg-transparent border-none cursor-pointer p-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Resend Code
           </button>
@@ -242,25 +242,25 @@ function OtpPage() {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 md:p-4">
+          <div className="bg-white rounded-xl md:rounded-2xl p-6 md:p-8 max-w-xs md:max-w-sm w-full text-center shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             {/* Success Icon */}
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+              <svg className="w-8 h-8 md:w-10 md:h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
 
             {/* Success Message */}
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Code Sent Successfully</h3>
-            <p className="text-gray-600 mb-8">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">Code Sent Successfully</h3>
+            <p className="text-gray-600 mb-6 md:mb-8 text-sm md:text-base">
               A new OTP code has been sent to your email. Please check your inbox.
             </p>
 
             {/* OK Button */}
             <button
               onClick={() => setShowSuccessModal(false)}
-              className="w-full py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors duration-200"
+              className="w-full py-2.5 md:py-3 bg-purple-600 text-white font-semibold rounded-lg md:rounded-xl hover:bg-purple-700 transition-colors duration-200 text-sm md:text-base"
             >
               OK
             </button>

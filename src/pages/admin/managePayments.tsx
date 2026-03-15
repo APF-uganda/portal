@@ -80,7 +80,7 @@ const ManagePayments = () => {
                   onClick={downloadReport}
                   className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-[#5E2590] text-white rounded-xl text-sm font-bold hover:bg-[#4a1d72] transition-all shadow-md active:scale-95"
                 >
-                  <FileDown size={16} md:size={18} />
+                  <FileDown className="w-4 h-4 md:w-4.5 md:h-4.5" />
                   <span className="hidden sm:inline">Download Report</span>
                 </button>
               </div>

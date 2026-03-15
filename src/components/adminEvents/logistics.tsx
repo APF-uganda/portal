@@ -139,7 +139,7 @@ export const LogisticsSidebar = ({ data, onChange }: any) => {
         <div className="space-y-1.5">
           <label className="text-xs md:text-sm font-black text-slate-400 uppercase ml-1">CPD Points</label>
           <div className="relative">
-            <Award className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-slate-300" size={14} className="md:w-4 md:h-4" />
+            <Award className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-slate-300 w-3.5 h-3.5 md:w-4 md:h-4" />
             <input 
               type="number"
               className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-2.5 md:py-3 bg-slate-50 border-none rounded-xl md:rounded-2xl text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-purple-100 transition"
@@ -152,7 +152,7 @@ export const LogisticsSidebar = ({ data, onChange }: any) => {
         <div className="space-y-1.5">
           <label className="text-xs md:text-sm font-black text-slate-400 uppercase ml-1">Registration Link</label>
           <div className="relative">
-            <Link className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-slate-300" size={14} className="md:w-4 md:h-4" />
+            <Link className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-slate-300 w-3.5 h-3.5 md:w-4 md:h-4" />
             <input 
               type="url"
               placeholder="https://..."
