@@ -72,49 +72,48 @@ export default function EventCard({
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
         />
         
-        
         {cpdPoints && Number(cpdPoints) > 0 && (
-          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg border border-purple-100 flex items-center gap-1.5 animate-in fade-in zoom-in duration-500">
+          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg border border-purple-100 flex items-center gap-1.5">
             <Award size={14} className="text-purple-600" fill="currentColor" />
-            <span className="text-[10px] font-black text-purple-900 uppercase tracking-tighter">
+            <span className="text-[10px] font-bold text-purple-900 uppercase tracking-tighter">
               {cpdPoints} CPD Units
             </span>
           </div>
         )}
       </div>
 
-      {/* Content Section */}
+     
       <div className="p-8 flex flex-col flex-grow">
-        <h3 className="text-xl font-black text-slate-700 mb-4 leading-tight line-clamp-2 group-hover:text-purple-700 transition-colors uppercase tracking-tight">
+        <h3 className="text-lg font-bold text-gray-900 mb-3 leading-tight line-clamp-2 transition-colors uppercase tracking-tight">
           {title}
         </h3>
         
-        <div className="space-y-3 mb-4">
-          <div className="flex items-center gap-3 text-black">
-            <Calendar size={14} strokeWidth={3} className="text-purple-600" />
-            <span className="text-sm font-semibold">{displayDate}</span>
+        <div className="space-y-2.5 mb-4">
+          <div className="flex items-center text-gray-600 font-medium text-sm">
+            <Calendar size={16} className="mr-2.5 text-purple-500 flex-shrink-0" />
+            <span className="truncate">{displayDate}</span>
           </div>
           
-          <div className="flex items-center gap-3 text-black">
-            <Clock size={14} strokeWidth={3} className="text-purple-600" />
-            <span className="text-sm font-semibold">{time}</span>
+          <div className="flex items-center text-gray-600 font-medium text-sm">
+            <Clock size={16} className="mr-2.5 text-purple-500 flex-shrink-0" />
+            <span className="truncate">{time || "Time TBD"}</span>
           </div>
 
-          <div className="flex items-center gap-3 text-black">
-            <MapPin size={14} strokeWidth={3} className="text-purple-600" />
-            <span className="text-sm font-semibold truncate">{location}</span>
+          <div className="flex items-center text-gray-600 font-medium text-sm">
+            <MapPin size={16} className="mr-2.5 text-purple-500 flex-shrink-0" />
+            <span className="truncate">{location}</span>
           </div>
 
           {/* Pricing Section */}
           {(memberPrice || nonMemberPrice) && (
             <div className="pt-2 border-t border-slate-100 mt-2 flex flex-col gap-1">
               {memberPrice && (
-                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   Member: <span className="text-purple-700">UGX {Number(memberPrice).toLocaleString()}</span>
                 </div>
               )}
               {nonMemberPrice && (
-                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   Non-Member: <span className="text-purple-700">UGX {Number(nonMemberPrice).toLocaleString()}</span>
                 </div>
               )}
@@ -122,7 +121,7 @@ export default function EventCard({
           )}
         </div>
         
-        <p className="text-sm text-black mb-8 line-clamp-3 leading-relaxed font-medium">
+        <p className="text-gray-600 text-sm leading-relaxed mb-8 line-clamp-3 font-medium">
           {description}
         </p>
         
@@ -130,7 +129,7 @@ export default function EventCard({
           <div className="mt-auto">
             <button 
               onClick={onRegister}
-              className="w-full bg-[#5F1C9F] text-white py-4 rounded-full text-sm font-bold hover:bg-purple-700 transition-all transform active:scale-95 flex items-center justify-center shadow-xl"
+              className="w-full bg-[#7E49B3] text-white py-3.5 rounded-full text-sm font-semibold hover:bg-[#3C096C] transition-all shadow-md active:scale-95"
             >
               Register Now
             </button>
