@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin,  Award, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, Award } from 'lucide-react';
 import { useMemo } from 'react';
 import { CMS_BASE_URL } from '../../config/api'; 
 
@@ -25,10 +25,9 @@ export default function EventCard({
   time, 
   location, 
   description, 
-  isPaid,
   memberPrice,
   nonMemberPrice,
-  cpdPoints, 
+  cpdPoints,
   onRegister,
   delay = 0,
   isPast = false 
@@ -61,7 +60,7 @@ export default function EventCard({
 
   return (
     <div 
-      className={`bg-white rounded-[2.5rem] overflow-hidden shadow-sm group w-full h-full flex flex-col transition-all duration-500 border border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:-translate-y-2 ${isPast ? 'opacity-75 grayscale-[0.3]' : ''}`}
+      className={`bg-white rounded-[2.5rem] overflow-hidden shadow-sm group w-full h-full flex flex-col transition-all duration-500 border border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:-translate-y-2 font-montserrat ${isPast ? 'opacity-75 grayscale-[0.3]' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Image Section */}
@@ -74,36 +73,53 @@ export default function EventCard({
         />
         
         
-       
+        {cpdPoints && Number(cpdPoints) > 0 && (
+          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg border border-purple-100 flex items-center gap-1.5 animate-in fade-in zoom-in duration-500">
+            <Award size={14} className="text-purple-600" fill="currentColor" />
+            <span className="text-[10px] font-black text-purple-900 uppercase tracking-tighter">
+              {cpdPoints} CPD Units
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
       <div className="p-8 flex flex-col flex-grow">
-        <h3 className="text-xl font-black text-slate-900 mb-4 leading-tight line-clamp-2 group-hover:text-purple-700 transition-colors uppercase tracking-tight">
+        <h3 className="text-xl font-black text-slate-700 mb-4 leading-tight line-clamp-2 group-hover:text-purple-700 transition-colors uppercase tracking-tight">
           {title}
         </h3>
         
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-4">
           <div className="flex items-center gap-3 text-black">
-            <div className="p-2  rounded-lg group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
-              <Calendar size={14} strokeWidth={3} />
-            </div>
-            <span className="text-sm font-semibold text-black">{displayDate}</span>
+            <Calendar size={14} strokeWidth={3} className="text-purple-600" />
+            <span className="text-sm font-semibold">{displayDate}</span>
           </div>
           
           <div className="flex items-center gap-3 text-black">
-            <div className="p-2  rounded-lg group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
-              <Clock size={14} strokeWidth={3} />
-            </div>
-            <span className="text-sm font-semibold text-black">{time}</span>
+            <Clock size={14} strokeWidth={3} className="text-purple-600" />
+            <span className="text-sm font-semibold">{time}</span>
           </div>
 
           <div className="flex items-center gap-3 text-black">
-            <div className="p-2  rounded-lg group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
-              <MapPin size={14} strokeWidth={3} />
-            </div>
-            <span className="text-sm font-semibold text-black truncate">{location}</span>
+            <MapPin size={14} strokeWidth={3} className="text-purple-600" />
+            <span className="text-sm font-semibold truncate">{location}</span>
           </div>
+
+          {/* Pricing Section */}
+          {(memberPrice || nonMemberPrice) && (
+            <div className="pt-2 border-t border-slate-100 mt-2 flex flex-col gap-1">
+              {memberPrice && (
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Member: <span className="text-purple-700">UGX {Number(memberPrice).toLocaleString()}</span>
+                </div>
+              )}
+              {nonMemberPrice && (
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Non-Member: <span className="text-purple-700">UGX {Number(nonMemberPrice).toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         <p className="text-sm text-black mb-8 line-clamp-3 leading-relaxed font-medium">
@@ -114,9 +130,9 @@ export default function EventCard({
           <div className="mt-auto">
             <button 
               onClick={onRegister}
-              className="w-full bg-[#5F1C9F] text-white py-4 rounded-full text-sm font-semibold hover:bg-purple-700 transition-all transform active:scale-95 flex items-center justify-center gap-3 shadow-xl group/btn"
+              className="w-full bg-[#5F1C9F] text-white py-4 rounded-full text-sm font-bold hover:bg-purple-700 transition-all transform active:scale-95 flex items-center justify-center shadow-xl"
             >
-              Register
+              Register Now
             </button>
           </div>
         )}
