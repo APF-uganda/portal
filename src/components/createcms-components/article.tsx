@@ -177,7 +177,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       isFeatured: isTopPick,   
       readTime: Number(readTime), 
       featuredImage: imageId,  
-      contentBlocks: allBlocks, 
+      content: allBlocks, 
       publishDate: new Date().toISOString().split('T')[0] 
     }, status);
   };

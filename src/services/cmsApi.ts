@@ -91,58 +91,43 @@ export const updateHomepage = async (payload: any) => {
  * NEWS
  */
 export const getNews = async () => {
-  const res = await api.get('/news-articles', {
-    params: {
+  try {
+   
+    const res = await api.get('/news-articles?populate=*&sort=createdAt:desc');
+
+    if (!res.data || !res.data.data) return [];
+
+    return res.data.data.map((item: any) => {
+      const data = item.attributes || item;
+
      
-      'populate[featuredImage]': '*',
-      'populate[contentBlocks]': '*',
-      'populate[news]': '*',
-      sort: 'createdAt:desc'
-    }
-  });
+      const rawImg = data.featuredImage?.data || data.featuredImage || data.image?.data || data.image;
+      let imageUrl = '';
+      if (rawImg) {
+        const imgObj = Array.isArray(rawImg) ? rawImg[0] : rawImg;
+        imageUrl = imgObj?.attributes?.url || imgObj?.url || '';
+      }
 
-  return res.data.data.map((item: any) => {
-    const data = item.attributes || item;
+      
+      const articleContent = data.content || data.contentBlocks || [];
 
-    
-    const articleContent = data.contentBlocks || data.content || [];
-
-  
-    let imageUrl = '';
-    const rawImg = data.featuredImage?.data || data.featuredImage;
-    
-    if (rawImg) {
-   
-      const imgObj = Array.isArray(rawImg) ? rawImg[0] : rawImg;
-   
-      imageUrl = imgObj?.attributes?.url || imgObj?.url || imgObj?.formats?.medium?.url || '';
-    }
-    
-   
-    console.log(`Image Debug [${data.title}]:`, {
-      hasRawData: !!rawImg,
-      isArray: Array.isArray(rawImg),
-      extractedUrl: imageUrl
+      return {
+        id: item.id,
+        documentId: item.documentId || item.id?.toString(),
+        title: data.title || 'Untitled',
+        content: articleContent, 
+        description: data.description || '',
+        image: getImageUrl(imageUrl),
+        category: data.news?.data?.attributes?.name || data.category || 'News',
+        readTime: data.readTime || 5,
+        date: data.publishDate || data.createdAt,
+        isFeatured: !!(data.isFeatured || data.isTopic)
+      };
     });
-
-    return {
-      id: item.id,
-      documentId: item.documentId,
-      title: data.title || 'Untitled',
-      
-     
-      content: articleContent, 
-      
-     
-      description: data.description || (typeof articleContent === 'string' ? articleContent.substring(0, 160) : "Read more..."),
-      
-      image: getImageUrl(imageUrl),
-      category: data.news?.data?.attributes?.name || data.category || 'News',
-      readTime: data.readTime || 5,
-      date: data.publishDate || data.createdAt,
-      isFeatured: data.isFeatured || data.isTopPick || false
-    };
-  });
+  } catch (error) {
+    console.error("News Fetch Error:", error);
+    return [];
+  }
 };
 
 export const createNews = async (payload: any) => {
