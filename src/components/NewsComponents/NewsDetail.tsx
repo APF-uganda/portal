@@ -98,29 +98,68 @@ const NewsDetail = () => {
         </div>
       </div>
 
-      {/*  MAIN ARTICLE BODY */}
+      {/* MAIN ARTICLE BODY */}
       <article className="max-w-3xl mx-auto px-6 pb-24">
         <div className="prose prose-base md:prose-xl max-w-none text-slate-800 leading-relaxed font-medium">
-          {Array.isArray(article.content) ? article.content.map((block: any, i: number) => {
-           
-            if (block.type === 'paragraph') {
-              return (
-                <p key={i} className="mb-8">
-                  {block.children?.map((child: any) => child.text).join('')}
-                </p>
-              );
-            }
-            if (block.type === 'heading') {
-              const HeadingTag = `h${block.level}` as keyof JSX.IntrinsicElements;
-              return (
-                <HeadingTag key={i} className="font-black text-slate-900 mt-12 mb-6 tracking-tight">
-                  {block.children?.map((child: any) => child.text).join('')}
-                </HeadingTag>
-              );
-            }
-            return null;
-          }) : (
-            <p className="text-xl md:text-2xl font-bold leading-snug">{article.description || article.summary}</p>
+          {Array.isArray(article.content) && article.content.length > 0 ? (
+            article.content.map((block: any, i: number) => {
+              
+              // Handle TEXT or PARAGRAPH blocks
+              if (block.type === 'text' || block.type === 'paragraph') {
+                return (
+                  <p key={i} className="mb-8 text-slate-700">
+                  
+                    {block.value || block.children?.map((c: any) => c.text).join('')}
+                  </p>
+                );
+              }
+
+              // Handle HEADING blocks
+              if (block.type === 'heading') {
+                const HeadingTag = `h${block.level || 3}` as keyof JSX.IntrinsicElements;
+                return (
+                  <HeadingTag key={i} className="font-black text-slate-900 mt-12 mb-6 tracking-tight">
+                    {block.value || block.children?.map((c: any) => c.text).join('')}
+                  </HeadingTag>
+                );
+              }
+
+              // Handle IMAGE blocks 
+              if (block.type === 'image' && block.value) {
+                return (
+                  <div key={i} className="my-12 rounded-[2rem] overflow-hidden shadow-xl">
+                    <img src={block.value} alt="Article visual" className="w-full h-auto" />
+                    {block.caption && <p className="text-center text-xs mt-4 text-slate-400 font-bold uppercase tracking-widest">{block.caption}</p>}
+                  </div>
+                );
+              }
+
+             
+              if (block.type === 'video' && block.value) {
+                return (
+                  <div key={i} className="my-12 aspect-video rounded-[2rem] overflow-hidden shadow-xl">
+                    <iframe 
+                      src={block.value.replace('watch?v=', 'embed/')} 
+                      className="w-full h-full"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                );
+              }
+
+              return null;
+            })
+          ) : (
+          
+            <div className="space-y-6">
+               <p className="text-xl md:text-2xl font-black text-slate-900 leading-snug">
+                 {article.description || article.summary}
+               </p>
+               <div className="h-[1px] w-20 bg-purple-100"></div>
+               <p className="text-slate-400 text-sm italic font-medium">
+                 Full article details are being updated...
+               </p>
+            </div>
           )}
         </div>
       </article>
