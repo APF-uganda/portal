@@ -42,7 +42,7 @@ const NewsDetail = () => {
   return (
     <main className="bg-white min-h-screen font-sans animate-fade-in-up overflow-x-hidden">
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-50 px-4 py-4 md:px-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-black hover:text-[#5F1C9F] font-black text-[10px] uppercase tracking-widest transition-all group">
             <ChevronLeft size={18} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
             <span>Back</span>

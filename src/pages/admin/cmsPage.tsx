@@ -7,45 +7,24 @@ import Footer from "../../components/layout/Footer";
 
 import { 
   Plus, Newspaper, Calendar, 
-  Layout, Info, Phone, Settings,
-  Users, Lightbulb, Eye, Edit3
+  Settings, Users, Eye, 
+  Sparkles, Activity, ArrowUpRight
 } from 'lucide-react';
 
-interface PageCardProps {
-  title: string;
-  icon: React.ReactNode;
-  desc: string;
-  onClick: () => void;
-}
 
-const PageCard = ({ title, icon, desc, onClick }: PageCardProps) => (
-  <button 
-    onClick={onClick}
-    className="group relative bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl border border-slate-100 hover:border-purple-300 transition-all shadow-sm hover:shadow-xl hover:-translate-y-1 text-left overflow-hidden w-full"
-  >
-    <div className="flex items-start justify-between relative z-10">
-      <div className="p-2 md:p-3 bg-slate-50 text-slate-500 rounded-xl md:rounded-2xl group-hover:bg-[#5C32A3] group-hover:text-white transition-all duration-500 flex-shrink-0">
-        {icon}
+const StatHighlight = ({ title, value, icon: Icon, color }: any) => (
+  <div className="bg-white p-6 rounded-[2.5rem] border border-gray-50 shadow-sm flex items-center justify-between group">
+    <div className="flex items-center gap-4">
+      <div className={`p-4 rounded-2xl ${color} transition-transform group-hover:scale-110 duration-300`}>
+        <Icon size={24} />
       </div>
-      <div className="opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 flex items-center gap-1 text-[9px] md:text-[10px] font-black text-purple-600 uppercase tracking-widest">
-        <Edit3 size={10} className="md:w-3 md:h-3" /> 
-        <span className="hidden sm:inline">Edit Page</span>
-        <span className="sm:hidden">Edit</span>
+      <div>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">{title}</p>
+        <h4 className="text-2xl font-bold text-gray-900">{value}</h4>
       </div>
     </div>
-    <div className="mt-4 md:mt-5 relative z-10">
-      <h3 className="font-black text-slate-800 text-sm md:text-base tracking-tight group-hover:text-[#5C32A3] transition-colors">
-        {title}
-      </h3>
-      <p className="text-[11px] md:text-[12px] text-slate-400 mt-1 md:mt-1.5 leading-snug overflow-hidden">
-        {desc}
-      </p>
-    </div>
-    
-    <div className="absolute -right-4 md:-right-6 -bottom-4 md:-bottom-6 text-slate-100 opacity-20 group-hover:opacity-40 transition-opacity scale-125 md:scale-150 rotate-12">
-        {icon}
-    </div>
-  </button>
+    <ArrowUpRight size={18} className="text-gray-200 group-hover:text-gray-400 transition-colors" />
+  </div>
 );
 
 const CmsContentPage = () => {
@@ -55,7 +34,7 @@ const CmsContentPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen selection:bg-purple-100 selection:text-[#5C32A3] bg-[#FDFDFF]">
+    <div className="flex min-h-screen selection:bg-purple-100 selection:text-[#7E49B3] bg-[#F8FAFC] font-sans">
       <Sidebar 
         collapsed={collapsed} 
         onToggle={() => setCollapsed(!collapsed)}
@@ -69,44 +48,46 @@ const CmsContentPage = () => {
           onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
         />
 
-        <div className="flex-1 p-4 md:p-8 lg:p-12">
-          <div className="max-w-[1200px] mx-auto space-y-8 md:space-y-12">
+        <div className="flex-1 p-6 md:p-10 lg:p-12">
+          <div className="max-w-6xl mx-auto space-y-10">
             
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6">
+            {/*ACTION HEADER */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
-                <h1 className="text-2xl md:text-4xl font-[800] text-slate-900 tracking-tight">Portal Management</h1>
-                <p className="text-slate-400 mt-2 text-xs md:text-sm font-bold">Live content control for the APF public website</p>
+                <span className="flex items-center gap-2 text-[#7E49B3] text-[10px] font-bold uppercase tracking-[0.2em] mb-2">
+                  <Sparkles size={14} /> System Overview
+                </span>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Portal Management</h1>
+                <p className="text-gray-400 mt-2 text-sm font-medium">Manage your platform content and monitor recent activity.</p>
               </div>
               
               <div className="relative w-full md:w-auto">
                 <button 
                   onClick={() => setShowCreateMenu(!showCreateMenu)}
-                  className="bg-[#5C32A3] hover:bg-[#4a2885] text-white px-6 md:px-8 py-3 md:py-3.5 rounded-[20px] flex items-center justify-center gap-3 text-sm font-black shadow-2xl shadow-purple-200 transition-all active:scale-95 w-full md:w-auto"
+                  className="bg-[#7E49B3] hover:bg-[#3C096C] text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 text-sm font-bold shadow-xl shadow-purple-200 transition-all active:scale-95 w-full md:w-auto"
                 >
-                  <Plus className="w-4.5 h-4.5 md:w-5 md:h-5" strokeWidth={3} /> 
-                  <span className="hidden sm:inline">Create Content</span>
-                  <span className="sm:hidden">Create</span>
+                  <Plus className="w-5 h-5" strokeWidth={2.5} /> 
+                  <span>Create New Content</span>
                 </button>
 
                 {showCreateMenu && (
-                  <div className="absolute right-0 mt-4 w-full md:w-72 bg-white rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-50 p-3 z-50 animate-in fade-in zoom-in-95 duration-200">
-                    <button onClick={() => navigate('/admin/NewsMgt')} className="w-full flex items-center gap-4 p-3 md:p-4 hover:bg-slate-50 rounded-[18px] transition-colors text-left group">
-                      <div className="p-2 md:p-2.5 bg-purple-50 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-all flex-shrink-0">
-                        <Newspaper className="w-4.5 h-4.5 md:w-5 md:h-5"/>
+                  <div className="absolute right-0 mt-4 w-full md:w-72 bg-white rounded-[2rem] shadow-2xl shadow-purple-200/40 border border-purple-50 p-3 z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <button onClick={() => navigate('/admin/NewsMgt')} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 rounded-2xl transition-colors text-left group">
+                      <div className="p-3 bg-purple-50 text-[#7E49B3] rounded-xl group-hover:bg-[#7E49B3] group-hover:text-white transition-all">
+                        <Newspaper size={20}/>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-black text-slate-800">News Article</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Public News Feed</p>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">News Article</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Update Public Feed</p>
                       </div>
                     </button>
-                    <button onClick={() => navigate('/admin/eventMgt')} className="w-full flex items-center gap-4 p-3 md:p-4 hover:bg-slate-50 rounded-[18px] transition-colors text-left group">
-                      <div className="p-2 md:p-2.5 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-all flex-shrink-0">
-                        <Calendar className="w-4.5 h-4.5 md:w-5 md:h-5"/>
+                    <button onClick={() => navigate('/admin/eventMgt')} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 rounded-2xl transition-colors text-left group mt-1">
+                      <div className="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-all">
+                        <Calendar size={20}/>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-black text-slate-800">Event Entry</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Public Events Page</p>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">Event Entry</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Add to Calendar</p>
                       </div>
                     </button>
                   </div>
@@ -114,40 +95,86 @@ const CmsContentPage = () => {
               </div>
             </div>
 
-            {/* Content Structure Section */}
-            <section className="space-y-6 md:space-y-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 md:pb-5 gap-3">
-                <h2 className="text-[12px] font-black text-slate-300 uppercase tracking-[0.2em] flex items-center gap-3">
-                   Website Structure
+            {/*  DYNAMIC STATS  */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatHighlight 
+                title="Active Events" 
+                value="12" 
+                icon={Calendar} 
+                color="bg-amber-50 text-amber-600" 
+              />
+              <StatHighlight 
+                title="News Published" 
+                value="48" 
+                icon={Newspaper} 
+                color="bg-purple-50 text-[#7E49B3]" 
+              />
+              <StatHighlight 
+                title="Site Health" 
+                value="99.9%" 
+                icon={Activity} 
+                color="bg-emerald-50 text-emerald-600" 
+              />
+            </div>
+
+            {/* CORE MANAGEMENT  */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* Recent Activity Feed */}
+              <div className="bg-white rounded-[2.5rem] border border-gray-50 p-8 shadow-sm">
+                <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                  <Activity size={14} className="text-[#7E49B3]" /> Recent Updates
                 </h2>
-                <div className="flex items-center gap-2 text-[10px] font-black text-[#5C32A3] bg-purple-50 px-3 md:px-4 py-1.5 rounded-full uppercase tracking-widest w-fit">
-                  <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" /> Live Preview
+                <div className="space-y-6">
+                  {[
+                    { type: 'Event', title: 'Annual Gala 2024', time: '2 hours ago', icon: Calendar, color: 'text-amber-500' },
+                    { type: 'News', title: 'Q1 Policy Update Published', time: '5 hours ago', icon: Newspaper, color: 'text-[#7E49B3]' },
+                    { type: 'System', title: 'Images optimized for SEO', time: 'Yesterday', icon: Settings, color: 'text-gray-400' },
+                  ].map((activity, i) => (
+                    <div key={i} className="flex items-center justify-between border-b border-gray-50 pb-4 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-4">
+                        <activity.icon size={18} className={activity.color} />
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">{activity.title}</p>
+                          <p className="text-xs text-gray-400 font-medium">{activity.type} • {activity.time}</p>
+                        </div>
+                      </div>
+                      <Eye size={16} className="text-gray-300 cursor-pointer hover:text-[#7E49B3]" />
+                    </div>
+                  ))}
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <PageCard 
-                  title="Landing Page" 
-                  icon={<Layout size={20} className="md:w-6 md:h-6"/>} 
-                  desc="Main entrance, Hero banners, and Value propositions" 
-                  onClick={() => navigate('/editLandingpage')} 
-                />
-               
-                <PageCard 
-                  title="About Us" 
-                  icon={<Info size={20} className="md:w-6 md:h-6"/>} 
-                  desc="Our leadership team" 
-                  onClick={() => navigate('admincms/leadership')} 
-                />
-                
-                <PageCard 
-                  title="Site Config" 
-                  icon={<Settings size={20} className="md:w-6 md:h-6"/>} 
-                  desc="Global Branding, SEO, and Navigation" 
-                  onClick={() => navigate('/admin/settings')} 
-                />
+
+              {/* Quick Settings  */}
+              <div className="space-y-6">
+                <button 
+                  onClick={() => navigate('/admin/settings')}
+                  className="w-full group bg-white p-8 rounded-[2.5rem] border border-gray-50 hover:border-purple-200 transition-all shadow-sm flex items-center gap-6"
+                >
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-[#7E49B3] group-hover:text-white transition-all duration-500">
+                    <Settings size={28} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-bold text-gray-900 text-lg">Site Settings</h3>
+                    <p className="text-sm text-gray-400 font-medium">SEO, Branding & Navigation</p>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => navigate('admincms/leadership')}
+                  className="w-full group bg-white p-8 rounded-[2.5rem] border border-gray-50 hover:border-purple-200 transition-all shadow-sm flex items-center gap-6"
+                >
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-[#7E49B3] group-hover:text-white transition-all duration-500">
+                    <Users size={28} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-bold text-gray-900 text-lg">Stakeholders</h3>
+                    <p className="text-sm text-gray-400 font-medium">Board & Leadership Profiles</p>
+                  </div>
+                </button>
               </div>
-            </section>
+
+            </div>
 
           </div>
         </div>
