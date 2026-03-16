@@ -146,25 +146,17 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       return;
     }
     
-    if (!summary.trim()) {
-      alert("Description/Summary is required.");
+   
+    const allBlocks = blocks.filter((block: any) => 
+      block.value && block.value.toString().trim() !== ""
+    );
+    
+    if (allBlocks.length === 0) {
+      alert("Please add at least one content block.");
       return;
     }
     
-    if (!imageId && !useCoverLink) {
-      alert("Featured Image is required for the News Card.");
-      return;
-    }
-    
-    // Filter out image blocks for now to avoid validation issues
-    const textBlocks = blocks.filter((block: { type: string; value: string }) => block.type === 'text' && block.value.trim());
-    
-    if (textBlocks.length === 0) {
-      alert("Please add at least one text content block.");
-      return;
-    }
-    
-    // Find category ID from available categories or use hardcoded mapping
+    // Map Category ID 
     let categoryId = null;
     if (availableCategories.length > 0) {
       const foundCategory = availableCategories.find(cat => 
@@ -173,11 +165,11 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       categoryId = foundCategory?.id || foundCategory?.attributes?.id;
     }
     
-    // Fallback to hardcoded mapping if no categories found
     if (!categoryId) {
       categoryId = CATEGORY_MAP[category] || 1;
     }
-
+  
+    // Send EVERYTHING to the onSave function
     onSave({ 
       title: title.trim(), 
       description: summary.trim(),    
@@ -185,7 +177,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       isFeatured: isTopPick,   
       readTime: Number(readTime), 
       featuredImage: imageId,  
-      contentBlocks: textBlocks, // Only send text blocks
+      contentBlocks: allBlocks, 
       publishDate: new Date().toISOString().split('T')[0] 
     }, status);
   };
