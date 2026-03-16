@@ -30,9 +30,12 @@ export interface NewsArticle {
   id: number;
   documentId: string;
   title: string;
-  content: string;
+  content: any[]; 
   date: string;
-  image?: any;
+  image?: string;
+  description?: string;
+  category?: string;
+  readTime?: number;
 }
 
 const api = axios.create({ 
@@ -90,59 +93,54 @@ export const updateHomepage = async (payload: any) => {
 export const getNews = async () => {
   const res = await api.get('/news-articles', {
     params: {
-      populate: '*',
+     
+      'populate[featuredImage]': '*',
+      'populate[contentBlocks]': '*',
+      'populate[news]': '*',
       sort: 'createdAt:desc'
     }
   });
 
   return res.data.data.map((item: any) => {
-    // Handle both direct and nested attribute structures
     const data = item.attributes || item;
-    
-    // Extract content as string from Strapi blocks
-    let contentText = '';
-    if (data.content && Array.isArray(data.content)) {
-      contentText = data.content
-        .map((block: any) => {
-          if (block.type === 'paragraph' && block.children) {
-            return block.children.map((child: any) => child.text || '').join('');
-          }
-          return '';
-        })
-        .filter(Boolean)
-        .join(' ');
-    } else if (typeof data.content === 'string') {
-      contentText = data.content;
-    }
 
-    // Better image URL extraction with debugging
+    
+    const articleContent = data.contentBlocks || data.content || [];
+
+  
     let imageUrl = '';
-    if (data.featuredImage?.data?.[0]?.attributes?.url) {
-      imageUrl = data.featuredImage.data[0].attributes.url;
-    } else if (data.featuredImage?.data?.attributes?.url) {
-      imageUrl = data.featuredImage.data.attributes.url;
-    } else if (data.image?.url) {
-      imageUrl = data.image.url;
+    const rawImg = data.featuredImage?.data || data.featuredImage;
+    
+    if (rawImg) {
+   
+      const imgObj = Array.isArray(rawImg) ? rawImg[0] : rawImg;
+   
+      imageUrl = imgObj?.attributes?.url || imgObj?.url || imgObj?.formats?.medium?.url || '';
     }
     
-    console.log('News item image processing:', {
-      title: data.title,
-      rawImageData: data.featuredImage,
-      extractedUrl: imageUrl,
-      finalUrl: getImageUrl(imageUrl)
+   
+    console.log(`Image Debug [${data.title}]:`, {
+      hasRawData: !!rawImg,
+      isArray: Array.isArray(rawImg),
+      extractedUrl: imageUrl
     });
 
     return {
       id: item.id,
       documentId: item.documentId,
-      title: data.title || '',
-      content: contentText,
-      description: data.description || contentText.substring(0, 200) + '...',
+      title: data.title || 'Untitled',
+      
+     
+      content: articleContent, 
+      
+     
+      description: data.description || (typeof articleContent === 'string' ? articleContent.substring(0, 160) : "Read more..."),
+      
       image: getImageUrl(imageUrl),
-      category: data.news?.data?.attributes?.name || 'News',
+      category: data.news?.data?.attributes?.name || data.category || 'News',
       readTime: data.readTime || 5,
       date: data.publishDate || data.createdAt,
-      isFeatured: data.isFeatured || false
+      isFeatured: data.isFeatured || data.isTopPick || false
     };
   });
 };
