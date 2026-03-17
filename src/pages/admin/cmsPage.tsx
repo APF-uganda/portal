@@ -37,7 +37,6 @@ const CmsContentPage = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   
- 
   const [stats, setStats] = useState({ newsCount: 0, eventCount: 0 });
   const [recentNews, setRecentNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,10 +47,7 @@ const CmsContentPage = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        //Fetch News Count and Recent News
-        const newsRes = await api.get('/news-articles?pagination[pageSize]=3&sort=createdAt:desc');
-        
-        //Fetch Events Count
+        const newsRes = await api.get('/news-articles?pagination[pageSize]=4&sort=createdAt:desc');
         const eventsRes = await api.get('/events?pagination[pageSize]=1');
 
         setStats({
@@ -59,7 +55,6 @@ const CmsContentPage = () => {
           eventCount: eventsRes.data.meta.pagination.total
         });
 
-        // Format recent activity from news
         const formattedNews = newsRes.data.data.map((item: any) => ({
           id: item.id,
           title: item.attributes?.title || item.title,
@@ -93,11 +88,10 @@ const CmsContentPage = () => {
         <div className="flex-1 p-6 md:p-10 lg:p-12">
           <div className="max-w-6xl mx-auto space-y-10">
             
-            {/* ACTION HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
                 <span className="flex items-center gap-2 text-[#7E49B3] text-[10px] font-bold uppercase tracking-[0.2em] mb-2">
-                  <Sparkles size={14} /> System Overview
+                  
                 </span>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Portal Management</h1>
               </div>
@@ -118,16 +112,25 @@ const CmsContentPage = () => {
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-gray-900">News Article</p>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Update Public Feed</p>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Create and manage News Articles</p>
                       </div>
                     </button>
-                    
+
+                    {/* ADD EVENT  */}
+                    <button onClick={() => navigate('/admin/eventMgt')} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 rounded-2xl transition-colors text-left group mt-1">
+                      <div className="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-all">
+                        <Calendar size={20}/>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-gray-900">Create Event </p>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Create and Publish Events</p>
+                      </div>
+                    </button>
                   </div>
                 )}
               </div>
             </div>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <StatHighlight 
                 title="Active Events" 
@@ -147,8 +150,6 @@ const CmsContentPage = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              
-              {/* LIVE Activity Feed */}
               <div className="bg-white rounded-[2.5rem] border border-gray-50 p-8 shadow-sm">
                 <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                   <Activity size={14} className="text-[#7E49B3]" /> Recent Content Updates
@@ -172,7 +173,6 @@ const CmsContentPage = () => {
               </div>
 
               
-
             </div>
 
           </div>
