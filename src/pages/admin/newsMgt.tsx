@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  Edit3, Search, Star, Plus, ArrowLeft, Trash2, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, X, Info
+  Edit3, Search, Star, Plus, ArrowLeft, Trash2, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, X, Trash 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/cmsApi';
@@ -21,25 +21,24 @@ const NewsManagement = () => {
   const [selectedArticle, setSelectedArticle] = useState<any | undefined>();
   const [filter, setFilter] = useState<string>('All');
   const [search, setSearch] = useState('');
+  const [publicationState, setPublicationState] = useState<'published' | 'preview'>('published');
   
- 
-  const [publicationState, setPublicationState] = useState<'live' | 'preview'>('live');
-  
+  // Custom Modal & Toast State
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
-  const [deleteId, setDeleteId] = useState<string | number | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, id: string | number | null }>({ isOpen: false, id: null });
 
   const navigate = useNavigate();
 
   const showToast = (msg: string, type: 'success' | 'error') => {
     setNotification({ msg, type });
-    setTimeout(() => setNotification(null), 5000); 
+    setTimeout(() => setNotification(null), 4000); 
   };
 
   const fetchNews = async () => {
     setLoading(true);
     try {
-    
-      const res = await api.get(`/news-articles?publicationState=${publicationState}&populate=*&sort=createdAt:desc`);
+  
+      const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc`);
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
         const imageObj = data.featuredImage?.data?.attributes || data.featuredImage;
@@ -50,12 +49,13 @@ const NewsManagement = () => {
           documentId: item.documentId || item.id,
           ...data,
           displayCategory: categoryData?.name || 'General',
-          featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null
+          featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null,
+          isDraft: !data.publishedAt
         };
       });
       setArticles(formatted);
     } catch (err) {
-      console.error("Failed to fetch news:", err);
+      console.error("Fetch failed:", err);
       showToast("Could not sync with CMS", "error");
     } finally {
       setLoading(false);
@@ -64,18 +64,18 @@ const NewsManagement = () => {
 
   useEffect(() => {
     fetchNews();
-  }, [publicationState]);
+  }, []); // Fetch once, filter locally
 
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
     if (!formData.title || !formData.description || !formData.featuredImage) {
-      showToast("Required fields are missing", "error");
+      showToast("Please fill in all required fields", "error");
       return;
     }
 
     setLoading(true);
     try {
-      const strapiBlocks = formData.contentBlocks
-        .filter((b: any) => b.value && b.value.trim() !== "" && b.type === 'text')
+      const strapiBlocks = (formData.contentBlocks || [])
+        .filter((b: any) => b.value?.trim() !== "" && b.type === 'text')
         .map((block: any) => ({
           type: 'paragraph', 
           children: [{ type: 'text', text: block.value.trim() }] 
@@ -96,6 +96,7 @@ const NewsManagement = () => {
       };
     
       const targetId = selectedArticle?.documentId || selectedArticle?.id;
+      
       if (selectedArticle && targetId) {
         await api.put(`/news-articles/${targetId}`, payload);
       } else {
@@ -103,197 +104,219 @@ const NewsManagement = () => {
       }
       
       setIsEditing(false);
-      fetchNews(); 
-      showToast(status === 'published' ? "Article Published!" : "Draft Saved!", "success");
+      await fetchNews(); 
+      showToast(status === 'published' ? "Article Published!" : "Draft Saved Successfully!", "success");
     } catch (err: any) {
-      showToast("Save Failed. Please check validation.", "error");
+      showToast("Save Failed. Please check your connection.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const confirmDelete = async () => {
-    if (!deleteId) return;
+    if (!deleteModal.id) return;
     try {
-      await api.delete(`/news-articles/${deleteId}`);
-      setDeleteId(null);
+      await api.delete(`/news-articles/${deleteModal.id}`);
+      setDeleteModal({ isOpen: false, id: null });
       fetchNews();
-      showToast("Article removed", "success");
+      showToast("Article permanently removed", "success");
     } catch (err) {
-      showToast("Delete failed", "error");
+      showToast("Could not delete article", "error");
     }
   };
 
   const filteredArticles = articles.filter(a => {
+    const matchesState = publicationState === 'published' ? !a.isDraft : a.isDraft;
     const matchesFilter = filter === 'All' || a.displayCategory === filter;
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase());
-    return matchesFilter && matchesSearch;
+    return matchesState && matchesFilter && matchesSearch;
   });
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] font-sans relative overflow-hidden">
+    <div className="flex min-h-screen bg-[#F8F9FE] font-sans text-slate-900 relative overflow-hidden">
       
-     
-      {deleteId && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl scale-in-center">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-6">
-              <Trash2 size={32} />
+    
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setDeleteModal({ isOpen: false, id: null })} />
+          <div className="relative bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+              <Trash className="text-red-500" size={28} />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Delete Article?</h3>
-            <p className="text-gray-500 font-medium mb-8">This action is permanent. The article will be removed from the public portal and CMS database.</p>
-            <div className="flex gap-4">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-4 rounded-2xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 transition-all">Cancel</button>
-              <button onClick={confirmDelete} className="flex-1 py-4 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-lg shadow-red-200 transition-all">Delete</button>
+            <h3 className="text-xl font-bold text-center mb-2">Delete Article?</h3>
+            <p className="text-slate-500 text-center text-sm mb-8">This action cannot be undone. The article will be removed from the CMS permanently.</p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setDeleteModal({ isOpen: false, id: null })}
+                className="flex-1 py-3 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors shadow-lg shadow-red-100"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* NOTIFICATION TOAST */}
+      {/* --- NOTIFICATION TOAST --- */}
       {notification && (
-        <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 px-8 py-5 rounded-[2rem] shadow-2xl border transition-all animate-in slide-in-from-top-10 ${
-          notification.type === 'success' ? 'bg-white border-emerald-50 text-emerald-900' : 'bg-white border-red-50 text-red-900'
+        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[120] flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border transition-all animate-in slide-in-from-top-full ${
+          notification.type === 'success' ? 'bg-white border-emerald-100 text-emerald-900' : 'bg-white border-red-100 text-red-900'
         }`}>
-          {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" /> : <AlertCircle className="text-red-500" />}
-          <span className="text-sm font-bold uppercase tracking-wider">{notification.msg}</span>
+          {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={20}/> : <AlertCircle className="text-red-500" size={20}/>}
+          <span className="text-sm font-bold tracking-tight">{notification.msg}</span>
         </div>
       )}
 
-      <Sidebar 
-        collapsed={collapsed} 
-        onToggle={() => setCollapsed(!collapsed)}
-        isMobileOpen={isMobileOpen}
-        onMobileToggle={() => setIsMobileOpen(!isMobileOpen)}
-      />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} isMobileOpen={isMobileOpen} onMobileToggle={() => setIsMobileOpen(!isMobileOpen)} />
 
-      <main className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} flex flex-col min-w-0 overflow-hidden`}>
-        <Header 
-          title="News Management" 
-          onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
-        />
+      <main className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} flex flex-col min-w-0`}>
+        <Header title="News Management" onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)} />
 
-        <div className="flex-1 p-6 md:p-10 lg:p-12 overflow-hidden">
-          <div className="max-w-full mx-auto space-y-10 h-full overflow-y-auto">
+        <div className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto">
+          <div className="max-w-7xl mx-auto space-y-8">
             
-            {!isEditing && (
-              <button onClick={() => navigate(-1)} className="group flex items-center gap-3 text-gray-400 hover:text-[#7E49B3] transition-all">
-                <div className="p-3 rounded-2xl bg-white border border-gray-100 shadow-sm group-hover:-translate-x-1 transition-transform">
-                  <ArrowLeft size={16} strokeWidth={3} />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest">Back to Dashboard</span>
+            {/* Header Actions */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div>
+                <h1 className="text-3xl font-black tracking-tight text-slate-900">Content Hub</h1>
+                <p className="text-slate-500 text-sm mt-1">Manage and publish your organization's latest updates.</p>
+              </div>
+              <button 
+                onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }}
+                className="flex items-center gap-2 px-6 py-3.5 bg-[#5F1C9F] rounded-2xl text-white hover:bg-[#4a1480] transition-all font-bold text-sm shadow-xl shadow-purple-100 active:scale-95"
+              >
+                <Plus size={18} strokeWidth={3} /> Create New Article
               </button>
-            )}
-            
+            </div>
+
             {isEditing ? (
-              <ArticleForm initialData={selectedArticle} onSave={handleSave} onCancel={() => setIsEditing(false)} isLoading={loading} />
+              <ArticleForm 
+                initialData={selectedArticle} 
+                onSave={handleSave} 
+                onCancel={() => setIsEditing(false)} 
+                isLoading={loading} 
+              />
             ) : (
-              <div className="space-y-10">
-                {/* TOP CONTROL BAR */}
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-6 bg-white p-6 rounded-[2.5rem] border border-gray-50 shadow-sm">
-                  <div className="flex items-center gap-8">
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Articles</h2>
-                    <div className="flex bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
-                      <button 
-                        onClick={() => setPublicationState('live')} 
-                        className={`px-8 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${publicationState === 'live' ? 'bg-white text-[#7E49B3] shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
-                      >
-                        Live
-                      </button>
-                      <button 
-                        onClick={() => setPublicationState('preview')} 
-                        className={`px-8 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${publicationState === 'preview' ? 'bg-white text-amber-600 shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
-                      >
-                        Drafts
-                      </button>
-                    </div>
+              <div className="space-y-6">
+                {/* Filters Row */}
+                <div className="bg-white p-2 rounded-[2rem] border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+                  <div className="flex bg-slate-100/80 p-1.5 rounded-[1.4rem] w-full md:w-auto">
+                    <button 
+                      onClick={() => setPublicationState('published')} 
+                      className={`flex-1 md:px-8 py-2.5 rounded-[1.1rem] text-xs font-black tracking-widest uppercase transition-all ${publicationState === 'published' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Live
+                    </button>
+                    <button 
+                      onClick={() => setPublicationState('preview')} 
+                      className={`flex-1 md:px-8 py-2.5 rounded-[1.1rem] text-xs font-black tracking-widest uppercase transition-all ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Drafts
+                    </button>
                   </div>
-                  <button onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }} className="flex items-center gap-3 px-10 py-4 bg-[#7E49B3] rounded-2xl text-white hover:bg-[#3C096C] transition-all text-sm font-bold shadow-xl shadow-purple-100 active:scale-95 group">
-                    <Plus size={18} strokeWidth={3} /> Create News
-                  </button>
+                  
+                  <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar px-2">
+                    {['All', 'Policy Update', 'Thought Leadership', 'Announcements'].map((t) => (
+                      <button 
+                        key={t} 
+                        onClick={() => setFilter(t)} 
+                        className={`px-5 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap ${filter === t ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative w-full md:w-72 mr-2">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                    <input 
+                      placeholder="Search articles..." 
+                      value={search} 
+                      onChange={(e) => setSearch(e.target.value)} 
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-100 outline-none text-sm font-medium" 
+                    />
+                  </div>
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] border border-gray-50 shadow-xl shadow-gray-200/40 overflow-hidden">
-                  {/* FILTERS & SEARCH */}
-                  <div className="p-8 border-b border-gray-50 flex flex-col xl:flex-row justify-between items-center gap-8 bg-white">
-                    <div className="flex gap-2 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0">
-                      {['All', 'Policy Update', 'Thought Leadership', 'Announcements'].map((t) => (
-                        <button key={t} onClick={() => setFilter(t)} className={`px-6 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap border ${filter === t ? 'bg-[#7E49B3] text-white border-[#7E49B3] shadow-lg' : 'bg-white text-gray-500 border-gray-100 hover:border-purple-200'}`}>
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="relative w-full xl:w-[400px]">
-                      <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-                      <input 
-                        placeholder="SEARCH TITLES..." 
-                        value={search} 
-                        onChange={(e) => setSearch(e.target.value)} 
-                        className="w-full pl-14 pr-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-purple-50 outline-none text-[10px] font-bold tracking-widest text-gray-900 uppercase transition-all" 
-                      />
-                    </div>
-                  </div>
-
-                  {/* TABLE */}
+                {/* Table Section */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm overflow-hidden">
                   <div className="overflow-x-auto">
-                    {loading && articles.length === 0 ? (
-                      <div className="h-[400px] flex flex-col items-center justify-center gap-4">
-                        <Loader2 className="animate-spin text-[#7E49B3]" size={40} />
-                        <span className="text-[10px] font-bold tracking-[0.3em] text-gray-300 uppercase">Synchronizing Data...</span>
-                      </div>
-                    ) : (
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-gray-50/50 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50">
-                            <th className="px-10 py-6 text-left">News Article</th>
-                            <th className="px-6 py-6 text-center">Category</th>
-                            <th className="px-6 py-6 text-center">Status</th>
-                            <th className="px-10 py-6 text-right">Actions</th>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-50">
+                          <th className="px-8 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Article Information</th>
+                          <th className="px-6 py-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Category</th>
+                          <th className="px-6 py-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Visibility</th>
+                          <th className="px-8 py-6 text-right text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {filteredArticles.length > 0 ? filteredArticles.map((article) => (
+                          <tr key={article.id} className="hover:bg-slate-50/50 transition-colors group">
+                            <td className="px-8 py-6">
+                              <div className="flex items-center gap-5">
+                                <div className="w-20 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200/50 flex-shrink-0">
+                                  {article.featuredImage ? (
+                                    <img src={article.featuredImage} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt=""/>
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-slate-50"><ImageIcon size={18} className="text-slate-200"/></div>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <h4 className="text-slate-900 font-bold text-sm leading-tight line-clamp-1 group-hover:text-purple-700 transition-colors">{article.title}</h4>
+                                  <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-wider">{article.publishDate}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-6 text-center">
+                               <span className="inline-block text-[10px] font-black text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200/50 uppercase tracking-tighter">
+                                 {article.displayCategory}
+                               </span>
+                            </td>
+                            <td className="px-6 py-6 text-center">
+                              {article.isFeatured ? (
+                                <div className="flex justify-center items-center gap-1.5 text-amber-500 font-black text-[10px] uppercase">
+                                  <Star size={14} className="fill-amber-500" /> Featured
+                                </div>
+                              ) : (
+                                <span className="text-slate-300 font-bold text-[10px] uppercase">Standard</span>
+                              )}
+                            </td>
+                            <td className="px-8 py-6 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button 
+                                  onClick={() => { setSelectedArticle(article); setIsEditing(true); }} 
+                                  className="p-2.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all"
+                                >
+                                  <Edit3 size={18} />
+                                </button>
+                                <button 
+                                  onClick={() => setDeleteModal({ isOpen: true, id: article.documentId || article.id })} 
+                                  className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                          {filteredArticles.length > 0 ? filteredArticles.map((article) => (
-                            <tr key={article.id} className="hover:bg-gray-50/30 transition-all group">
-                              <td className="px-10 py-8">
-                                <div className="flex items-center gap-6">
-                                  <div className="w-24 h-14 rounded-2xl bg-gray-100 border border-gray-100 overflow-hidden flex-shrink-0 shadow-sm">
-                                    {article.featuredImage ? (
-                                      <img src={article.featuredImage} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt=""/>
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center bg-gray-50"><ImageIcon size={20} className="text-gray-200"/></div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <h4 className="text-gray-900 font-bold text-base leading-tight group-hover:text-[#7E49B3] transition-colors">{article.title}</h4>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">{article.publishDate}</p>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-8 text-center">
-                                 <span className="text-[10px] font-bold tracking-widest text-gray-500 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 uppercase">
-                                   {article.displayCategory}
-                                 </span>
-                              </td>
-                              <td className="px-6 py-8 text-center">
-                                {article.isFeatured ? (
-                                  <div className="flex justify-center"><Star size={18} className="text-amber-400 fill-amber-400" /></div>
-                                ) : (
-                                  <span className="text-gray-200 text-[9px] font-bold tracking-widest uppercase">Standard</span>
-                                )}
-                              </td>
-                              <td className="px-10 py-8 text-right">
-                                <div className="flex justify-end gap-3">
-                                  <button onClick={() => { setSelectedArticle(article); setIsEditing(true); }} className="p-3 text-gray-400 hover:text-[#7E49B3] hover:bg-purple-50 rounded-xl transition-all"><Edit3 size={18} /></button>
-                                  <button onClick={() => setDeleteId(article.documentId || article.id)} className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
-                                </div>
-                              </td>
-                            </tr>
-                          )) : (
-                            <tr><td colSpan={4} className="py-32 text-center text-gray-300 font-bold text-xs uppercase tracking-[0.4em]">Empty Desk • No Articles Found</td></tr>
-                          )}
-                        </tbody>
-                      </table>
-                    )}
+                        )) : (
+                          <tr>
+                            <td colSpan={4} className="py-32 text-center">
+                              <div className="flex flex-col items-center opacity-20">
+                                <ImageIcon size={48} className="mb-4" />
+                                <p className="font-black text-sm uppercase tracking-[0.3em]">No Articles Found</p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
