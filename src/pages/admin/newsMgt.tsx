@@ -36,6 +36,7 @@ const NewsManagement = () => {
   const fetchNews = async () => {
     setLoading(true);
     try {
+    
       const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc`);
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
@@ -48,7 +49,8 @@ const NewsManagement = () => {
           ...data,
           displayCategory: categoryData?.name || 'General',
           featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null,
-          isDraft: data.publishedAt === null || data.publishedAt === undefined 
+        
+          isActuallyPublished: !!data.publishedAt 
         };
       });
       setArticles(formatted);
@@ -72,12 +74,29 @@ const NewsManagement = () => {
 
     setLoading(true);
     try {
-      const strapiBlocks = (formData.content || [])
-        .filter((b: any) => b.type === 'text' && b.value?.trim() !== "")
-        .map((block: any) => ({
+      
+      const strapiBlocks = (formData.content || []).map((block: any) => {
+        if (block.type === 'image') {
+          return {
+            type: 'image',
+            image: {
+              url: block.url || block.value,
+              alternativeText: block.caption || ""
+            }
+          };
+        }
+        if (block.type === 'video') {
+          return {
+            type: 'video',
+            url: block.url || block.value
+          };
+        }
+        // Paragraph/Text handling
+        return {
           type: 'paragraph', 
-          children: [{ type: 'text', text: block.value.trim() }] 
-        }));
+          children: [{ type: 'text', text: (block.value || "").trim() }] 
+        };
+      });
     
       const payload = {
         data: {
@@ -89,6 +108,7 @@ const NewsManagement = () => {
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
+          // FIX: Correctly set publishedAt for Drafts
           publishedAt: status === 'published' ? new Date().toISOString() : null, 
         }
       };
@@ -124,14 +144,14 @@ const NewsManagement = () => {
   };
 
   const filteredArticles = articles.filter(a => {
-    const matchesState = publicationState === 'published' ? !a.isDraft : a.isDraft;
+    
+    const matchesState = publicationState === 'published' ? a.isActuallyPublished : !a.isActuallyPublished;
     const matchesFilter = filter === 'All' || a.displayCategory === filter;
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase());
     return matchesState && matchesFilter && matchesSearch;
   });
 
   return (
-   
     <div className="flex min-h-screen bg-[#F4F7FE] font-montserrat text-gray-900 relative">
       
       {/* Delete Modal */}
@@ -171,8 +191,7 @@ const NewsManagement = () => {
             {!isEditing && (
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                 
-                  <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 uppercase">News Section</h1>
+                  <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 uppercase">News</h1>
                   <p className="text-[#5F1C9F] text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Create and Manage News articles</p>
                 </div>
                 <button 
@@ -193,7 +212,6 @@ const NewsManagement = () => {
               />
             ) : (
               <div className="space-y-6">
-              
                 {/* Filters and Search Bar */}
                 <div className="bg-white p-4 md:p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col xl:flex-row gap-6 font-montserrat">
                   <div className="flex bg-slate-100/50 p-1.5 rounded-[1.4rem] min-w-[300px]">
@@ -234,16 +252,17 @@ const NewsManagement = () => {
                   </div>
                 </div>
 
-                {/* News Table */}
-                <div className="bg-white rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden font-montserrat">
-                  <div className="overflow-x-auto">
+                {/* News Table (Responsive Wrapper) */}
+                <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden font-montserrat">
+                  
+                  {/* Desktop View: Table */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-100">
-                         
                           <th className="px-10 py-8 text-left text-[11px] font-bold text-gray-400 uppercase tracking-widest">News Content</th>
-                          <th className="hidden md:table-cell px-6 py-8 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Category</th>
-                          <th className="hidden sm:table-cell px-6 py-8 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                          <th className="px-6 py-8 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Category</th>
+                          <th className="px-6 py-8 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
                           <th className="px-10 py-8 text-right text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
                         </tr>
                       </thead>
@@ -260,18 +279,17 @@ const NewsManagement = () => {
                                   )}
                                 </div>
                                 <div className="min-w-0">
-                                
                                   <h4 className="text-gray-900 font-bold text-base md:text-lg tracking-tight line-clamp-1 group-hover:text-[#5F1C9F] transition-colors uppercase">{article.title}</h4>
                                   <p className="text-[10px] font-medium text-gray-400 mt-1 uppercase tracking-widest">{article.publishDate}</p>
                                 </div>
                               </div>
                             </td>
-                            <td className="hidden md:table-cell px-6 py-7 text-center">
+                            <td className="px-6 py-7 text-center">
                                <span className="inline-block text-[10px] font-bold text-gray-600 bg-white px-5 py-2.5 rounded-xl border border-slate-100 uppercase tracking-widest shadow-sm">
                                  {article.displayCategory}
                                </span>
                             </td>
-                            <td className="hidden sm:table-cell px-6 py-7 text-center">
+                            <td className="px-6 py-7 text-center">
                               {article.isFeatured ? (
                                 <div className="flex justify-center items-center gap-2 text-amber-500 font-bold text-[10px] uppercase tracking-widest">
                                   <Star size={14} className="fill-amber-500" /> Featured
@@ -281,37 +299,46 @@ const NewsManagement = () => {
                               )}
                             </td>
                             <td className="px-10 py-7 text-right">
-                              <div className="flex justify-end gap-2 md:gap-4">
-                                <button 
-                                  onClick={() => { setSelectedArticle(article); setIsEditing(true); }} 
-                                  className="p-4 text-gray-400 hover:text-[#5F1C9F] hover:bg-white hover:shadow-xl rounded-[1.2rem] transition-all active:scale-90"
-                                >
+                              <div className="flex justify-end gap-4">
+                                <button onClick={() => { setSelectedArticle(article); setIsEditing(true); }} className="p-4 text-gray-400 hover:text-[#5F1C9F] hover:bg-white hover:shadow-xl rounded-[1.2rem] transition-all">
                                   <Edit3 size={20} />
                                 </button>
-                                <button 
-                                  onClick={() => setDeleteModal({ isOpen: true, id: article.documentId || article.id })} 
-                                  className="p-4 text-gray-400 hover:text-red-500 hover:bg-white hover:shadow-xl rounded-[1.2rem] transition-all active:scale-90"
-                                >
+                                <button onClick={() => setDeleteModal({ isOpen: true, id: article.documentId || article.id })} className="p-4 text-gray-400 hover:text-red-500 hover:bg-white hover:shadow-xl rounded-[1.2rem] transition-all">
                                   <Trash2 size={20} />
                                 </button>
                               </div>
                             </td>
                           </tr>
                         )) : (
-                          <tr>
-                            <td colSpan={4} className="py-40 text-center">
-                              <div className="flex flex-col items-center">
-                                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                                   <Search size={32} className="text-slate-200" />
-                                </div>
-                                <p className="font-bold text-[10px] text-gray-300 uppercase tracking-[0.4em]">No matching records found</p>
-                              </div>
-                            </td>
-                          </tr>
+                          <tr><td colSpan={4} className="py-20 text-center text-gray-300 font-bold text-[10px] uppercase tracking-widest">No articles found</td></tr>
                         )}
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Mobile View: Cards */}
+                  <div className="md:hidden divide-y divide-slate-100">
+                    {filteredArticles.length > 0 ? filteredArticles.map((article) => (
+                      <div key={article.id} className="p-6 space-y-4 hover:bg-slate-50/50 transition-all">
+                        <div className="flex items-center gap-4">
+                           <div className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden flex-shrink-0">
+                              {article.featuredImage ? <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center text-slate-200"><ImageIcon size={20}/></div>}
+                           </div>
+                           <div className="min-w-0">
+                              <h4 className="text-sm font-bold text-gray-900 uppercase truncate">{article.title}</h4>
+                              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{article.displayCategory} • {article.publishDate}</p>
+                           </div>
+                        </div>
+                        <div className="flex gap-2">
+                           <button onClick={() => { setSelectedArticle(article); setIsEditing(true); }} className="flex-1 py-3 bg-slate-50 rounded-xl text-[9px] font-bold uppercase tracking-widest text-[#5F1C9F]">Edit</button>
+                           <button onClick={() => setDeleteModal({ isOpen: true, id: article.documentId || article.id })} className="flex-1 py-3 bg-red-50 rounded-xl text-[9px] font-bold uppercase tracking-widest text-red-500">Delete</button>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="py-20 text-center text-gray-300 font-bold text-[10px] uppercase tracking-widest">No records found</div>
+                    )}
+                  </div>
+
                 </div>
               </div>
             )}

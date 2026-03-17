@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-
+import { CMS_BASE_URL } from "../config/api";
 import api, { getEvents, getHomepage, getNews } from "../services/cmsApi";
 
 
@@ -80,6 +80,10 @@ export const useHomepage = () => {
 /**
  * Hook for fetching a SINGLE News Article by ID
  */
+/**
+ * Hook for fetching a SINGLE News Article by ID
+ * ensure content blocks (images/videos) are formatted correctly
+ */
 export const useNewsArticle = (id: string | undefined) => {
   const [article, setArticle] = useState<any>(null);
   const [otherArticles, setOtherArticles] = useState<any[]>([]);
@@ -92,24 +96,43 @@ export const useNewsArticle = (id: string | undefined) => {
     const fetchDetail = async () => {
       try {
         setLoading(true);
-       
-        const allNews = await getNews();
         
-      
-        const found = allNews.find((item: any) => 
-          (item.documentId === id || item.id?.toString() === id)
-        );
+        //  Fetch the specific article with full population
+       
+        const res = await api.get(`/news-articles/${id}?populate=*`);
+        const rawData = res.data.data;
 
-        if (found) {
-          setArticle(found);
+        if (rawData) {
+          //  Reuse formatting logic 
+          const data = rawData.attributes || rawData;
+          const rawImg = data.featuredImage?.data || data.featuredImage;
+          const imgObj = Array.isArray(rawImg) ? rawImg[0] : rawImg;
+          const imgUrl = imgObj?.attributes?.url || imgObj?.url;
+
+          setArticle({
+            id: rawData.id,
+            ...data,
+            // Ensure Image URL is absolute
+            image: imgUrl 
+              ? (imgUrl.startsWith('http') ? imgUrl : `${CMS_BASE_URL}${imgUrl}`) 
+              : "/images/Hero.jpg",
+            // Ensure content stays as the original array of blocks
+            content: data.content || data.contentBlocks || []
+          });
+
+          // Fetch related articles for the sidebar
+          const othersRes = await api.get(`/news-articles?filters[id][$ne]=${rawData.id}&pagination[limit]=3&populate=*`);
+          const formattedOthers = othersRes.data.data.map((item: any) => {
+             const d = item.attributes || item;
+             return { id: item.id, title: d.title, image: d.featuredImage?.url };
+          });
+          setOtherArticles(formattedOthers);
           
-          setOtherArticles(allNews.filter((item: any) => 
-            (item.documentId !== id && item.id?.toString() !== id)
-          ).slice(0, 3));
         } else {
           setError("Article not found");
         }
       } catch (err) {
+        console.error("Detail Fetch Error:", err);
         setError("Failed to load article");
       } finally {
         setLoading(false);

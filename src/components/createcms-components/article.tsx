@@ -133,35 +133,49 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       alert("Title is required.");
       return;
     }
-    
-    const allBlocks = blocks.filter((block: any) => 
-      block.value && block.value.toString().trim() !== ""
-    );
-    
-    let categoryId = null;
-    if (availableCategories.length > 0) {
-      const foundCategory = availableCategories.find(cat => 
-        cat.attributes?.name === category || cat.name === category
-      );
-      categoryId = foundCategory?.id || foundCategory?.attributes?.id;
+  
+    // Define categoryId with a fallback
+    let categoryId: number | string | null = null;
+  
+    //  Try to find the ID from the fetched categories list
+    if (availableCategories && availableCategories.length > 0) {
+      const foundCategory = availableCategories.find(cat => {
+        const name = cat.attributes?.name || cat.name;
+        return name === category;
+      });
+      // Strapi nests ID in attributes 
+      categoryId = foundCategory?.id || foundCategory?.attributes?.id || null;
     }
+  
     
     if (!categoryId) {
       categoryId = CATEGORY_MAP[category] || 1;
     }
   
+   
+    const strapiBlocks = blocks.map((block: any) => {
+      if (block.type === 'text') {
+        return {
+          type: 'paragraph',
+          children: [{ type: 'text', text: block.value }]
+        };
+      }
+     
+      return { ...block };
+    });
+  
+    
     onSave({ 
       title: title.trim(), 
       description: summary.trim(),    
-      news: categoryId,         
+      news: categoryId, 
       isFeatured: isTopPick,   
       readTime: Number(readTime), 
       featuredImage: imageId,  
-      content: allBlocks, 
+      content: strapiBlocks, 
       publishDate: new Date().toISOString().split('T')[0] 
     }, status);
   };
-
   return (
     <div className="max-w-6xl mx-auto px-4 pb-20 space-y-8 animate-in fade-in duration-500 font-sans">
       {/* Action Header */}

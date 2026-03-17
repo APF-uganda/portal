@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Share2, ChevronLeft, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Share2, ChevronLeft } from 'lucide-react';
 import { useNewsArticle } from '../../hooks/useCMS';
+import { CMS_BASE_URL } from '../../config/api';
 import OtherNewsSection from './OtherNewsSection';
 
 const NewsDetail = () => {
@@ -12,6 +13,21 @@ const NewsDetail = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  // Helper to format video URLs correctly for the iframe
+  const getEmbedUrl = (url: string) => {
+    if (!url) return "";
+    if (url.includes('youtube.com/watch?v=')) return url.replace("watch?v=", "embed/");
+    if (url.includes('youtu.be/')) {
+      const id = url.split('/').pop();
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    if (url.includes('vimeo.com/')) {
+      const id = url.split('/').pop();
+      return `https://player.vimeo.com/video/${id}`;
+    }
+    return url;
+  };
 
   if (loading) {
     return (
@@ -56,7 +72,7 @@ const NewsDetail = () => {
       <header className="max-w-4xl mx-auto pt-10 md:pt-20 px-6">
         <div className="flex items-center gap-3 mb-6">
           <span className="w-10 h-[2.5px] bg-[#5F1C9F] rounded-full"></span>
-          <span className="text-[#5F1C9F] font-bold text-[10px] uppercase tracking-[0.4em]">{article.tag || article.category || 'Featured'}</span>
+          <span className="text-[#5F1C9F] font-bold text-[10px] uppercase tracking-[0.4em]">{article.displayCategory || article.category || 'Featured'}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight mb-10 uppercase">
           {article.title}
@@ -67,7 +83,7 @@ const NewsDetail = () => {
         </div>
       </header>
 
-      {/*  Hero Image */}
+      {/* Hero Image */}
       <div className="max-w-4xl mx-auto px-6 mb-12 md:mb-20">
         <div className="aspect-[16/9] md:aspect-[21/10] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100">
           <img src={displayImage} alt={article.title} className="w-full h-full object-cover" />
@@ -80,44 +96,55 @@ const NewsDetail = () => {
           {Array.isArray(mainContent) && mainContent.length > 0 ? (
             mainContent.map((block: any, i: number) => {
               
-              // TEXT BLOCKS
+              //  TEXT BLOCKS (Handles both 'value' and 'children' formats)
               if (block.type === 'paragraph' || block.type === 'text') {
                 const textValue = block.value || block.children?.map((c: any) => c.text).join('') || "";
                 return <p key={i} className="mb-8">{textValue}</p>;
               }
              
-              // HEADINGS
+              //  HEADINGS
               if (block.type === 'heading') {
+                const headingText = block.value || block.children?.map((c: any) => c.text).join('') || "";
                 return (
                   <h3 key={i} className="font-bold text-gray-900 text-2xl md:text-3xl mt-12 mb-6 uppercase tracking-tight">
-                    {block.value || block.children?.map((c: any) => c.text).join('')}
+                    {headingText}
                   </h3>
                 );
               }
 
-              // IN-CONTENT IMAGES 
-              if (block.type === 'image' && (block.value || block.url)) {
+              //  IN-CONTENT IMAGES 
+              if (block.type === 'image') {
+                const imageUrl = block.image?.url || block.url || block.value;
+                if (!imageUrl) return null;
+                
+                const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
+
                 return (
                   <div key={i} className="my-12 group">
                     <img 
-                      src={block.value || block.url} 
+                      src={fullUrl} 
                       className="w-full rounded-[2rem] shadow-md border border-gray-50 group-hover:shadow-xl transition-shadow duration-500" 
-                      alt="" 
+                      alt={block.image?.alternativeText || "Article Image"} 
                     />
-                    {block.caption && (
-                      <p className="mt-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{block.caption}</p>
+                    {(block.caption || block.image?.caption) && (
+                      <p className="mt-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        {block.caption || block.image?.caption}
+                      </p>
                     )}
                   </div>
                 );
               }
 
               // VIDEO BLOCKS 
-              if (block.type === 'video' && block.url) {
+              if (block.type === 'video') {
+                const videoUrl = block.url || block.value;
+                if (!videoUrl) return null;
+
                 return (
                   <div key={i} className="my-12 aspect-video rounded-[2rem] overflow-hidden shadow-lg bg-gray-900">
                     <iframe 
-                      src={block.url.replace("watch?v=", "embed/")} 
-                      className="w-full h-full"
+                      src={getEmbedUrl(videoUrl)} 
+                      className="w-full h-full border-none"
                       allowFullScreen
                       title="Article Video"
                     ></iframe>
