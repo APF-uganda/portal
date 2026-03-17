@@ -23,7 +23,6 @@ const NewsManagement = () => {
   const [search, setSearch] = useState('');
   const [publicationState, setPublicationState] = useState<'published' | 'preview'>('published');
   
-  // Custom Modal & Toast State
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, id: string | number | null }>({ isOpen: false, id: null });
 
@@ -37,7 +36,7 @@ const NewsManagement = () => {
   const fetchNews = async () => {
     setLoading(true);
     try {
-  
+      
       const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc`);
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
@@ -50,7 +49,8 @@ const NewsManagement = () => {
           ...data,
           displayCategory: categoryData?.name || 'General',
           featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null,
-          isDraft: !data.publishedAt
+         
+          isDraft: !data.publishedAt 
         };
       });
       setArticles(formatted);
@@ -64,17 +64,17 @@ const NewsManagement = () => {
 
   useEffect(() => {
     fetchNews();
-  }, []); // Fetch once, filter locally
+  }, []); 
 
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
     if (!formData.title || !formData.description || !formData.featuredImage) {
-      showToast("Please fill in all required fields", "error");
+      showToast("Required fields missing", "error");
       return;
     }
 
     setLoading(true);
     try {
-      const strapiBlocks = (formData.contentBlocks || [])
+      const strapiBlocks = (formData.content || [])
         .filter((b: any) => b.value?.trim() !== "" && b.type === 'text')
         .map((block: any) => ({
           type: 'paragraph', 
@@ -86,11 +86,13 @@ const NewsManagement = () => {
           title: formData.title.trim(),
           description: formData.description.trim(), 
           content: strapiBlocks, 
+          // Image upload only - sending the ID
           featuredImage: formData.featuredImage ? [Number(formData.featuredImage)] : [],
           author: formData.author || "APF Admin",
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
+          
           publishedAt: status === 'published' ? new Date().toISOString() : null, 
         }
       };
@@ -105,9 +107,9 @@ const NewsManagement = () => {
       
       setIsEditing(false);
       await fetchNews(); 
-      showToast(status === 'published' ? "Article Published!" : "Draft Saved Successfully!", "success");
+      showToast(status === 'published' ? "Article Published!" : "Draft Saved!", "success");
     } catch (err: any) {
-      showToast("Save Failed. Please check your connection.", "error");
+      showToast("Save Failed", "error");
     } finally {
       setLoading(false);
     }
@@ -119,9 +121,9 @@ const NewsManagement = () => {
       await api.delete(`/news-articles/${deleteModal.id}`);
       setDeleteModal({ isOpen: false, id: null });
       fetchNews();
-      showToast("Article permanently removed", "success");
+      showToast("Article removed", "success");
     } catch (err) {
-      showToast("Could not delete article", "error");
+      showToast("Delete failed", "error");
     }
   };
 
@@ -133,43 +135,29 @@ const NewsManagement = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FE] font-sans text-slate-900 relative overflow-hidden">
+    <div className="flex min-h-screen bg-[#F4F7FE] font-sans text-slate-900 relative">
       
-    
+     
       {deleteModal.isOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setDeleteModal({ isOpen: false, id: null })} />
-          <div className="relative bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
-            <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-              <Trash className="text-red-500" size={28} />
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/20">
+          <div className="bg-white rounded-[2.5rem] p-6 md:p-10 max-w-sm w-full shadow-[0_20px_70px_rgba(0,0,0,0.15)] animate-in zoom-in-95 duration-200">
+            <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-6 mx-auto">
+              <Trash2 className="text-red-500" size={32} />
             </div>
-            <h3 className="text-xl font-bold text-center mb-2">Delete Article?</h3>
-            <p className="text-slate-500 text-center text-sm mb-8">This action cannot be undone. The article will be removed from the CMS permanently.</p>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setDeleteModal({ isOpen: false, id: null })}
-                className="flex-1 py-3 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={confirmDelete}
-                className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors shadow-lg shadow-red-100"
-              >
-                Delete
-              </button>
+            <h3 className="text-2xl font-black text-center mb-2 tracking-tight">Delete Article?</h3>
+            <p className="text-slate-500 text-center text-sm mb-8 leading-relaxed">This article will be permanently removed from the system.</p>
+            <div className="flex gap-4">
+              <button onClick={() => setDeleteModal({ isOpen: false, id: null })} className="flex-1 py-4 rounded-2xl border border-slate-100 text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all">Cancel</button>
+              <button onClick={confirmDelete} className="flex-1 py-4 rounded-2xl bg-red-500 text-white text-xs font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-100">Delete</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- NOTIFICATION TOAST --- */}
       {notification && (
-        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[120] flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border transition-all animate-in slide-in-from-top-full ${
-          notification.type === 'success' ? 'bg-white border-emerald-100 text-emerald-900' : 'bg-white border-red-100 text-red-900'
-        }`}>
-          {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={20}/> : <AlertCircle className="text-red-500" size={20}/>}
-          <span className="text-sm font-bold tracking-tight">{notification.msg}</span>
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3 px-6 py-4 bg-white rounded-2xl shadow-2xl border border-slate-50 animate-in slide-in-from-top-full">
+          {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={18}/> : <AlertCircle className="text-red-500" size={18}/>}
+          <span className="text-xs font-black uppercase tracking-widest">{notification.msg}</span>
         </div>
       )}
 
@@ -178,22 +166,23 @@ const NewsManagement = () => {
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} flex flex-col min-w-0`}>
         <Header title="News Management" onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)} />
 
-        <div className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto">
-          <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex-1 p-4 md:p-8 lg:p-10 overflow-y-auto">
+          <div className="max-w-7xl mx-auto space-y-6 md:space-y-10">
             
-            {/* Header Actions */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <div>
-                <h1 className="text-3xl font-black tracking-tight text-slate-900">Content Hub</h1>
-                <p className="text-slate-500 text-sm mt-1">Manage and publish your organization's latest updates.</p>
+            {!isEditing && (
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                  <h1 className="text-2xl md:text-4xl font-black tracking-tighter text-slate-900">Newsroom</h1>
+                  <p className="text-slate-400 text-xs md:text-sm font-bold uppercase tracking-[0.15em] mt-1">Global Content Management</p>
+                </div>
+                <button 
+                  onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }}
+                  className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-[#5F1C9F] rounded-2xl text-white hover:bg-[#4a1480] transition-all font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-purple-100 active:scale-95"
+                >
+                  <Plus size={16} strokeWidth={4} /> Create Article
+                </button>
               </div>
-              <button 
-                onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }}
-                className="flex items-center gap-2 px-6 py-3.5 bg-[#5F1C9F] rounded-2xl text-white hover:bg-[#4a1480] transition-all font-bold text-sm shadow-xl shadow-purple-100 active:scale-95"
-              >
-                <Plus size={18} strokeWidth={3} /> Create New Article
-              </button>
-            </div>
+            )}
 
             {isEditing ? (
               <ArticleForm 
@@ -204,101 +193,101 @@ const NewsManagement = () => {
               />
             ) : (
               <div className="space-y-6">
-                {/* Filters Row */}
-                <div className="bg-white p-2 rounded-[2rem] border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center">
-                  <div className="flex bg-slate-100/80 p-1.5 rounded-[1.4rem] w-full md:w-auto">
+              
+                <div className="bg-white p-3 md:p-4 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col xl:flex-row gap-4">
+                  <div className="flex bg-slate-50 p-1.5 rounded-[1.4rem]">
                     <button 
                       onClick={() => setPublicationState('published')} 
-                      className={`flex-1 md:px-8 py-2.5 rounded-[1.1rem] text-xs font-black tracking-widest uppercase transition-all ${publicationState === 'published' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 px-6 md:px-10 py-3 rounded-[1.1rem] text-[10px] font-black tracking-[0.2em] uppercase transition-all ${publicationState === 'published' ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       Live
                     </button>
                     <button 
                       onClick={() => setPublicationState('preview')} 
-                      className={`flex-1 md:px-8 py-2.5 rounded-[1.1rem] text-xs font-black tracking-widest uppercase transition-all ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 px-6 md:px-10 py-3 rounded-[1.1rem] text-[10px] font-black tracking-[0.2em] uppercase transition-all ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       Drafts
                     </button>
                   </div>
                   
-                  <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar px-2">
+                  <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar py-1">
                     {['All', 'Policy Update', 'Thought Leadership', 'Announcements'].map((t) => (
                       <button 
                         key={t} 
                         onClick={() => setFilter(t)} 
-                        className={`px-5 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap ${filter === t ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                        className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all whitespace-nowrap ${filter === t ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                       >
                         {t}
                       </button>
                     ))}
                   </div>
 
-                  <div className="relative w-full md:w-72 mr-2">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                  <div className="relative w-full xl:w-80">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                     <input 
-                      placeholder="Search articles..." 
+                      placeholder="SEARCH ARTICLES..." 
                       value={search} 
                       onChange={(e) => setSearch(e.target.value)} 
-                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-100 outline-none text-sm font-medium" 
+                      className="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-100 outline-none text-[10px] font-black tracking-widest uppercase" 
                     />
                   </div>
                 </div>
 
-                {/* Table Section */}
-                <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm overflow-hidden">
+             
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/20 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-50">
-                          <th className="px-8 py-6 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Article Information</th>
-                          <th className="px-6 py-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Category</th>
-                          <th className="px-6 py-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Visibility</th>
-                          <th className="px-8 py-6 text-right text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
+                        <tr className="bg-slate-50/30 border-b border-slate-50">
+                          <th className="px-8 py-7 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">News Content</th>
+                          <th className="hidden md:table-cell px-6 py-7 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Category</th>
+                          <th className="hidden sm:table-cell px-6 py-7 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Status</th>
+                          <th className="px-8 py-7 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {filteredArticles.length > 0 ? filteredArticles.map((article) => (
-                          <tr key={article.id} className="hover:bg-slate-50/50 transition-colors group">
+                          <tr key={article.id} className="hover:bg-slate-50/50 transition-all group">
                             <td className="px-8 py-6">
-                              <div className="flex items-center gap-5">
-                                <div className="w-20 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200/50 flex-shrink-0">
+                              <div className="flex items-center gap-6">
+                                <div className="w-16 h-10 md:w-24 md:h-14 rounded-2xl bg-slate-100 overflow-hidden border border-slate-200/30 flex-shrink-0 shadow-sm">
                                   {article.featuredImage ? (
-                                    <img src={article.featuredImage} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt=""/>
+                                    <img src={article.featuredImage} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110" alt=""/>
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-slate-50"><ImageIcon size={18} className="text-slate-200"/></div>
+                                    <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-200"><ImageIcon size={20}/></div>
                                   )}
                                 </div>
                                 <div className="min-w-0">
-                                  <h4 className="text-slate-900 font-bold text-sm leading-tight line-clamp-1 group-hover:text-purple-700 transition-colors">{article.title}</h4>
-                                  <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-wider">{article.publishDate}</p>
+                                  <h4 className="text-slate-900 font-black text-sm md:text-base tracking-tight line-clamp-1 group-hover:text-[#5F1C9F] transition-colors">{article.title}</h4>
+                                  <p className="text-[10px] font-black text-slate-300 mt-1 uppercase tracking-[0.15em]">{article.publishDate}</p>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-6 text-center">
-                               <span className="inline-block text-[10px] font-black text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200/50 uppercase tracking-tighter">
+                            <td className="hidden md:table-cell px-6 py-6 text-center">
+                               <span className="inline-block text-[9px] font-black text-slate-500 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 uppercase tracking-widest">
                                  {article.displayCategory}
                                </span>
                             </td>
-                            <td className="px-6 py-6 text-center">
+                            <td className="hidden sm:table-cell px-6 py-6 text-center">
                               {article.isFeatured ? (
-                                <div className="flex justify-center items-center gap-1.5 text-amber-500 font-black text-[10px] uppercase">
-                                  <Star size={14} className="fill-amber-500" /> Featured
+                                <div className="flex justify-center items-center gap-2 text-amber-500 font-black text-[9px] uppercase tracking-widest">
+                                  <Star size={12} className="fill-amber-500" /> Featured
                                 </div>
                               ) : (
-                                <span className="text-slate-300 font-bold text-[10px] uppercase">Standard</span>
+                                <span className="text-slate-200 font-black text-[9px] uppercase tracking-widest italic">Standard</span>
                               )}
                             </td>
                             <td className="px-8 py-6 text-right">
-                              <div className="flex justify-end gap-2">
+                              <div className="flex justify-end gap-1 md:gap-3">
                                 <button 
                                   onClick={() => { setSelectedArticle(article); setIsEditing(true); }} 
-                                  className="p-2.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all"
+                                  className="p-3 text-slate-300 hover:text-purple-600 hover:bg-white hover:shadow-lg rounded-2xl transition-all"
                                 >
                                   <Edit3 size={18} />
                                 </button>
                                 <button 
                                   onClick={() => setDeleteModal({ isOpen: true, id: article.documentId || article.id })} 
-                                  className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                  className="p-3 text-slate-300 hover:text-red-500 hover:bg-white hover:shadow-lg rounded-2xl transition-all"
                                 >
                                   <Trash2 size={18} />
                                 </button>
@@ -308,9 +297,9 @@ const NewsManagement = () => {
                         )) : (
                           <tr>
                             <td colSpan={4} className="py-32 text-center">
-                              <div className="flex flex-col items-center opacity-20">
-                                <ImageIcon size={48} className="mb-4" />
-                                <p className="font-black text-sm uppercase tracking-[0.3em]">No Articles Found</p>
+                              <div className="flex flex-col items-center opacity-10">
+                                <Loader2 size={40} className="animate-spin mb-4" />
+                                <p className="font-black text-xs uppercase tracking-[0.5em]">No data found</p>
                               </div>
                             </td>
                           </tr>
