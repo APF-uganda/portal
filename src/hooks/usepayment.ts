@@ -109,10 +109,10 @@ export const usePayments = () => {
   useEffect(() => {
     fetchPayments();
     
-    // Auto-refresh every 30 seconds to keep payment stats current
+    // Auto-refresh every 2 hours to keep payment stats current
     const intervalId = setInterval(() => {
       fetchPayments();
-    }, 30 * 1000); // 30 seconds
+    }, 2 * 60 * 60 * 1000); // 2 hours = 2 * 60 * 60 * 1000 milliseconds
 
     return () => clearInterval(intervalId);
   }, []);
