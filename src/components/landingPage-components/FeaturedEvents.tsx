@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import EventCard from "../common/EventCard"
@@ -21,62 +21,71 @@ const fallbackEvents = [
 
 const FeaturedEvents = () => {
   const navigate = useNavigate()
-  const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   
   // Fetch events from CMS
   const { events, loading, error } = useEvents()
   
-  // Filter for upcoming featured events
-  // Fall back to dummy data if CMS is unavailable
-  const today = new Date()
-  const sourceEvents = events.length > 0 ? events : fallbackEvents;
-  const upcomingEvents = sourceEvents.filter(
-    (event) => new Date(event.date) >= today && event.isFeatured
-  )
+  // Smart filtering for featured events with fallback logic
+  const featuredEvents = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Reset time to start of day for accurate comparison
+    
+    // Use CMS events if available, otherwise fallback
+    const sourceEvents = events.length > 0 ? events : fallbackEvents
+    
+    // Filter for upcoming events only
+    const upcomingEvents = sourceEvents.filter(event => {
+      if (!event.date) return false
+      const eventDate = new Date(event.date)
+      return eventDate >= today
+    })
+    
+    // Sort by date (earliest first) and prioritize featured events
+    const sortedEvents = upcomingEvents.sort((a, b) => {
+      // First, prioritize featured events
+      if (a.isFeatured && !b.isFeatured) return -1
+      if (!a.isFeatured && b.isFeatured) return 1
+      
+      // Then sort by date
+      const dateA = new Date(a.date)
+      const dateB = new Date(b.date)
+      return dateA.getTime() - dateB.getTime()
+    })
+    
+    // Return exactly 6 events (or fewer if not enough available)
+    return sortedEvents.slice(0, 6)
+  }, [events])
+  
+  // Use featuredEvents instead of upcomingEvents
+  const upcomingEvents = featuredEvents
+  const maxIndex = Math.max(0, upcomingEvents.length - 3)
 
-  // Auto-scroll: 30s mobile, 60s desktop
+  // Auto-scroll: only if we have more than 4 events
   useEffect(() => {
+    if (upcomingEvents.length <= 4) return
+    
     const interval = setInterval(() => {
-      if (scrollRef.current) {
-        const cardWidth = scrollRef.current.offsetWidth
-        const nextIndex = (activeIndex + 1) % upcomingEvents.length
-        const scrollAmount =
-          (scrollRef.current.children[nextIndex] as HTMLElement)?.offsetLeft ??
-          nextIndex * cardWidth
-        scrollRef.current.scrollTo({ left: scrollAmount, behavior: "smooth" })
-        setActiveIndex(nextIndex)
-      }
-    }, window.innerWidth < 768 ? 30000 : 60000) // breakpoint check
+      setActiveIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
+    }, 60000) // 60 seconds
 
     return () => clearInterval(interval)
-  }, [activeIndex, upcomingEvents.length])
+  }, [upcomingEvents.length, maxIndex])
 
-  // Track scroll position for dots (mobile)
+  // Reset active index when events change
   useEffect(() => {
-    const handleScroll = () => {
-      if (scrollRef.current) {
-        const scrollLeft = scrollRef.current.scrollLeft
-        const cardWidth = scrollRef.current.offsetWidth
-        const index = Math.round(scrollLeft / cardWidth)
-        setActiveIndex(index)
-      }
-    }
-
-    const ref = scrollRef.current
-    ref?.addEventListener("scroll", handleScroll)
-    return () => ref?.removeEventListener("scroll", handleScroll)
-  }, [])
+    setActiveIndex(0)
+  }, [upcomingEvents.length])
 
   const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -280, behavior: "smooth" })
+    if (upcomingEvents.length > 4) {
+      setActiveIndex(prev => Math.max(prev - 1, 0))
     }
   }
 
   const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 280, behavior: "smooth" })
+    if (upcomingEvents.length > 4) {
+      setActiveIndex(prev => Math.min(prev + 1, maxIndex))
     }
   }
 
@@ -91,93 +100,163 @@ const FeaturedEvents = () => {
 
   return (
     <ErrorBoundary fallback={
-      <section className="bg-white py-12 -mx-[50vw] px-[50vw]">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-8 text-gray-800">Featured Events</h2>
+      <section className="bg-white py-16 font-montserrat">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-center text-gray-800 text-2xl sm:text-3xl md:text-4xl font-bold mb-8">Featured Events</h2>
           <p className="text-gray-600">Events content is temporarily unavailable. Please check back later.</p>
         </div>
       </section>
     }>
-      <section className="bg-white py-12 -mx-[50vw] px-[50vw]">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+      <section className="bg-white py-16 font-montserrat">
+        <div className="max-w-6xl mx-auto px-6 relative">
+        <h2 className="text-center text-gray-800 text-2xl sm:text-3xl md:text-4xl font-bold mb-12">
           Featured Events
         </h2>
         
         {loading && (
-          <div className="text-center py-8 text-gray-600">
-            Loading featured events...
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center">
+              <div className="w-8 h-8 border-4 border-purple-200 border-t-[#7E49B3] rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-600 font-medium">Loading featured events...</p>
+              <p className="text-sm text-gray-500 mt-1">Fetching the latest upcoming events</p>
+            </div>
           </div>
         )}
 
         {error && (
-          <div className="text-center py-8 text-red-600">
-            Failed to load events. Please try again later.
+          <div className="text-center py-12">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Events</h3>
+              <p className="text-gray-600 mb-4">
+                We're having trouble loading the latest events. Please try refreshing the page.
+              </p>
+              <button
+                onClick={() => navigate('/events')}
+                className="px-4 py-2 bg-[#7E49B3] text-white rounded-lg hover:bg-[#3C096C] transition-colors"
+              >
+                View All Events
+              </button>
+            </div>
           </div>
         )}
 
         {!loading && !error && upcomingEvents.length === 0 && (
-          <div className="text-center py-8 text-gray-600">
-            No featured events at the moment.
+          <div className="text-center py-12">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Upcoming Events</h3>
+              <p className="text-gray-600 mb-4">
+                We're currently planning exciting new events. Check back soon or visit our events page for more information.
+              </p>
+              <button
+                onClick={() => navigate('/events')}
+                className="inline-flex items-center px-4 py-2 bg-[#7E49B3] text-white rounded-lg hover:bg-[#3C096C] transition-colors"
+              >
+                View All Events
+              </button>
+            </div>
           </div>
         )}
 
         {!loading && !error && upcomingEvents.length > 0 && (
           <>
-            <div className="flex items-center gap-4">
-              {/* Left Arrow (desktop only) */}
-              <button
-                onClick={scrollLeft}
-                className="hidden md:flex bg-[#7E49B3] text-white rounded-full shadow p-3 
-                           hover:bg-[#3C096C] transition-colors flex-shrink-0"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-
-              {/* Scrollable Cards */}
-              <div
-                ref={scrollRef}
-                className="flex overflow-x-auto snap-x snap-mandatory pb-4 scroll-smooth
-                           [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] flex-grow"
-              >
-                {upcomingEvents.map((event, index) => (
-                  <div
-                    key={index}
-                    className="w-full snap-start flex-shrink-0 px-2
-                               md:min-w-[250px] md:max-w-[360px]" // desktop: fixed width for 3 cards
-                  >
-                    <EventCard
-                      image={event.image}
-                      title={event.title}
-                      date={event.date}
-                      time={event.time}
-                      location={event.location}
-                      description={event.description}
-                      onRegister={() => handleRegister(event)}
-                    />
+            {/* Mobile View */}
+            <div className="sm:hidden">
+              {upcomingEvents.length > 1 ? (
+                <div className="overflow-hidden">
+                  <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+                    {upcomingEvents.map((event) => (
+                      <div key={event.id || event.documentId || `event-${event.title}`} className="w-full flex-shrink-0 px-2">
+                        <EventCard
+                          image={event.image}
+                          title={event.title}
+                          date={event.date}
+                          time={event.time}
+                          location={event.location}
+                          description={event.description}
+                          onRegister={() => handleRegister(event)}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-
-              {/* Right Arrow (desktop only) */}
-              <button
-                onClick={scrollRight}
-                className="hidden md:flex bg-[#7E49B3] text-white rounded-full shadow p-3 
-                           hover:bg-[#3C096C] transition-colors flex-shrink-0"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
+                </div>
+              ) : (
+                <div className="px-2">
+                  {upcomingEvents.map((event) => (
+                    <div key={event.id || event.documentId || `event-${event.title}`}>
+                      <EventCard
+                        image={event.image}
+                        title={event.title}
+                        date={event.date}
+                        time={event.time}
+                        location={event.location}
+                        description={event.description}
+                        onRegister={() => handleRegister(event)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Progress Dots (mobile only) */}
-            <div className="flex justify-center mt-6 gap-2 md:hidden">
-              {upcomingEvents.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-all duration-300
-                    ${index === activeIndex ? "bg-[#7E49B3]" : "bg-gray-300"}`}
-                />
-              ))}
+            {/* Desktop View */}
+            <div className="hidden sm:block relative">
+              {/* Left Arrow - Show only if more than 4 events */}
+              {upcomingEvents.length > 4 && (
+                <button
+                  onClick={scrollLeft}
+                  disabled={activeIndex === 0}
+                  className="absolute -left-12 top-1/2 -translate-y-1/2 bg-[#7E49B3] text-white w-11 h-11 rounded-full shadow flex items-center justify-center hover:scale-110 transition disabled:opacity-40 z-10"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+
+              <div className="overflow-hidden">
+                <div 
+                  className={`flex transition-transform duration-500 ease-out ${
+                    upcomingEvents.length <= 4 ? 'justify-start gap-6' : ''
+                  }`} 
+                  style={upcomingEvents.length > 4 ? { transform: `translateX(-${activeIndex * (100 / 3)}%)` } : {}}
+                >
+                  {upcomingEvents.map((event) => (
+                    <div 
+                      key={event.id || event.documentId || `event-${event.title}`} 
+                      className={upcomingEvents.length <= 4 ? 'flex-shrink-0 w-full max-w-[300px]' : 'w-1/3 flex-shrink-0 px-3'}
+                    >
+                      <EventCard
+                        image={event.image}
+                        title={event.title}
+                        date={event.date}
+                        time={event.time}
+                        location={event.location}
+                        description={event.description}
+                        onRegister={() => handleRegister(event)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Arrow - Show only if more than 4 events */}
+              {upcomingEvents.length > 4 && (
+                <button
+                  onClick={scrollRight}
+                  disabled={activeIndex >= Math.max(0, upcomingEvents.length - 3)}
+                  className="absolute -right-12 top-1/2 -translate-y-1/2 bg-[#7E49B3] text-white w-11 h-11 rounded-full shadow flex items-center justify-center hover:scale-110 transition disabled:opacity-40 z-10"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
             </div>
           </>
         )}

@@ -99,6 +99,78 @@ const NewsDetail = () => {
               //  TEXT BLOCKS (Handles both 'value' and 'children' formats)
               if (block.type === 'paragraph' || block.type === 'text') {
                 const textValue = block.value || block.children?.map((c: any) => c.text).join('') || "";
+                
+                // Check if this is an image marker (new format)
+                if (textValue.includes('__IMAGE__')) {
+                  const imageUrl = textValue.replace(/__IMAGE__/g, '');
+                  const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
+                  
+                  return (
+                    <div key={i} className="my-12 group">
+                      <img 
+                        src={fullUrl} 
+                        className="w-full rounded-[2rem] shadow-md border border-gray-50 group-hover:shadow-xl transition-shadow duration-500" 
+                        alt="Article Image" 
+                      />
+                    </div>
+                  );
+                }
+                
+                // Check if this is a video marker (new format)
+                if (textValue.includes('__VIDEO__')) {
+                  const videoUrl = textValue.replace(/__VIDEO__/g, '');
+                  
+                  return (
+                    <div key={i} className="my-12 aspect-video rounded-[2rem] overflow-hidden shadow-lg bg-gray-900">
+                      <iframe 
+                        src={getEmbedUrl(videoUrl)} 
+                        className="w-full h-full border-none"
+                        allowFullScreen
+                        title="Article Video"
+                      ></iframe>
+                    </div>
+                  );
+                }
+                
+                // Check if this is an old format image marker
+                if (textValue.includes('[Image:') && textValue.includes(']')) {
+                  const match = textValue.match(/\[Image:\s*(.*?)\]/);
+                  if (match && match[1]) {
+                    const imageUrl = match[1].trim();
+                    const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
+                    
+                    return (
+                      <div key={i} className="my-12 group">
+                        <img 
+                          src={fullUrl} 
+                          className="w-full rounded-[2rem] shadow-md border border-gray-50 group-hover:shadow-xl transition-shadow duration-500" 
+                          alt="Article Image" 
+                        />
+                      </div>
+                    );
+                  }
+                }
+                
+                // Check if this is a video URL (YouTube/Vimeo patterns)
+                if (textValue.includes('youtube.com') || textValue.includes('youtu.be') || textValue.includes('vimeo.com')) {
+                  // Extract URL from text if it's mixed with other text
+                  const urlMatch = textValue.match(/(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/)[\w-]+)/);
+                  if (urlMatch) {
+                    const videoUrl = urlMatch[1];
+                    return (
+                      <div key={i} className="my-12 aspect-video rounded-[2rem] overflow-hidden shadow-lg bg-gray-900">
+                        <iframe 
+                          src={getEmbedUrl(videoUrl)} 
+                          className="w-full h-full border-none"
+                          allowFullScreen
+                          title="Article Video"
+                        ></iframe>
+                      </div>
+                    );
+                  }
+                }
+                
+                // Regular text paragraph
                 return <p key={i} className="mb-8">{textValue}</p>;
               }
              

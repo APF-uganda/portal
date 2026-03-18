@@ -70,15 +70,18 @@ function LatestNews() {
 
   const startAutoScroll = () => {
     if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current)
-    autoScrollTimerRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
-    }, AUTO_SCROLL_INTERVAL)
+    // Only auto-scroll if we have more than 4 news items
+    if (displayNews.length > 4) {
+      autoScrollTimerRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
+      }, AUTO_SCROLL_INTERVAL)
+    }
   }
 
   useEffect(() => {
     if (!isMobile) startAutoScroll()
     return () => { if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current) }
-  }, [isMobile, maxIndex])
+  }, [isMobile, maxIndex, displayNews.length])
 
   const handleTouchEnd = () => {
     if (!isMobile) return
@@ -100,31 +103,57 @@ function LatestNews() {
             <>
               {/* Mobile View */}
               <div className="sm:hidden">
-                <div className="overflow-hidden" onTouchStart={(e) => touchStartX.current = e.touches[0].clientX} onTouchMove={(e) => touchEndX.current = e.touches[0].clientX} onTouchEnd={handleTouchEnd}>
-                  <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${mobileIndex * 100}%)` }}>
+                {displayNews.length > 1 ? (
+                  <div className="overflow-hidden" onTouchStart={(e) => touchStartX.current = e.touches[0].clientX} onTouchMove={(e) => touchEndX.current = e.touches[0].clientX} onTouchEnd={handleTouchEnd}>
+                    <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${mobileIndex * 100}%)` }}>
+                      {displayNews.map((item, index) => (
+                        <div key={item.documentId || index} className="w-full flex-shrink-0 px-2">
+                          <Link to={`/news/${item.documentId || item.id}`}>
+                            <NewsCard {...item} delay={0} />
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  // Single card - no scrolling needed
+                  <div className="px-2">
                     {displayNews.map((item, index) => (
-                      <div key={item.documentId || index} className="w-full flex-shrink-0 px-2">
-                     
+                      <div key={item.documentId || index}>
                         <Link to={`/news/${item.documentId || item.id}`}>
                           <NewsCard {...item} delay={0} />
                         </Link>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Desktop View */}
               <div className="hidden sm:block relative">
-                <button onClick={() => setCurrentIndex(p => Math.max(p - 1, 0))} disabled={currentIndex === 0} className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white w-11 h-11 rounded-full shadow flex items-center justify-center hover:scale-110 transition disabled:opacity-40 z-10">
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
+                {/* Left Arrow - Show only if more than 4 news items */}
+                {displayNews.length > 4 && (
+                  <button 
+                    onClick={() => setCurrentIndex(p => Math.max(p - 1, 0))} 
+                    disabled={currentIndex === 0} 
+                    className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white w-11 h-11 rounded-full shadow flex items-center justify-center hover:scale-110 transition disabled:opacity-40 z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                )}
 
                 <div className="overflow-hidden">
-                  <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${currentIndex * (100 / 3)}%)` }}>
+                  <div 
+                    className={`flex transition-transform duration-500 ease-out ${
+                      displayNews.length <= 4 ? 'justify-start gap-6' : ''
+                    }`} 
+                    style={displayNews.length > 4 ? { transform: `translateX(-${currentIndex * (100 / 3)}%)` } : {}}
+                  >
                     {displayNews.map((item, index) => (
-                      <div key={item.documentId || index} className="w-1/3 flex-shrink-0 px-3">
-                       
+                      <div 
+                        key={item.documentId || index} 
+                        className={displayNews.length <= 4 ? 'flex-shrink-0 w-full max-w-[300px]' : 'w-1/3 flex-shrink-0 px-3'}
+                      >
                         <Link to={`/news/${item.documentId || item.id}`} className="block h-full">
                           <NewsCard {...item} delay={cardsVisible ? (index % 3) * 150 : 0} />
                         </Link>
@@ -133,9 +162,16 @@ function LatestNews() {
                   </div>
                 </div>
 
-                <button onClick={() => setCurrentIndex(p => Math.min(p + 1, maxIndex))} disabled={currentIndex >= maxIndex} className="absolute -right-12 top-1/2 -translate-y-1/2 bg-white w-11 h-11 rounded-full shadow flex items-center justify-center hover:scale-110 transition disabled:opacity-40 z-10">
-                  <ChevronRight className="w-6 h-6" />
-                </button>
+                {/* Right Arrow - Show only if more than 4 news items */}
+                {displayNews.length > 4 && (
+                  <button 
+                    onClick={() => setCurrentIndex(p => Math.min(p + 1, maxIndex))} 
+                    disabled={currentIndex >= maxIndex} 
+                    className="absolute -right-12 top-1/2 -translate-y-1/2 bg-white w-11 h-11 rounded-full shadow flex items-center justify-center hover:scale-110 transition disabled:opacity-40 z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                )}
               </div>
             </>
           )}

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
-  Edit3, Search, Star, Plus,  Trash2, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, X, Trash 
+  Edit3, Search, Star, Plus, Trash2, Image as ImageIcon, CheckCircle2, AlertCircle 
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import api from '../../services/cmsApi';
 import { CMS_BASE_URL } from '../../config/api'; 
 
@@ -25,8 +24,6 @@ const NewsManagement = () => {
   
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, id: string | number | null }>({ isOpen: false, id: null });
-
-  const navigate = useNavigate();
 
   const showToast = (msg: string, type: 'success' | 'error') => {
     setNotification({ msg, type });
@@ -76,27 +73,32 @@ const NewsManagement = () => {
     try {
       
       const strapiBlocks = (formData.content || []).map((block: any) => {
+        if (block.type === 'paragraph') {
+          const textContent = block.children?.[0]?.text || block.value || "";
+          if (!textContent.trim()) return null;
+          return {
+            type: 'paragraph',
+            children: [{ 
+              type: 'text', 
+              text: textContent.trim() 
+            }]
+          };
+        }
         if (block.type === 'image') {
+          const imageUrl = block.image?.url || block.url || block.value;
+          if (!imageUrl) return null;
+          
+          // Store image information in a format that can be parsed by the frontend
           return {
-            type: 'image',
-            image: {
-              url: block.url || block.value,
-              alternativeText: block.caption || ""
-            }
+            type: 'paragraph',
+            children: [{ 
+              type: 'text', 
+              text: `__IMAGE__${imageUrl}__IMAGE__`
+            }]
           };
         }
-        if (block.type === 'video') {
-          return {
-            type: 'video',
-            url: block.url || block.value
-          };
-        }
-        // Paragraph/Text handling
-        return {
-          type: 'paragraph', 
-          children: [{ type: 'text', text: (block.value || "").trim() }] 
-        };
-      });
+        return null;
+      }).filter((block: any) => block !== null);
     
       const payload = {
         data: {
@@ -109,9 +111,12 @@ const NewsManagement = () => {
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
           // FIX: Correctly set publishedAt for Drafts
-          publishedAt: status === 'published' ? new Date().toISOString() : null, 
+          publishedAt: status === 'published' ? new Date().toISOString() : null,
+          news: formData.news ? Number(formData.news) : undefined
         }
       };
+
+      console.log('Sending payload to Strapi:', JSON.stringify(payload, null, 2));
     
       const targetId = selectedArticle?.documentId || selectedArticle?.id;
       
@@ -125,7 +130,12 @@ const NewsManagement = () => {
       await fetchNews(); 
       showToast(status === 'published' ? "Article Published!" : "Draft Saved!", "success");
     } catch (err: any) {
-      showToast("Save Failed", "error");
+      console.error('Save failed:', err);
+      console.error('Error response:', err.response?.data);
+      if (err.response?.data?.error?.details?.errors) {
+        console.error('Detailed validation errors:', err.response.data.error.details.errors);
+      }
+      showToast(`Save Failed: ${err.response?.data?.error?.message || err.message}`, "error");
     } finally {
       setLoading(false);
     }

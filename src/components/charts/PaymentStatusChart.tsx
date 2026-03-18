@@ -4,7 +4,9 @@
 
 import React, { useState, useEffect } from 'react';
 import ChartWrapper from './ChartWrapper';
-import { analyticsApi, ChartData } from '../../services/analyticsApi';
+import { ChartData } from '../../services/analyticsApi';
+import { API_BASE_URL } from '../../config/api';
+import { getAccessToken } from '../../utils/authStorage';
 import { CreditCard, CheckCircle, Clock, XCircle, Calendar } from 'lucide-react';
 
 interface PaymentStatusChartProps {
@@ -27,16 +29,26 @@ const PaymentStatusChart: React.FC<PaymentStatusChartProps> = ({ className = '' 
     try {
       setLoading(true);
       setError(null);
-      // Mock payment status data - replace with actual API call when available
-      const mockData: ChartData = {
-        labels: ['Completed', 'Pending', 'Rejected'],
-        data: period === '7d' 
-          ? [45, 12, 3]
-          : period === '30d'
-          ? [180, 35, 8]
-          : [520, 95, 22]
-      };
-      setChartData(mockData);
+      
+      // Fetch real payment status data from API using generic chart endpoint
+      const response = await fetch(`${API_BASE_URL}/api/v1/reports/analytics/charts/?type=payment_status&period=${period}`, {
+        headers: {
+          'Authorization': `Bearer ${getAccessToken()}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch payment status data');
+      }
+      
+      const data = await response.json();
+      
+      if (!data || !data.labels || data.labels.length === 0) {
+        setError('No payment data available');
+      } else {
+        setChartData(data);
+      }
     } catch (err) {
       setError('Failed to load payment status data');
       console.error('Error fetching payment status chart:', err);
@@ -73,18 +85,18 @@ const PaymentStatusChart: React.FC<PaymentStatusChartProps> = ({ className = '' 
     );
   }
 
-  // Color mapping for different payment statuses
+  // Color mapping for the 3 payment statuses
   const getStatusColors = (labels: string[]) => {
     return labels.map(label => {
       switch (label.toLowerCase()) {
         case 'completed':
-          return '#10B981'; // Emerald
+          return '#10B981'; // Green - Emerald
         case 'pending':
-          return '#F59E0B'; // Amber
+          return '#F59E0B'; // Yellow - Amber
         case 'rejected':
           return '#EF4444'; // Red
         default:
-          return '#8B5CF6'; // Purple
+          return '#8B5CF6'; // Purple - fallback
       }
     });
   };
@@ -129,7 +141,11 @@ const PaymentStatusChart: React.FC<PaymentStatusChartProps> = ({ className = '' 
   };
 
   const totalPayments = chartData?.data.reduce((a, b) => a + b, 0) || 0;
-  const completedPayments = chartData?.data[0] || 0;
+  
+  // Find completed payments (should be first in the array if it exists)
+  const completedIndex = chartData?.labels.findIndex(label => label.toLowerCase() === 'completed') ?? -1;
+  const completedPayments = completedIndex >= 0 ? (chartData?.data[completedIndex] || 0) : 0;
+  
   const successRate = totalPayments > 0 ? ((completedPayments / totalPayments) * 100).toFixed(1) : '0';
 
   return (
@@ -174,7 +190,7 @@ const PaymentStatusChart: React.FC<PaymentStatusChartProps> = ({ className = '' 
       </div>
 
       {/* Status Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+      <div className="grid grid-cols-3 gap-3 mt-4">
         {chartData?.labels.map((label, index) => {
           const value = chartData.data[index];
           const percentage = totalPayments > 0 ? ((value / totalPayments) * 100).toFixed(1) : '0';

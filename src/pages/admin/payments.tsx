@@ -6,11 +6,7 @@ import {
   ChevronRight, 
   Hash, 
   Clock, 
-  Loader2,
   Banknote,
-  Check,
-  X,
-  ExternalLink,
   RefreshCw
 } from 'lucide-react';
 
@@ -18,6 +14,7 @@ import {
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
+import { PaymentTable } from "../../components/adminpayments-components/paymentTable";
 
 import { usePayments } from '../../hooks/usepayment';
 import { PaymentStatCard } from '../../components/payment-components/statcard';
@@ -25,22 +22,34 @@ import { PaymentStatCard } from '../../components/payment-components/statcard';
 const ManagePayments = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { payments, stats, loading, error, verifyPayment, rejectPayment, refresh } = usePayments();
-  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
+  const { payments, stats, loading, error, refresh } = usePayments();
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [nextRefresh, setNextRefresh] = useState<Date>(new Date(Date.now() + 2 * 60 * 60 * 1000));
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
   useEffect(() => {
     if (!loading) {
       setLastUpdated(new Date());
+      setNextRefresh(new Date(Date.now() + 2 * 60 * 60 * 1000)); // Next refresh in 2 hours
     }
   }, [stats, loading]);
+
+  // Update current time every minute to keep countdown accurate
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60 * 1000); // Update every minute
+
+    return () => clearInterval(timeInterval);
+  }, []);
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
     try {
       await refresh();
       setLastUpdated(new Date());
+      setNextRefresh(new Date(Date.now() + 2 * 60 * 60 * 1000)); // Reset next refresh time
     } catch (error) {
       console.error('Failed to refresh:', error);
     } finally {
@@ -49,47 +58,19 @@ const ManagePayments = () => {
   };
 
   const formatLastUpdated = () => {
-    const seconds = Math.floor((new Date().getTime() - lastUpdated.getTime()) / 1000);
+    const seconds = Math.floor((currentTime.getTime() - lastUpdated.getTime()) / 1000);
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
     return lastUpdated.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'verified': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case 'pending': return 'bg-amber-50 text-amber-600 border-amber-100';
-      case 'rejected': return 'bg-red-50 text-red-600 border-red-100';
-      case 'completed': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case 'failed': return 'bg-red-50 text-red-600 border-red-100';
-      default: return 'bg-gray-50 text-gray-500 border-gray-100';
-    }
-  };
-
-  const handleVerifyPayment = async (paymentId: number) => {
-    setActionLoading(prev => ({ ...prev, [`verify-${paymentId}`]: true }));
-    try {
-      await verifyPayment(paymentId);
-    } catch (error) {
-      console.error('Failed to verify payment:', error);
-    } finally {
-      setActionLoading(prev => ({ ...prev, [`verify-${paymentId}`]: false }));
-    }
-  };
-
-  const handleRejectPayment = async (paymentId: number) => {
-    setActionLoading(prev => ({ ...prev, [`reject-${paymentId}`]: true }));
-    try {
-      await rejectPayment(paymentId);
-    } catch (error) {
-      console.error('Failed to reject payment:', error);
-    } finally {
-      setActionLoading(prev => ({ ...prev, [`reject-${paymentId}`]: false }));
-    }
-  };
-
-  const openProofOfPayment = (proofUrl: string) => {
-    window.open(proofUrl, '_blank');
+  const formatNextRefresh = () => {
+    const minutes = Math.floor((nextRefresh.getTime() - currentTime.getTime()) / (1000 * 60));
+    if (minutes <= 0) return 'Refreshing soon...';
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
   };
 
   return (
@@ -118,9 +99,14 @@ const ManagePayments = () => {
                 <p className="text-gray-400 mt-2 text-sm font-medium">Monitor transactions, revenue trends, and payment statuses.</p>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Updated: {formatLastUpdated()}
-                </span>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                    Updated: {formatLastUpdated()}
+                  </span>
+                  <span className="text-[9px] font-medium text-gray-300 uppercase tracking-wider">
+                    Next: {formatNextRefresh()}
+                  </span>
+                </div>
                 <button
                   onClick={handleManualRefresh}
                   disabled={refreshing}
@@ -171,82 +157,11 @@ const ManagePayments = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               
-              <div className="lg:col-span-2 bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/40 border border-gray-50 overflow-hidden">
-                <div className="px-8 py-6 border-b border-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                  <h2 className="font-bold text-gray-900 text-lg flex items-center gap-3">
-                    <RotateCcw size={18} className="text-[#7E49B3]" /> Recent Transactions
-                  </h2>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50/50 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        <th className="px-6 py-5 border-b border-gray-50">Member</th>
-                        <th className="px-6 py-5 border-b border-gray-50">Transaction ID</th>
-                        <th className="px-6 py-5 border-b border-gray-50 text-right">Amount</th>
-                        <th className="px-6 py-5 border-b border-gray-50 text-center">Status</th>
-                        <th className="px-6 py-5 border-b border-gray-50 text-center">Date</th>
-                        <th className="px-6 py-5 border-b border-gray-50 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {loading ? (
-                        <tr>
-                          <td colSpan={6} className="text-center py-20">
-                            <Loader2 className="animate-spin text-[#7E49B3] mx-auto" size={32} />
-                          </td>
-                        </tr>
-                      ) : (
-                        payments.map((p) => (
-                          <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-5">
-                              <div className="font-bold text-gray-900">{p.member_name}</div>
-                              <div className="text-[10px] font-medium text-gray-400 uppercase tracking-tighter">{p.member_email}</div>
-                            </td>
-                            <td className="px-6 py-5">
-                              <div className="font-mono text-xs text-[#7E49B3] font-bold">
-                                {p.application_id || p.invoice_number || '-'}
-                              </div>
-                            </td>
-                            <td className="px-6 py-5 font-bold text-gray-900 text-right">
-                              <div className="text-sm">
-                                {p.currency || 'UGX'} {Number(p.amount || 0).toLocaleString()}
-                              </div>
-                            </td>
-                            <td className="px-6 py-5 text-center">
-                              <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${getStatusColor(p.status)}`}>
-                                {p.status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-5 text-center text-xs font-medium text-gray-400">
-                              {p.created_at ? new Date(p.created_at).toLocaleDateString() : '-'}
-                            </td>
-                            <td className="px-6 py-5">
-                              <div className="flex items-center justify-center gap-3">
-                                {p.proof_of_payment && (
-                                  <button onClick={() => openProofOfPayment(p.proof_of_payment!)} className="text-gray-400 hover:text-[#7E49B3] transition-colors p-2 bg-gray-50 rounded-xl" title="View Proof">
-                                    <ExternalLink size={14} />
-                                  </button>
-                                )}
-                                {p.status === 'pending' && (
-                                  <>
-                                    <button onClick={() => handleVerifyPayment(Number(p.id))} disabled={actionLoading[`verify-${p.id}`]} className="bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-xl transition-all shadow-lg shadow-emerald-100 disabled:opacity-50">
-                                      {actionLoading[`verify-${p.id}`] ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
-                                    </button>
-                                    <button onClick={() => handleRejectPayment(Number(p.id))} disabled={actionLoading[`reject-${p.id}`]} className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-xl transition-all shadow-lg shadow-red-100 disabled:opacity-50">
-                                      {actionLoading[`reject-${p.id}`] ? <RefreshCw size={14} className="animate-spin" /> : <X size={14} />}
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="lg:col-span-2">
+                <PaymentTable 
+                  payments={payments}
+                  loading={loading}
+                />
               </div>
 
               {/* Quick Actions Sidebar */}

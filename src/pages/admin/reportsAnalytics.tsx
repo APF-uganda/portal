@@ -82,7 +82,9 @@ const ReportsAnalytics = () => {
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Total Revenue</p>
-                      <p className="text-lg md:text-2xl font-bold text-gray-900">UGX 23.5M</p>
+                      <p className="text-lg md:text-2xl font-bold text-gray-900">
+                        UGX {analytics.key_metrics?.total_revenue ? (analytics.key_metrics.total_revenue / 1000000).toFixed(1) + 'M' : '0.0M'}
+                      </p>
                     </div>
                     <div className="p-2 md:p-3 bg-green-100 rounded-full flex-shrink-0 ml-2">
                       <svg className="w-4 md:w-6 h-4 md:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +99,9 @@ const ReportsAnalytics = () => {
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Pending Payments</p>
-                      <p className="text-lg md:text-2xl font-bold text-gray-900">35</p>
+                      <p className="text-lg md:text-2xl font-bold text-gray-900">
+                        {analytics.key_metrics?.pending_payments || 0}
+                      </p>
                     </div>
                     <div className="p-2 md:p-3 bg-yellow-100 rounded-full flex-shrink-0 ml-2">
                       <svg className="w-4 md:w-6 h-4 md:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,12 +111,17 @@ const ReportsAnalytics = () => {
                   </div>
                 </div>
 
-                {/* Monthly Growth */}
+                {/* Revenue Growth */}
                 <div className="bg-white rounded-xl p-3 md:p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Monthly Growth</p>
-                      <p className="text-lg md:text-2xl font-bold text-gray-900">+12.5%</p>
+                      <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Revenue Growth</p>
+                      <p className="text-lg md:text-2xl font-bold text-gray-900">
+                        {analytics.key_metrics?.revenue_growth_rate ? 
+                          `${analytics.key_metrics.revenue_growth_rate > 0 ? '+' : ''}${analytics.key_metrics.revenue_growth_rate.toFixed(1)}%` : 
+                          '0.0%'
+                        }
+                      </p>
                     </div>
                     <div className="p-2 md:p-3 bg-purple-100 rounded-full flex-shrink-0 ml-2">
                       <svg className="w-4 md:w-6 h-4 md:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
