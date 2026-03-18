@@ -315,7 +315,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
             </button>
             {application && !loading && (
               <div className="flex gap-3">
-                {/* 1. PENDING: Show Reject & Approve */}
+                {/* Show Reject & Approve */}
                 {application.status.toLowerCase() === 'pending' && (
                   <>
                     <button 
@@ -335,7 +335,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                   </>
                 )}
 
-                {/* 2. APPROVED: REJECT IS HIDDEN */}
+               
                 {application.status.toLowerCase() === 'approved' && (
                   <>
                     {onRetry && (
@@ -353,7 +353,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                   </>
                 )}
 
-                {/* 3. REJECTED: Show Approve & Reset */}
+                {/*  Show Approve & Reset */}
                 {application.status.toLowerCase() === 'rejected' && (
                   <>
                     <button 
