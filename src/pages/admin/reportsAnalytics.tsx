@@ -59,7 +59,82 @@ const ReportsAnalytics = () => {
               <PaymentStatusChart />
             </div>
 
-           
+            {/* Analytics Overview Cards - Now Below Charts */}
+            {!analyticsLoading && analytics && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                {/* Total Members */}
+                <div className="bg-white rounded-xl p-3 md:p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Total Members</p>
+                      <p className="text-lg md:text-2xl font-bold text-gray-900">{analytics.membership.total_members}</p>
+                    </div>
+                    <div className="p-2 md:p-3 bg-blue-100 rounded-full flex-shrink-0 ml-2">
+                      <svg className="w-4 md:w-6 h-4 md:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Revenue */}
+                <div className="bg-white rounded-xl p-3 md:p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Total Revenue</p>
+                      <p className="text-lg md:text-2xl font-bold text-gray-900">
+                        UGX {analytics.key_metrics?.total_revenue ? (analytics.key_metrics.total_revenue / 1000000).toFixed(1) + 'M' : '0.0M'}
+                      </p>
+                    </div>
+                    <div className="p-2 md:p-3 bg-green-100 rounded-full flex-shrink-0 ml-2">
+                      <svg className="w-4 md:w-6 h-4 md:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pending Payments */}
+                <div className="bg-white rounded-xl p-3 md:p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Pending Payments</p>
+                      <p className="text-lg md:text-2xl font-bold text-gray-900">
+                        {analytics.key_metrics?.pending_payments || 0}
+                      </p>
+                    </div>
+                    <div className="p-2 md:p-3 bg-yellow-100 rounded-full flex-shrink-0 ml-2">
+                      <svg className="w-4 md:w-6 h-4 md:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Revenue Growth */}
+                <div className="bg-white rounded-xl p-3 md:p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm font-medium text-gray-600 truncate">Revenue Growth</p>
+                      <p className="text-lg md:text-2xl font-bold text-gray-900">
+                        {analytics.key_metrics?.revenue_growth_rate ? 
+                          `${analytics.key_metrics.revenue_growth_rate > 0 ? '+' : ''}${analytics.key_metrics.revenue_growth_rate.toFixed(1)}%` : 
+                          '0.0%'
+                        }
+                      </p>
+                    </div>
+                    <div className="p-2 md:p-3 bg-purple-100 rounded-full flex-shrink-0 ml-2">
+                      <svg className="w-4 md:w-6 h-4 md:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            
+            
 
             {/* Generator Section */}
             <CustomGenerator onSuccess={handleRefreshReports} />

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Save, ArrowLeft, Image as ImageIcon, X, 
   Type, Trash2, MoveUp, UploadCloud, Star, Loader2,
-  Send, PlayCircle, Clock
+  Send, PlayCircle, Clock, Plus, Grid
 } from 'lucide-react';
 import api from '../../services/cmsApi';
 import { CMS_BASE_URL } from '../../config/api';
@@ -65,13 +65,100 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
   const [summary, setSummary] = useState(initialData?.description || initialData?.summary || "");
   const [category, setCategory] = useState(getInitialCategory());
   const [isTopPick, setIsTopPick] = useState(initialData?.isFeatured || initialData?.isTopic || false);
-  const [blocks, setBlocks] = useState(initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }]);
+  const parseContentBlocks = (content: any) => {
+    if (!content || !Array.isArray(content)) return [{ id: '1', type: 'text', value: '' }];
+    
+    const parsedBlocks: any[] = [];
+    let galleryImages: string[] = [];
+    
+    content.forEach((block: any, index: number) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      
+      if (block.type === 'paragraph') {
+        // If we have accumulated gallery images, create a gallery block first
+        if (galleryImages.length > 0) {
+          parsedBlocks.push({
+            id: Math.random().toString(36).substr(2, 9),
+            type: 'gallery',
+            value: galleryImages
+          });
+          galleryImages = [];
+        }
+        
+        const text = block.children?.[0]?.text || '';
+        
+        // Check if this is an image marker from our new format
+        if (text.includes('__IMAGE__')) {
+          const imageUrl = text.replace(/__IMAGE__/g, '');
+          parsedBlocks.push({ id, type: 'image', value: imageUrl });
+        } else {
+          parsedBlocks.push({ id, type: 'text', value: text });
+        }
+      }
+      else if (block.type === 'image') {
+        const imageUrl = block.image?.url || block.url || '';
+        
+        // Check if the next block is also an image to group them into a gallery
+        const nextBlock = content[index + 1];
+        if (nextBlock && nextBlock.type === 'image') {
+          galleryImages.push(imageUrl);
+        } else {
+          // If we have accumulated images, add them plus this one as a gallery
+          if (galleryImages.length > 0) {
+            galleryImages.push(imageUrl);
+            parsedBlocks.push({
+              id: Math.random().toString(36).substr(2, 9),
+              type: 'gallery',
+              value: galleryImages
+            });
+            galleryImages = [];
+          } else {
+            // Single image block
+            parsedBlocks.push({ id, type: 'image', value: imageUrl });
+          }
+        }
+      }
+      else {
+        // If we have accumulated gallery images, create a gallery block first
+        if (galleryImages.length > 0) {
+          parsedBlocks.push({
+            id: Math.random().toString(36).substr(2, 9),
+            type: 'gallery',
+            value: galleryImages
+          });
+          galleryImages = [];
+        }
+        
+        // Handle other block types
+        parsedBlocks.push({ id, type: 'text', value: '' });
+      }
+    });
+    
+    // Handle any remaining gallery images
+    if (galleryImages.length > 0) {
+      parsedBlocks.push({
+        id: Math.random().toString(36).substr(2, 9),
+        type: 'gallery',
+        value: galleryImages
+      });
+    }
+    
+    return parsedBlocks.length > 0 ? parsedBlocks : [{ id: '1', type: 'text', value: '' }];
+  };
+
+  const [blocks, setBlocks] = useState(() => {
+    if (initialData?.content) {
+      return parseContentBlocks(initialData.content);
+    }
+    return initialData?.contentBlocks || [{ id: '1', type: 'text', value: '' }];
+  });
   
   const [readTime, setReadTime] = useState(initialData?.readTime || 5);
   const [imagePreview, setImagePreview] = useState(initialData?.featuredImage || "");
   const [imageId, setImageId] = useState<number | null>(initialData?.imageId || null);
   const [uploading, setUploading] = useState(false);
   const [blockUploading, setBlockUploading] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState<string | null>(null);
 
   const STRAPI_URL = CMS_BASE_URL;
 
@@ -93,28 +180,171 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     }
   };
 
-  const handleBlockMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleBlockMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string, isMultiple: boolean = false) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
     setBlockUploading(blockId);
-    const formData = new FormData();
-    formData.append('files', file);
+    
     try {
-      const res = await api.post('/upload', formData);
-      updateBlock(blockId, `${STRAPI_URL}${res.data[0].url}`);
+      if (isMultiple) {
+        // Handle multiple image uploads sequentially to avoid overwhelming the server
+        const uploadedImages: any[] = [];
+        
+        for (const file of Array.from(files)) {
+          const formData = new FormData();
+          formData.append('files', file);
+          
+          try {
+            const res = await api.post('/upload', formData);
+            if (res.data && res.data[0]) {
+              const uploadedFile = res.data[0];
+              uploadedImages.push({
+                id: uploadedFile.id,
+                url: `${STRAPI_URL}${uploadedFile.url}`,
+                name: uploadedFile.name,
+                alternativeText: uploadedFile.alternativeText || ""
+              });
+            }
+          } catch (uploadError) {
+            console.error('Failed to upload file:', file.name, uploadError);
+            // Continue with other files even if one fails
+          }
+        }
+        
+        if (uploadedImages.length > 0) {
+          // Update block with array of image objects
+          setBlocks(blocks.map((b: any) => 
+            b.id === blockId ? { 
+              ...b, 
+              value: Array.isArray(b.value) ? [...b.value, ...uploadedImages] : uploadedImages, 
+              type: 'gallery' 
+            } : b
+          ));
+        }
+      } else {
+        // Handle single image upload
+        const formData = new FormData();
+        formData.append('files', files[0]);
+        const res = await api.post('/upload', formData);
+        if (res.data && res.data[0]) {
+          const uploadedFile = res.data[0];
+          const imageData = {
+            id: uploadedFile.id,
+            url: `${STRAPI_URL}${uploadedFile.url}`,
+            name: uploadedFile.name,
+            alternativeText: uploadedFile.alternativeText || ""
+          };
+          updateBlock(blockId, imageData);
+        }
+      }
     } catch (err) {
-      alert("Media upload failed.");
+      console.error("Media upload failed:", err);
+      alert("Media upload failed. Please try again.");
     } finally {
       setBlockUploading(null);
     }
   };
 
-  const updateBlock = (id: string, value: string) => {
+  const updateBlock = (id: string, value: string | any) => {
     setBlocks(blocks.map((b: any) => b.id === id ? { ...b, value } : b));
   };
 
+  const handleDragOver = (e: React.DragEvent, blockId: string) => {
+    e.preventDefault();
+    setDragOver(blockId);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, blockId: string, isMultiple: boolean = false) => {
+    e.preventDefault();
+    setDragOver(null);
+    
+    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+    if (files.length === 0) return;
+
+    setBlockUploading(blockId);
+    
+    try {
+      if (isMultiple) {
+        // Handle multiple image uploads sequentially
+        const uploadedImages: any[] = [];
+        
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append('files', file);
+          
+          try {
+            const res = await api.post('/upload', formData);
+            if (res.data && res.data[0]) {
+              const uploadedFile = res.data[0];
+              uploadedImages.push({
+                id: uploadedFile.id,
+                url: `${STRAPI_URL}${uploadedFile.url}`,
+                name: uploadedFile.name,
+                alternativeText: uploadedFile.alternativeText || ""
+              });
+            }
+          } catch (uploadError) {
+            console.error('Failed to upload file:', file.name, uploadError);
+            // Continue with other files even if one fails
+          }
+        }
+        
+        if (uploadedImages.length > 0) {
+          setBlocks(blocks.map((b: any) => 
+            b.id === blockId ? { 
+              ...b, 
+              value: Array.isArray(b.value) ? [...b.value, ...uploadedImages] : uploadedImages, 
+              type: 'gallery' 
+            } : b
+          ));
+        }
+      } else {
+        const formData = new FormData();
+        formData.append('files', files[0]);
+        const res = await api.post('/upload', formData);
+        if (res.data && res.data[0]) {
+          const uploadedFile = res.data[0];
+          const imageData = {
+            id: uploadedFile.id,
+            url: `${STRAPI_URL}${uploadedFile.url}`,
+            name: uploadedFile.name,
+            alternativeText: uploadedFile.alternativeText || ""
+          };
+          updateBlock(blockId, imageData);
+        }
+      }
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed. Please try again.");
+    } finally {
+      setBlockUploading(null);
+    }
+  };
+
+  const removeImageFromGallery = (blockId: string, imageIndex: number) => {
+    setBlocks(blocks.map((b: any) => {
+      if (b.id === blockId && b.type === 'gallery' && Array.isArray(b.value)) {
+        const newImages = b.value.filter((_: any, index: number) => index !== imageIndex);
+        return { ...b, value: newImages.length > 0 ? newImages : [] };
+      }
+      return b;
+    }));
+  };
+
   const addBlock = (type: string) => {
-    setBlocks([...blocks, { id: Math.random().toString(36).substr(2, 9), type, value: '' }]);
+    const newBlock = { 
+      id: Math.random().toString(36).substr(2, 9), 
+      type, 
+      value: type === 'gallery' ? [] : '' 
+    };
+    console.log('Adding new block:', newBlock);
+    setBlocks([...blocks, newBlock]);
   };
 
   const removeBlock = (id: string) => setBlocks(blocks.filter((b: any) => b.id !== id));
@@ -129,10 +359,38 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
   };
 
   const handleSubmit = (status: 'draft' | 'published') => {
+    console.log('=== SUBMIT DEBUG ===');
+    console.log('All blocks before processing:', blocks);
+    
     if (!title.trim()) {
       alert("Title is required.");
       return;
     }
+
+    // Filter out empty blocks before validation
+    const nonEmptyBlocks = blocks.filter((block: any) => {
+      if (block.type === 'text') {
+        return block.value && typeof block.value === 'string' && block.value.trim();
+      }
+      if (block.type === 'image') {
+        // Handle both string URLs and image objects
+        if (typeof block.value === 'string') {
+          return block.value && block.value.trim();
+        } else if (typeof block.value === 'object' && block.value !== null) {
+          return block.value.url || block.value.id;
+        }
+        return false;
+      }
+      if (block.type === 'gallery') {
+        return Array.isArray(block.value) && block.value.length > 0;
+      }
+      if (block.type === 'video') {
+        return block.value && typeof block.value === 'string' && block.value.trim();
+      }
+      return false;
+    });
+
+    console.log('Non-empty blocks:', nonEmptyBlocks);
   
     // Define categoryId with a fallback
     let categoryId: number | string | null = null;
@@ -152,18 +410,73 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       categoryId = CATEGORY_MAP[category] || 1;
     }
   
-   
-    const strapiBlocks = blocks.map((block: any) => {
+    // Process only non-empty blocks
+    const processedBlocks = nonEmptyBlocks.map((block: any) => {
       if (block.type === 'text') {
         return {
           type: 'paragraph',
-          children: [{ type: 'text', text: block.value }]
+          children: [{ type: 'text', text: block.value.trim() }]
+        };
+      }
+      if (block.type === 'image') {
+        // Handle both string URLs (legacy) and image objects (new format)
+        if (typeof block.value === 'string') {
+          return {
+            type: 'paragraph',
+            children: [{ 
+              type: 'text', 
+              text: `__IMAGE__${block.value}__IMAGE__`
+            }]
+          };
+        } else if (block.value && typeof block.value === 'object') {
+          // For image objects, use the URL from the object
+          const imageUrl = block.value.url || '';
+          if (imageUrl) {
+            return {
+              type: 'paragraph',
+              children: [{ 
+                type: 'text', 
+                text: `__IMAGE__${imageUrl}__IMAGE__`
+              }]
+            };
+          }
+        }
+        return null;
+      }
+      if (block.type === 'gallery' && Array.isArray(block.value)) {
+        // Convert gallery to multiple individual image blocks
+        return block.value.map((image: any) => {
+          if (typeof image === 'string') {
+            return {
+              type: 'image',
+              image: {
+                url: image,
+                alternativeText: ""
+              }
+            };
+          } else if (image && image.id) {
+            return {
+              type: 'image',
+              image: image.id // Use the Strapi file ID
+            };
+          }
+          return null;
+        }).filter((img: any) => img !== null);
+      }
+      if (block.type === 'video') {
+        return {
+          type: 'paragraph',
+          children: [{ 
+            type: 'text', 
+            text: `__VIDEO__${block.value}__VIDEO__`
+          }]
         };
       }
      
-      return { ...block };
-    });
-  
+      return null;
+    }).filter((block: any) => block !== null).flat(); // Remove null blocks and flatten gallery conversions
+
+    console.log('Final processed blocks for Strapi:', processedBlocks);
     
     onSave({ 
       title: title.trim(), 
@@ -172,7 +485,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
       isFeatured: isTopPick,   
       readTime: Number(readTime), 
       featuredImage: imageId,  
-      content: strapiBlocks, 
+      content: processedBlocks, 
       publishDate: new Date().toISOString().split('T')[0] 
     }, status);
   };
@@ -239,16 +552,83 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
                     <div className="space-y-3">
                       {block.value ? (
                         <div className="relative group overflow-hidden rounded-[2rem]">
-                          <img src={block.value} className="w-full h-auto max-h-[400px] object-cover" alt="" />
+                          <img 
+                            src={typeof block.value === 'string' ? block.value : block.value.url} 
+                            className="w-full h-auto max-h-[400px] object-cover" 
+                            alt="" 
+                          />
                           <button onClick={() => updateBlock(block.id, "")} className="absolute top-4 right-4 p-3 bg-white rounded-full text-red-500 shadow-md"><X size={18}/></button>
                         </div>
                       ) : (
-                        <label className="flex flex-col items-center justify-center p-12 md:p-20 border-2 border-dashed rounded-[2rem] bg-white cursor-pointer hover:bg-slate-50 hover:border-purple-200 transition-all">
-                          {blockUploading === block.id ? <Loader2 className="animate-spin text-purple-600" /> : <UploadCloud className="text-slate-300 mb-4" size={40} />}
-                          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Upload Body Image</span>
-                          <input type="file" className="hidden" onChange={(e) => handleBlockMediaUpload(e, block.id)} />
-                        </label>
+                        <div
+                          onDragOver={(e) => handleDragOver(e, block.id)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, block.id, false)}
+                          className={`transition-all ${dragOver === block.id ? 'border-purple-400 bg-purple-50' : ''}`}
+                        >
+                          <label className="flex flex-col items-center justify-center p-12 md:p-20 border-2 border-dashed rounded-[2rem] bg-white cursor-pointer hover:bg-slate-50 hover:border-purple-200 transition-all">
+                            {blockUploading === block.id ? <Loader2 className="animate-spin text-purple-600" /> : <UploadCloud className="text-slate-300 mb-4" size={40} />}
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Upload Body Image</span>
+                            <span className="text-[9px] font-medium text-slate-300 mt-1">Click to select or drag & drop</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleBlockMediaUpload(e, block.id)} />
+                          </label>
+                        </div>
                       )}
+                    </div>
+                  )}
+
+                  {block.type === 'gallery' && (
+                    <div className="space-y-4">
+                      {Array.isArray(block.value) && block.value.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {block.value.map((image: any, index: number) => (
+                            <div key={index} className="relative group overflow-hidden rounded-[1.5rem]">
+                              <img 
+                                src={typeof image === 'string' ? image : image.url} 
+                                className="w-full h-48 object-cover" 
+                                alt={`Gallery image ${index + 1}`} 
+                              />
+                              <button 
+                                onClick={() => removeImageFromGallery(block.id, index)} 
+                                className="absolute top-2 right-2 p-2 bg-white rounded-full text-red-500 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={14}/>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                      
+                      <div
+                        onDragOver={(e) => handleDragOver(e, block.id)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, block.id, true)}
+                        className={`transition-all ${dragOver === block.id ? 'border-purple-400 bg-purple-50' : ''}`}
+                      >
+                        <label className="flex flex-col items-center justify-center p-8 md:p-12 border-2 border-dashed rounded-[2rem] bg-white cursor-pointer hover:bg-slate-50 hover:border-purple-200 transition-all">
+                          {blockUploading === block.id ? (
+                            <Loader2 className="animate-spin text-purple-600" />
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2 mb-4">
+                                <UploadCloud className="text-slate-300" size={32} />
+                                <Plus className="text-slate-300" size={20} />
+                              </div>
+                              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">
+                                {Array.isArray(block.value) && block.value.length > 0 ? 'Add More Images' : 'Upload Multiple Images'}
+                              </span>
+                              <span className="text-[9px] font-medium text-slate-300 mt-1">Select multiple files or drag & drop</span>
+                            </>
+                          )}
+                          <input 
+                            type="file" 
+                            multiple 
+                            accept="image/*"
+                            className="hidden" 
+                            onChange={(e) => handleBlockMediaUpload(e, block.id, true)} 
+                          />
+                        </label>
+                      </div>
                     </div>
                   )}
 
@@ -273,6 +653,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
             <div className="flex flex-wrap justify-center gap-6 md:gap-12 mt-16 py-10 border-t border-slate-50">
               <ToolbarButton icon={<Type size={22}/>} label="Text" onClick={() => addBlock('text')} />
               <ToolbarButton icon={<ImageIcon size={22}/>} label="Image" onClick={() => addBlock('image')} />
+              <ToolbarButton icon={<Grid size={22}/>} label="Gallery" onClick={() => addBlock('gallery')} />
               <ToolbarButton icon={<PlayCircle size={22}/>} label="Video" onClick={() => addBlock('video')} />
             </div>
           </div>

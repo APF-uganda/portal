@@ -113,6 +113,26 @@ export const analyticsApi = {
   },
 
   /**
+   * Fetches data for the Revenue Trends line chart
+   */
+  getRevenueTrendsChart: async (period: string = '30d'): Promise<ChartData> => {
+    const response = await api.get(`/api/v1/reports/analytics/charts/`, {
+      params: { type: 'revenue_trends', period }
+    });
+    return response.data;
+  },
+
+  /**
+   * Fetches data for Payment Status distribution chart
+   */
+  getPaymentStatusChart: async (period: string = '30d'): Promise<ChartData> => {
+    const response = await api.get('/api/v1/reports/analytics/charts/', {
+      params: { type: 'payment_status', period }
+    });
+    return response.data;
+  },
+
+  /**
    * Fetches available charts metadata
    */
   getAvailableCharts: async () => {

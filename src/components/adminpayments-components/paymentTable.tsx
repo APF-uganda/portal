@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { RotateCcw, ArrowRight } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { Payment } from '../payment-components/types';
 
 interface PaymentTableProps {
@@ -7,7 +7,10 @@ interface PaymentTableProps {
   loading: boolean;
 }
 
-export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
+export const PaymentTable = ({ 
+  payments, 
+  loading
+}: PaymentTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -33,10 +36,34 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
 
   const getStatusColor = (status: string) => {
     const s = status?.toLowerCase();
-    if (s === 'completed') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+    if (s === 'completed' || s === 'verified') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
     if (s === 'pending') return 'bg-amber-50 text-amber-700 border-amber-100';
-    if (s === 'failed') return 'bg-rose-50 text-rose-700 border-rose-100';
+    if (s === 'failed' || s === 'rejected') return 'bg-rose-50 text-rose-700 border-rose-100';
     return 'bg-gray-50 text-gray-700 border-gray-100';
+  };
+
+  // Helper function to determine payment type and generate transaction ID
+  const getTransactionDetails = (payment: Payment) => {
+    // Determine transaction ID based on payment type
+    let transactionId = '';
+    let description = '';
+    
+    if (payment.application_id && payment.application_id.startsWith('APF-')) {
+      transactionId = payment.application_id;
+      description = 'Application Fee';
+    } else if (payment.invoice_number && payment.invoice_number.startsWith('INV-')) {
+      transactionId = payment.invoice_number;
+      description = 'Renewal Fee';
+    } else if (payment.reference && payment.reference.startsWith('EVT-')) {
+      transactionId = payment.reference;
+      description = 'Event Fee';
+    } else {
+      // Fallback to any available ID
+      transactionId = payment.application_id || payment.invoice_number || payment.reference || '-';
+      description = payment.description || 'Other';
+    }
+    
+    return { transactionId, description };
   };
 
   return (
@@ -55,17 +82,17 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
         </button> */}
       </div>
 
-      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="min-w-[800px]">
+      <div className="overflow-x-auto">
+        <div className="min-w-[1200px]">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50 text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">
-                <th className="px-3 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[150px]">Member Information</th>
-                <th className="px-3 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[140px]">Transaction ID</th>
-                <th className="px-3 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[120px]">Description</th>
-                <th className="px-3 md:px-8 py-3 md:py-4 border-b border-slate-50 text-right min-w-[100px]">Amount</th>
-                <th className="px-3 md:px-8 py-3 md:py-4 border-b border-slate-50 text-center min-w-[80px]">Status</th>
-                <th className="px-3 md:px-8 py-3 md:py-4 border-b border-slate-50 text-center min-w-[80px]">Date</th>
+                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[200px]">Member Information</th>
+                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[160px]">Transaction ID</th>
+                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[140px]">Description</th>
+                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 text-right min-w-[120px]">Amount</th>
+                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 text-center min-w-[120px]">Status</th>
+                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 text-center min-w-[120px]">Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -81,38 +108,40 @@ export const PaymentTable = ({ payments, loading }: PaymentTableProps) => {
                   <td colSpan={6} className="py-12 md:py-20 text-center text-slate-400 font-bold text-sm">No payment history found.</td>
                 </tr>
               ) : (
-                paginatedPayments.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/50 transition-all duration-200 group">
-                    <td className="px-3 md:px-8 py-3 md:py-5">
-                      <div className="font-bold text-slate-800 group-hover:text-[#5E2590] transition-colors text-sm md:text-base truncate">{p.member_name}</div>
-                      <div className="text-xs text-slate-400 font-medium truncate">{p.member_email}</div>
-                    </td>
-                    <td className="px-3 md:px-8 py-3 md:py-5">
-                      <div className="font-mono text-xs md:text-sm text-purple-600 font-semibold bg-purple-50 px-2 md:px-3 py-1 rounded-md border border-purple-100 truncate">
-                        {p.application_id || p.invoice_number || '-'}
-                      </div>
-                      <div className="text-xs text-slate-400 mt-1">
-                        {p.application_id ? 'Application' : p.invoice_number ? 'Invoice' : 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-3 md:px-8 py-3 md:py-5">
-                      <span className="text-xs md:text-sm text-slate-600 font-medium bg-slate-100 px-2 py-1 rounded-md truncate block">{p.description}</span>
-                    </td>
-                    <td className="px-3 md:px-8 py-3 md:py-5 text-right">
-                      <span className="font-black text-slate-800 text-sm md:text-base">
-                        {p.currency || 'UGX'} {Number(p.amount || 0).toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-3 md:px-8 py-3 md:py-5 text-center">
-                      <span className={`px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border ${getStatusColor(p.status)}`}>
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="px-3 md:px-8 py-3 md:py-5 text-center text-xs md:text-sm text-slate-500 font-medium">
-                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : '--'}
-                    </td>
-                  </tr>
-                ))
+                paginatedPayments.map((p) => {
+                  const { transactionId, description } = getTransactionDetails(p);
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50/50 transition-all duration-200 group">
+                      <td className="px-6 md:px-8 py-4 md:py-6">
+                        <div className="font-normal text-gray-900 text-sm md:text-base whitespace-nowrap">{p.member_name}</div>
+                        <div className="text-xs text-gray-900 font-normal whitespace-nowrap">{p.member_email}</div>
+                      </td>
+                      <td className="px-6 md:px-8 py-4 md:py-6">
+                        <div className="font-mono text-xs md:text-sm text-gray-900 font-normal whitespace-nowrap">
+                          {transactionId}
+                        </div>
+                      </td>
+                      <td className="px-6 md:px-8 py-4 md:py-6">
+                        <span className="text-xs md:text-sm text-gray-900 font-normal whitespace-nowrap">{description}</span>
+                      </td>
+                      <td className="px-6 md:px-8 py-4 md:py-6 text-right">
+                        <span className="font-normal text-gray-900 text-sm md:text-base whitespace-nowrap">
+                          {p.currency || 'UGX'} {Number(p.amount || 0).toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-6 md:px-8 py-4 md:py-6 text-center">
+                        <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border whitespace-nowrap ${getStatusColor(p.status)}`}>
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="px-6 md:px-8 py-4 md:py-6 text-center text-xs md:text-sm text-gray-900 font-normal">
+                        <span className="whitespace-nowrap">
+                          {p.created_at ? new Date(p.created_at).toLocaleDateString() : '--'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
