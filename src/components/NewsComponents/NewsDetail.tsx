@@ -234,9 +234,7 @@ const NewsDetail = () => {
         </div>
       </article>
 
-      <section className="bg-gray-50 py-16 md:py-32">
-        <OtherNewsSection articles={otherArticles} />
-      </section>
+      
     </main>
   );
 };

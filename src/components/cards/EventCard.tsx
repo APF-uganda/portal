@@ -44,10 +44,14 @@ export default function EventCard({
   const displayDate = useMemo(() => {
     if (!date) return "Date TBD";
     try {
-      const datePart = date.split('T')[0]; 
-      const [year, month, day] = datePart.split('-');
-      const eventDate = new Date(Number(year), Number(month) - 1, Number(day));
       
+      const eventDate = new Date(date);
+      
+      // Check if date is valid
+      if (isNaN(eventDate.getTime())) {
+          return date; 
+      }
+
       return eventDate.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
