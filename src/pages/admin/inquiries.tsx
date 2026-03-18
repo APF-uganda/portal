@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Trash2, CheckCircle, Mail, X, Send } from 'lucide-react';
-
+import { Trash2, CheckCircle, Mail, X, Send, AlertCircle, Info } from 'lucide-react';
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 import StatCard from '../../components/manageusers-components/stats';
-
 
 import { getAccessToken } from '../../utils/authStorage';
 import { API_BASE_URL } from '../../config/api';
@@ -20,10 +18,18 @@ const AdminInquiryDashboard = () => {
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  
   const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
+
+  // NOTIFICATION STATE
+  const [notification, setNotification] = useState<{show: boolean, msg: string, type: 'success' | 'error'} | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+
+  const showNotice = (msg: string, type: 'success' | 'error' = 'success') => {
+    setNotification({ show: true, msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const fetchInquiries = async () => {
     try {
@@ -47,8 +53,6 @@ const AdminInquiryDashboard = () => {
     fetchInquiries();
   }, []);
 
- 
-
   const handleSendReply = async () => {
     if (!replyText.trim() || !selectedInquiry) return;
     setSending(true);
@@ -58,13 +62,12 @@ const AdminInquiryDashboard = () => {
         { reply_text: replyText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Reply sent successfully via email!");
+      showNotice("Reply sent successfully via email!");
       setReplyText("");
       setSelectedInquiry(null);
       fetchInquiries(); 
     } catch (err) {
-      console.error(err);
-      alert("Failed to send email. Ensure your Django SMTP settings are configured.");
+      showNotice("Failed to send email. Check SMTP settings.", "error");
     } finally {
       setSending(false);
     }
@@ -73,32 +76,36 @@ const AdminInquiryDashboard = () => {
   const handleToggleRead = async (id: number) => {
     try {
       const token = getAccessToken();
+      // Ensure the endpoint logic matches the toggle
       await axios.patch(`${API_URL}/api/v1/contacts/${id}/toggle-read/`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setInquiries(inquiries.map(iq => 
+      
+      setInquiries(prev => prev.map(iq => 
         iq.id === id ? { ...iq, is_read: !iq.is_read } : iq
       ));
+      showNotice("Status updated");
     } catch (err) {
-      alert("Failed to update status");
+      showNotice("Failed to update status", "error");
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this inquiry?")) return;
     try {
       const token = getAccessToken();
       await axios.delete(`${API_URL}/api/v1/contacts/${id}/delete/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInquiries(inquiries.filter(iq => iq.id !== id));
+      setDeleteConfirm(null);
+      showNotice("Inquiry deleted");
     } catch (err) {
-      alert("Failed to delete inquiry");
+      showNotice("Failed to delete inquiry", "error");
     }
   };
 
   return (
-    <div className="flex min-h-screen overflow-hidden">
+    <div className="flex min-h-screen overflow-hidden font-sans">
       <Sidebar 
         collapsed={collapsed} 
         onToggle={() => setCollapsed(!collapsed)}
@@ -111,6 +118,14 @@ const AdminInquiryDashboard = () => {
           title="Inquiries Management" 
           onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
         />
+
+        {/* TOAST NOTIFICATION */}
+        {notification?.show && (
+          <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right duration-300 ${notification.type === 'success' ? 'bg-white border-green-100 text-green-800' : 'bg-white border-red-100 text-red-800'}`}>
+            {notification.type === 'success' ? <CheckCircle className="text-green-500" size={20}/> : <AlertCircle className="text-red-500" size={20}/>}
+            <p className="text-sm font-bold uppercase tracking-wider">{notification.msg}</p>
+          </div>
+        )}
 
         <div className="flex-1 bg-[#F4F2FE] py-3 md:py-6 space-y-6 md:space-y-10 overflow-y-auto">
           <div className="w-full space-y-6 md:space-y-10 px-3 md:px-6">
@@ -166,16 +181,23 @@ const AdminInquiryDashboard = () => {
                           </td>
                           <td className="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm text-right">
                             <div className="flex justify-end gap-1 md:gap-3">
-                                <button onClick={() => handleToggleRead(iq.id)} className={`p-1.5 md:p-2 rounded-lg ${iq.is_read ? 'text-green-600 bg-green-50' : 'text-gray-400'}`}>
+                                <button 
+                                  onClick={() => handleToggleRead(iq.id)} 
+                                  title={iq.is_read ? "Mark as Unread" : "Mark as Read"}
+                                  className={`p-1.5 md:p-2 rounded-lg transition-all active:scale-90 ${iq.is_read ? 'text-green-600 bg-green-50 border border-green-100' : 'text-gray-400 bg-gray-50 border border-gray-100 hover:text-[#5E2590]'}`}
+                                >
                                   <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
                                 </button>
                                 <button 
                                   onClick={() => setSelectedInquiry(iq)} 
-                                  className="p-1.5 md:p-2 text-[#5E2590] bg-purple-50 rounded-lg"
+                                  className="p-1.5 md:p-2 text-[#5E2590] bg-purple-50 rounded-lg border border-purple-100 hover:bg-purple-100 transition-colors"
                                 >
                                   <Mail size={14} className="md:w-[18px] md:h-[18px]" />
                                 </button>
-                                <button onClick={() => handleDelete(iq.id)} className="p-1.5 md:p-2 text-red-600 bg-red-50 rounded-lg">
+                                <button 
+                                  onClick={() => setDeleteConfirm(iq.id)} 
+                                  className="p-1.5 md:p-2 text-red-600 bg-red-50 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
+                                >
                                   <Trash2 size={14} className="md:w-[18px] md:h-[18px]" />
                                 </button>
                             </div>
@@ -190,45 +212,72 @@ const AdminInquiryDashboard = () => {
           </div>
         </div>
 
+        {/*  DELETE CONFIRMATION MODAL */}
+        {deleteConfirm && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
+            <div className="bg-white rounded-[2rem] max-w-sm w-full p-8 shadow-2xl text-center animate-in zoom-in-95 duration-200">
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Trash2 size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2 uppercase tracking-tight">Delete Inquiry?</h3>
+              <p className="text-slate-500 text-sm mb-8">This action cannot be undone. The inquiry will be permanently removed.</p>
+              <div className="flex gap-3">
+                <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3 rounded-xl font-bold text-slate-400 hover:bg-slate-50 transition-colors uppercase text-[11px] tracking-widest">Cancel</button>
+                <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-shadow shadow-lg shadow-red-100 uppercase text-[11px] tracking-widest">Delete</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* REPLY MODAL */}
         {selectedInquiry && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 md:p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-xl w-full p-4 md:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-3 md:p-4 backdrop-blur-md">
+            <div className="bg-white rounded-[2.5rem] max-w-xl w-full p-6 md:p-10 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
               <button 
                 onClick={() => setSelectedInquiry(null)} 
-                className="absolute top-3 md:top-4 right-3 md:right-4 text-gray-400 hover:text-gray-600"
+                className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-all"
               >
                 <X size={20} className="md:w-6 md:h-6" />
               </button>
               
-              <h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-2 pr-8">Reply to Inquiry</h2>
-              <p className="text-xs md:text-sm text-gray-500 mb-4 md:mb-6">From: <span className="font-semibold text-[#5E2590] break-all">{selectedInquiry.name} ({selectedInquiry.email})</span></p>
+              <div className="flex items-center gap-3 mb-6">
+                 <div className="p-3 bg-purple-50 text-[#5E2590] rounded-2xl">
+                    <Mail size={24} />
+                 </div>
+                 <div>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">Professional Reply</h2>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Direct Email Response</p>
+                 </div>
+              </div>
 
-              <div className="bg-gray-50 p-3 md:p-4 rounded-xl mb-4 md:mb-6 max-h-32 overflow-y-auto border border-gray-100">
-                <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase mb-1">Original Message:</p>
-                <p className="text-xs md:text-sm text-gray-600 leading-relaxed italic break-words">"{selectedInquiry.message}"</p>
+              <div className="bg-slate-50 p-5 rounded-2xl mb-8 border border-slate-100">
+                <div className="flex justify-between items-start mb-3">
+                   <p className="text-[10px] font-black text-[#5E2590] uppercase tracking-widest">Original Message</p>
+                   <span className="text-[10px] font-bold text-gray-400">{selectedInquiry.name}</span>
+                </div>
+                <p className="text-xs md:text-sm text-slate-600 leading-relaxed italic break-words line-clamp-4">"{selectedInquiry.message}"</p>
               </div>
 
               <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Write your professional response here..."
-                className="w-full h-32 md:h-48 p-3 md:p-4 rounded-xl border-2 border-gray-100 focus:border-[#5E2590] outline-none transition-all resize-none text-gray-700 text-sm md:text-base"
+                placeholder="Type your message here..."
+                className="w-full h-40 md:h-56 p-5 rounded-2xl border-2 border-slate-100 focus:border-[#5E2590] outline-none transition-all resize-none text-slate-700 text-sm md:text-base bg-white shadow-inner"
               />
 
-              <div className="mt-4 md:mt-8 flex flex-col sm:flex-row gap-3 md:gap-4">
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <button 
                   onClick={() => setSelectedInquiry(null)}
-                  className="flex-1 py-2 md:py-3 px-4 md:px-6 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-colors text-sm md:text-base"
+                  className="flex-1 py-4 px-6 rounded-2xl font-bold text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all uppercase text-[11px] tracking-widest"
                 >
-                  Cancel
+                  Discard
                 </button>
                 <button 
                   onClick={handleSendReply}
                   disabled={sending || !replyText.trim()}
-                  className="flex-1 sm:flex-2 flex items-center justify-center gap-2 py-2 md:py-3 px-6 md:px-10 rounded-xl bg-[#5E2590] text-white font-bold hover:bg-[#4a1d72] disabled:bg-gray-300 transition-all shadow-lg shadow-purple-200 text-sm md:text-base"
+                  className="flex-1 sm:flex-2 flex items-center justify-center gap-2 py-4 px-10 rounded-2xl bg-[#5E2590] text-white font-bold hover:bg-[#4a1d72] disabled:bg-slate-200 transition-all shadow-xl shadow-purple-100 uppercase text-[11px] tracking-widest"
                 >
-                  {sending ? "Sending..." : <><Send size={16} className="md:w-[18px] md:h-[18px]" /> Send Reply</>}
+                  {sending ? "Processing..." : <><Send size={16} /> Send Email</>}
                 </button>
               </div>
             </div>
