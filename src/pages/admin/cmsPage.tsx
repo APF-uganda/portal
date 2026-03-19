@@ -12,8 +12,8 @@ import {
   Sparkles, Activity, ArrowUpRight, Loader2
 } from 'lucide-react';
 
-
 const StatHighlight = ({ title, value, icon: Icon, color, loading }: any) => (
+ 
   <div className="bg-white p-6 rounded-[2.5rem] border border-gray-50 shadow-sm flex items-center justify-between group">
     <div className="flex items-center gap-4">
       <div className={`p-4 rounded-2xl ${color} transition-transform group-hover:scale-110 duration-300`}>
@@ -74,6 +74,7 @@ const CmsContentPage = () => {
   }, []);
 
   return (
+   
     <div className="flex min-h-screen selection:bg-purple-100 selection:text-[#7E49B3] bg-[#F8FAFC] font-sans">
       <Sidebar 
         collapsed={collapsed} 
@@ -90,9 +91,7 @@ const CmsContentPage = () => {
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
-                <span className="flex items-center gap-2 text-[#7E49B3] text-[10px] font-bold uppercase tracking-[0.2em] mb-2">
-                  
-                </span>
+                <span className="flex items-center gap-2 text-[#7E49B3] text-[10px] font-bold uppercase tracking-[0.2em] mb-2"></span>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Portal Management</h1>
               </div>
               
@@ -116,7 +115,6 @@ const CmsContentPage = () => {
                       </div>
                     </button>
 
-                    {/* ADD EVENT  */}
                     <button onClick={() => navigate('/admin/eventMgt')} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 rounded-2xl transition-colors text-left group mt-1">
                       <div className="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-all">
                         <Calendar size={20}/>
@@ -146,7 +144,6 @@ const CmsContentPage = () => {
                 color="bg-purple-50 text-[#7E49B3]" 
                 loading={loading}
               />
-              
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -171,8 +168,6 @@ const CmsContentPage = () => {
                   )}
                 </div>
               </div>
-
-              
             </div>
 
           </div>

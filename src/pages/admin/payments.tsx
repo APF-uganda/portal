@@ -31,15 +31,14 @@ const ManagePayments = () => {
   useEffect(() => {
     if (!loading) {
       setLastUpdated(new Date());
-      setNextRefresh(new Date(Date.now() + 2 * 60 * 60 * 1000)); // Next refresh in 2 hours
+      setNextRefresh(new Date(Date.now() + 2 * 60 * 60 * 1000));
     }
   }, [stats, loading]);
 
-  // Update current time every minute to keep countdown accurate
   useEffect(() => {
     const timeInterval = setInterval(() => {
       setCurrentTime(new Date());
-    }, 60 * 1000); // Update every minute
+    }, 60 * 1000);
 
     return () => clearInterval(timeInterval);
   }, []);
@@ -49,7 +48,7 @@ const ManagePayments = () => {
     try {
       await refresh();
       setLastUpdated(new Date());
-      setNextRefresh(new Date(Date.now() + 2 * 60 * 60 * 1000)); // Reset next refresh time
+      setNextRefresh(new Date(Date.now() + 2 * 60 * 60 * 1000));
     } catch (error) {
       console.error('Failed to refresh:', error);
     } finally {
@@ -74,6 +73,7 @@ const ManagePayments = () => {
   };
 
   return (
+   
     <div className="flex min-h-screen overflow-hidden font-sans">
       <Sidebar 
         collapsed={collapsed} 
@@ -92,7 +92,6 @@ const ManagePayments = () => {
         <div className="flex-1 p-6 md:p-10 lg:p-12 space-y-10 overflow-y-auto">
           <div className="max-w-full lg:max-w-[1400px] mx-auto space-y-10">
             
-            {/* Title Section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Payments Dashboard</h1>
@@ -164,7 +163,6 @@ const ManagePayments = () => {
                 />
               </div>
 
-              {/* Quick Actions Sidebar */}
               <div className="space-y-6">
                 <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/40 border border-gray-50">
                   <h2 className="font-bold text-gray-900 mb-8 flex items-center gap-3 text-lg">
