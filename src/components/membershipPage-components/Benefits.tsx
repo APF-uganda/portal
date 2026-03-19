@@ -3,8 +3,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import image1 from "../../assets/images/membershipPage-images/image1.webp";
 import image2 from "../../assets/images/membershipPage-images/image2.webp";
-import image3 from "../../assets/images/membershipPage-images/image3.jpg";
-import image4 from "../../assets/images/membershipPage-images/image3.jpg";
+import image3 from "../../assets/images/membershipPage-images/image3.webp";
+import image4 from "../../assets/images/membershipPage-images/image3.webp";
 
 interface Benefit {
   id: string;

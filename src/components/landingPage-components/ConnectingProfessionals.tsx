@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
-import defaultConnectingImg from '../../assets/images/landingPage-image/shake.jpg'
+import defaultConnectingImg from '../../assets/images/landingPage-image/shake.webp'
 
 
 function ConnectingProfessionals({ data }: { data?: any[] }) {

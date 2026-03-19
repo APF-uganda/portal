@@ -1,7 +1,7 @@
 // src/data/managementMembers.ts
-import leader5 from '../assets/images/aboutPage-images/leader5.jpeg';
-import leader2 from '../assets/images/aboutPage-images/leader6.jpeg';
-import leader7 from '../assets/images/aboutPage-images/leader7.jpeg';
+import leader5 from '../assets/images/aboutPage-images/leader5.webp';
+import leader2 from '../assets/images/aboutPage-images/leader2.webp';
+import leader7 from '../assets/images/aboutPage-images/leader7.webp';
 
 
 export type ManagementMember = {

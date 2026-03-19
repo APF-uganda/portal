@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import defaultHeroImg from '../../assets/images/landingPage-image/land.jpg';
+import defaultHeroImg from '../../assets/images/landingPage-image/land.webp';
 import { CMS_BASE_URL } from '../../config/api';
 
 function Hero({ data }: { data?: any }) {

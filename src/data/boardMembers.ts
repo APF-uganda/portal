@@ -1,10 +1,10 @@
-import leader1 from '../assets/images/aboutPage-images/leader1.jpeg';
-import leader2 from '../assets/images/aboutPage-images/leader2.jpeg';
-import leader3 from '../assets/images/aboutPage-images/leader3.jpeg';
-import leader4 from '../assets/images/aboutPage-images/leader4.jpeg';
-import leader5 from '../assets/images/aboutPage-images/leader5.jpeg';
-import leader6 from '../assets/images/aboutPage-images/leader6.jpeg';
-import leader7 from '../assets/images/aboutPage-images/leader7.jpeg';
+import leader1 from '../assets/images/aboutPage-images/leader1.webp';
+import leader2 from '../assets/images/aboutPage-images/leader2.webp';
+import leader3 from '../assets/images/aboutPage-images/leader3.webp';
+import leader4 from '../assets/images/aboutPage-images/leader4.webp';
+import leader5 from '../assets/images/aboutPage-images/leader5.webp';
+import leader6 from '../assets/images/aboutPage-images/leader6.webp';
+import leader7 from '../assets/images/aboutPage-images/leader7.webp';
 
 export type BoardMember = {
   id: number;
