@@ -31,6 +31,50 @@ export const boardMembers: BoardMember[] = [
     outsideApf:
       'Active in finance, assurance, and advisory leadership focused on institutional performance.',
   },
+
+  {
+    id: 4,
+    slug: 'joseph-gonzaga-kalinda',
+    name: 'CPA Joseph Gonzaga Kalinda',
+    role: 'Board Member',
+    photo: leader4,
+    summary:
+      'CPA Joseph Gonzaga Kalinda is a Board Member at APF Uganda, supporting policy implementation, member service priorities, and institution-building efforts. He brings practical insight into professional practice challenges and opportunities. Outside APF, he works in accounting and business support functions that help organizations maintain reliable financial systems.',
+    whoTheyAre:
+      'A board-level CPA with practical experience in professional practice and member-focused leadership.',
+    outsideApf:
+      'Involved in accounting, business support, and financial systems strengthening.',
+  },
+ 
+
+  {
+    id: 3,
+    slug: 'twaha-kigongo-kaawaase',
+    name: 'CPA Prof. Twaha Kigongo Kaawaase (PhD)',
+    role: 'Board Member',
+    photo: leader3,
+    summary:
+      'CPA Prof. Twaha Kigongo Kaawaase (PhD) serves on the APF Board, contributing strategic and technical insight to governance, quality, and professional development initiatives. He supports thought leadership around standards and emerging practice needs. Outside APF, he is active in academia and professional advisory work related to accounting and institutional governance.',
+    whoTheyAre:
+      'A professor and CPA combining academic depth with practical governance leadership.',
+    outsideApf:
+      'Engaged in teaching, research, and advisory work in accounting and governance.',
+  },
+
+  {
+    id: 6,
+    slug: 'david-nyende',
+    name: 'CPA David Nyende',
+    role: 'Board Member',
+    photo: leader6,
+    summary:
+      'CPA David Nyende serves on the APF Board and contributes to strategic oversight, member advocacy, and quality practice initiatives. He supports collaboration among practitioners and continuous improvement of service delivery standards. Outside APF, he is active in finance and audit-related engagements that promote accountability and business confidence.',
+    whoTheyAre:
+      'A governance-minded CPA focused on practitioner support and quality outcomes.',
+    outsideApf:
+      'Engaged in finance and audit assignments across organizational contexts.',
+  },
+
   {
     id: 2,
     slug: 'ronald-mutumba',
@@ -70,43 +114,6 @@ export const boardMembers: BoardMember[] = [
     outsideApf:
       'Works in financial management and advisory roles across private and institutional settings.',
   },
-  {
-    id: 3,
-    slug: 'twaha-kigongo-kaawaase',
-    name: 'CPA Prof. Twaha Kigongo Kaawaase (PhD)',
-    role: 'Board Member',
-    photo: leader3,
-    summary:
-      'CPA Prof. Twaha Kigongo Kaawaase (PhD) serves on the APF Board, contributing strategic and technical insight to governance, quality, and professional development initiatives. He supports thought leadership around standards and emerging practice needs. Outside APF, he is active in academia and professional advisory work related to accounting and institutional governance.',
-    whoTheyAre:
-      'A professor and CPA combining academic depth with practical governance leadership.',
-    outsideApf:
-      'Engaged in teaching, research, and advisory work in accounting and governance.',
-  },
-  {
-    id: 4,
-    slug: 'joseph-gonzaga-kalinda',
-    name: 'CPA Joseph Gonzaga Kalinda',
-    role: 'Board Member',
-    photo: leader4,
-    summary:
-      'CPA Joseph Gonzaga Kalinda is a Board Member at APF Uganda, supporting policy implementation, member service priorities, and institution-building efforts. He brings practical insight into professional practice challenges and opportunities. Outside APF, he works in accounting and business support functions that help organizations maintain reliable financial systems.',
-    whoTheyAre:
-      'A board-level CPA with practical experience in professional practice and member-focused leadership.',
-    outsideApf:
-      'Involved in accounting, business support, and financial systems strengthening.',
-  },
-  {
-    id: 6,
-    slug: 'david-nyende',
-    name: 'CPA David Nyende',
-    role: 'Board Member',
-    photo: leader6,
-    summary:
-      'CPA David Nyende serves on the APF Board and contributes to strategic oversight, member advocacy, and quality practice initiatives. He supports collaboration among practitioners and continuous improvement of service delivery standards. Outside APF, he is active in finance and audit-related engagements that promote accountability and business confidence.',
-    whoTheyAre:
-      'A governance-minded CPA focused on practitioner support and quality outcomes.',
-    outsideApf:
-      'Engaged in finance and audit assignments across organizational contexts.',
-  },
+  
+ 
 ];
