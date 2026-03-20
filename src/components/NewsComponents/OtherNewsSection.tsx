@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { prefetchNewsArticle } from '../../hooks/useCMS';
 
 interface OtherNewsProps {
   articles: any[];
@@ -8,6 +9,7 @@ interface OtherNewsProps {
 
 const OtherNewsSection = ({ articles }: OtherNewsProps) => {
   const navigate = useNavigate();
+  const FALLBACK_IMAGE = "/images/Hero.jpg";
 
   if (!articles || articles.length === 0) return null;
 
@@ -15,6 +17,7 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
    
     const targetId = item.documentId || item.id || item.slug;
     if (targetId) {
+      void prefetchNewsArticle(targetId);
       navigate(`/news/${targetId}`);
     }
   };
@@ -33,12 +36,17 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
           <article 
             key={item.id} 
             onClick={() => handleNavigation(item)}
+            onMouseEnter={() => void prefetchNewsArticle(item.documentId || item.id || item.slug)}
             className="group cursor-pointer flex flex-col bg-white rounded-[2rem] p-4 border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-100 transition-all duration-300"
           >
             <div className="relative aspect-[16/10] rounded-[1.5rem] overflow-hidden mb-5 bg-gray-50">
               <img 
-                src={item.image} 
+                src={item.image || FALLBACK_IMAGE}
                 alt={item.title}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = FALLBACK_IMAGE;
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
               />
               <div className="absolute top-3 left-3">

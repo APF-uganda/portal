@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { prefetchNewsArticle } from '../../hooks/useCMS';
 
 interface TopPickProps {
   article?: any;
@@ -8,6 +9,7 @@ interface TopPickProps {
 
 const TopPickSection = ({ article }: TopPickProps) => {
   const navigate = useNavigate();
+  const FALLBACK_IMAGE = "/images/Hero.jpg";
 
   if (!article) return null;
 
@@ -15,6 +17,7 @@ const TopPickSection = ({ article }: TopPickProps) => {
   
     const targetId = article.documentId || article.id;
     if (targetId) {
+      void prefetchNewsArticle(targetId);
       navigate(`/news/${targetId}`);
     }
   };
@@ -33,8 +36,12 @@ const TopPickSection = ({ article }: TopPickProps) => {
         <div className="w-full md:w-5/12 flex justify-center">
           <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm">
             <img 
-              src={article.image} 
+              src={article.image || FALLBACK_IMAGE}
               alt={article.title}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = FALLBACK_IMAGE;
+              }}
               className="w-full h-full object-cover" 
             />
           </div>
@@ -57,6 +64,8 @@ const TopPickSection = ({ article }: TopPickProps) => {
           <div className="pt-2">
             <button 
               onClick={handleReadMore}
+              onMouseEnter={() => void prefetchNewsArticle(article.documentId || article.id)}
+              onFocus={() => void prefetchNewsArticle(article.documentId || article.id)}
               className="flex items-center gap-2 text-[#5C32A3] font-black text-[10px] uppercase tracking-widest group"
             >
               Read Full Story 
