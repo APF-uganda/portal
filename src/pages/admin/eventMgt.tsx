@@ -71,7 +71,7 @@ const EventCreatePage = () => {
       setEventData(prev => ({ 
         ...prev, 
         imageId: uploadedFile.id,
-        imagePreview: fullImageUrl // Updates to the server URL once done
+        imagePreview: fullImageUrl 
       }));
       showToast("Poster uploaded successfully", "success");
     } catch (err) {
@@ -83,8 +83,9 @@ const EventCreatePage = () => {
   };
 
   const handlePublish = async () => {
-    if (!eventData.title.trim() || !eventData.startDate || !eventData.location) {
-      showToast("Please fill in all required fields", "error");
+   
+    if (!eventData.title.trim() || !eventData.startDate || !eventData.endDate || !eventData.location) {
+      showToast("Please fill in all required fields (Headline, Start/End Dates, and Venue)", "error");
       return;
     }
   
@@ -94,7 +95,12 @@ const EventCreatePage = () => {
         data: {
           title: eventData.title,
           description: eventData.description,
+         
           date: new Date(`${eventData.startDate}T${eventData.startTime}:00`).toISOString(),
+          
+          
+          endDate: new Date(`${eventData.endDate}T${eventData.endTime}:00`).toISOString(),
+          
           time: `${eventData.startTime} - ${eventData.endTime}`,
           location: eventData.location,
           cpdPoints: Number(eventData.cpdPoints),
@@ -109,15 +115,14 @@ const EventCreatePage = () => {
       };
   
       await api.post('/events', payload);
-      showToast("Event Published Successfully! 🚀", "success");
+      showToast("Event Published Successfully! ", "success");
       setTimeout(() => navigate('/events'), 1500);
     } catch (err: any) {
-      showToast("Publishing Failed", "error");
+      showToast("Publishing Failed: Make sure 'endDate' exists in Strapi", "error");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="flex min-h-screen bg-[#F4F2FE] relative overflow-hidden">
       
