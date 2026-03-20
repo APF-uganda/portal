@@ -24,7 +24,7 @@ const FeaturedEvents = () => {
   const [activeIndex, setActiveIndex] = useState(0)
   
   // Fetch events from CMS
-  const { events, loading, error } = useEvents()
+  const { events, error } = useEvents()
   
   // Smart filtering for featured events with fallback logic
   const featuredEvents = useMemo(() => {
@@ -113,16 +113,6 @@ const FeaturedEvents = () => {
           Featured Events
         </h2>
         
-        {loading && (
-          <div className="text-center py-12">
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 border-4 border-purple-200 border-t-[#7E49B3] rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-600 font-medium">Loading featured events...</p>
-              <p className="text-sm text-gray-500 mt-1">Fetching the latest upcoming events</p>
-            </div>
-          </div>
-        )}
-
         {error && (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
@@ -145,7 +135,7 @@ const FeaturedEvents = () => {
           </div>
         )}
 
-        {!loading && !error && upcomingEvents.length === 0 && (
+        {!error && upcomingEvents.length === 0 && (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -167,7 +157,7 @@ const FeaturedEvents = () => {
           </div>
         )}
 
-        {!loading && !error && upcomingEvents.length > 0 && (
+        {!error && upcomingEvents.length > 0 && (
           <>
             {/* Mobile View */}
             <div className="sm:hidden">

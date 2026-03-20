@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom' // 1. Import Link for routing
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 import NewsCard from '../cards/NewsCard'
-import { useNews } from '../../hooks/useCMS'
+import { prefetchNewsArticle, useNews } from '../../hooks/useCMS'
 import ErrorBoundary from '../common/ErrorBoundary'
 
 const CARDS_PER_VIEW = 3
@@ -14,6 +14,7 @@ const fallbackNews = [
   {
     id: 'fallback-1',
     documentId: 'fallback-1',
+    isFallback: true,
     title: 'Welcome to APF News',
     description: 'Stay updated with the latest news and insights from the accounting profession.',
     image: '/images/Hero.jpg',
@@ -25,7 +26,7 @@ const fallbackNews = [
 
 function LatestNews() {
   const { elementRef, isVisible } = useScrollAnimation()
-  const { news, loading, error } = useNews()
+  const { news, error } = useNews()
 
   const [cardsVisible, setCardsVisible] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -54,6 +55,7 @@ function LatestNews() {
   }))
 
   const maxIndex = Math.max(0, displayNews.length - CARDS_PER_VIEW)
+  const shouldUseDesktopCarousel = displayNews.length > CARDS_PER_VIEW
 
   useEffect(() => {
     if (!isVisible) return
@@ -70,8 +72,8 @@ function LatestNews() {
 
   const startAutoScroll = () => {
     if (autoScrollTimerRef.current) clearInterval(autoScrollTimerRef.current)
-    // Only auto-scroll if we have more than 4 news items
-    if (displayNews.length > 4) {
+    // Only auto-scroll if we have more items than the visible card slots
+    if (displayNews.length > CARDS_PER_VIEW) {
       autoScrollTimerRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
       }, AUTO_SCROLL_INTERVAL)
@@ -90,6 +92,19 @@ function LatestNews() {
     else if (swipeDistance < -50) setMobileIndex((prev) => Math.max(prev - 1, 0))
   }
 
+  const getNewsLink = (item: any) => {
+    if (item.isFallback) return null
+    const targetId = item.documentId || item.id
+    if (!targetId) return null
+    const normalizedId = String(targetId)
+    if (normalizedId.startsWith('fallback-')) return null
+    return `/news/${normalizedId}`
+  }
+
+  const prefetchItem = (item: any) => {
+    void prefetchNewsArticle(item.documentId || item.id)
+  }
+
   return (
     <ErrorBoundary fallback={<div className="p-10 text-center">News Unavailable</div>}>
      
@@ -99,30 +114,73 @@ function LatestNews() {
             Latest News & Insights
           </h2>
 
-          {!loading && !error && displayNews.length > 0 && (
+          {!error && displayNews.length > 0 && (
             <>
               {/* Mobile View */}
               <div className="sm:hidden">
                 {displayNews.length > 1 ? (
-                  <div className="overflow-hidden" onTouchStart={(e) => touchStartX.current = e.touches[0].clientX} onTouchMove={(e) => touchEndX.current = e.touches[0].clientX} onTouchEnd={handleTouchEnd}>
-                    <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${mobileIndex * 100}%)` }}>
-                      {displayNews.map((item, index) => (
-                        <div key={item.documentId || index} className="w-full flex-shrink-0 px-2">
-                          <Link to={`/news/${item.documentId || item.id}`}>
-                            <NewsCard {...item} delay={0} />
-                          </Link>
-                        </div>
-                      ))}
+                  <>
+                    <div className="overflow-hidden" onTouchStart={(e) => touchStartX.current = e.touches[0].clientX} onTouchMove={(e) => touchEndX.current = e.touches[0].clientX} onTouchEnd={handleTouchEnd}>
+                      <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${mobileIndex * 100}%)` }}>
+                        {displayNews.map((item, index) => (
+                          <div key={item.documentId || index} className="w-full flex-shrink-0 px-2">
+                            {getNewsLink(item) ? (
+                              <Link
+                                to={getNewsLink(item)!}
+                                onMouseEnter={() => prefetchItem(item)}
+                                onFocus={() => prefetchItem(item)}
+                                onTouchStart={() => prefetchItem(item)}
+                              >
+                                <NewsCard {...item} delay={0} />
+                              </Link>
+                            ) : (
+                              <NewsCard {...item} delay={0} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                    <div className="mt-5 flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setMobileIndex((prev) => Math.max(prev - 1, 0))}
+                        disabled={mobileIndex === 0}
+                        className="bg-white text-black w-10 h-10 rounded-full shadow flex items-center justify-center disabled:opacity-40"
+                        aria-label="Previous news card"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <span className="text-white text-xs font-semibold tracking-wide">
+                        {mobileIndex + 1} / {displayNews.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setMobileIndex((prev) => Math.min(prev + 1, displayNews.length - 1))}
+                        disabled={mobileIndex >= displayNews.length - 1}
+                        className="bg-white text-black w-10 h-10 rounded-full shadow flex items-center justify-center disabled:opacity-40"
+                        aria-label="Next news card"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </>
                 ) : (
                   // Single card - no scrolling needed
                   <div className="px-2">
                     {displayNews.map((item, index) => (
                       <div key={item.documentId || index}>
-                        <Link to={`/news/${item.documentId || item.id}`}>
+                        {getNewsLink(item) ? (
+                          <Link
+                            to={getNewsLink(item)!}
+                            onMouseEnter={() => prefetchItem(item)}
+                            onFocus={() => prefetchItem(item)}
+                            onTouchStart={() => prefetchItem(item)}
+                          >
+                            <NewsCard {...item} delay={0} />
+                          </Link>
+                        ) : (
                           <NewsCard {...item} delay={0} />
-                        </Link>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -131,8 +189,8 @@ function LatestNews() {
 
               {/* Desktop View */}
               <div className="hidden sm:block relative">
-                {/* Left Arrow - Show only if more than 4 news items */}
-                {displayNews.length > 4 && (
+                {/* Left Arrow - Show only if cards exceed visible slots */}
+                {shouldUseDesktopCarousel && (
                   <button 
                     onClick={() => setCurrentIndex(p => Math.max(p - 1, 0))} 
                     disabled={currentIndex === 0} 
@@ -142,28 +200,58 @@ function LatestNews() {
                   </button>
                 )}
 
-                <div className="overflow-hidden">
-                  <div 
-                    className={`flex transition-transform duration-500 ease-out ${
-                      displayNews.length <= 4 ? 'justify-start gap-6' : ''
-                    }`} 
-                    style={displayNews.length > 4 ? { transform: `translateX(-${currentIndex * (100 / 3)}%)` } : {}}
-                  >
+                {shouldUseDesktopCarousel ? (
+                  <div className="overflow-hidden">
+                    <div
+                      className="flex transition-transform duration-500 ease-out"
+                      style={{ transform: `translateX(-${currentIndex * (100 / CARDS_PER_VIEW)}%)` }}
+                    >
+                      {displayNews.map((item, index) => (
+                        <div
+                          key={item.documentId || index}
+                          className="w-1/3 flex-shrink-0 px-3"
+                        >
+                          {getNewsLink(item) ? (
+                            <Link
+                              to={getNewsLink(item)!}
+                              className="block h-full"
+                              onMouseEnter={() => prefetchItem(item)}
+                              onFocus={() => prefetchItem(item)}
+                              onTouchStart={() => prefetchItem(item)}
+                            >
+                              <NewsCard {...item} delay={cardsVisible ? (index % 3) * 150 : 0} />
+                            </Link>
+                          ) : (
+                            <NewsCard {...item} delay={cardsVisible ? (index % 3) * 150 : 0} />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {displayNews.map((item, index) => (
-                      <div 
-                        key={item.documentId || index} 
-                        className={displayNews.length <= 4 ? 'flex-shrink-0 w-full max-w-[300px]' : 'w-1/3 flex-shrink-0 px-3'}
-                      >
-                        <Link to={`/news/${item.documentId || item.id}`} className="block h-full">
+                      <div key={item.documentId || index} className="h-full">
+                        {getNewsLink(item) ? (
+                          <Link
+                            to={getNewsLink(item)!}
+                            className="block h-full"
+                            onMouseEnter={() => prefetchItem(item)}
+                            onFocus={() => prefetchItem(item)}
+                            onTouchStart={() => prefetchItem(item)}
+                          >
+                            <NewsCard {...item} delay={cardsVisible ? (index % 3) * 150 : 0} />
+                          </Link>
+                        ) : (
                           <NewsCard {...item} delay={cardsVisible ? (index % 3) * 150 : 0} />
-                        </Link>
+                        )}
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
 
-                {/* Right Arrow - Show only if more than 4 news items */}
-                {displayNews.length > 4 && (
+                {/* Right Arrow - Show only if cards exceed visible slots */}
+                {shouldUseDesktopCarousel && (
                   <button 
                     onClick={() => setCurrentIndex(p => Math.min(p + 1, maxIndex))} 
                     disabled={currentIndex >= maxIndex} 
