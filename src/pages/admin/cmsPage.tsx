@@ -8,11 +8,11 @@ import Footer from "../../components/layout/Footer";
 
 import { 
   Newspaper, Calendar, 
-  Eye, Activity, ArrowUpRight, Loader2, ChevronRight
+  Eye, Activity, ArrowUpRight, Loader2, ChevronRight, ClipboardList
 } from 'lucide-react';
 
 const StatHighlight = ({ title, value, icon: Icon, color, loading }: any) => (
-  <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between group">
+  <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between group h-full">
     <div className="flex items-center gap-4">
       <div className={`p-4 rounded-2xl ${color} transition-transform group-hover:scale-105 duration-300`}>
         <Icon size={24} />
@@ -22,7 +22,7 @@ const StatHighlight = ({ title, value, icon: Icon, color, loading }: any) => (
         {loading ? (
           <Loader2 className="animate-spin text-gray-200" size={20} />
         ) : (
-          <h4 className="text-2xl text-gray-900">{value}</h4>
+          <h4 className="text-2xl text-gray-900 font-semibold">{value}</h4>
         )}
       </div>
     </div>
@@ -71,7 +71,6 @@ const CmsContentPage = () => {
   }, []);
 
   return (
-   
     <div className="flex min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
       <Sidebar 
         collapsed={collapsed} 
@@ -92,45 +91,61 @@ const CmsContentPage = () => {
               <p className="text-gray-500 mt-2">Manage your website content and track activity.</p>
             </div>
 
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Action Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <button 
                 onClick={() => navigate('/admin/NewsMgt')}
-                className="flex items-center justify-between p-8 bg-white border border-purple-100 rounded-3xl hover:border-purple-300 hover:shadow-lg hover:shadow-purple-50 transition-all text-left group"
+                className="flex items-center justify-between p-8 bg-white border border-gray-100 rounded-3xl hover:border-purple-300 hover:shadow-lg hover:shadow-purple-50 transition-all text-left group h-full"
               >
                 <div className="flex items-center gap-6">
                   <div className="p-4 bg-purple-50 text-[#7E49B3] rounded-2xl group-hover:bg-[#7E49B3] group-hover:text-white transition-all">
-                    <Newspaper size={32} />
+                    <Newspaper size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl text-gray-900 mb-1">Create News Article</h3>
-                    <p className="text-sm text-gray-500">Draft and publish a new article for the website</p>
+                    <h3 className="text-lg font-medium text-gray-900">Create News</h3>
+                    <p className="text-xs text-gray-400 mt-1">Publish articles</p>
                   </div>
                 </div>
-                <ChevronRight className="text-gray-300 group-hover:text-[#7E49B3] group-hover:translate-x-1 transition-all" />
+                <ChevronRight size={18} className="text-gray-300 group-hover:text-[#7E49B3] group-hover:translate-x-1 transition-all" />
               </button>
 
               <button 
                 onClick={() => navigate('/admin/eventMgt')}
-                className="flex items-center justify-between p-8 bg-white border border-amber-100 rounded-3xl hover:border-amber-300 hover:shadow-lg hover:shadow-amber-50 transition-all text-left group"
+                className="flex items-center justify-between p-8 bg-white border border-gray-100 rounded-3xl hover:border-amber-300 hover:shadow-lg hover:shadow-amber-50 transition-all text-left group h-full"
               >
                 <div className="flex items-center gap-6">
                   <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all">
-                    <Calendar size={32} />
+                    <Calendar size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl text-gray-900 mb-1">Create Event</h3>
-                    <p className="text-sm text-gray-500">Create and publish events</p>
+                    <h3 className="text-lg font-medium text-gray-900">Create Event</h3>
+                    <p className="text-xs text-gray-400 mt-1">Manage schedules</p>
                   </div>
                 </div>
-                <ChevronRight className="text-gray-300 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
+                <ChevronRight size={18} className="text-gray-300 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
+              </button>
+
+              <button 
+                onClick={() => navigate('/admin/event-registrations')}
+                className="flex items-center justify-between p-8 bg-white border border-gray-100 rounded-3xl hover:border-blue-300 hover:shadow-lg hover:shadow-blue-50 transition-all text-left group h-full"
+              >
+                <div className="flex items-center gap-6">
+                  <div className="p-4 bg-blue-50 text-blue-600 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all">
+                    <ClipboardList size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">Registrations</h3>
+                    <p className="text-xs text-gray-400 mt-1">Verify attendees</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
               </button>
             </div>
 
             <hr className="border-gray-100" />
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Stats Grid  */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <StatHighlight 
                 title="Active Events" 
                 value={stats.eventCount} 
@@ -145,6 +160,8 @@ const CmsContentPage = () => {
                 color="bg-purple-50 text-[#7E49B3]" 
                 loading={loading}
               />
+             
+              <div className="hidden lg:block bg-gray-50/50 rounded-3xl border border-dashed border-gray-200"></div>
             </div>
 
             {/* Recent Updates */}

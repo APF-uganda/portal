@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard, Clock } from 'lucide-react';
+import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard, Upload, FileText, X } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { baseEvents } from '../components/EventComponents/eventsData';
@@ -8,10 +8,10 @@ import { baseEvents } from '../components/EventComponents/eventsData';
 const EventRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  // Preserve all functional data fields
   const eventData = location.state as { 
     eventTitle: string; 
     eventId: string;
@@ -29,7 +29,9 @@ const EventRegistrationPage: React.FC = () => {
     description?: string;
   } | null;
 
+  // STEP 1: Details, STEP 2: Payment (if paid), STEP 3: Success
   const [step, setStep] = useState(1);
+  const [proofOfPayment, setProofOfPayment] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -54,7 +56,12 @@ const EventRegistrationPage: React.FC = () => {
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
   const displayImage = eventData.image || localEvent?.image || DEFAULT_FALLBACK;
-  const finalDateDisplay = eventData.displayDate || eventData.startDate || localEvent?.date || 'TBA';
+  
+  // Robust date pulling logic
+  const finalDateDisplay = eventData.displayDate || 
+    (eventData.startDate ? new Date(eventData.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null) || 
+    localEvent?.date || 
+    'TBA';
 
   const validateForm = () => {
     const newErrors = { fullName: '', email: '', phoneNumber: '', agreeToTerms: '' };
@@ -70,9 +77,27 @@ const EventRegistrationPage: React.FC = () => {
     return !newErrors.fullName && !newErrors.email && !newErrors.phoneNumber && !newErrors.agreeToTerms;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) setStep(2);
+    if (validateForm()) {
+      if (eventData.isPaid || Number(eventData.nonMemberPrice) > 0) {
+        setStep(2); // Go to payment upload
+      } else {
+        handleFinalSubmit();
+      }
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+  
+    console.log("Submitting registration for:", formData.email);
+    setStep(3); // Success state
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProofOfPayment(e.target.files[0]);
+    }
   };
 
   const handleBackToEvents = () => navigate('/events');
@@ -81,180 +106,130 @@ const EventRegistrationPage: React.FC = () => {
     <div className="min-h-screen flex flex-col font-sans">
       <Navbar />
       
-      {step === 1 ? (
+      {step === 1 && (
         <>
-          {/* HERO SECTION */}
+          {/* HERO SECTION*/}
           <section
-            className="relative h-[550px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
+            className="relative h-[400px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
             style={{ backgroundImage: `url(${displayImage})` }}
           >
-            <div className="absolute inset-0 bg-[#171a1f]/60" />
+            <div className="absolute inset-0 bg-[#171a1f]/70" />
 
             <div className="relative z-20 max-w-4xl mx-auto text-center text-white px-4 fade-in-up">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 fade-in-up delay-200">
+              <h1 className="text-3xl md:text-5xl font-black mb-6 uppercase tracking-tighter">
                 {eventData.eventTitle}
               </h1>
-              <p className="text-lg md:text-xl mb-6 fade-in-up delay-400 opacity-90">
-                {eventData.description || localEvent?.description || 'Join us for this exciting event'}
-              </p>
               
-              {/* DATE & LOCATION ROW */}
-              <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base mb-6 fade-in-up delay-600">
-                <div className="flex items-center gap-2">
-                  <MapPin size={20} className="text-purple-400" />
-                  <span className="font-medium">{displayLocation}</span>
+              <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base mb-8">
+                <div className="flex items-center gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                  <MapPin size={18} className="text-purple-400" />
+                  <span className="font-bold">{displayLocation}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={20} className="text-purple-400" />
-                  <span className="font-medium">{finalDateDisplay}</span>
+                <div className="flex items-center gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                  <Calendar size={18} className="text-purple-400" />
+                  <span className="font-bold">{finalDateDisplay}</span>
                 </div>
               </div>
 
-              {/* CPD AND PRICES UNDER DATES */}
-              <div className="flex flex-col items-center gap-4 fade-in-up delay-600">
+              <div className="flex flex-col items-center gap-4">
                 {Number(eventData.cpdPoints) > 0 && (
-                  <div className="flex items-center gap-2 bg-purple-600/90 px-4 py-2 rounded-full border border-purple-400 shadow-lg">
-                    <Award size={18} className="text-amber-400" />
-                    <span className="text-xs font-bold uppercase tracking-widest">
+                  <div className="flex items-center gap-2 bg-amber-500 px-4 py-1.5 rounded-full shadow-lg">
+                    <Award size={16} className="text-white" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white">
                       {eventData.cpdPoints} CPD Units
                     </span>
                   </div>
                 )}
-
-                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                  <div className="flex gap-4">
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
-                      <p className="text-[10px] text-purple-300 font-bold uppercase">Member Price</p>
-                      <p className="text-lg font-black">UGX {Number(eventData.memberPrice || 0).toLocaleString()}</p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
-                      <p className="text-[10px] text-gray-300 font-bold uppercase">Non-Member</p>
-                      <p className="text-lg font-black">UGX {Number(eventData.nonMemberPrice || 0).toLocaleString()}</p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
-
-            <style>
-              {`
-                @keyframes fadeInUp {
-                  0% { opacity: 0; transform: translateY(30px); }
-                  100% { opacity: 1; transform: translateY(0); }
-                }
-                .fade-in-up { animation: fadeInUp 1s ease-out both; }
-                .delay-200 { animation-delay: 0.2s; }
-                .delay-400 { animation-delay: 0.4s; }
-                .delay-600 { animation-delay: 0.6s; }
-              `}
-            </style>
           </section>
 
-          {/* FORM SECTION  */}
-          <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-              <button
-                onClick={handleBackToEvents}
-                className="flex items-center text-purple-900 font-bold hover:text-purple-700 mb-6 transition-colors"
-              >
-                <ArrowLeft size={20} className="mr-2" />
-                Back to Events
+          <main className="flex-1 py-12" style={{ backgroundColor: '#f3f0ff' }}>
+            <div className="max-w-3xl mx-auto px-4">
+              <button onClick={handleBackToEvents} className="flex items-center text-purple-900 font-bold mb-6 hover:gap-2 transition-all">
+                <ArrowLeft size={20} className="mr-2" /> Back to Events
               </button>
 
-              <div className="bg-white rounded-lg shadow-md border border-purple-300 overflow-hidden">
-                <form onSubmit={handleSubmit} className="p-6 sm:p-8">
-                  <div className="space-y-5">
-                    
-                    {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                      <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg flex justify-between items-center mb-6">
-                        <span className="text-sm font-bold text-purple-700 uppercase tracking-wider">Registration Fee</span>
-                        <span className="text-xl font-bold text-purple-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Full name <span className="text-red-500">*</span></label>
+              <div className="bg-white rounded-3xl shadow-xl border border-purple-100 overflow-hidden">
+                <form onSubmit={handleInitialSubmit} className="p-8 sm:p-10">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Full name</label>
                         <input
                           type="text"
                           required
-                          placeholder="Enter your Full name"
-                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.fullName ? 'border-red-500' : 'border-gray-300'}`}
+                          placeholder="John Doe"
+                          className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
                           value={formData.fullName}
-                          onChange={(e) => { setFormData({...formData, fullName: e.target.value}); setErrors({...errors, fullName: ''}); }}
+                          onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                         />
-                        {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Email address <span className="text-red-500">*</span></label>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email address</label>
                         <input
                           type="email"
                           required
-                          placeholder="Enter your email address"
-                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                          placeholder="john@example.com"
+                          className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
                           value={formData.email}
-                          onChange={(e) => { setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''}); }}
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
                         />
-                        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Phone number <span className="text-red-500">*</span></label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Phone number</label>
                         <div className="flex gap-2">
-                          <select
-                            value={formData.countryCode}
-                            onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
-                            className="w-24 px-2 py-2.5 border border-gray-300 rounded-lg bg-white text-sm"
-                          >
-                            <option value="+256">+256</option>
-                            <option value="+254">+254</option>
+                          <select className="px-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold">
+                            <option>+256</option>
+                            <option>+254</option>
                           </select>
                           <input
                             type="tel"
                             required
-                            placeholder="Enter your Phone number"
-                            className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
+                            placeholder="700 000 000"
+                            className="flex-1 px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
                             value={formData.phoneNumber}
-                            onChange={(e) => { setFormData({...formData, phoneNumber: e.target.value}); setErrors({...errors, phoneNumber: ''}); }}
+                            onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
                           />
                         </div>
-                        {errors.phoneNumber && <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>}
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Company name</label>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Company</label>
                         <input
                           type="text"
-                          placeholder="Enter your company name"
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm"
+                          placeholder="Optional"
+                          className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none transition-all"
                           value={formData.companyName}
                           onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                         />
                       </div>
                     </div>
 
-                    <div className="pt-2">
-                      <div className="flex items-start gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.agreeToTerms}
-                          onChange={(e) => { setFormData({...formData, agreeToTerms: e.target.checked}); setErrors({...errors, agreeToTerms: ''}); }}
-                          className="mt-1 w-4 h-4 text-purple-600"
-                        />
-                        <label className="text-sm text-gray-700 font-medium">I agree to the terms and conditions.</label>
-                      </div>
-                      {errors.agreeToTerms && <p className="text-xs text-red-500 mt-1">{errors.agreeToTerms}</p>}
+                    <div className="flex items-center gap-3 pt-4">
+                      <input
+                        type="checkbox"
+                        required
+                        checked={formData.agreeToTerms}
+                        onChange={(e) => setFormData({...formData, agreeToTerms: e.target.checked})}
+                        className="w-5 h-5 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <label className="text-sm text-slate-600 font-medium">I agree to the terms and conditions.</label>
                     </div>
 
                     <button
                       type="submit"
-                      className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6 flex items-center justify-center gap-2"
+                      className="w-full bg-purple-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-purple-700 shadow-lg shadow-purple-200 transition-all flex items-center justify-center gap-3 mt-4"
                     >
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && <CreditCard size={18} />}
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Proceed to Payment' : 'Register Now'}
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? (
+                        <>Proceed to Payment <ArrowLeft className="rotate-180" size={18} /></>
+                      ) : (
+                        'Complete Registration'
+                      )}
                     </button>
                   </div>
                 </form>
@@ -262,34 +237,86 @@ const EventRegistrationPage: React.FC = () => {
             </div>
           </main>
         </>
-      ) : (
-        /* SUCCESS STATE - CLEAN DESIGN */
-        <main className="flex-1 py-12 pt-24" style={{ backgroundColor: '#d0c9ea' }}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-md border border-purple-300 p-12 text-center">
-              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+      )}
+
+      {step === 2 && (
+        /* PAYMENT PROOF UPLOAD STEP */
+        <main className="flex-1 py-12 pt-32" style={{ backgroundColor: '#f3f0ff' }}>
+          <div className="max-w-2xl mx-auto px-4">
+            <div className="bg-white rounded-[40px] shadow-2xl border border-purple-100 overflow-hidden p-8 sm:p-12 text-center">
+              <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <CreditCard size={32} />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-2">Complete Your Payment</h2>
+              <p className="text-slate-500 mb-8">Please pay <span className="font-bold text-purple-600">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span> to the merchant code below and upload proof.</p>
+              
+              <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-6 mb-8">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Merchant Code</span>
+                <span className="text-4xl font-black text-purple-600 tracking-tighter">345678</span>
+              </div>
+
+              <div className="space-y-4 text-left">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Upload Receipt / Screenshot</label>
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl p-6 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${proofOfPayment ? 'border-green-500 bg-green-50' : 'border-slate-200 hover:border-purple-400 bg-slate-50'}`}
+                >
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,.pdf" />
+                  {proofOfPayment ? (
+                    <div className="flex items-center gap-3 text-green-700 font-bold">
+                      <FileText size={20} />
+                      <span className="truncate max-w-[200px]">{proofOfPayment.name}</span>
+                      <X size={18} className="text-slate-400 hover:text-red-500" onClick={(e) => { e.stopPropagation(); setProofOfPayment(null); }} />
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="text-slate-400" size={24} />
+                      <span className="text-sm font-bold text-slate-400 uppercase">Click to upload proof</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-10">
+                <button onClick={() => setStep(1)} className="py-4 rounded-2xl font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">Back</button>
+                <button 
+                  disabled={!proofOfPayment}
+                  onClick={handleFinalSubmit}
+                  className={`py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg ${proofOfPayment ? 'bg-purple-600 text-white shadow-purple-200 hover:bg-purple-700' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {step === 3 && (
+        /* SUCCESS STATE */
+        <main className="flex-1 py-12 pt-32" style={{ backgroundColor: '#f3f0ff' }}>
+          <div className="max-w-2xl mx-auto px-4">
+            <div className="bg-white rounded-[40px] shadow-2xl border border-purple-100 p-12 text-center">
+              <div className="w-24 h-24 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
                 <CheckCircle size={48} />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Payment Successful!' : 'Registration Successful!'}
-              </h2>
-              <div className="space-y-3 mb-8">
-                <p className="text-gray-600 text-lg">
-                  Hello <span className="font-semibold text-gray-900">{formData.fullName}</span>, 
-                  you are successfully registered for:
+              <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">Registration Received!</h2>
+              <div className="space-y-4 mb-10">
+                <p className="text-slate-600 text-lg">
+                  Hello <span className="font-bold text-slate-900">{formData.fullName}</span>, we've received your registration for:
                 </p>
-                <p className="text-xl font-bold text-purple-600 px-4">
+                <p className="text-xl font-black text-purple-600 bg-purple-50 py-3 rounded-2xl px-6 inline-block">
                   {eventData.eventTitle}
                 </p>
-                <p className="text-gray-500 pt-4">
-                  A confirmation has been sent to <span className="font-semibold">{formData.email}</span>.
+                <p className="text-sm text-slate-500 pt-4">
+                  A confirmation email is being sent to <span className="font-bold">{formData.email}</span>.
                 </p>
               </div>
               <button
                 onClick={handleBackToEvents}
-                className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-shadow shadow-md"
+                className="w-full sm:w-auto px-12 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl"
               >
-                Back to Events
+                Return to Events
               </button>
             </div>
           </div>
