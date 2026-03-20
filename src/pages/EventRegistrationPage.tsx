@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard, Users, UserPlus } from 'lucide-react';
+import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { baseEvents } from '../components/EventComponents/eventsData';
@@ -30,9 +30,6 @@ const EventRegistrationPage: React.FC = () => {
     countryCode: '+256',
     phoneNumber: '',
     companyName: '',
-    attendanceMode: 'Physical',
-    sessions: '',
-    accessibilityRequests: '',
     agreeToTerms: false
   });
 
@@ -62,156 +59,230 @@ const EventRegistrationPage: React.FC = () => {
       newErrors.email = 'Please enter a valid email';
     }
     if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
-    if (!formData.agreeToTerms) newErrors.agreeToTerms = 'You must agree to the terms';
-
+    if (!formData.agreeToTerms) newErrors.agreeToTerms = 'You must agree to the terms and conditions';
     setErrors(newErrors);
     return !newErrors.fullName && !newErrors.email && !newErrors.phoneNumber && !newErrors.agreeToTerms;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      setStep(2);
-    }
+    if (validateForm()) setStep(2);
   };
 
+  const handleBackToEvents = () => navigate('/events');
+
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       
       {step === 1 ? (
         <>
-          {/* HERO SECTION */}
           <section
-            className="relative h-[550px] flex items-center justify-center overflow-hidden pt-[64px] mt-[-64px] bg-cover bg-center"
+            className="relative h-[550px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
             style={{ backgroundImage: `url(${displayImage})` }}
           >
-            <div className="absolute inset-0 bg-[#171a1f]/70 backdrop-blur-[1px]" />
+            <div className="absolute inset-0 bg-[#171a1f]/60" />
 
-            <div className="relative z-10 max-w-5xl mx-auto text-center text-white px-4 fade-in-up">
-              <h1 className="text-3xl md:text-6xl font-black mb-6 uppercase tracking-tighter leading-tight">
+            <div className="relative z-20 max-w-4xl mx-auto text-center text-white px-4 fade-in-up">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 fade-in-up delay-200">
                 {eventData.eventTitle}
               </h1>
+              <p className="text-lg md:text-xl mb-6 fade-in-up delay-400">
+                {localEvent?.description || 'Join us for this exciting event'}
+              </p>
               
-              {/* LOGISTICS */}
-              <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm md:text-base font-bold uppercase tracking-widest opacity-90">
-                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/10">
-                  <MapPin size={18} className="text-purple-400" />
-                  <span>{displayLocation}</span>
+              {/* DATE & LOCATION */}
+              <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base mb-6 fade-in-up delay-600">
+                <div className="flex items-center gap-2">
+                  <MapPin size={20} className="text-purple-400" />
+                  <span className="font-medium">{displayLocation}</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/10">
-                  <Calendar size={18} className="text-purple-400" />
-                  <span>{displayDate}</span>
+                <div className="flex items-center gap-2">
+                  <Calendar size={20} className="text-purple-400" />
+                  <span className="font-medium">{displayDate}</span>
                 </div>
               </div>
 
-              
-              <div className="flex flex-wrap justify-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                
-                {/* CPD Points Hero Badge */}
-                {eventData.cpdPoints && Number(eventData.cpdPoints) > 0 && (
-                  <div className="flex items-center gap-2 bg-[#7E49B3] text-white px-5 py-2.5 rounded-xl border border-purple-400 shadow-lg shadow-purple-900/20">
-                    <Award size={20} className="text-amber-400" />
-                    <span className="text-xs md:text-sm font-black uppercase tracking-[0.1em]">
+              {/* CPD AND PRICES UNDER DATES */}
+              <div className="flex flex-col items-center gap-4 fade-in-up delay-600">
+                {eventData.cpdPoints && (
+                  <div className="flex items-center gap-2 bg-purple-600/90 px-4 py-2 rounded-full border border-purple-400 shadow-lg">
+                    <Award size={18} className="text-amber-400" />
+                    <span className="text-xs font-bold uppercase tracking-widest">
                       {eventData.cpdPoints} CPD Units
                     </span>
                   </div>
                 )}
 
-                {/* Pricing Hero Badges */}
                 {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                  <>
-                    <div className="flex items-center gap-3 bg-white text-slate-900 px-5 py-2.5 rounded-xl border border-white shadow-lg">
-                      <Users size={18} className="text-purple-600" />
-                      <div className="text-left leading-none">
-                        <p className="text-[9px] font-bold uppercase text-slate-400 mb-1">Member</p>
-                        <p className="text-sm font-black">UGX {Number(eventData.memberPrice || 0).toLocaleString()}</p>
-                      </div>
+                  <div className="flex gap-4">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
+                      <p className="text-[10px] text-purple-300 font-bold uppercase">Member Price</p>
+                      <p className="text-lg font-black">UGX {Number(eventData.memberPrice).toLocaleString()}</p>
                     </div>
-
-                    <div className="flex items-center gap-3 bg-white text-slate-900 px-5 py-2.5 rounded-xl border border-white shadow-lg">
-                      <UserPlus size={18} className="text-purple-600" />
-                      <div className="text-left leading-none">
-                        <p className="text-[9px] font-bold uppercase text-slate-400 mb-1">Non-Member</p>
-                        <p className="text-sm font-black">UGX {Number(eventData.nonMemberPrice || 0).toLocaleString()}</p>
-                      </div>
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
+                      <p className="text-[10px] text-gray-300 font-bold uppercase">Non-Member</p>
+                      <p className="text-lg font-black">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</p>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
+
+            <style>
+              {`
+                @keyframes fadeInUp {
+                  0% { opacity: 0; transform: translateY(30px); }
+                  100% { opacity: 1; transform: translateY(0); }
+                }
+                .fade-in-up { animation: fadeInUp 1s ease-out both; }
+                .delay-200 { animation-delay: 0.2s; }
+                .delay-400 { animation-delay: 0.4s; }
+                .delay-600 { animation-delay: 0.6s; }
+              `}
+            </style>
           </section>
 
-          <main className="flex-1 py-12" style={{ backgroundColor: '#F4F2FE' }}>
+          <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
               <button
-                onClick={() => navigate('/events')}
-                className="flex items-center text-purple-600 hover:text-purple-800 mb-8 transition-all font-bold uppercase text-xs tracking-widest"
+                onClick={handleBackToEvents}
+                className="flex items-center text-purple-600 hover:text-purple-700 mb-6 transition-colors"
               >
-                <ArrowLeft size={16} className="mr-2" />
+                <ArrowLeft size={20} className="mr-2" />
                 Back to Events
               </button>
 
-              <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-purple-200/50 border border-white overflow-hidden">
-                <form onSubmit={handleSubmit} className="p-6 md:p-12 space-y-8">
-                
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl outline-none"
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email *</label>
-                      <input
-                        type="email"
-                        required
-                        className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl outline-none"
-                        value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      />
-                    </div>
-                  </div>
+              <div className="bg-white rounded-lg shadow-md border border-purple-300 overflow-hidden">
+                <form onSubmit={handleSubmit} className="p-6 sm:p-8">
+                  <div className="space-y-5">
+                    
+                    {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
+                      <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg flex justify-between items-center mb-6">
+                        <span className="text-sm font-bold text-purple-700 uppercase tracking-wider">Registration Fee</span>
+                        <span className="text-xl font-bold text-purple-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
+                      </div>
+                    )}
 
-                  {/* Rest of the form inputs... */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                       <input type="tel" className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl outline-none" value={formData.phoneNumber} onChange={e => setFormData({...formData, phoneNumber: e.target.value})} />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Attendance</label>
-                       <select className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl outline-none" value={formData.attendanceMode} onChange={e => setFormData({...formData, attendanceMode: e.target.value})}>
-                          <option value="Physical">Physical</option>
-                          <option value="Virtual">Virtual</option>
-                       </select>
-                    </div>
-                  </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Full name <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Enter your Full name"
+                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.fullName ? 'border-red-500' : 'border-gray-300'}`}
+                          value={formData.fullName}
+                          onChange={(e) => { setFormData({...formData, fullName: e.target.value}); setErrors({...errors, fullName: ''}); }}
+                        />
+                        {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
+                      </div>
 
-                  <button
-                    type="submit"
-                    className="w-full bg-[#7E49B3] text-white py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-[#3C096C] transition-all"
-                  >
-                    {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Proceed to Payment' : 'Confirm Registration'}
-                  </button>
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Email address <span className="text-red-500">*</span></label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="Enter your email address"
+                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                          value={formData.email}
+                          onChange={(e) => { setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''}); }}
+                        />
+                        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Phone number <span className="text-red-500">*</span></label>
+                        <div className="flex gap-2">
+                          <select
+                            value={formData.countryCode}
+                            onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
+                            className="w-24 px-2 py-2.5 border border-gray-300 rounded-lg bg-white text-sm"
+                          >
+                            <option value="+256">+256</option>
+                            <option value="+254">+254</option>
+                          </select>
+                          <input
+                            type="tel"
+                            required
+                            placeholder="Enter your Phone number"
+                            className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
+                            value={formData.phoneNumber}
+                            onChange={(e) => { setFormData({...formData, phoneNumber: e.target.value}); setErrors({...errors, phoneNumber: ''}); }}
+                          />
+                        </div>
+                        {errors.phoneNumber && <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Company name</label>
+                        <input
+                          type="text"
+                          placeholder="Enter your company name"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm"
+                          value={formData.companyName}
+                          onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.agreeToTerms}
+                          onChange={(e) => { setFormData({...formData, agreeToTerms: e.target.checked}); setErrors({...errors, agreeToTerms: ''}); }}
+                          className="mt-1 w-4 h-4 text-purple-600"
+                        />
+                        <label className="text-sm text-gray-700">I agree to the terms and conditions.</label>
+                      </div>
+                      {errors.agreeToTerms && <p className="text-xs text-red-500 mt-1">{errors.agreeToTerms}</p>}
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6 flex items-center justify-center gap-2"
+                    >
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && <CreditCard size={18} />}
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Proceed to Payment' : 'Register'}
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
           </main>
         </>
       ) : (
-     
-        <main className="flex-1 py-12 pt-24 bg-[#F4F2FE]">
-          <div className="max-w-2xl mx-auto px-4 text-center bg-white p-12 rounded-[3rem] shadow-xl">
-              <CheckCircle size={80} className="mx-auto text-emerald-500 mb-6" />
-              <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">Registration Confirmed!</h2>
-              <p className="text-slate-500 font-medium mb-8">A confirmation email has been sent to {formData.email}</p>
-              <button onClick={() => navigate('/events')} className="bg-slate-900 text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs">Return to Home</button>
+        <main className="flex-1 py-12 pt-24" style={{ backgroundColor: '#d0c9ea' }}>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-lg shadow-md border border-purple-300 p-12 text-center">
+              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle size={48} />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Payment Successful!' : 'Registration Successful!'}
+              </h2>
+              <div className="space-y-3 mb-8">
+                <p className="text-gray-600 text-lg">
+                  Hello <span className="font-semibold text-gray-900">{formData.fullName}</span>, 
+                  you are successfully registered for:
+                </p>
+                <p className="text-xl font-bold text-purple-600 px-4">
+                  {eventData.eventTitle}
+                </p>
+                <p className="text-gray-500 pt-4">
+                  A confirmation has been sent to <span className="font-semibold">{formData.email}</span>.
+                </p>
+              </div>
+              <button
+                onClick={handleBackToEvents}
+                className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
+              >
+                Back to Events
+              </button>
+            </div>
           </div>
         </main>
       )}
