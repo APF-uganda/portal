@@ -132,7 +132,7 @@ const App: React.FC = () => {
              <Route path="/admincms/leadership" element={<LeadershipManager />} />
              <Route path="/news/:id" element={<NewsDetail />} />
              <Route path="/management" element={<ManagementPage />} />
-             <Route path="/events" element={<AdminEvents />} />
+             <Route path="/eventsreg" element={<AdminEvents />} />
             {/* Auth routes */}
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -259,7 +259,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/admin/events"
+              path="/admin/eventsreg"
               element={
                 <ProtectedRoute role="admin">
                   <AdminEvents />
