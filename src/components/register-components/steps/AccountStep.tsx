@@ -77,10 +77,10 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
 
         const nextErrors: Record<string, string> = {};
         if (shouldCheckEmail && !availability.email_available) {
-          nextErrors.email = 'An account with this email already exists';
+          nextErrors.email = 'This email is already registered. Please use a different email or login to your existing account.';
         }
         if (shouldCheckUsername && !availability.username_available) {
-          nextErrors.username = 'This username is already taken';
+          nextErrors.username = 'This username is already taken. Please choose a different username.';
         }
         setAvailabilityErrors(nextErrors);
       } catch {
@@ -152,7 +152,17 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
             label="Username"
             name="username"
             value={data.username}
-            onChange={(e) => onChange({ ...data, username: e.target.value })}
+            onChange={(e) => {
+              onChange({ ...data, username: e.target.value });
+              // Clear availability error when user starts typing
+              if (availabilityErrors.username) {
+                setAvailabilityErrors(prev => {
+                  const newErrors = { ...prev };
+                  delete newErrors.username;
+                  return newErrors;
+                });
+              }
+            }}
             error={availabilityErrors.username || (touched.username ? errors.username : undefined)}
             required
           />
@@ -167,6 +177,14 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
                 onChange({ ...data, email: e.target.value });
                 setIsEmailVerified(false);
                 setOtpSent(false);
+                // Clear availability error when user starts typing
+                if (availabilityErrors.email) {
+                  setAvailabilityErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.email;
+                    return newErrors;
+                  });
+                }
               }}
               error={availabilityErrors.email || (touched.email ? errors.email : undefined)}
               required
