@@ -218,33 +218,33 @@ const EventCalendar = () => {
                   </div>
 
                   {/* Description with Read More */}
-                  <div className="flex-1 overflow-hidden mb-4">
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {isDescriptionExpanded 
-                        ? getFullDescription(selectedEvent.description)
-                        : getTruncatedDescription(selectedEvent.description)
-                      }
-                    </p>
-                    
-                    {selectedEvent.description && selectedEvent.description.length > DESCRIPTION_LIMIT && (
-                      <button
-                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                        className="mt-2 flex items-center text-purple-600 hover:text-purple-700 text-xs font-medium transition-colors"
-                      >
-                        {isDescriptionExpanded ? (
-                          <>
-                            <ChevronUp className="w-3 h-3 mr-1" />
-                            Read Less
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="w-3 h-3 mr-1" />
-                            Read More
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
+<div className="flex-1 overflow-y-auto mb-4 pr-1 custom-scrollbar"> 
+  <p className="text-gray-600 text-sm leading-relaxed">
+    {isDescriptionExpanded 
+      ? getFullDescription(selectedEvent.description)
+      : getTruncatedDescription(selectedEvent.description)
+    }
+  </p>
+  
+  {selectedEvent.description && selectedEvent.description.length > DESCRIPTION_LIMIT && (
+    <button
+      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+      className="mt-2 sticky bottom-0 bg-white py-1 flex items-center text-purple-600 hover:text-purple-700 text-xs font-medium transition-colors"
+    >
+      {isDescriptionExpanded ? (
+        <>
+          <ChevronUp className="w-3 h-3 mr-1" />
+          Read Less
+        </>
+      ) : (
+        <>
+          <ChevronDown className="w-3 h-3 mr-1" />
+          Read More
+        </>
+      )}
+    </button>
+  )}
+</div>
 
                   {/* Register Button - Fixed at bottom */}
                   <div className="flex-shrink-0">

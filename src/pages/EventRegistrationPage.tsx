@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Calendar, CheckCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { MapPin, Calendar, Award,CheckCircle, ArrowLeft, CreditCard } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { baseEvents } from '../components/EventComponents/eventsData';
@@ -19,7 +19,9 @@ const EventRegistrationPage: React.FC = () => {
     date?: string;
     image?: string;
     isPaid?: boolean;
+    memberPrice?: number;
     nonMemberPrice?: number;
+    cpdPoints?: number;
   } | null;
 
   const [step, setStep] = useState(1);
@@ -109,6 +111,28 @@ const EventRegistrationPage: React.FC = () => {
                   <Calendar size={20} />
                   <span className="font-medium">{displayDate}</span>
                 </div>
+              
+                {eventData.cpdPoints && (
+  <div className="mb-6 flex items-center gap-2 bg-purple-50 w-fit px-4 py-2 rounded-full border border-purple-100">
+    <Award size={16} className="text-purple-600" />
+    <span className="text-xs font-bold text-purple-700 uppercase tracking-widest">
+      {eventData.cpdPoints} CPD Units
+    </span>
+  </div>
+)}
+
+{(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
+  <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex justify-between items-center mb-6">
+    <div>
+      <p className="text-[10px] text-gray-400 font-bold uppercase">Member Price</p>
+      <p className="text-lg font-black text-purple-700">UGX {Number(eventData.memberPrice).toLocaleString()}</p>
+    </div>
+    <div className="text-right">
+      <p className="text-[10px] text-gray-400 font-bold uppercase">Non-Member</p>
+      <p className="text-lg font-black text-slate-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</p>
+    </div>
+  </div>
+)}
               </div>
             </div>
 

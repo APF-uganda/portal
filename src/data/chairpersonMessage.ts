@@ -1,4 +1,4 @@
-import chairmanImg from '../assets/images/landingPage-image/chair.jpeg';
+import chairmanImg from '../assets/images/aboutPage-images/leader1.webp';
 
 export const chairpersonMessage = {
   name: 'CPA Micheal Tugyetwena',

@@ -64,7 +64,7 @@ const ManagePayments = () => {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl md:text-[28px] font-black text-slate-600 tracking-tight">Payments Dashboard</h1>
+                <h1 className="text-2xl md:text-[28px] font-black text-slate-800 tracking-tight">Payments Dashboard</h1>
                 <p className="text-slate-500 font-medium">Monitor member financial transactions.</p>
               </div>
               

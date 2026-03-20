@@ -10,7 +10,7 @@ function OurHistory() {
     { text: 'Our Events', path: '/events' },
     { text: 'News & Insights', path: '/news' },
     
-    { text: "Chairman's Message", path: '/' }, 
+    { text: "Chairman's Message", path: '/chair-message' }, 
   ]
 
   return (

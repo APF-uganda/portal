@@ -35,6 +35,7 @@ const OtpPage = React.lazy(() => import("./pages/otpPage"));
 const ForgotPasswordPage = React.lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = React.lazy(() => import("./pages/ResetPasswordPage"));
 const TestCMS = React.lazy(() => import("./pages/TestCMS"));
+const ManagementPage = React.lazy(() => import("./components/aboutPage-components/management"));
 
 /* Lazy loaded member dashboard */
 const MemberDashboard = React.lazy(() => import("./pages/member/memberDashboard"));
@@ -139,7 +140,7 @@ const App: React.FC = () => {
               <Route path="/admin/about" element={<AboutPageEditor />} />
              <Route path="/admincms/leadership" element={<LeadershipManager />} />
              <Route path="/news/:id" element={<NewsDetail />} />
-
+             <Route path="/management" element={<ManagementPage />} />
             {/* Auth routes */}
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />

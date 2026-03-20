@@ -34,6 +34,7 @@ function OurGovernance() {
   return (
     <section id="governance" className="bg-[#FBFAFF] py-20 px-6">
       <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
         <div className="text-center mb-16">
           <h3 
             ref={elementRef}
@@ -49,6 +50,7 @@ function OurGovernance() {
           </p>
         </div>
         
+        {/* Main Grid (First 6 Members) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
           {leaders.slice(0, 6).map((leader) => (
             <div 
@@ -58,7 +60,7 @@ function OurGovernance() {
               <button
                 type="button"
                 onClick={() => navigate(`/about?member=${leader.slug}`)}
-                className="relative mb-8 inline-block overflow-hidden governance-image-container"
+                className="relative mb-8 inline-block overflow-hidden"
                 aria-label={`View profile for ${leader.name}`}
               >
                 <div className="absolute inset-0 bg-purple-200 rounded-[2.5rem] rotate-6 group-hover:rotate-12 transition-transform duration-500 -z-10 opacity-30"></div>
@@ -84,7 +86,7 @@ function OurGovernance() {
                 <button
                   type="button"
                   onClick={() => navigate(`/about?member=${leader.slug}`)}
-                  className="text-black hover:text-black transition-colors"
+                  className="text-black hover:text-purple-700 transition-colors"
                 >
                   {leader.name}
                 </button>
@@ -96,14 +98,14 @@ function OurGovernance() {
           ))}
         </div>
 
-        {/* Centered 7th leader */}
+        
         {leaders[6] && (
           <div className="flex justify-center mt-10">
             <div className="group text-center p-8 rounded-[2.5rem] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(92,50,163,0.1)] border border-transparent hover:border-purple-50 w-full max-w-[400px] governance-image-container">
               <button
                 type="button"
                 onClick={() => navigate(`/about?member=${leaders[6].slug}`)}
-                className="relative mb-8 inline-block overflow-hidden governance-image-container"
+                className="relative mb-8 inline-block overflow-hidden"
                 aria-label={`View profile for ${leaders[6].name}`}
               >
                 <div className="absolute inset-0 bg-purple-200 rounded-[2.5rem] rotate-6 group-hover:rotate-12 transition-transform duration-500 -z-10 opacity-30"></div>
@@ -129,7 +131,7 @@ function OurGovernance() {
                 <button
                   type="button"
                   onClick={() => navigate(`/about?member=${leaders[6].slug}`)}
-                  className="text-black hover:text-black transition-colors"
+                  className="text-black hover:text-purple-700 transition-colors"
                 >
                   {leaders[6].name}
                 </button>
@@ -140,6 +142,24 @@ function OurGovernance() {
             </div>
           </div>
         )}
+
+        {/* Navigation Link to Management */}
+        <div className="text-center mt-16 pt-10 border-t border-gray-100">
+         
+          <button 
+            type="button"
+            onClick={() => {
+                
+                navigate('/management'); 
+                
+               
+            }} 
+            className="inline-flex items-center gap-2 text-purple-600 font-bold hover:text-purple-800 transition-colors group"
+          >
+            View Management Team 
+            <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+          </button>
+        </div>
       </div>
     </section>
   );
