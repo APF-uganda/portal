@@ -1,120 +1,182 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle, ExternalLink, ShieldCheck, Mail, User, Phone } from 'lucide-react';
-import axios from 'axios'; 
-const AdminEvents = () => {
+import { ExternalLink, CheckCircle, ShieldCheck, Mail, Loader2, User, X, AlertCircle } from 'lucide-react';
+import eventService from '../../services/eventService'; 
+
+const AdminEvents: React.FC = () => {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isVerifying, setIsVerifying] = useState<number | null>(null);
 
+ 
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info';
+  }>({ show: false, message: '', type: 'info' });
+
+  const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setNotification({ show: true, message, type });
+    // Auto-hide after 4 seconds
+    setTimeout(() => setNotification((prev) => ({ ...prev, show: false })), 4000);
+  };
 
   const fetchRegistrations = async () => {
     try {
-     
-      const response = await axios.get('http://localhost:8000/api/events/admin/registrations/');
-      setRegistrations(response.data);
+      setLoading(true);
+      const data = await eventService.getAllRegistrations();
+      setRegistrations(data);
     } catch (error) {
-      console.error("Error fetching registrations:", error);
+      showNotification("Could not load registration data.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. Verify Payment Action
   const handleVerify = async (id: number) => {
-    if (!window.confirm("Confirm verification? This will trigger the confirmation email.")) return;
-    
+    setIsVerifying(id);
     try {
-      await axios.patch(`http://localhost:8000/api/events/admin/verify/${id}/`);
-      // Refresh the list to show updated status
-      fetchRegistrations();
+      await eventService.verifyPayment(id);
+      showNotification("Attendee verified! Confirmation email sent.", "success");
+      await fetchRegistrations(); // Refresh the list
     } catch (error) {
-      alert("Verification failed. Make sure you are logged in as an admin.");
+      showNotification("Verification failed. Please try again.", "error");
+    } finally {
+      setIsVerifying(null);
     }
   };
 
-  useEffect(() => { fetchRegistrations(); }, []);
-
-  if (loading) return <div className="p-10 text-center font-bold">Loading Attendees...</div>;
+  useEffect(() => {
+    fetchRegistrations();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-12">
+    <div className="min-h-screen bg-slate-50 p-6 md:p-10 font-sans text-slate-800 relative">
+      
+     
+      {notification.show && (
+        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${
+          notification.type === 'success' ? 'bg-white border-green-100 text-green-800' : 
+          notification.type === 'error' ? 'bg-white border-red-100 text-red-800' : 
+          'bg-white border-blue-100 text-blue-800'
+        }`}>
+          {notification.type === 'success' ? (
+            <CheckCircle size={20} className="text-green-500" />
+          ) : (
+            <AlertCircle size={20} className="text-red-500" />
+          )}
+          <p className="font-semibold text-sm">{notification.message}</p>
+          <button 
+            onClick={() => setNotification({ ...notification, show: false })} 
+            className="ml-4 opacity-50 hover:opacity-100 transition-opacity"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Event Management</h1>
-            <p className="text-slate-500 font-medium">Verify payments and manage registrations</p>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Event Management</h1>
+            <p className="text-slate-500 mt-1">Review attendees and verify payment proofs.</p>
           </div>
-          <div className="flex items-center gap-2 bg-purple-600 text-white px-5 py-2 rounded-full text-sm font-bold">
-            <ShieldCheck size={18} /> Admin Access
+          <div className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-sm">
+            <ShieldCheck size={16} className="text-purple-600" /> 
+            Admin Secure Mode
           </div>
         </header>
 
-        <div className="bg-white rounded-[32px] shadow-xl border border-slate-100 overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-900 text-white uppercase text-[10px] tracking-[0.2em]">
-                <th className="px-6 py-5">Attendee Details</th>
-                <th className="px-6 py-5">Event</th>
-                <th className="px-6 py-5">Proof of Payment</th>
-                <th className="px-6 py-5">Status</th>
-                <th className="px-6 py-5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {registrations.map((reg: any) => (
-                <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-5">
-                    <div className="font-bold text-slate-900">{reg.full_name}</div>
-                    <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
-                      <Mail size={12} /> {reg.email}
-                    </div>
-                    <div className="text-xs text-slate-500 flex items-center gap-1">
-                      <Phone size={12} /> {reg.phone_number}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="text-sm font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-lg">
-                      {reg.event_title}
-                    </span>
-                    <div className="text-[10px] uppercase font-black text-slate-400 mt-1 tracking-widest">
-                      {reg.attendance_mode}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    {reg.proof_of_payment ? (
-                      <a 
-                        href={reg.proof_of_payment} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:underline"
-                      >
-                        View Receipt <ExternalLink size={14} />
-                      </a>
-                    ) : (
-                      <span className="text-slate-300 text-xs italic">Not required/uploaded</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${
-                      reg.payment_status === 'Verified' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {reg.payment_status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    {reg.payment_status !== 'Verified' && (
-                      <button 
-                        onClick={() => handleVerify(reg.id)}
-                        className="bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-green-600 transition-all shadow-md shadow-green-100"
-                      >
-                        Verify
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+            <Loader2 className="animate-spin text-purple-600 mb-4" size={40} />
+            <p className="text-slate-400 font-medium">Loading attendee list...</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                    <th className="px-8 py-5">Attendee Details</th>
+                    <th className="px-6 py-5">Event Name</th>
+                    <th className="px-6 py-5">Payment Proof</th>
+                    <th className="px-6 py-5">Status</th>
+                    <th className="px-8 py-5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {registrations.length > 0 ? (
+                    registrations.map((reg: any) => (
+                      <tr key={reg.id} className="hover:bg-slate-50/30 transition-colors">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                              <User size={20} />
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900">{reg.full_name}</div>
+                              <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                                <Mail size={12} /> {reg.email}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-6 font-medium text-slate-700">
+                          {reg.event_title}
+                        </td>
+                        <td className="px-6 py-6">
+                          {reg.proof_of_payment ? (
+                            <a 
+                              href={reg.proof_of_payment} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="text-purple-600 font-bold text-xs inline-flex items-center gap-1.5 hover:text-purple-700 transition-colors bg-purple-50 px-3 py-1.5 rounded-lg"
+                            >
+                              View Receipt <ExternalLink size={12} />
+                            </a>
+                          ) : (
+                            <span className="text-slate-300 text-xs italic">No file</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-6">
+                          <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full border ${
+                            reg.payment_status === 'Verified' 
+                              ? 'bg-green-50 text-green-700 border-green-100' 
+                              : 'bg-amber-50 text-amber-700 border-amber-100'
+                          }`}>
+                            {reg.payment_status}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          {reg.payment_status !== 'Verified' ? (
+                            <button 
+                              onClick={() => handleVerify(reg.id)}
+                              disabled={isVerifying === reg.id}
+                              className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-600 transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2 ml-auto"
+                            >
+                              {isVerifying === reg.id && <Loader2 size={14} className="animate-spin" />}
+                              Verify Attendee
+                            </button>
+                          ) : (
+                            <div className="text-green-600 flex items-center justify-end gap-1 text-xs font-bold uppercase tracking-wider">
+                              <CheckCircle size={14} /> Confirmed
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-8 py-20 text-center text-slate-400 font-medium">
+                        No registrations found for any events.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

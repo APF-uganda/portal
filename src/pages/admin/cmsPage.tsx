@@ -126,7 +126,7 @@ const CmsContentPage = () => {
               </button>
 
               <button 
-                onClick={() => navigate('/admin/event-registrations')}
+                onClick={() => navigate('/admin/events')}
                 className="flex items-center justify-between p-8 bg-white border border-gray-100 rounded-3xl hover:border-blue-300 hover:shadow-lg hover:shadow-blue-50 transition-all text-left group h-full"
               >
                 <div className="flex items-center gap-6">
