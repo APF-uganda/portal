@@ -11,13 +11,14 @@ const EventRegistrationPage: React.FC = () => {
 
   const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  // Updated interface to match LogisticsSidebar keys
+  
   const eventData = location.state as { 
     eventTitle: string; 
     eventId: string;
     location?: string;
-    startDate?: string; // Changed from date
-    endDate?: string;   // Added
+    startDate?: string; 
+    endDate?: string;   
+    displayDate?: string; 
     startTime?: string;
     endTime?: string;
     image?: string;
@@ -25,6 +26,7 @@ const EventRegistrationPage: React.FC = () => {
     memberPrice?: number;
     nonMemberPrice?: number;
     cpdPoints?: number;
+    description?: string;
   } | null;
 
   const [step, setStep] = useState(1);
@@ -51,13 +53,10 @@ const EventRegistrationPage: React.FC = () => {
 
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
-  
-  // Format Date Range
-  const displayStartDate = eventData.startDate || localEvent?.date || 'TBA';
-  const displayEndDate = eventData.endDate || '';
-  const displayTime = eventData.startTime ? `${eventData.startTime} - ${eventData.endTime || ''}` : '';
-  
   const displayImage = eventData.image || localEvent?.image || DEFAULT_FALLBACK;
+  
+  
+  const finalDateDisplay = eventData.displayDate || eventData.startDate || localEvent?.date || 'TBA';
 
   const validateForm = () => {
     const newErrors = { fullName: '', email: '', phoneNumber: '', agreeToTerms: '' };
@@ -86,74 +85,73 @@ const EventRegistrationPage: React.FC = () => {
       
       {step === 1 ? (
         <>
+          {/* HERO SECTION */}
           <section
-            className="relative h-[600px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
+            className="relative h-[650px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
             style={{ backgroundImage: `url(${displayImage})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#171a1f]/80 to-[#d0c9ea]" />
+            {/* Darker gradient overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-[#171a1f]/70 to-[#d0c9ea]" />
 
             <div className="relative z-20 max-w-5xl mx-auto text-center text-white px-4">
-              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-400/30 text-purple-300 text-xs font-bold uppercase tracking-[0.2em] fade-in-up">
+              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-purple-500/30 backdrop-blur-md border border-purple-400/30 text-purple-200 text-xs font-black uppercase tracking-[0.2em] fade-in-up">
                 Event Registration
               </div>
               
-              <h1 className="text-4xl md:text-6xl font-black mb-6 fade-in-up delay-200 tracking-tight">
+              <h1 className="text-4xl md:text-6xl  mb-6 fade-in-up delay-200 tracking-tight leading-tight">
                 {eventData.eventTitle}
               </h1>
               
-              <p className="text-lg md:text-xl mb-8 text-gray-300 max-w-2xl mx-auto fade-in-up delay-400 font-medium">
-                {localEvent?.description || 'Join us for this professional development session designed for modern practitioners.'}
+              <p className="text-lg md:text-xl mb-10 text-gray-300 max-w-3xl mx-auto fade-in-up delay-400 font-medium leading-relaxed">
+                {eventData.description || localEvent?.description || 'Join us for this professional development session designed for modern practitioners.'}
               </p>
               
-              {/* MODERNIZED LOGISTICS CHIPS */}
+              {/* LOGISTICS ROW */}
               <div className="flex flex-wrap justify-center gap-4 mb-10 fade-in-up delay-600">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Calendar size={20} className="text-purple-400" />
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
+                  <div className="p-2.5 bg-purple-500/20 rounded-xl">
+                    <Calendar size={22} className="text-purple-400" />
                   </div>
                   <div className="text-left">
-                    <p className="text-[10px] uppercase font-bold text-purple-300 tracking-wider">Date</p>
-                    <p className="text-sm font-bold">
-                      {displayStartDate} {displayEndDate && ` - ${displayEndDate}`}
-                    </p>
+                    <p className="text-[10px] uppercase font-black text-purple-300 tracking-widest">Schedule</p>
+                    <p className="text-sm font-bold">{finalDateDisplay}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <MapPin size={20} className="text-purple-400" />
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
+                  <div className="p-2.5 bg-purple-500/20 rounded-xl">
+                    <MapPin size={22} className="text-purple-400" />
                   </div>
                   <div className="text-left">
-                    <p className="text-[10px] uppercase font-bold text-purple-300 tracking-wider">Venue</p>
+                    <p className="text-[10px] uppercase font-black text-purple-300 tracking-widest">Location</p>
                     <p className="text-sm font-bold">{displayLocation}</p>
                   </div>
                 </div>
 
-                {eventData.cpdPoints ? (
-                  <div className="flex items-center gap-3 bg-amber-500/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-amber-500/20 shadow-xl">
-                    <div className="p-2 bg-amber-500/20 rounded-lg">
-                      <Award size={20} className="text-amber-400" />
+                {Number(eventData.cpdPoints) > 0 && (
+                  <div className="flex items-center gap-3 bg-amber-500/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-amber-500/20 shadow-2xl">
+                    <div className="p-2.5 bg-amber-500/20 rounded-xl">
+                      <Award size={22} className="text-amber-400" />
                     </div>
                     <div className="text-left">
-                      <p className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">Accreditation</p>
+                      <p className="text-[10px] uppercase font-black text-amber-300 tracking-widest">Accreditation</p>
                       <p className="text-sm font-bold">{eventData.cpdPoints} CPD Units</p>
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
 
-              {/* PRICING CARDS */}
+              {/* PRICING ROW */}
               {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                <div className="flex justify-center gap-4 fade-in-up delay-600">
-                  <div className="bg-gradient-to-br from-white/10 to-transparent backdrop-blur-xl border border-white/20 p-4 rounded-2xl text-left w-44 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute -right-2 -top-2 bg-purple-500/20 w-12 h-12 rounded-full blur-xl" />
+                <div className="flex flex-wrap justify-center gap-4 fade-in-up delay-600">
+                  <div className="bg-gradient-to-br from-white/15 to-transparent backdrop-blur-xl border border-white/20 p-5 rounded-[24px] text-left w-48 shadow-2xl">
                     <p className="text-[10px] text-purple-300 font-black uppercase tracking-widest mb-1">Members</p>
                     <p className="text-2xl font-black">
                       <span className="text-xs mr-1 text-gray-400 font-normal">UGX</span>
                       {Number(eventData.memberPrice || 0).toLocaleString()}
                     </p>
                   </div>
-                  <div className="bg-gradient-to-br from-white/5 to-transparent backdrop-blur-xl border border-white/10 p-4 rounded-2xl text-left w-44 shadow-2xl group">
+                  <div className="bg-gradient-to-br from-white/5 to-transparent backdrop-blur-xl border border-white/10 p-5 rounded-[24px] text-left w-48 shadow-2xl">
                     <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Non-Members</p>
                     <p className="text-2xl font-black text-white/90">
                        <span className="text-xs mr-1 text-gray-500 font-normal">UGX</span>
@@ -178,71 +176,86 @@ const EventRegistrationPage: React.FC = () => {
             </style>
           </section>
 
-          <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
+          {/* FORM SECTION */}
+          <main className="flex-1 py-16" style={{ backgroundColor: '#d0c9ea' }}>
             <div className="max-w-4xl mx-auto px-4">
               <button
                 onClick={handleBackToEvents}
-                className="group flex items-center text-purple-900 font-bold mb-8 transition-all hover:gap-3"
+                className="group flex items-center text-purple-900 font-black mb-10 transition-all"
               >
-                <div className="p-2 bg-white rounded-full shadow-sm mr-3 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                <div className="p-2.5 bg-white rounded-full shadow-lg mr-4 group-hover:bg-[#7E49B3] group-hover:text-white transition-all transform group-hover:-translate-x-1">
                   <ArrowLeft size={18} />
                 </div>
                 Back to Events
               </button>
 
-              <div className="bg-white rounded-[32px] shadow-2xl border border-purple-200/50 overflow-hidden">
-                <form onSubmit={handleSubmit} className="p-8 md:p-12">
-                  <div className="space-y-6">
-                    {/* Dynamic Pricing Info in Form */}
-                    {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                      <div className="bg-slate-50 border border-slate-100 p-6 rounded-[24px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Selected Tier</span>
-                          <span className="text-lg font-black text-slate-800">Standard Registration</span>
+              <div className="bg-white rounded-[40px] shadow-2xl border border-purple-200/40 overflow-hidden transform transition-all">
+                <form onSubmit={handleSubmit} className="p-10 md:p-14">
+                  <div className="space-y-8">
+                    {/* Selected Summary */}
+                    <div className="bg-slate-50 border border-slate-100 p-8 rounded-[32px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-[#7E49B3]">
+                          <CheckCircle size={24} />
                         </div>
-                        <div className="text-right">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Investment</span>
-                          <span className="text-2xl font-black text-[#7E49B3]">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
+                        <div>
+                          <span className="text-[10px] text-slate-400 uppercase tracking-[0.2em] block mb-1">Registration Type</span>
+                          <span className="text-lg  text-slate-800">Professional Delegate</span>
                         </div>
                       </div>
-                    )}
+                      
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
+                        <div className="text-left sm:text-right">
+                          <span className="text-[10px]  text-slate-400 uppercase tracking-[0.2em] block mb-1">Total Due</span>
+                          <span className="text-3xl  text-[#7E49B3]">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-xs  text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
                         <input
                           type="text"
                           required
-                          className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-200 outline-none text-sm font-medium transition-all"
+                          placeholder="Your official name"
+                          className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-[20px] focus:border-purple-200 focus:bg-white focus:ring-4 focus:ring-purple-50 outline-none text-sm font-bold transition-all"
                           value={formData.fullName}
                           onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                      <div className="space-y-3">
+                        <label className="text-xs text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
                         <input
                           type="email"
                           required
-                          className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-200 outline-none text-sm font-medium transition-all"
+                          placeholder="name@company.com"
+                          className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-[20px] focus:border-purple-200 focus:bg-white focus:ring-4 focus:ring-purple-50 outline-none text-sm font-bold transition-all"
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}
                         />
                       </div>
                     </div>
 
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      className="w-full bg-[#7E49B3] text-white py-5 rounded-2xl font-bold text-lg hover:bg-[#6a3d99] hover:shadow-xl hover:shadow-purple-200 transform transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-3"
-                    >
-                      {eventData.isPaid ? (
-                        <>
-                          <CreditCard size={20} />
-                          Secure My Spot
-                        </>
-                      ) : 'Confirm Registration'}
-                    </button>
+                    <div className="pt-4">
+                      <button
+                        type="submit"
+                        className="w-full bg-[#7E49B3] text-white py-5 rounded-[24px] font-black text-lg hover:bg-[#6a3d99] shadow-xl hover:shadow-purple-300 transform transition-all active:scale-[0.98] flex items-center justify-center gap-4 group"
+                      >
+                        {eventData.isPaid ? (
+                          <>
+                            <CreditCard size={22} className="group-hover:rotate-12 transition-transform" />
+                            Secure My Spot
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle size={22} />
+                            Complete Registration
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -250,22 +263,31 @@ const EventRegistrationPage: React.FC = () => {
           </main>
         </>
       ) : (
-        /* Success step remains largely the same but with rounded-32px */
-        <main className="flex-1 py-12 pt-24" style={{ backgroundColor: '#d0c9ea' }}>
-           <div className="max-w-2xl mx-auto px-4">
-            <div className="bg-white rounded-[40px] shadow-2xl p-12 text-center border border-white">
-              <div className="w-20 h-20 bg-green-50 text-green-500 rounded-3xl flex items-center justify-center mx-auto mb-8 transform rotate-12">
-                <CheckCircle size={40} className="-rotate-12" />
+        /* SUCCESS STEP */
+        <main className="flex-1 py-16 flex items-center justify-center" style={{ backgroundColor: '#d0c9ea' }}>
+           <div className="max-w-2xl mx-auto px-4 w-full">
+            <div className="bg-white rounded-[48px] shadow-2xl p-16 text-center border border-white relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-emerald-500" />
+              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-[32px] flex items-center justify-center mx-auto mb-10 transform rotate-12 shadow-inner">
+                <CheckCircle size={48} className="-rotate-12" />
               </div>
-              <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">You're In!</h2>
-              <p className="text-slate-500 font-medium mb-8 leading-relaxed">
-                Confirmation for <span className="text-slate-900 font-bold">{eventData.eventTitle}</span> has been sent to your inbox.
-              </p>
+              <h2 className="text-4xl font-black text-slate-900 mb-6 tracking-tight">You're Confirmed!</h2>
+              <div className="space-y-4 mb-10">
+                <p className="text-slate-500 text-lg font-medium leading-relaxed">
+                  Excellent, <span className="text-slate-900 font-bold">{formData.fullName}</span>! You've successfully secured your place at:
+                </p>
+                <p className="text-2xl font-black text-[#7E49B3] px-6">
+                  {eventData.eventTitle}
+                </p>
+                <p className="text-sm text-slate-400 italic">
+                  A receipt and calendar invite has been sent to {formData.email}.
+                </p>
+              </div>
               <button
                 onClick={handleBackToEvents}
-                className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all"
+                className="w-full sm:w-auto px-12 py-5 bg-slate-900 text-white rounded-[20px] font-black hover:bg-slate-800 transition-all shadow-xl"
               >
-                Return to Dashboard
+                Go to My Dashboard
               </button>
             </div>
           </div>
