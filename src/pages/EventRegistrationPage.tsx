@@ -11,7 +11,7 @@ const EventRegistrationPage: React.FC = () => {
 
   const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
-  
+  // Preserve all functional data fields
   const eventData = location.state as { 
     eventTitle: string; 
     eventId: string;
@@ -54,8 +54,6 @@ const EventRegistrationPage: React.FC = () => {
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
   const displayImage = eventData.image || localEvent?.image || DEFAULT_FALLBACK;
-  
-  
   const finalDateDisplay = eventData.displayDate || eventData.startDate || localEvent?.date || 'TBA';
 
   const validateForm = () => {
@@ -87,79 +85,55 @@ const EventRegistrationPage: React.FC = () => {
         <>
           {/* HERO SECTION */}
           <section
-            className="relative h-[650px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
+            className="relative h-[550px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
             style={{ backgroundImage: `url(${displayImage})` }}
           >
-            {/* Darker gradient overlay for better text readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-[#171a1f]/70 to-[#d0c9ea]" />
+            <div className="absolute inset-0 bg-[#171a1f]/60" />
 
-            <div className="relative z-20 max-w-5xl mx-auto text-center text-white px-4">
-              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-purple-500/30 backdrop-blur-md border border-purple-400/30 text-purple-200 text-xs font-black uppercase tracking-[0.2em] fade-in-up">
-                Event Registration
-              </div>
-              
-              <h1 className="text-4xl md:text-6xl  mb-6 fade-in-up delay-200 tracking-tight leading-tight">
+            <div className="relative z-20 max-w-4xl mx-auto text-center text-white px-4 fade-in-up">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 fade-in-up delay-200">
                 {eventData.eventTitle}
               </h1>
-              
-              <p className="text-lg md:text-xl mb-10 text-gray-300 max-w-3xl mx-auto fade-in-up delay-400 font-medium leading-relaxed">
-                {eventData.description || localEvent?.description || 'Join us for this professional development session designed for modern practitioners.'}
+              <p className="text-lg md:text-xl mb-6 fade-in-up delay-400 opacity-90">
+                {eventData.description || localEvent?.description || 'Join us for this exciting event'}
               </p>
               
-              {/* LOGISTICS ROW */}
-              <div className="flex flex-wrap justify-center gap-4 mb-10 fade-in-up delay-600">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
-                  <div className="p-2.5 bg-purple-500/20 rounded-xl">
-                    <Calendar size={22} className="text-purple-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] uppercase font-black text-purple-300 tracking-widest">Schedule</p>
-                    <p className="text-sm font-bold">{finalDateDisplay}</p>
-                  </div>
+              {/* DATE & LOCATION ROW */}
+              <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base mb-6 fade-in-up delay-600">
+                <div className="flex items-center gap-2">
+                  <MapPin size={20} className="text-purple-400" />
+                  <span className="font-medium">{displayLocation}</span>
                 </div>
-
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
-                  <div className="p-2.5 bg-purple-500/20 rounded-xl">
-                    <MapPin size={22} className="text-purple-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] uppercase font-black text-purple-300 tracking-widest">Location</p>
-                    <p className="text-sm font-bold">{displayLocation}</p>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Calendar size={20} className="text-purple-400" />
+                  <span className="font-medium">{finalDateDisplay}</span>
                 </div>
+              </div>
 
+              {/* CPD AND PRICES UNDER DATES */}
+              <div className="flex flex-col items-center gap-4 fade-in-up delay-600">
                 {Number(eventData.cpdPoints) > 0 && (
-                  <div className="flex items-center gap-3 bg-amber-500/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-amber-500/20 shadow-2xl">
-                    <div className="p-2.5 bg-amber-500/20 rounded-xl">
-                      <Award size={22} className="text-amber-400" />
+                  <div className="flex items-center gap-2 bg-purple-600/90 px-4 py-2 rounded-full border border-purple-400 shadow-lg">
+                    <Award size={18} className="text-amber-400" />
+                    <span className="text-xs font-bold uppercase tracking-widest">
+                      {eventData.cpdPoints} CPD Units
+                    </span>
+                  </div>
+                )}
+
+                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
+                  <div className="flex gap-4">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
+                      <p className="text-[10px] text-purple-300 font-bold uppercase">Member Price</p>
+                      <p className="text-lg font-black">UGX {Number(eventData.memberPrice || 0).toLocaleString()}</p>
                     </div>
-                    <div className="text-left">
-                      <p className="text-[10px] uppercase font-black text-amber-300 tracking-widest">Accreditation</p>
-                      <p className="text-sm font-bold">{eventData.cpdPoints} CPD Hours</p>
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
+                      <p className="text-[10px] text-gray-300 font-bold uppercase">Non-Member</p>
+                      <p className="text-lg font-black">UGX {Number(eventData.nonMemberPrice || 0).toLocaleString()}</p>
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* PRICING ROW */}
-              {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                <div className="flex flex-wrap justify-center gap-4 fade-in-up delay-600">
-                  <div className="bg-gradient-to-br from-white/15 to-transparent backdrop-blur-xl border border-white/20 p-5 rounded-[24px] text-left w-48 shadow-2xl">
-                    <p className="text-[10px] text-purple-300 font-black uppercase tracking-widest mb-1">Members</p>
-                    <p className="text-2xl font-black">
-                      <span className="text-xs mr-1 text-gray-400 font-normal">UGX</span>
-                      {Number(eventData.memberPrice || 0).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="bg-gradient-to-br from-white/5 to-transparent backdrop-blur-xl border border-white/10 p-5 rounded-[24px] text-left w-48 shadow-2xl">
-                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Non-Members</p>
-                    <p className="text-2xl font-black text-white/90">
-                       <span className="text-xs mr-1 text-gray-500 font-normal">UGX</span>
-                       {Number(eventData.nonMemberPrice || 0).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
             <style>
@@ -168,7 +142,7 @@ const EventRegistrationPage: React.FC = () => {
                   0% { opacity: 0; transform: translateY(30px); }
                   100% { opacity: 1; transform: translateY(0); }
                 }
-                .fade-in-up { animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+                .fade-in-up { animation: fadeInUp 1s ease-out both; }
                 .delay-200 { animation-delay: 0.2s; }
                 .delay-400 { animation-delay: 0.4s; }
                 .delay-600 { animation-delay: 0.6s; }
@@ -176,86 +150,112 @@ const EventRegistrationPage: React.FC = () => {
             </style>
           </section>
 
-          {/* FORM SECTION */}
-          <main className="flex-1 py-16" style={{ backgroundColor: '#d0c9ea' }}>
-            <div className="max-w-4xl mx-auto px-4">
+          {/* FORM SECTION  */}
+          <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
               <button
                 onClick={handleBackToEvents}
-                className="group flex items-center text-purple-900 font-black mb-10 transition-all"
+                className="flex items-center text-purple-900 font-bold hover:text-purple-700 mb-6 transition-colors"
               >
-                <div className="p-2.5 bg-white rounded-full shadow-lg mr-4 group-hover:bg-[#7E49B3] group-hover:text-white transition-all transform group-hover:-translate-x-1">
-                  <ArrowLeft size={18} />
-                </div>
+                <ArrowLeft size={20} className="mr-2" />
                 Back to Events
               </button>
 
-              <div className="bg-white rounded-[40px] shadow-2xl border border-purple-200/40 overflow-hidden transform transition-all">
-                <form onSubmit={handleSubmit} className="p-10 md:p-14">
-                  <div className="space-y-8">
-                    {/* Selected Summary */}
-                    <div className="bg-slate-50 border border-slate-100 p-8 rounded-[32px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-[#7E49B3]">
-                          <CheckCircle size={24} />
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-slate-400 uppercase tracking-[0.2em] block mb-1">Registration Type</span>
-                          <span className="text-lg  text-slate-800">Professional Delegate</span>
-                        </div>
+              <div className="bg-white rounded-lg shadow-md border border-purple-300 overflow-hidden">
+                <form onSubmit={handleSubmit} className="p-6 sm:p-8">
+                  <div className="space-y-5">
+                    
+                    {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
+                      <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg flex justify-between items-center mb-6">
+                        <span className="text-sm font-bold text-purple-700 uppercase tracking-wider">Registration Fee</span>
+                        <span className="text-xl font-bold text-purple-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
                       </div>
-                      
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                        <div className="text-left sm:text-right">
-                          <span className="text-[10px]  text-slate-400 uppercase tracking-[0.2em] block mb-1">Total Due</span>
-                          <span className="text-3xl  text-[#7E49B3]">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-3">
-                        <label className="text-xs  text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Full name <span className="text-red-500">*</span></label>
                         <input
                           type="text"
                           required
-                          placeholder="Your official name"
-                          className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-[20px] focus:border-purple-200 focus:bg-white focus:ring-4 focus:ring-purple-50 outline-none text-sm font-bold transition-all"
+                          placeholder="Enter your Full name"
+                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.fullName ? 'border-red-500' : 'border-gray-300'}`}
                           value={formData.fullName}
-                          onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                          onChange={(e) => { setFormData({...formData, fullName: e.target.value}); setErrors({...errors, fullName: ''}); }}
                         />
+                        {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
                       </div>
 
-                      <div className="space-y-3">
-                        <label className="text-xs text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Email address <span className="text-red-500">*</span></label>
                         <input
                           type="email"
                           required
-                          placeholder="name@company.com"
-                          className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-[20px] focus:border-purple-200 focus:bg-white focus:ring-4 focus:ring-purple-50 outline-none text-sm font-bold transition-all"
+                          placeholder="Enter your email address"
+                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                           value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
+                          onChange={(e) => { setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''}); }}
+                        />
+                        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Phone number <span className="text-red-500">*</span></label>
+                        <div className="flex gap-2">
+                          <select
+                            value={formData.countryCode}
+                            onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
+                            className="w-24 px-2 py-2.5 border border-gray-300 rounded-lg bg-white text-sm"
+                          >
+                            <option value="+256">+256</option>
+                            <option value="+254">+254</option>
+                          </select>
+                          <input
+                            type="tel"
+                            required
+                            placeholder="Enter your Phone number"
+                            className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
+                            value={formData.phoneNumber}
+                            onChange={(e) => { setFormData({...formData, phoneNumber: e.target.value}); setErrors({...errors, phoneNumber: ''}); }}
+                          />
+                        </div>
+                        {errors.phoneNumber && <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Company name</label>
+                        <input
+                          type="text"
+                          placeholder="Enter your company name"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm"
+                          value={formData.companyName}
+                          onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                         />
                       </div>
                     </div>
 
-                    <div className="pt-4">
-                      <button
-                        type="submit"
-                        className="w-full bg-[#7E49B3] text-white py-5 rounded-[24px] font-black text-lg hover:bg-[#6a3d99] shadow-xl hover:shadow-purple-300 transform transition-all active:scale-[0.98] flex items-center justify-center gap-4 group"
-                      >
-                        {eventData.isPaid ? (
-                          <>
-                            <CreditCard size={22} className="group-hover:rotate-12 transition-transform" />
-                            Secure My Spot
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle size={22} />
-                            Complete Registration
-                          </>
-                        )}
-                      </button>
+                    <div className="pt-2">
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.agreeToTerms}
+                          onChange={(e) => { setFormData({...formData, agreeToTerms: e.target.checked}); setErrors({...errors, agreeToTerms: ''}); }}
+                          className="mt-1 w-4 h-4 text-purple-600"
+                        />
+                        <label className="text-sm text-gray-700 font-medium">I agree to the terms and conditions.</label>
+                      </div>
+                      {errors.agreeToTerms && <p className="text-xs text-red-500 mt-1">{errors.agreeToTerms}</p>}
                     </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6 flex items-center justify-center gap-2"
+                    >
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && <CreditCard size={18} />}
+                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Proceed to Payment' : 'Register Now'}
+                    </button>
                   </div>
                 </form>
               </div>
@@ -263,31 +263,33 @@ const EventRegistrationPage: React.FC = () => {
           </main>
         </>
       ) : (
-        /* SUCCESS STEP */
-        <main className="flex-1 py-16 flex items-center justify-center" style={{ backgroundColor: '#d0c9ea' }}>
-           <div className="max-w-2xl mx-auto px-4 w-full">
-            <div className="bg-white rounded-[48px] shadow-2xl p-16 text-center border border-white relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-emerald-500" />
-              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-[32px] flex items-center justify-center mx-auto mb-10 transform rotate-12 shadow-inner">
-                <CheckCircle size={48} className="-rotate-12" />
+        /* SUCCESS STATE - CLEAN DESIGN */
+        <main className="flex-1 py-12 pt-24" style={{ backgroundColor: '#d0c9ea' }}>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-lg shadow-md border border-purple-300 p-12 text-center">
+              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle size={48} />
               </div>
-              <h2 className="text-4xl font-black text-slate-900 mb-6 tracking-tight">You're Confirmed!</h2>
-              <div className="space-y-4 mb-10">
-                <p className="text-slate-500 text-lg font-medium leading-relaxed">
-                  Excellent, <span className="text-slate-900 font-bold">{formData.fullName}</span>! You've successfully secured your place at:
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Payment Successful!' : 'Registration Successful!'}
+              </h2>
+              <div className="space-y-3 mb-8">
+                <p className="text-gray-600 text-lg">
+                  Hello <span className="font-semibold text-gray-900">{formData.fullName}</span>, 
+                  you are successfully registered for:
                 </p>
-                <p className="text-2xl font-black text-[#7E49B3] px-6">
+                <p className="text-xl font-bold text-purple-600 px-4">
                   {eventData.eventTitle}
                 </p>
-                <p className="text-sm text-slate-400 italic">
-                  A receipt and calendar invite has been sent to {formData.email}.
+                <p className="text-gray-500 pt-4">
+                  A confirmation has been sent to <span className="font-semibold">{formData.email}</span>.
                 </p>
               </div>
               <button
                 onClick={handleBackToEvents}
-                className="w-full sm:w-auto px-12 py-5 bg-slate-900 text-white rounded-[20px] font-black hover:bg-slate-800 transition-all shadow-xl"
+                className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-shadow shadow-md"
               >
-                Go to My Dashboard
+                Back to Events
               </button>
             </div>
           </div>

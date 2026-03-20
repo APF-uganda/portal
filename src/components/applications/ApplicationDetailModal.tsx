@@ -34,7 +34,6 @@ interface ApplicationDetailModalProps {
   onRetry?: (id: number) => Promise<void>;
 }
 
-// Document Preview Component
 const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,298 +53,148 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
     setLoading(true);
     setError(null);
     
-   
     const path = doc.file_url || doc.file || doc.document;
     if (!path) {
-      setError("No file path found");
+      setError("Document path missing");
       setLoading(false);
       return;
     }
 
     try {
       const token = getAccessToken();
-      
-      // Robust URL Construction
+      if (!token) throw new Error("Auth token missing");
+
+      // Fix URL construction to avoid double slashes
       let finalUrl = path;
       if (!path.startsWith('http')) {
-        const baseUrl = API_BASE_URL.replace(/\/$/, ''); // Remove trailing slash
-        const cleanPath = path.startsWith('/') ? path : `/${path}`; // Ensure leading slash
-        finalUrl = `${baseUrl}${cleanPath}`;
+        const cleanBase = API_BASE_URL.replace(/\/+$/, '');
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        finalUrl = `${cleanBase}${cleanPath}`;
       }
 
       const response = await fetch(finalUrl, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (!response.ok) {
-        throw new Error(`Status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Error ${response.status}`);
 
       const blob = await response.blob();
-      const type = blob.type || 'application/octet-stream';
       const objectUrl = URL.createObjectURL(blob);
       
       setPreviewUrl(objectUrl);
-      setFileType(type);
-      setLoading(false);
+      setFileType(blob.type || 'application/octet-stream');
     } catch (err) {
-      console.error("Document Load Error:", err);
-      setError("Document could not be opened");
+      console.error("Preview fail:", err);
+      setError("Could not load file");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white shadow-sm font-sans">
+    <div className="border rounded-xl overflow-hidden bg-white shadow-sm">
       <div className="bg-gray-50 px-4 py-3 border-b flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FileText className="text-black" size={20} />
+          <FileText className="text-[#5C32A3]" size={18} />
           <div>
-            <p className="text-sm font-bold text-black">{formatDocumentType(doc.document_type)}</p>
-            <p className="text-xs text-gray-500">{doc.file_name}</p>
+            <p className="text-sm font-semibold text-gray-700">{formatDocumentType(doc.document_type)}</p>
+            <p className="text-xs text-gray-400">{doc.file_name}</p>
           </div>
         </div>
         {previewUrl && (
-          <a 
-            href={previewUrl} 
-            download={doc.file_name || 'document'} 
-            className="flex items-center gap-1 text-xs font-bold text-black bg-white px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-all border border-gray-300"
-          >
-            <Download size={14} />
-            Download
+          <a href={previewUrl} download={doc.file_name} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+            <Download size={16} className="text-gray-600" />
           </a>
         )}
       </div>
       
-      <div className="p-4 bg-white">
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="animate-spin text-black" size={32} />
-          </div>
-        ) : error ? (
-          <div className="text-center py-8">
-            <FileText size={48} className="mx-auto mb-3 text-gray-300" />
-            <p className="text-sm text-black font-medium">{error}</p>
-          </div>
-        ) : fileType?.startsWith('image/') ? (
-          <div className="flex justify-center">
-            <img 
-              src={previewUrl!} 
-              alt={doc.file_name}
-              className="max-w-full h-auto max-h-[500px] object-contain rounded shadow-sm border border-gray-100"
-            />
-          </div>
-        ) : fileType === 'application/pdf' ? (
-          <iframe 
-            src={previewUrl!} 
-            className="w-full h-[500px] border rounded shadow-inner"
-            title={doc.file_name}
-          />
-        ) : (
-          <div className="text-center py-8">
-            <FileText size={48} className="mx-auto mb-3 text-gray-400" />
-            <p className="text-sm text-black mb-3 font-medium">Preview not supported for this file type</p>
-            <a 
-              href={previewUrl!} 
-              download={doc.file_name || 'document'}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white font-bold rounded-lg text-sm"
-            >
-              <Download size={16} />
-              Download to View
-            </a>
-          </div>
-        )}
+      <div className="p-4 bg-white min-h-[100px] flex items-center justify-center">
+        {loading ? <Loader2 className="animate-spin text-gray-300" /> : 
+         error ? <p className="text-xs text-red-500">{error}</p> :
+         fileType?.startsWith('image/') ? <img src={previewUrl!} className="max-h-80 rounded" /> :
+         fileType === 'application/pdf' ? <iframe src={previewUrl!} className="w-full h-80 border-none" /> :
+         <p className="text-xs text-gray-500">Preview unavailable. Please download.</p>}
       </div>
     </div>
   );
 };
 
-const formatDocumentType = (type: string): string => {
-  const typeMap: Record<string, string> = {
-    'icpau_certificate': 'ICPAU Certificate',
-    'firm_license': 'Firm License',
-    'proof_of_payment': 'Proof of Payment',
-    'passport_photo': 'Passport Photo',
-    'cv': 'Curriculum Vitae (CV)',
-    'recommendation_letter': 'Recommendation Letter',
-    'proof_of_employment': 'Proof of Employment',
-    'academic_certificate': 'Academic Certificate',
-    'professional_certificate': 'Professional Certificate',
-  };
-  return typeMap[type] || type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+const formatDocumentType = (type: string) => {
+  return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 };
 
 const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
-  applicationId,
-  isOpen,
-  onClose,
-  onApprove,
-  onReject,
-  onRetry
+  applicationId, isOpen, onClose, onApprove, onReject, onRetry
 }) => {
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen && applicationId) {
-      fetchApplicationDetails();
-    }
+    if (isOpen) fetchDetails();
   }, [isOpen, applicationId]);
 
-  const fetchApplicationDetails = async () => {
+  const fetchDetails = async () => {
     setLoading(true);
-    setError(null);
     try {
-      const token = getAccessToken();
       const response = await fetch(`${API_BASE_URL}/api/v1/applications/${applicationId}/`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${getAccessToken()}` }
       });
-      if (!response.ok) throw new Error('Failed to fetch details');
       setApplication(await response.json());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAction = async (action?: (id: number) => Promise<void>) => {
-    if (!action || !application) return;
-    const confirmAction = window.confirm("Are you sure you want to perform this action?");
-    if (!confirmAction) return;
-    
-    setSubmitting(true);
-    try {
-      await action(application.id);
-      await fetchApplicationDetails(); 
-    } catch (err) {
-      alert("Action failed. Please try again.");
-    } finally {
-      setSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto font-sans text-black">
-      <div className="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 sm:items-center sm:p-0">
-        <div className="fixed inset-0 transition-opacity bg-black bg-opacity-60" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div className="px-6 py-4 border-b flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-800">Application Review</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X size={20}/></button>
+        </div>
 
-        <div className="inline-block align-bottom bg-white rounded-t-2xl sm:rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full w-full">
-          {/* Header */}
-          <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-            <h3 className="text-lg font-black text-black uppercase tracking-tight">Application Details</h3>
-            <button onClick={onClose} className="text-black hover:bg-gray-100 p-1 rounded-full transition-colors">
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="bg-white px-4 sm:px-6 py-6 max-h-[75vh] overflow-y-auto">
-            {loading ? (
-              <div className="flex justify-center items-center py-24">
-                <Loader2 className="animate-spin text-black" size={40} />
-              </div>
-            ) : error ? (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg font-bold text-sm">{error}</div>
-            ) : application ? (
-              <div className="space-y-8">
-                {/* Status Bar */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
-                  <span className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest bg-gray-100 border border-gray-200">
-                    Status: {application.status}
-                  </span>
-                  <div className="sm:text-right">
-                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Submitted On</p>
-                    <p className="text-sm font-bold text-black">{new Date(application.submitted_at).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                {/* Personal Information */}
-                <div>
-                  <h4 className="text-xs font-black text-black mb-4 flex items-center gap-2 uppercase tracking-widest">
-                    <User size={16} /> Profile Information
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-gray-50 p-5 rounded-xl border border-gray-100">
-                    {[
-                      { label: "Full Name", value: `${application.firstName || (application as any).first_name} ${application.lastName || (application as any).last_name}` },
-                      { label: "Email Address", value: application.email },
-                      { label: "Phone Number", value: application.phoneNumber || (application as any).phone_number },
-                      { label: "Age Group", value: application.age_range },
-                      { label: "Physical Address", value: application.address },
-                      { label: "ICPAU Cert No.", value: application.icpauCertificateNumber || (application as any).icpau_certificate_number },
-                      { label: "Organization", value: application.organization || (application as any).employer_name }
-                    ].map((info, idx) => (
-                      <div key={idx} className="border-b border-gray-200 sm:border-none pb-2 sm:pb-0">
-                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 block">{info.label}</label>
-                        <p className="text-sm font-bold text-black break-words">{info.value || 'N/A'}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Documents Section */}
-                {application.documents && application.documents.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-black text-black mb-4 flex items-center gap-2 uppercase tracking-widest">
-                      <FileText size={16} /> Attachments ({application.documents.length})
-                    </h4>
-                    <div className="space-y-4">
-                      {application.documents.map((doc) => (
-                        <DocumentPreview key={doc.id} doc={doc} />
-                      ))}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {loading ? <div className="py-20 flex justify-center"><Loader2 className="animate-spin" /></div> : 
+           application && (
+            <>
+              <section>
+                <h4 className="text-[10px] font-semibold text-[#5C32A3] uppercase tracking-widest mb-4">Applicant Profile</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-5 rounded-xl">
+                  {[
+                    { label: "Name", value: `${application.firstName} ${application.lastName}` },
+                    { label: "Email", value: application.email },
+                    { label: "Phone", value: application.phoneNumber },
+                    { label: "Organization", value: application.organization },
+                    { label: "Address", value: application.address }
+                  ].map((item, i) => (
+                    <div key={i}>
+                      <span className="text-[9px] uppercase text-gray-400 block mb-0.5">{item.label}</span>
+                      <span className="text-sm text-gray-700">{item.value || 'N/A'}</span>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : null}
-          </div>
-
-          {/* Action Buttons - Mobile Responsive Grid */}
-          <div className="bg-gray-50 px-4 sm:px-6 py-5 border-t">
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-stretch sm:items-center gap-4">
-              <button 
-                onClick={onClose} 
-                className="px-6 py-3 bg-white border border-gray-300 text-black font-bold rounded-xl hover:bg-gray-100 transition-all text-xs uppercase tracking-widest"
-              >
-                Close
-              </button>
-              
-              {application && !loading && (
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  {application.status.toLowerCase() === 'pending' && (
-                    <>
-                      <button 
-                        onClick={() => handleAction(onReject)} 
-                        disabled={submitting} 
-                        className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 text-xs uppercase tracking-widest disabled:opacity-50 transition-all shadow-sm"
-                      >
-                        {submitting ? 'Processing...' : 'Reject'}
-                      </button>
-                      <button 
-                        onClick={() => handleAction(onApprove)} 
-                        disabled={submitting} 
-                        className="px-6 py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-800 text-xs uppercase tracking-widest shadow-lg transition-all"
-                      >
-                        {submitting ? 'Processing...' : 'Approve'}
-                      </button>
-                    </>
-                  )}
-
-                  {(application.status.toLowerCase() === 'approved' || application.status.toLowerCase() === 'rejected') && onRetry && (
-                    <button 
-                      onClick={() => handleAction(onRetry)} 
-                      disabled={submitting} 
-                      className="px-6 py-3 bg-white border border-gray-300 text-black font-bold rounded-xl hover:bg-gray-100 text-xs uppercase tracking-widest transition-all"
-                    >
-                      Reset to Pending
-                    </button>
-                  )}
+                  ))}
                 </div>
-              )}
-            </div>
+              </section>
+
+              <section>
+                <h4 className="text-[10px] font-semibold text-[#5C32A3] uppercase tracking-widest mb-4">Submitted Documents</h4>
+                <div className="space-y-4">
+                  {application.documents?.map(doc => <DocumentPreview key={doc.id} doc={doc} />)}
+                </div>
+              </section>
+            </>
+          )}
+        </div>
+
+        <div className="p-4 bg-gray-50 border-t flex justify-between">
+          <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-600">Cancel</button>
+          <div className="flex gap-2">
+            <button onClick={() => onReject?.(applicationId)} className="px-6 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium">Reject</button>
+            <button onClick={() => onApprove?.(applicationId)} className="px-6 py-2 bg-[#5C32A3] text-white rounded-lg text-sm font-medium">Approve Application</button>
           </div>
         </div>
       </div>

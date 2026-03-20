@@ -64,25 +64,22 @@ const CreatePost = () => {
   }, [id, isEditMode]);
 
  
+  // 2. Live Data Mapping
   const categories = useMemo(() => {
+    // If there's no data yet, return an empty array (the Loading state handles the UI)
     if (!fetchedCategories || fetchedCategories.length === 0) {
-      return [
-        { id: 1, name: 'Announcements', value: '1', label: 'Announcements' },
-        { id: 2, name: 'Suggestions', value: '2', label: 'Suggestions' },
-        { id: 3, name: 'General Discussion', value: '3', label: 'General Discussion' },
-        { id: 4, name: 'Q&A Support', value: '4', label: 'Q&A Support' },
-        { id: 5, name: 'Professional Tips', value: '5', label: 'Professional Tips' },
-        { id: 6, name: 'Networking', value: '6', label: 'Networking' }
-      ] as any[]; 
+      return [];
     }
+
+   
     return fetchedCategories.map((category) => ({
-      ...category,
-      value: category.id,
-      label: category.name
+      ...category, 
+      value: Number(category.id), // Ensure ID is a number for the backend
+      label: category.name // Ensure label is present for the UI dropdown
     }));
   }, [fetchedCategories]);
 
-  // 3. Submit Logic - Handles both Create and Update
+  //  Submit Logic Handles both Create and Update
   const handleSubmit = async (formData: CreatePostRequest) => {
     try {
       let result;

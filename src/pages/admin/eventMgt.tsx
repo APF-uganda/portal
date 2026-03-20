@@ -83,42 +83,46 @@ const EventCreatePage = () => {
   };
 
   const handlePublish = async () => {
-   
-    if (!eventData.title.trim() || !eventData.startDate || !eventData.endDate || !eventData.location) {
-      showToast("Please fill in all required fields (Headline, Start/End Dates, and Venue)", "error");
+  
+    if (!eventData.title.trim() || !eventData.startDate || !eventData.location) {
+      showToast("Please fill in Headline, Start Date, and Venue", "error");
       return;
     }
   
     setLoading(true);
     try {
-      const payload = {
-        data: {
-          title: eventData.title,
-          description: eventData.description,
-         
-          date: new Date(`${eventData.startDate}T${eventData.startTime}:00`).toISOString(),
-          
-          
-          endDate: new Date(`${eventData.endDate}T${eventData.endTime}:00`).toISOString(),
-          
-          time: `${eventData.startTime} - ${eventData.endTime}`,
-          location: eventData.location,
-          cpdPoints: Number(eventData.cpdPoints),
-          registrationLink: eventData.registrationLink,
-          isFeatured: eventData.isFeatured,
-          isPaid: eventData.isPaid,
-          memberPrice: Number(eventData.memberPrice),
-          nonMemberPrice: Number(eventData.nonMemberPrice),
-          image: eventData.imageId, 
-          publishedAt: new Date().toISOString()
-        }
+      // 2. Build base payload
+      const dataPayload: any = {
+        title: eventData.title,
+        description: eventData.description,
+        date: new Date(`${eventData.startDate}T${eventData.startTime}:00`).toISOString(),
+        time: `${eventData.startTime} - ${eventData.endTime}`,
+        location: eventData.location,
+        cpdPoints: Number(eventData.cpdPoints),
+        registrationLink: eventData.registrationLink,
+        isFeatured: eventData.isFeatured,
+        isPaid: eventData.isPaid,
+        memberPrice: Number(eventData.memberPrice),
+        nonMemberPrice: Number(eventData.nonMemberPrice),
+        image: eventData.imageId,
+        publishedAt: new Date().toISOString()
       };
   
-      await api.post('/events', payload);
-      showToast("Event Published Successfully! ", "success");
+      
+      if (eventData.endDate) {
+        dataPayload.endDate = new Date(`${eventData.endDate}T${eventData.endTime}:00`).toISOString();
+      }
+  
+      await api.post('/events', { data: dataPayload });
+      
+      showToast("Event Published Successfully!", "success");
       setTimeout(() => navigate('/events'), 1500);
     } catch (err: any) {
-      showToast("Publishing Failed: Make sure 'endDate' exists in Strapi", "error");
+      console.error("Publishing error:", err.response?.data || err.message);
+      showToast(
+        err.response?.data?.error?.message || "Publishing Failed. Check your connection.", 
+        "error"
+      );
     } finally {
       setLoading(false);
     }
