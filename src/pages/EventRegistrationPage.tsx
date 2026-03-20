@@ -135,7 +135,7 @@ const EventRegistrationPage: React.FC = () => {
                     </div>
                     <div className="text-left">
                       <p className="text-[10px] uppercase font-black text-amber-300 tracking-widest">Accreditation</p>
-                      <p className="text-sm font-bold">{eventData.cpdPoints} CPD Units</p>
+                      <p className="text-sm font-bold">{eventData.cpdPoints} CPD Hours</p>
                     </div>
                   </div>
                 )}

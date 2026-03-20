@@ -7,6 +7,7 @@ interface CreatePostFormProps {
   tags: Tag[];
   onSubmit: (data: CreatePostRequest) => Promise<void>;
   loading?: boolean;
+  initialData?: any;
   error?: string | null;
 }
 

@@ -17,7 +17,6 @@ interface CustomGeneratorProps {
   onSuccess?: () => void;
 }
 
-// Toast Notification 
 const Toast: React.FC<{ message: string; type: 'success' | 'error'; onClose: () => void }> = ({ message, type, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(onClose, 4000);
@@ -46,48 +45,46 @@ const SaveTemplateModal: React.FC<{
   const [desc, setDesc] = useState('');
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-[0_20px_70px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-white">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-sans">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-white">
           <div>
-            <h3 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-               Save Template
-            </h3>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">Reuse these parameters for future audits.</p>
+            <h3 className="text-lg font-black text-black uppercase tracking-tight">Save Template</h3>
+            <p className="text-xs text-gray-400 font-bold mt-0.5 uppercase tracking-widest">Reuse parameters for future reports</p>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 rounded-full transition-all active:scale-90"><X size={20}/></button>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-all"><X size={20}/></button>
         </div>
         
-        <div className="p-8 space-y-6">
+        <div className="p-6 space-y-5">
           <div>
-            <label className="block text-[10px] font-black text-[#5E2590] uppercase tracking-[0.15em] mb-2 opacity-70">Template Name</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Template Name</label>
             <input 
               autoFocus
-              className="w-full border-2 border-slate-100 bg-slate-50/30 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-[#5E2590]/10 focus:border-[#5E2590] focus:bg-white outline-none transition-all placeholder:text-slate-300"
-              placeholder="e.g., Weekly Membership Audit"
+              className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-black focus:border-black focus:bg-white outline-none transition-all"
+              placeholder="e.g., Monthly Application Audit"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-[#5E2590] uppercase tracking-[0.15em] mb-2 opacity-70">Description</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Description</label>
             <textarea 
-              className="w-full border-2 border-slate-100 bg-slate-50/30 rounded-2xl px-5 py-3.5 text-sm h-32 focus:ring-4 focus:ring-[#5E2590]/10 focus:border-[#5E2590] focus:bg-white outline-none transition-all resize-none placeholder:text-slate-300 font-medium"
-              placeholder="Briefly describe what data this template captures..."
+              className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm h-28 focus:ring-2 focus:ring-black focus:border-black focus:bg-white outline-none transition-all resize-none font-medium"
+              placeholder="Describe the purpose of this report..."
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="p-8 bg-slate-50/80 backdrop-blur-sm flex gap-4">
-          <button onClick={onClose} className="flex-1 px-4 py-4 text-slate-500 font-bold text-sm hover:text-slate-800 rounded-2xl transition-colors">Cancel</button>
+        <div className="p-6 bg-gray-50 flex flex-col sm:flex-row gap-3">
+          <button onClick={onClose} className="flex-1 px-4 py-3 text-gray-500 font-bold text-xs uppercase tracking-widest hover:text-black transition-colors">Cancel</button>
           <button 
             disabled={!name || isSaving}
             onClick={() => onSave(name, desc)}
-            className="flex-[1.5] bg-[#5E2590] shadow-lg shadow-indigo-200 text-white px-4 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-[#4a1d72] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+            className="flex-[1.5] bg-black text-white px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-gray-800 transition-all"
           >
-            {isSaving ? <Loader2 className="animate-spin" size={18}/> : <><Save size={18}/> Confirm Save</>}
+            {isSaving ? <Loader2 className="animate-spin" size={16}/> : <><Save size={16}/> Save Template</>}
           </button>
         </div>
       </div>
@@ -107,7 +104,6 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
   const [showAddFilter, setShowAddFilter] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   
-  // Toast State
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
   const availableCategories: FilterCategory[] = ['All', 'Membership', 'Applications', 'System'];
@@ -134,18 +130,20 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         output_format: selectedFormat.toLowerCase(),
         filters: {
           period: getSelectedPeriod(),
-          raw_filters: selectedFilters.map(f => f.label)
+          category: getSelectedCategory().toLowerCase(),
+          include_visuals: true,
+          include_stats: true
         },
         fields_to_include: ["all"],
         is_active: true
       };
 
       await analyticsApi.createReportTemplate(templatePayload);
-      setToast({ message: `Template "${name}" saved successfully!`, type: 'success' });
+      setToast({ message: `Template "${name}" saved!`, type: 'success' });
       setShowSaveModal(false);
       if (onSuccess) onSuccess(); 
     } catch (error) {
-      setToast({ message: 'Failed to save template. Please try again.', type: 'error' });
+      setToast({ message: 'Failed to save template.', type: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -154,13 +152,25 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
   const handleGenerateReport = async () => {
     setGenerating(true);
     try {
-      const quickTemplate = await analyticsApi.createReportTemplate({
-        name: `Ad-hoc ${getSelectedCategory()} Report`,
-        description: `Generated manually on ${new Date().toLocaleDateString()}`,
-        report_type: getSelectedCategory().toLowerCase(),
+      const category = getSelectedCategory().toLowerCase();
+      
+      // Create template with full filter payload for Django backend
+      const reportPayload = {
+        name: `Manual ${getSelectedCategory()} Report`,
+        description: `Generated on ${new Date().toLocaleDateString()}`,
+        report_type: category === 'all' ? 'membership' : category,
         output_format: selectedFormat.toLowerCase(),
-        is_active: false
-      });
+        is_active: false,
+        filters: {
+          period: getSelectedPeriod(),
+          category: category,
+          include_visuals: true, // This enables the graphs in Django
+          include_stats: true    // This enables summary stats
+        },
+        fields_to_include: ["all"]
+      };
+
+      const quickTemplate = await analyticsApi.createReportTemplate(reportPayload);
 
       await analyticsApi.generateReport(
         quickTemplate.id,
@@ -168,47 +178,42 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         selectedFormat.toLowerCase()
       );
 
-      setToast({ message: 'Report generation started! It will appear in "Recently Generated".', type: 'success' });
+      setToast({ message: 'Report generation started!', type: 'success' });
       if (onSuccess) onSuccess(); 
     } catch (error) {
-      setToast({ message: 'Report generation failed.', type: 'error' });
+      setToast({ message: 'Generation failed. Check category support.', type: 'error' });
     } finally {
       setGenerating(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 md:p-10 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] border border-slate-100 relative overflow-hidden">
-      
-      {/* Background Accent */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#5E2590]/5 rounded-bl-[100px] -z-10 pointer-events-none" />
-
+    <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative font-sans text-black">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-10">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-8">
         <div>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 bg-[#5E2590]/10 rounded-2xl">
-              <Wand2 size={22} className="text-[#5E2590]" />
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-gray-100 rounded-xl">
+              <Wand2 size={22} className="text-black" />
             </div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Report Builder</h2>
+            <h2 className="text-xl font-black text-black uppercase tracking-tight">Report Builder</h2>
           </div>
-          <p className="text-sm text-slate-400 font-medium max-w-md">Configure parameters below to generate detailed audits and system insights.</p>
+          <p className="text-sm text-gray-500 font-medium">Configure parameters to generate visual audits and system insights.</p>
         </div>
       </div>
 
-      <div className="bg-slate-50/80 rounded-[2rem] p-6 md:p-8 mb-8 border border-slate-100">
-        <div className="flex items-center justify-between mb-6">
-            <label className="block text-[10px] font-black text-[#5E2590] uppercase tracking-[0.2em] opacity-60">Active Parameters</label>
-            <div className="h-px flex-1 bg-slate-200/60 ml-4"></div>
+      <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+        <div className="flex items-center justify-between mb-5">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Selected Parameters</label>
         </div>
         
         <div className="flex flex-wrap gap-3">
           {selectedFilters.map((filter) => (
-            <div key={filter.id} className="group flex items-center gap-2.5 bg-white text-slate-700 pl-4 pr-2 py-2.5 rounded-2xl text-xs font-bold border border-slate-100 shadow-sm hover:border-[#5E2590]/30 transition-all">
-              <span className="text-[#5E2590] opacity-40 uppercase text-[9px] tracking-wider">{filter.type}</span>
-              <span className="text-slate-800">{filter.label}</span>
-              <button onClick={() => removeFilter(filter.id)} className="p-1 rounded-lg hover:bg-red-50 hover:text-red-500 text-slate-300 transition-all">
+            <div key={filter.id} className="flex items-center gap-3 bg-white text-black pl-4 pr-2 py-2 rounded-xl text-[11px] font-black border border-gray-200 shadow-sm uppercase tracking-wider">
+              <span className="text-gray-400">{filter.type}:</span>
+              <span>{filter.label}</span>
+              <button onClick={() => removeFilter(filter.id)} className="p-1 rounded-lg hover:bg-red-50 hover:text-red-500 text-gray-300 transition-all">
                 <X size={14} strokeWidth={3} />
               </button>
             </div>
@@ -217,8 +222,8 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
           <div className="relative">
             <button 
               onClick={() => setShowAddFilter(!showAddFilter)} 
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all ${
-                showAddFilter ? 'bg-[#5E2590] text-white' : 'bg-[#5E2590]/5 text-[#5E2590] hover:bg-[#5E2590]/10'
+              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                showAddFilter ? 'bg-black text-white' : 'bg-white border border-gray-200 text-black hover:bg-gray-50'
               }`}
             >
               <Plus size={14} strokeWidth={3} /> 
@@ -226,21 +231,21 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
             </button>
             
             {showAddFilter && (
-              <div className="absolute top-full left-0 mt-4 bg-white border border-slate-100 rounded-[1.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-20 min-w-[240px] p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-20 min-w-[220px] p-2 animate-in fade-in slide-in-from-top-2">
                 <div className="px-3 py-2">
-                    <p className="text-[9px] font-black text-[#5E2590] uppercase tracking-widest opacity-40 mb-2">Category</p>
-                    <div className="grid grid-cols-1 gap-1">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Report Category</p>
+                    <div className="space-y-1">
                         {availableCategories.map(cat => (
-                        <button key={cat} onClick={() => addFilter('category', cat)} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#5E2590] rounded-xl transition-colors">{cat}</button>
+                        <button key={cat} onClick={() => addFilter('category', cat)} className="w-full text-left px-3 py-2 text-[11px] font-bold text-black hover:bg-gray-100 rounded-lg transition-colors uppercase">{cat}</button>
                         ))}
                     </div>
                 </div>
-                <div className="h-px bg-slate-50 my-2 mx-3"></div>
+                <div className="h-px bg-gray-100 my-2"></div>
                 <div className="px-3 py-2">
-                    <p className="text-[9px] font-black text-[#5E2590] uppercase tracking-widest opacity-40 mb-2">Timeframe</p>
-                    <div className="grid grid-cols-1 gap-1">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Timeframe</p>
+                    <div className="space-y-1">
                         {availablePeriods.map(per => (
-                        <button key={per} onClick={() => addFilter('period', per)} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-[#5E2590] rounded-xl transition-colors">{per}</button>
+                        <button key={per} onClick={() => addFilter('period', per)} className="w-full text-left px-3 py-2 text-[11px] font-bold text-black hover:bg-gray-100 rounded-lg transition-colors uppercase">{per}</button>
                         ))}
                     </div>
                 </div>
@@ -250,16 +255,16 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-8 pt-8 border-t border-slate-50">
+      <div className="flex flex-col gap-6 pt-6 border-t border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Output Format</span>
-          <div className="flex p-1.5 bg-slate-100/80 rounded-2xl w-fit">
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Output Format</span>
+          <div className="flex p-1 bg-gray-100 rounded-xl w-fit">
             {(['PDF', 'Excel'] as FormatType[]).map((format) => (
               <button 
                 key={format} 
                 onClick={() => setSelectedFormat(format)} 
-                className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${
-                  selectedFormat === format ? 'bg-white text-[#5E2590] shadow-md' : 'text-slate-400 hover:text-slate-600'
+                className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  selectedFormat === format ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'
                 }`}
               >
                 {format}
@@ -268,25 +273,25 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
+        <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full">
           <button 
             onClick={() => setShowSaveModal(true)} 
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 border-2 border-slate-100 text-slate-600 px-8 py-4 rounded-2xl text-sm font-bold hover:bg-slate-50 hover:border-slate-200 transition-all active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 border border-gray-200 text-black px-6 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-50 transition-all"
           >
-            <Save size={18} /> 
+            <Save size={16} /> 
             <span>Save Template</span>
           </button>
           
           <button 
             onClick={handleGenerateReport} 
             disabled={generating || analyticsLoading} 
-            className="flex-1 sm:flex-none flex items-center justify-center gap-3 bg-[#5E2590] shadow-lg shadow-indigo-100 text-white px-10 py-4 rounded-2xl text-sm font-bold disabled:opacity-50 hover:bg-[#4a1d72] hover:-translate-y-1 transition-all active:translate-y-0"
+            className="flex-[1.5] flex items-center justify-center gap-3 bg-black text-white px-6 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-gray-200 disabled:opacity-50 hover:bg-gray-800 transition-all"
           >
             {generating ? (
-                <Loader2 className="animate-spin" size={20} />
+                <Loader2 className="animate-spin" size={18} />
             ) : (
                 <>
-                    <Wand2 size={18} /> 
+                    <Wand2 size={16} /> 
                     <span>Generate Final Report</span>
                 </>
             )}

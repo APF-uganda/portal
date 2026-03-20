@@ -12,7 +12,7 @@ const UpcomingEvents = () => {
 
   const { events, loading } = useEvents();
 
-  // Helper function to format the date before sending it to the registration page
+ 
   const formatReadableDate = (dateStr: string) => {
     if (!dateStr) return "Date TBA";
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -37,7 +37,7 @@ const UpcomingEvents = () => {
     const interval = setInterval(() => {
       if (scrollRef.current) {
         const nextIndex = (activeIndex + 1) % upcomingEvents.length;
-        scrollRef.current.scrollTo({ left: nextIndex * 350, behavior: "smooth" }); // Match PreviousEvents width
+        scrollRef.current.scrollTo({ left: nextIndex * 350, behavior: "smooth" });
         setActiveIndex(nextIndex);
       }
     }, 60000);
@@ -45,7 +45,7 @@ const UpcomingEvents = () => {
   }, [activeIndex, upcomingEvents.length]);
 
   const scroll = (direction: 'left' | 'right') => {
-    const distance = direction === 'left' ? -350 : 350; // Match PreviousEvents scroll distance
+    const distance = direction === 'left' ? -350 : 350;
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
 
@@ -64,7 +64,6 @@ const UpcomingEvents = () => {
 
         {upcomingEvents.length > 0 ? (
           <div className="flex items-center gap-4">
-            {/* Left scroll button - only show if more than 4 events */}
             {upcomingEvents.length > 4 && (
               <button 
                 onClick={() => scroll('left')} 
@@ -103,7 +102,14 @@ const UpcomingEvents = () => {
                           eventId: event.documentId || event.id,
                           location: event.location || "Location TBD",
                           date: formatReadableDate(event.date),
-                          image: finalImageUrl
+                          time: event.time,
+                          image: finalImageUrl,
+                         
+                          isPaid: event.isPaid,
+                          memberPrice: event.memberPrice,
+                          nonMemberPrice: event.nonMemberPrice,
+                          cpdPoints: event.cpdPoints,
+                          description: event.description
                         } 
                       })}
                     />
@@ -112,7 +118,6 @@ const UpcomingEvents = () => {
               })}
             </div>
 
-            {/* Right scroll button - only show if more than 4 events */}
             {upcomingEvents.length > 4 && (
               <button 
                 onClick={() => scroll('right')} 
