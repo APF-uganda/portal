@@ -1,9 +1,10 @@
 import { FC, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, User, LogOut, Menu } from "lucide-react";
+import { ChevronDown, User, LogOut, Menu, Bell } from "lucide-react";
 import { useProfile } from "../../hooks/useProfile";
 import { getDisplayName } from "../../utils/displayName";
 import { getCurrentUser } from "../../utils/auth";
+import { useAdminNotifications } from "../../hooks/useAdminNotifications";
 
 type HeaderProps = {
   title: string;
@@ -16,6 +17,7 @@ onMobileMenuToggle
 }) => {
   const navigate = useNavigate();
   const { profile, loading } = useProfile();
+  const { unreadCount } = useAdminNotifications();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -76,9 +78,22 @@ onMobileMenuToggle
        
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-6">
-        {/* Search */} 
-       
+      <div className="flex items-center gap-3 md:gap-6">
+        {/* Notification Icon - Only show for admin users */}
+        {isAdminRole && (
+          <button
+            onClick={() => navigate("/admin/notifications")}
+            className="relative p-2 rounded-lg hover:bg-white hover:bg-opacity-50 transition-colors"
+            aria-label="Notifications"
+          >
+            <Bell className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+        )}
         
         {/* Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
@@ -92,9 +107,10 @@ onMobileMenuToggle
               <div className="w-8 h-8 rounded-full overflow-hidden">
                 {profile?.profile_picture_url ? (
                   <img 
-                    src={profile.profile_picture_url}
+                    src={`${profile.profile_picture_url}?v=${profile.updated_at || new Date().getTime()}`}
                     alt={profile.full_name}
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-cover"
+                    key={`${profile.profile_picture_url}-${profile.updated_at}`}
                   />
                 ) : (
                   <div className="w-full h-full bg-[#5F2F8B] flex items-center justify-center text-white font-bold text-sm">
