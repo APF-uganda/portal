@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard, Clock } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { baseEvents } from '../components/EventComponents/eventsData';
@@ -11,11 +11,15 @@ const EventRegistrationPage: React.FC = () => {
 
   const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
+  // Updated interface to match LogisticsSidebar keys
   const eventData = location.state as { 
     eventTitle: string; 
     eventId: string;
     location?: string;
-    date?: string;
+    startDate?: string; // Changed from date
+    endDate?: string;   // Added
+    startTime?: string;
+    endTime?: string;
     image?: string;
     isPaid?: boolean;
     memberPrice?: number;
@@ -47,7 +51,12 @@ const EventRegistrationPage: React.FC = () => {
 
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
-  const displayDate = eventData.date || localEvent?.date || 'TBA';
+  
+  // Format Date Range
+  const displayStartDate = eventData.startDate || localEvent?.date || 'TBA';
+  const displayEndDate = eventData.endDate || '';
+  const displayTime = eventData.startTime ? `${eventData.startTime} - ${eventData.endTime || ''}` : '';
+  
   const displayImage = eventData.image || localEvent?.image || DEFAULT_FALLBACK;
 
   const validateForm = () => {
@@ -72,61 +81,87 @@ const EventRegistrationPage: React.FC = () => {
   const handleBackToEvents = () => navigate('/events');
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col font-sans">
       <Navbar />
       
       {step === 1 ? (
         <>
           <section
-            className="relative h-[550px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
+            className="relative h-[600px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
             style={{ backgroundImage: `url(${displayImage})` }}
           >
-            <div className="absolute inset-0 bg-[#171a1f]/60" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-[#171a1f]/80 to-[#d0c9ea]" />
 
-            <div className="relative z-20 max-w-4xl mx-auto text-center text-white px-4 fade-in-up">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 fade-in-up delay-200">
+            <div className="relative z-20 max-w-5xl mx-auto text-center text-white px-4">
+              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-400/30 text-purple-300 text-xs font-bold uppercase tracking-[0.2em] fade-in-up">
+                Event Registration
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl font-black mb-6 fade-in-up delay-200 tracking-tight">
                 {eventData.eventTitle}
               </h1>
-              <p className="text-lg md:text-xl mb-6 fade-in-up delay-400">
-                {localEvent?.description || 'Join us for this exciting event'}
+              
+              <p className="text-lg md:text-xl mb-8 text-gray-300 max-w-2xl mx-auto fade-in-up delay-400 font-medium">
+                {localEvent?.description || 'Join us for this professional development session designed for modern practitioners.'}
               </p>
               
-              {/* DATE & LOCATION */}
-              <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base mb-6 fade-in-up delay-600">
-                <div className="flex items-center gap-2">
-                  <MapPin size={20} className="text-purple-400" />
-                  <span className="font-medium">{displayLocation}</span>
+              {/* MODERNIZED LOGISTICS CHIPS */}
+              <div className="flex flex-wrap justify-center gap-4 mb-10 fade-in-up delay-600">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Calendar size={20} className="text-purple-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase font-bold text-purple-300 tracking-wider">Date</p>
+                    <p className="text-sm font-bold">
+                      {displayStartDate} {displayEndDate && ` - ${displayEndDate}`}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={20} className="text-purple-400" />
-                  <span className="font-medium">{displayDate}</span>
+
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <MapPin size={20} className="text-purple-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase font-bold text-purple-300 tracking-wider">Venue</p>
+                    <p className="text-sm font-bold">{displayLocation}</p>
+                  </div>
                 </div>
+
+                {eventData.cpdPoints ? (
+                  <div className="flex items-center gap-3 bg-amber-500/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-amber-500/20 shadow-xl">
+                    <div className="p-2 bg-amber-500/20 rounded-lg">
+                      <Award size={20} className="text-amber-400" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">Accreditation</p>
+                      <p className="text-sm font-bold">{eventData.cpdPoints} CPD Units</p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
-              {/* CPD AND PRICES UNDER DATES */}
-              <div className="flex flex-col items-center gap-4 fade-in-up delay-600">
-                {eventData.cpdPoints && (
-                  <div className="flex items-center gap-2 bg-purple-600/90 px-4 py-2 rounded-full border border-purple-400 shadow-lg">
-                    <Award size={18} className="text-amber-400" />
-                    <span className="text-xs font-bold uppercase tracking-widest">
-                      {eventData.cpdPoints} CPD Units
-                    </span>
+              {/* PRICING CARDS */}
+              {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
+                <div className="flex justify-center gap-4 fade-in-up delay-600">
+                  <div className="bg-gradient-to-br from-white/10 to-transparent backdrop-blur-xl border border-white/20 p-4 rounded-2xl text-left w-44 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute -right-2 -top-2 bg-purple-500/20 w-12 h-12 rounded-full blur-xl" />
+                    <p className="text-[10px] text-purple-300 font-black uppercase tracking-widest mb-1">Members</p>
+                    <p className="text-2xl font-black">
+                      <span className="text-xs mr-1 text-gray-400 font-normal">UGX</span>
+                      {Number(eventData.memberPrice || 0).toLocaleString()}
+                    </p>
                   </div>
-                )}
-
-                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                  <div className="flex gap-4">
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
-                      <p className="text-[10px] text-purple-300 font-bold uppercase">Member Price</p>
-                      <p className="text-lg font-black">UGX {Number(eventData.memberPrice).toLocaleString()}</p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl text-left min-w-[140px]">
-                      <p className="text-[10px] text-gray-300 font-bold uppercase">Non-Member</p>
-                      <p className="text-lg font-black">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</p>
-                    </div>
+                  <div className="bg-gradient-to-br from-white/5 to-transparent backdrop-blur-xl border border-white/10 p-4 rounded-2xl text-left w-44 shadow-2xl group">
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Non-Members</p>
+                    <p className="text-2xl font-black text-white/90">
+                       <span className="text-xs mr-1 text-gray-500 font-normal">UGX</span>
+                       {Number(eventData.nonMemberPrice || 0).toLocaleString()}
+                    </p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             <style>
@@ -135,7 +170,7 @@ const EventRegistrationPage: React.FC = () => {
                   0% { opacity: 0; transform: translateY(30px); }
                   100% { opacity: 1; transform: translateY(0); }
                 }
-                .fade-in-up { animation: fadeInUp 1s ease-out both; }
+                .fade-in-up { animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
                 .delay-200 { animation-delay: 0.2s; }
                 .delay-400 { animation-delay: 0.4s; }
                 .delay-600 { animation-delay: 0.6s; }
@@ -144,109 +179,69 @@ const EventRegistrationPage: React.FC = () => {
           </section>
 
           <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto px-4">
               <button
                 onClick={handleBackToEvents}
-                className="flex items-center text-purple-600 hover:text-purple-700 mb-6 transition-colors"
+                className="group flex items-center text-purple-900 font-bold mb-8 transition-all hover:gap-3"
               >
-                <ArrowLeft size={20} className="mr-2" />
+                <div className="p-2 bg-white rounded-full shadow-sm mr-3 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                  <ArrowLeft size={18} />
+                </div>
                 Back to Events
               </button>
 
-              <div className="bg-white rounded-lg shadow-md border border-purple-300 overflow-hidden">
-                <form onSubmit={handleSubmit} className="p-6 sm:p-8">
-                  <div className="space-y-5">
-                    
+              <div className="bg-white rounded-[32px] shadow-2xl border border-purple-200/50 overflow-hidden">
+                <form onSubmit={handleSubmit} className="p-8 md:p-12">
+                  <div className="space-y-6">
+                    {/* Dynamic Pricing Info in Form */}
                     {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                      <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg flex justify-between items-center mb-6">
-                        <span className="text-sm font-bold text-purple-700 uppercase tracking-wider">Registration Fee</span>
-                        <span className="text-xl font-bold text-purple-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
+                      <div className="bg-slate-50 border border-slate-100 p-6 rounded-[24px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Selected Tier</span>
+                          <span className="text-lg font-black text-slate-800">Standard Registration</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Investment</span>
+                          <span className="text-2xl font-black text-[#7E49B3]">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
+                        </div>
                       </div>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Full name <span className="text-red-500">*</span></label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
                         <input
                           type="text"
                           required
-                          placeholder="Enter your Full name"
-                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.fullName ? 'border-red-500' : 'border-gray-300'}`}
+                          className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-200 outline-none text-sm font-medium transition-all"
                           value={formData.fullName}
-                          onChange={(e) => { setFormData({...formData, fullName: e.target.value}); setErrors({...errors, fullName: ''}); }}
+                          onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                         />
-                        {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Email address <span className="text-red-500">*</span></label>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
                         <input
                           type="email"
                           required
-                          placeholder="Enter your email address"
-                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                          className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-200 outline-none text-sm font-medium transition-all"
                           value={formData.email}
-                          onChange={(e) => { setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''}); }}
-                        />
-                        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Phone number <span className="text-red-500">*</span></label>
-                        <div className="flex gap-2">
-                          <select
-                            value={formData.countryCode}
-                            onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
-                            className="w-24 px-2 py-2.5 border border-gray-300 rounded-lg bg-white text-sm"
-                          >
-                            <option value="+256">+256</option>
-                            <option value="+254">+254</option>
-                          </select>
-                          <input
-                            type="tel"
-                            required
-                            placeholder="Enter your Phone number"
-                            className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
-                            value={formData.phoneNumber}
-                            onChange={(e) => { setFormData({...formData, phoneNumber: e.target.value}); setErrors({...errors, phoneNumber: ''}); }}
-                          />
-                        </div>
-                        {errors.phoneNumber && <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>}
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Company name</label>
-                        <input
-                          type="text"
-                          placeholder="Enter your company name"
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm"
-                          value={formData.companyName}
-                          onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
                         />
                       </div>
                     </div>
 
-                    <div className="pt-2">
-                      <div className="flex items-start gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.agreeToTerms}
-                          onChange={(e) => { setFormData({...formData, agreeToTerms: e.target.checked}); setErrors({...errors, agreeToTerms: ''}); }}
-                          className="mt-1 w-4 h-4 text-purple-600"
-                        />
-                        <label className="text-sm text-gray-700">I agree to the terms and conditions.</label>
-                      </div>
-                      {errors.agreeToTerms && <p className="text-xs text-red-500 mt-1">{errors.agreeToTerms}</p>}
-                    </div>
-
+                    {/* Submit Button */}
                     <button
                       type="submit"
-                      className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6 flex items-center justify-center gap-2"
+                      className="w-full bg-[#7E49B3] text-white py-5 rounded-2xl font-bold text-lg hover:bg-[#6a3d99] hover:shadow-xl hover:shadow-purple-200 transform transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-3"
                     >
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && <CreditCard size={18} />}
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Proceed to Payment' : 'Register'}
+                      {eventData.isPaid ? (
+                        <>
+                          <CreditCard size={20} />
+                          Secure My Spot
+                        </>
+                      ) : 'Confirm Registration'}
                     </button>
                   </div>
                 </form>
@@ -255,32 +250,22 @@ const EventRegistrationPage: React.FC = () => {
           </main>
         </>
       ) : (
+        /* Success step remains largely the same but with rounded-32px */
         <main className="flex-1 py-12 pt-24" style={{ backgroundColor: '#d0c9ea' }}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-md border border-purple-300 p-12 text-center">
-              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle size={48} />
+           <div className="max-w-2xl mx-auto px-4">
+            <div className="bg-white rounded-[40px] shadow-2xl p-12 text-center border border-white">
+              <div className="w-20 h-20 bg-green-50 text-green-500 rounded-3xl flex items-center justify-center mx-auto mb-8 transform rotate-12">
+                <CheckCircle size={40} className="-rotate-12" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Payment Successful!' : 'Registration Successful!'}
-              </h2>
-              <div className="space-y-3 mb-8">
-                <p className="text-gray-600 text-lg">
-                  Hello <span className="font-semibold text-gray-900">{formData.fullName}</span>, 
-                  you are successfully registered for:
-                </p>
-                <p className="text-xl font-bold text-purple-600 px-4">
-                  {eventData.eventTitle}
-                </p>
-                <p className="text-gray-500 pt-4">
-                  A confirmation has been sent to <span className="font-semibold">{formData.email}</span>.
-                </p>
-              </div>
+              <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">You're In!</h2>
+              <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+                Confirmation for <span className="text-slate-900 font-bold">{eventData.eventTitle}</span> has been sent to your inbox.
+              </p>
               <button
                 onClick={handleBackToEvents}
-                className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
+                className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all"
               >
-                Back to Events
+                Return to Dashboard
               </button>
             </div>
           </div>
