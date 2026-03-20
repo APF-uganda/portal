@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Trash2, CheckCircle, Mail, X, Send, AlertCircle, Info } from 'lucide-react';
+import { Trash2, Mail, X, Send, AlertCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
@@ -58,16 +58,18 @@ const AdminInquiryDashboard = () => {
     setSending(true);
     try {
       const token = getAccessToken();
-      await axios.post(`${API_URL}/api/v1/contacts/${selectedInquiry.id}/reply/`, 
-        { reply_text: replyText },
+      const response = await axios.post(`${API_URL}/api/v1/contacts/${selectedInquiry.id}/reply/`, 
+        { reply: replyText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      showNotice("Reply sent successfully via email!");
+      showNotice(response.data.message || "Reply sent successfully via email!");
       setReplyText("");
       setSelectedInquiry(null);
       fetchInquiries(); 
-    } catch (err) {
-      showNotice("Failed to send email. Check SMTP settings.", "error");
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || "Failed to send email. Please check your email configuration.";
+      console.error("Error sending reply:", err.response?.data || err.message);
+      showNotice(errorMsg, "error");
     } finally {
       setSending(false);
     }
@@ -76,31 +78,33 @@ const AdminInquiryDashboard = () => {
   const handleToggleRead = async (id: number) => {
     try {
       const token = getAccessToken();
-      // Ensure the endpoint logic matches the toggle
-      await axios.patch(`${API_URL}/api/v1/contacts/${id}/toggle-read/`, {}, {
+      const response = await axios.patch(`${API_URL}/api/v1/contacts/${id}/toggle-read/`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      // Update local state with the response data
       setInquiries(prev => prev.map(iq => 
-        iq.id === id ? { ...iq, is_read: !iq.is_read } : iq
+        iq.id === id ? response.data.data : iq
       ));
-      showNotice("Status updated");
-    } catch (err) {
-      showNotice("Failed to update status", "error");
+      showNotice(response.data.message || "Status updated");
+    } catch (err: any) {
+      console.error("Error toggling status:", err.response?.data || err.message);
+      showNotice(err.response?.data?.error || "Failed to update status", "error");
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
       const token = getAccessToken();
-      await axios.delete(`${API_URL}/api/v1/contacts/${id}/delete/`, {
+      const response = await axios.delete(`${API_URL}/api/v1/contacts/${id}/delete/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInquiries(inquiries.filter(iq => iq.id !== id));
       setDeleteConfirm(null);
-      showNotice("Inquiry deleted");
-    } catch (err) {
-      showNotice("Failed to delete inquiry", "error");
+      showNotice(response.data.message || "Inquiry deleted");
+    } catch (err: any) {
+      console.error("Error deleting inquiry:", err.response?.data || err.message);
+      showNotice(err.response?.data?.error || "Failed to delete inquiry", "error");
     }
   };
 
@@ -184,18 +188,20 @@ const AdminInquiryDashboard = () => {
                                 <button 
                                   onClick={() => handleToggleRead(iq.id)} 
                                   title={iq.is_read ? "Mark as Unread" : "Mark as Read"}
-                                  className={`p-1.5 md:p-2 rounded-lg transition-all active:scale-90 ${iq.is_read ? 'text-green-600 bg-green-50 border border-green-100' : 'text-gray-400 bg-gray-50 border border-gray-100 hover:text-[#5E2590]'}`}
+                                  className={`p-1.5 md:p-2 rounded-lg transition-all active:scale-90 ${iq.is_read ? 'text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100' : 'text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100'}`}
                                 >
-                                  <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
+                                  {iq.is_read ? <EyeOff size={14} className="md:w-[18px] md:h-[18px]" /> : <Eye size={14} className="md:w-[18px] md:h-[18px]" />}
                                 </button>
                                 <button 
                                   onClick={() => setSelectedInquiry(iq)} 
+                                  title="Reply via Email"
                                   className="p-1.5 md:p-2 text-[#5E2590] bg-purple-50 rounded-lg border border-purple-100 hover:bg-purple-100 transition-colors"
                                 >
                                   <Mail size={14} className="md:w-[18px] md:h-[18px]" />
                                 </button>
                                 <button 
                                   onClick={() => setDeleteConfirm(iq.id)} 
+                                  title="Delete Inquiry"
                                   className="p-1.5 md:p-2 text-red-600 bg-red-50 rounded-lg border border-red-100 hover:bg-red-100 transition-colors"
                                 >
                                   <Trash2 size={14} className="md:w-[18px] md:h-[18px]" />
