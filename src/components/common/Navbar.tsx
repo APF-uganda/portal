@@ -183,7 +183,7 @@ function Navbar({ forceSolid = false }: NavbarProps) {
                 ) : (
                   <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                     <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow transition hover:-translate-y-0.5">
-                      Members Login
+                      Login
                     </button>
                   </Link>
                 )}
