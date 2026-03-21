@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ExternalLink, CheckCircle, ShieldCheck, Mail, Loader2, 
-  User, X, AlertCircle, ArrowLeft 
+  User, X, AlertCircle, ArrowLeft, Calendar
 } from 'lucide-react';
 import eventService from '../../services/eventService'; 
 
-// Components for Layout Consistency
+
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
@@ -80,7 +80,7 @@ const AdminEvents: React.FC = () => {
         {/* Navigation Header */}
         <Header title="Registrations Management" onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)} />
 
-        <div className="flex-1 p-6 md:p-10 lg:p-12">
+        <div className="flex-1 p-4 md:p-10 lg:p-12">
           
           {/* Notification Overlay */}
           {notification.show && (
@@ -108,7 +108,7 @@ const AdminEvents: React.FC = () => {
                 >
                   <ArrowLeft size={16} /> Back to Control Center
                 </button>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Event Registrations</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Event Registrations</h1>
                 <p className="text-slate-500 mt-1">Review attendees and verify payment proofs.</p>
               </div>
               <div className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-sm">
@@ -124,7 +124,9 @@ const AdminEvents: React.FC = () => {
               </div>
             ) : (
               <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="overflow-x-auto">
+                
+               
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
@@ -161,7 +163,7 @@ const AdminEvents: React.FC = () => {
                                   href={reg.proof_of_payment} 
                                   target="_blank" 
                                   rel="noreferrer"
-                                  className="text-purple-600 font-bold text-xs inline-flex items-center gap-1.5 bg-purple-50 px-3 py-1.5 rounded-lg"
+                                  className="text-purple-600 font-bold text-xs inline-flex items-center gap-1.5 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors"
                                 >
                                   View Receipt <ExternalLink size={12} />
                                 </a>
@@ -183,7 +185,7 @@ const AdminEvents: React.FC = () => {
                                 <button 
                                   onClick={() => handleVerify(reg.id)}
                                   disabled={isVerifying === reg.id}
-                                  className="bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2 ml-auto"
+                                  className="bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2 ml-auto hover:bg-purple-700 transition-colors"
                                 >
                                   {isVerifying === reg.id && <Loader2 size={14} className="animate-spin" />}
                                   Verify Attendee
@@ -206,6 +208,78 @@ const AdminEvents: React.FC = () => {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile View Cards */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {registrations.length > 0 ? (
+                    registrations.map((reg: any) => (
+                      <div key={reg.id} className="p-5 space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
+                              <User size={20} />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 truncate">{reg.full_name}</div>
+                              <div className="text-xs text-slate-500 truncate">{reg.email}</div>
+                            </div>
+                          </div>
+                          <span className={`text-[9px] font-bold uppercase px-2.5 py-1 rounded-full border flex-shrink-0 ${
+                            reg.payment_status === 'Verified' 
+                              ? 'bg-green-50 text-green-700 border-green-100' 
+                              : 'bg-amber-50 text-amber-700 border-amber-100'
+                          }`}>
+                            {reg.payment_status}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Event</p>
+                            <p className="text-xs font-medium text-slate-700 line-clamp-1">{reg.event_title}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment</p>
+                            {reg.proof_of_payment ? (
+                              <a 
+                                href={reg.proof_of_payment} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-purple-600 font-bold text-[10px] inline-flex items-center gap-1"
+                              >
+                                View Receipt <ExternalLink size={10} />
+                              </a>
+                            ) : (
+                              <span className="text-slate-300 text-[10px] italic">No file</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="pt-2">
+                          {reg.payment_status !== 'Verified' ? (
+                            <button 
+                              onClick={() => handleVerify(reg.id)}
+                              disabled={isVerifying === reg.id}
+                              className="w-full bg-purple-600 text-white py-3 rounded-xl text-xs font-bold shadow-sm active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                              {isVerifying === reg.id && <Loader2 size={14} className="animate-spin" />}
+                              Verify Attendee
+                            </button>
+                          ) : (
+                            <div className="w-full py-3 bg-green-50 text-green-600 rounded-xl flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider border border-green-100">
+                              <CheckCircle size={14} /> Confirmed
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-8 py-20 text-center text-slate-400 font-medium">
+                      No registrations found.
+                    </div>
+                  )}
+                </div>
+
               </div>
             )}
           </div>

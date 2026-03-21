@@ -40,6 +40,11 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
 
+  // Helper to normalize backend keys
+  const fileName = doc.file_name || doc.name || 'Document';
+  const docType = doc.document_type || doc.type || 'File';
+  const rawPath = doc.file_url || doc.fileUrl || doc.file || doc.document;
+
   useEffect(() => {
     loadDocument();
     return () => {
@@ -53,22 +58,19 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
     setLoading(true);
     setError(null);
     
-    const path = doc.file_url || doc.file || doc.document;
-    if (!path) {
-      setError("Document path missing");
+    if (!rawPath) {
+      setError("Path missing");
       setLoading(false);
       return;
     }
 
     try {
       const token = getAccessToken();
-      if (!token) throw new Error("Auth token missing");
-
-      // Fix URL construction to avoid double slashes
-      let finalUrl = path;
-      if (!path.startsWith('http')) {
+      let finalUrl = rawPath;
+      
+      if (!rawPath.startsWith('http')) {
         const cleanBase = API_BASE_URL.replace(/\/+$/, '');
-        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        const cleanPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
         finalUrl = `${cleanBase}${cleanPath}`;
       }
 
@@ -76,7 +78,7 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (!response.ok) throw new Error(`Error ${response.status}`);
+      if (!response.ok) throw new Error(`Status ${response.status}`);
 
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
@@ -84,8 +86,7 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
       setPreviewUrl(objectUrl);
       setFileType(blob.type || 'application/octet-stream');
     } catch (err) {
-      console.error("Preview fail:", err);
-      setError("Could not load file");
+      setError("Load failed");
     } finally {
       setLoading(false);
     }
@@ -97,12 +98,12 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
         <div className="flex items-center gap-3">
           <FileText className="text-[#5C32A3]" size={18} />
           <div>
-            <p className="text-sm font-semibold text-gray-700">{formatDocumentType(doc.document_type)}</p>
-            <p className="text-xs text-gray-400">{doc.file_name}</p>
+            <p className="text-sm font-semibold text-gray-700">{formatDocumentType(docType)}</p>
+            <p className="text-xs text-gray-400">{fileName}</p>
           </div>
         </div>
         {previewUrl && (
-          <a href={previewUrl} download={doc.file_name} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+          <a href={previewUrl} download={fileName} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
             <Download size={16} className="text-gray-600" />
           </a>
         )}
@@ -111,13 +112,15 @@ const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
       <div className="p-4 bg-white min-h-[100px] flex items-center justify-center">
         {loading ? <Loader2 className="animate-spin text-gray-300" /> : 
          error ? <p className="text-xs text-red-500">{error}</p> :
-         fileType?.startsWith('image/') ? <img src={previewUrl!} className="max-h-80 rounded" /> :
-         fileType === 'application/pdf' ? <iframe src={previewUrl!} className="w-full h-80 border-none" /> :
-         <p className="text-xs text-gray-500">Preview unavailable. Please download.</p>}
+         fileType?.startsWith('image/') ? <img src={previewUrl!} alt="preview" className="max-h-80 rounded" /> :
+         fileType === 'application/pdf' ? <iframe src={previewUrl!} title="pdf-preview" className="w-full h-80 border-none" /> :
+         <p className="text-xs text-gray-500">Preview unavailable. Please download to view.</p>}
       </div>
     </div>
   );
 };
+
+
 
 const formatDocumentType = (type: string) => {
   return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');

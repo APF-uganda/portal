@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { 
-  Edit3, Search, Star, Plus, Trash2, Image as ImageIcon, CheckCircle2, AlertCircle 
+  Edit3, Search, Star, Plus, Trash2, Image as ImageIcon, CheckCircle2, AlertCircle, ArrowLeft 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; 
 import api from '../../services/cmsApi';
 import { CMS_BASE_URL } from '../../config/api'; 
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-
 import { ArticleForm } from '../../components/createcms-components/article';
 
 const NewsManagement = () => {
+  const navigate = useNavigate(); // Initialize navigate
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
@@ -33,7 +34,6 @@ const NewsManagement = () => {
   const fetchNews = async () => {
     setLoading(true);
     try {
-    
       const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc`);
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
@@ -46,7 +46,6 @@ const NewsManagement = () => {
           ...data,
           displayCategory: categoryData?.name || 'General',
           featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null,
-        
           isActuallyPublished: !!data.publishedAt 
         };
       });
@@ -71,30 +70,21 @@ const NewsManagement = () => {
 
     setLoading(true);
     try {
-      
       const strapiBlocks = (formData.content || []).map((block: any) => {
         if (block.type === 'paragraph') {
           const textContent = block.children?.[0]?.text || block.value || "";
           if (!textContent.trim()) return null;
           return {
             type: 'paragraph',
-            children: [{ 
-              type: 'text', 
-              text: textContent.trim() 
-            }]
+            children: [{ type: 'text', text: textContent.trim() }]
           };
         }
         if (block.type === 'image') {
           const imageUrl = block.image?.url || block.url || block.value;
           if (!imageUrl) return null;
-          
-          // Store image information in a format that can be parsed by the frontend
           return {
             type: 'paragraph',
-            children: [{ 
-              type: 'text', 
-              text: `__IMAGE__${imageUrl}__IMAGE__`
-            }]
+            children: [{ type: 'text', text: `__IMAGE__${imageUrl}__IMAGE__` }]
           };
         }
         return null;
@@ -110,16 +100,12 @@ const NewsManagement = () => {
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
-          // FIX: Correctly set publishedAt for Drafts
           publishedAt: status === 'published' ? new Date().toISOString() : null,
           news: formData.news ? Number(formData.news) : undefined
         }
       };
 
-      console.log('Sending payload to Strapi:', JSON.stringify(payload, null, 2));
-    
       const targetId = selectedArticle?.documentId || selectedArticle?.id;
-      
       if (selectedArticle && targetId) {
         await api.put(`/news-articles/${targetId}`, payload);
       } else {
@@ -130,11 +116,6 @@ const NewsManagement = () => {
       await fetchNews(); 
       showToast(status === 'published' ? "Article Published!" : "Draft Saved!", "success");
     } catch (err: any) {
-      console.error('Save failed:', err);
-      console.error('Error response:', err.response?.data);
-      if (err.response?.data?.error?.details?.errors) {
-        console.error('Detailed validation errors:', err.response.data.error.details.errors);
-      }
       showToast(`Save Failed: ${err.response?.data?.error?.message || err.message}`, "error");
     } finally {
       setLoading(false);
@@ -154,7 +135,6 @@ const NewsManagement = () => {
   };
 
   const filteredArticles = articles.filter(a => {
-    
     const matchesState = publicationState === 'published' ? a.isActuallyPublished : !a.isActuallyPublished;
     const matchesFilter = filter === 'All' || a.displayCategory === filter;
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase());
@@ -171,7 +151,6 @@ const NewsManagement = () => {
             <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-6 mx-auto">
               <Trash2 className="text-red-500" size={32} />
             </div>
-            
             <h3 className="text-2xl font-bold text-center mb-2 tracking-tight uppercase">Delete Article?</h3>
             <p className="text-gray-600 text-center text-sm mb-8 leading-relaxed font-medium">This article will be permanently deleted.</p>
             <div className="flex gap-4">
@@ -198,20 +177,27 @@ const NewsManagement = () => {
         <div className="flex-1 p-4 md:p-8 lg:p-10 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6 md:space-y-10">
             
-            {!isEditing && (
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                  <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 uppercase">News</h1>
-                  <p className="text-[#5F1C9F] text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Create and Manage News articles</p>
-                </div>
+            {/* NAVIGATION HEADER */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+              <div>
+                <button 
+                  onClick={() => navigate('/admin/cmsPage')} 
+                  className="flex items-center gap-2 text-slate-400 hover:text-purple-600 font-medium text-sm mb-2 transition-colors"
+                >
+                  <ArrowLeft size={16} /> Back to Control Center
+                </button>
+                <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 uppercase">News</h1>
+                <p className="text-[#5F1C9F] text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Create and Manage News articles</p>
+              </div>
+              {!isEditing && (
                 <button 
                   onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }}
                   className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-[#5F1C9F] rounded-2xl text-white hover:bg-[#4a1480] transition-all font-bold text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-purple-200 active:scale-95"
                 >
                   <Plus size={18} strokeWidth={3} /> Create Article
                 </button>
-              </div>
-            )}
+              )}
+            </div>
 
             {isEditing ? (
               <ArticleForm 
@@ -262,105 +248,61 @@ const NewsManagement = () => {
                   </div>
                 </div>
 
-                {/* News Table (Responsive Wrapper) */}
+                {/* News Table */}
                 <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden font-montserrat">
-                  
-                 {/* Desktop View: Table matches ApplicationsTable format */}
-<div className="hidden md:block bg-white shadow rounded-lg p-3 md:p-6">
-  {/* Header Section from ApplicationsTable */}
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-    <h3 className="text-base md:text-lg font-semibold text-gray-700">All News Articles</h3>
-    {/* You can add an Export button here later if needed to match exactly */}
-  </div>
-
-  <div className="overflow-x-auto">
-    <table className="w-full text-sm text-left text-gray-600 border border-[#F4F2FE] rounded-xl">
-      <thead className="bg-[#F4F2FE] text-gray-700 uppercase text-xs">
-        <tr>
-          <th className="px-3 md:px-4 py-2 border-b min-w-[250px]">News Content</th>
-          <th className="px-3 md:px-4 py-2 border-b min-w-[120px]">Category</th>
-          <th className="px-3 md:px-4 py-2 border-b min-w-[120px]">Status</th>
-          <th className="px-3 md:px-4 py-2 border-b min-w-[100px] text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filteredArticles.length > 0 ? filteredArticles.map((article) => (
-          <tr key={article.id} className="border-b last:border-none hover:bg-gray-50 transition-colors">
-            {/* News Content Cell */}
-            <td className="px-3 md:px-4 py-3">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-10 rounded-lg bg-gray-100 overflow-hidden border border-gray-200 flex-shrink-0">
-                  {article.featuredImage ? (
-                    <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
-                      <ImageIcon size={18}/>
+                  <div className="hidden md:block bg-white shadow rounded-lg p-3 md:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-700">All News Articles</h3>
                     </div>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-gray-900 font-bold truncate" title={article.title}>
-                    {article.title}
-                  </h4>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-tighter">
-                    {article.publishDate}
-                  </p>
-                </div>
-              </div>
-            </td>
 
-            
-            <td className="px-3 md:px-4 py-3 font-medium text-gray-700">
-              {article.displayCategory}
-            </td>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left text-gray-600 border border-[#F4F2FE] rounded-xl">
+                        <thead className="bg-[#F4F2FE] text-gray-700 uppercase text-xs">
+                          <tr>
+                            <th className="px-3 md:px-4 py-2 border-b min-w-[250px]">News Content</th>
+                            <th className="px-3 md:px-4 py-2 border-b min-w-[120px]">Category</th>
+                            <th className="px-3 md:px-4 py-2 border-b min-w-[120px]">Status</th>
+                            <th className="px-3 md:px-4 py-2 border-b min-w-[100px] text-center">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredArticles.length > 0 ? filteredArticles.map((article) => (
+                            <tr key={article.id} className="border-b last:border-none hover:bg-gray-50 transition-colors">
+                              <td className="px-3 md:px-4 py-3">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-16 h-10 rounded-lg bg-gray-100 overflow-hidden border border-gray-200 flex-shrink-0">
+                                    {article.featuredImage ? <img src={article.featuredImage} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300"><ImageIcon size={18}/></div>}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <h4 className="text-gray-900 font-bold truncate">{article.title}</h4>
+                                    <p className="text-[10px] text-gray-500 uppercase">{article.publishDate}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 md:px-4 py-3 font-medium text-gray-700">{article.displayCategory}</td>
+                              <td className="px-3 md:px-4 py-3">
+                                {article.isFeatured ? (
+                                  <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-[#FEF3C7] text-amber-700 flex items-center w-fit gap-1"><Star size={12} className="fill-amber-700" /> Featured</span>
+                                ) : (
+                                  <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">Standard</span>
+                                )}
+                              </td>
+                              <td className="px-3 md:px-4 py-3">
+                                <div className="flex justify-center gap-2">
+                                  <button onClick={() => { setSelectedArticle(article); setIsEditing(true); }} className="bg-transparent border-2 border-gray-200 hover:bg-[#5F2F8B] hover:border-[#5F2F8B] hover:text-white text-gray-700 px-2 py-1 rounded-lg text-xs transition-colors flex items-center gap-1"><Edit3 size={14} /><span>Edit</span></button>
+                                  <button onClick={() => setDeleteModal({ isOpen: true, id: article.documentId || article.id })} className="bg-transparent border-2 border-gray-200 hover:bg-red-500 hover:border-red-500 hover:text-white text-gray-700 px-2 py-1 rounded-lg text-xs transition-colors"><Trash2 size={14} /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          )) : (
+                            <tr><td colSpan={4} className="py-8 text-center text-gray-500">No articles found.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
 
-           
-            <td className="px-3 md:px-4 py-3">
-              {article.isFeatured ? (
-                <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-[#FEF3C7] text-amber-700 flex items-center w-fit gap-1">
-                  <Star size={12} className="fill-amber-700" /> Featured
-                </span>
-              ) : (
-                <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">
-                  Standard
-                </span>
-              )}
-            </td>
-
-            
-            <td className="px-3 md:px-4 py-3">
-              <div className="flex justify-center gap-2">
-                <button
-                  onClick={() => { setSelectedArticle(article); setIsEditing(true); }}
-                  className="bg-transparent border-2 border-gray-200 hover:bg-[#5F2F8B] hover:border-[#5F2F8B] hover:text-white text-gray-700 px-2 py-1 rounded-lg text-xs transition-colors flex items-center gap-1"
-                  title="Edit"
-                >
-                  <Edit3 size={14} />
-                  <span>Edit</span>
-                </button>
-                <button
-                  onClick={() => setDeleteModal({ isOpen: true, id: article.documentId || article.id })}
-                  className="bg-transparent border-2 border-gray-200 hover:bg-red-500 hover:border-red-500 hover:text-white text-gray-700 px-2 py-1 rounded-lg text-xs transition-colors flex items-center gap-1"
-                  title="Delete"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </td>
-          </tr>
-        )) : (
-          <tr>
-            <td colSpan={4} className="py-8 text-center text-gray-500">
-              No articles found.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-</div>
-
-                  {/* Mobile View: Cards */}
+                  {/* Mobile View */}
                   <div className="md:hidden divide-y divide-slate-100">
                     {filteredArticles.length > 0 ? filteredArticles.map((article) => (
                       <div key={article.id} className="p-6 space-y-4 hover:bg-slate-50/50 transition-all">
@@ -382,7 +324,6 @@ const NewsManagement = () => {
                       <div className="py-20 text-center text-gray-300 font-bold text-[10px] uppercase tracking-widest">No records found</div>
                     )}
                   </div>
-
                 </div>
               </div>
             )}

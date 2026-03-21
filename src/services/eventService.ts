@@ -1,19 +1,23 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api'; 
 
-const EVENTS_BASE_ROUTE = `${API_BASE_URL}/events`;
 
-// Helper to get the admin token from localStorage
+const cleanBaseUrl = API_BASE_URL.endsWith('/') 
+  ? API_BASE_URL.slice(0, -1) 
+  : API_BASE_URL;
+
+const EVENTS_BASE_ROUTE = `${cleanBaseUrl}/api/events/`; 
+
 const getAuthHeader = () => {
   const token = localStorage.getItem('token'); 
-  return { Authorization: `Bearer ${token}` };
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const eventService = {
- 
-  // Submit Registration 
+  //  Submit Registration
   registerAttendee: async (formData: FormData) => {
-    const response = await axios.post(`${EVENTS_BASE_ROUTE}/register/`, formData, {
+   
+    const response = await axios.post(`${EVENTS_BASE_ROUTE}register/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data', 
       },
@@ -21,18 +25,18 @@ const eventService = {
     return response.data;
   },
 
-  // 2. Fetch all registrations (Admin Protected)
+  //  Fetch all registrations for Admin
   getAllRegistrations: async () => {
-    const response = await axios.get(`${EVENTS_BASE_ROUTE}/admin/registrations/`, {
+    const response = await axios.get(`${EVENTS_BASE_ROUTE}admin/registrations/`, {
       headers: getAuthHeader()
     });
     return response.data;
   },
 
-  //Verify Payment 
-  verifyPayment: async (id: number) => {
  
-    const response = await axios.patch(`${EVENTS_BASE_ROUTE}/admin/verify/${id}/`, {}, {
+  verifyPayment: async (id: number) => {
+    
+    const response = await axios.patch(`${EVENTS_BASE_ROUTE}admin/verify/${id}/`, {}, {
       headers: getAuthHeader()
     });
     return response.data;
