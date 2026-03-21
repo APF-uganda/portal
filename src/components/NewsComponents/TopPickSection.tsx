@@ -13,8 +13,11 @@ const TopPickSection = ({ article }: TopPickProps) => {
 
   if (!article) return null;
 
+ 
+  const displaySummary = article.description || article.summary || "";
+  const displayImage = article.featuredImage || article.image || FALLBACK_IMAGE;
+
   const handleReadMore = () => {
-  
     const targetId = article.documentId || article.id;
     if (targetId) {
       void prefetchNewsArticle(targetId);
@@ -23,53 +26,50 @@ const TopPickSection = ({ article }: TopPickProps) => {
   };
 
   return (
-    <section className="py-6 px-6 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <h3 className="text-xl font-black text-[#1A1A1A] center uppercase tracking-tighter">
-          Our Latest News: Top Pick
+    <section className="py-10 px-4 md:px-6 max-w-7xl mx-auto w-full">
+      <div className="flex items-center gap-3 mb-8">
+        <h3 className="text-lg md:text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">
+          Our Latest News: <span className="text-[#5F1C9F]">Top Pick</span>
         </h3>
         <div className="h-[1px] flex-1 bg-gray-100"></div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-center justify-center bg-gray-50 rounded-[1.5rem] p-4 md:p-6 border border-gray-100 min-h-[300px]">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-center bg-white rounded-[2.5rem] p-5 md:p-10 border border-gray-100 shadow-sm">
         
-        <div className="w-full md:w-5/12 flex justify-center">
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm">
+        {/* Image side */}
+        <div className="w-full md:w-1/2">
+          <div className="relative aspect-[16/9] md:aspect-[4/3] rounded-3xl overflow-hidden shadow-xl bg-gray-100">
             <img 
-              src={article.image || FALLBACK_IMAGE}
+              src={displayImage}
               alt={article.title}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = FALLBACK_IMAGE;
-              }}
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
             />
           </div>
         </div>
 
-        <div className="w-full md:w-6/12 flex flex-col justify-center space-y-3">
-          <div className="flex items-center gap-2 text-[#5C32A3] font-bold text-[9px] uppercase tracking-widest">
-            <span className="w-5 h-[1.5px] bg-[#5C32A3]"></span>
+        {/* Content side */}
+        <div className="w-full md:w-1/2 flex flex-col space-y-4">
+          <div className="flex items-center gap-2 text-[#5F1C9F] font-bold text-[10px] uppercase tracking-[0.2em]">
+            <span className="w-6 h-[2px] bg-[#5F1C9F]"></span>
             Featured Story
           </div>
           
-          <h2 className="text-xl md:text-2xl font-black text-[#1A1A1A] leading-tight tracking-tight">
+          <h2 className="text-2xl md:text-4xl font-black text-[#1A1A1A] leading-tight tracking-tight">
             {article.title}
           </h2>
           
-          <p className="text-gray-500 text-xs md:text-sm leading-relaxed line-clamp-2">
-            {article.summary}
+          <p className="text-gray-500 text-sm md:text-base leading-relaxed line-clamp-3">
+            {displaySummary}
           </p>
           
-          <div className="pt-2">
+          <div className="pt-4">
             <button 
               onClick={handleReadMore}
-              onMouseEnter={() => void prefetchNewsArticle(article.documentId || article.id)}
-              onFocus={() => void prefetchNewsArticle(article.documentId || article.id)}
-              className="flex items-center gap-2 text-[#5C32A3] font-black text-[10px] uppercase tracking-widest group"
+              className="flex items-center gap-3 px-8 py-4 bg-[#5F1C9F] text-white rounded-2xl font-bold text-[11px] uppercase tracking-widest hover:bg-[#4a1480] transition-all shadow-lg shadow-purple-100 active:scale-95"
             >
               Read Full Story 
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={16} />
             </button>
           </div>
         </div>
