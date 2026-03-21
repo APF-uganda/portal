@@ -1,19 +1,18 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api'; 
 
-const EVENTS_BASE_ROUTE = `${API_BASE_URL}/events`;
+const EVENTS_BASE_ROUTE = `${API_BASE_URL}/api/events`; 
 
-// Helper to get the admin token from localStorage
 const getAuthHeader = () => {
   const token = localStorage.getItem('token'); 
   return { Authorization: `Bearer ${token}` };
 };
 
 const eventService = {
- 
   // Submit Registration 
   registerAttendee: async (formData: FormData) => {
-    const response = await axios.post(`${EVENTS_BASE_ROUTE}/register/`, formData, {
+    
+    const response = await axios.post(`${EVENTS_BASE_ROUTE}/register`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data', 
       },
@@ -21,7 +20,7 @@ const eventService = {
     return response.data;
   },
 
-  // 2. Fetch all registrations (Admin Protected)
+  //  Fetch all registrations 
   getAllRegistrations: async () => {
     const response = await axios.get(`${EVENTS_BASE_ROUTE}/admin/registrations/`, {
       headers: getAuthHeader()

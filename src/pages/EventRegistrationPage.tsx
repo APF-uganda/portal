@@ -17,6 +17,8 @@ const EventRegistrationPage: React.FC = () => {
     eventTitle: string; 
     eventId: string;
     location?: string;
+    date?: string;        
+    time?: string;        
     startDate?: string; 
     endDate?: string;   
     displayDate?: string; 
@@ -52,12 +54,21 @@ const EventRegistrationPage: React.FC = () => {
   }
 
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
+
+ 
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
-  const displayTime = eventData.startTime ? `${eventData.startTime} - ${eventData.endTime || ''}` : 'TBA';
   
-  const finalDateDisplay = eventData.displayDate || 
+
+  const displayTime = eventData.time || eventData.startTime || localEvent?.time || 'TBA';
+  
+ 
+  const finalDateDisplay = 
+    eventData.displayDate || 
+    eventData.date || 
     (eventData.startDate ? new Date(eventData.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null) || 
-    localEvent?.date || 'TBA';
+    localEvent?.date || 
+    'TBA';
+ 
 
   const showToast = (msg: string, type: 'success' | 'error') => {
     setNotification({ show: true, msg, type });
@@ -76,7 +87,6 @@ const EventRegistrationPage: React.FC = () => {
       showToast("Please agree to the terms.", "error");
       return;
     }
-    // Logic: If the event is paid OR non-member price is > 0, go to step 2 (Payment)
     if (eventData.isPaid || (eventData.nonMemberPrice && eventData.nonMemberPrice > 0)) {
       setStep(2);
     } else {
@@ -88,6 +98,7 @@ const EventRegistrationPage: React.FC = () => {
     setIsSubmitting(true);
     const data = new FormData();
     
+    // Ensure these keys match your Django request.POST.get() exactly
     data.append('fullName', formData.fullName);
     data.append('email', formData.email);
     data.append('phoneNumber', formData.phoneNumber);
@@ -95,17 +106,17 @@ const EventRegistrationPage: React.FC = () => {
     data.append('eventId', eventData.eventId);
     data.append('attendanceMode', 'Physical'); 
 
-   
     if (proofOfPayment) {
         data.append('proof', proofOfPayment);
     }
 
     try {
+     
       await eventService.registerAttendee(data);
       showToast("Registration submitted successfully!", "success");
       setStep(3);
     } catch (error) {
-      showToast("Submission failed. Please try again.", "error");
+      showToast("Submission failed. Please check your connection.", "error");
       console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);
