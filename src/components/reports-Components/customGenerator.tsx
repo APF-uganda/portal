@@ -62,40 +62,45 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
   const handleGenerateReport = async () => {
     setGenerating(true);
     try {
-      const category = getSelectedCategory().toLowerCase();
-      
-      //  pass the filters here 
+      const categoryLabel = getSelectedCategory();
+      // Ensure backend keys match lowercase expectations: 'membership', 'applications', 'system'
+      const categoryKey = categoryLabel.toLowerCase() === 'all' ? 'membership' : categoryLabel.toLowerCase();
       
       const reportPayload = {
-        name: `Manual ${getSelectedCategory()} Report`,
-        description: `Generated on ${new Date().toLocaleDateString()}`,
-        report_type: category === 'all' ? 'membership' : category,
+        name: `Custom ${categoryLabel} Audit`,
+        description: `User-generated ${categoryLabel} analysis for ${getSelectedPeriod()}`,
+        report_type: categoryKey,
         output_format: selectedFormat.toLowerCase(),
         is_active: false,
-        filters: {
+        // Critical: Align with backend ReportGenerator's 'filters_applied' field
+        filters_applied: {
           period: getSelectedPeriod(),
-          category: category,
+          category: categoryKey,
           include_visuals: true, 
           include_stats: true    
         },
         fields_to_include: ["all"]
       };
 
-      // Create the template with the filters
+      //Create the template
       const quickTemplate = await analyticsApi.createReportTemplate(reportPayload);
 
-      // Trigger the actual generation
+      // Trigger actual generation using the template ID
       await analyticsApi.generateReport(
         quickTemplate.id,
-        `Custom ${getSelectedCategory()} Report`,
+        `${categoryLabel} Analysis - ${new Date().toLocaleDateString()}`,
         selectedFormat.toLowerCase()
       );
 
-      setToast({ message: 'Report generation started!', type: 'success' });
-      if (onSuccess) onSuccess(); 
+      setToast({ message: 'Report processing started! Check history for status.', type: 'success' });
+      
+      // Delay success trigger slightly to allow DB to propagate
+      if (onSuccess) {
+        setTimeout(onSuccess, 1000);
+      }
     } catch (error) {
       console.error("Generation error:", error);
-      setToast({ message: 'Generation failed. Check server connection.', type: 'error' });
+      setToast({ message: 'Failed to connect. The server might be unreachable.', type: 'error' });
     } finally {
       setGenerating(false);
     }
@@ -121,7 +126,7 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         <div className="flex flex-wrap gap-3">
           {selectedFilters.map((filter) => (
             <div key={filter.id} className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg text-xs border border-slate-200 shadow-sm">
-              <span className="text-slate-400">{filter.type}:</span>
+              <span className="text-slate-400 italic">{filter.type}:</span>
               <span className="font-medium">{filter.label}</span>
             </div>
           ))}
@@ -130,29 +135,29 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
             <button 
               onClick={() => setShowAddFilter(!showAddFilter)} 
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                showAddFilter ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 hover:bg-slate-50'
+                showAddFilter ? 'bg-slate-800 text-white shadow-md' : 'bg-white border border-slate-200 hover:bg-slate-50'
               }`}
             >
               <Plus size={14} /> 
-              <span>Change Filters</span>
+              <span>Adjust Filters</span>
             </button>
             
             {showAddFilter && (
-              <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl z-20 min-w-[200px] p-2">
+              <div className="absolute top-full left-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 min-w-[220px] p-2 animate-in fade-in zoom-in-95 duration-200">
                 <div className="px-3 py-2">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Category</p>
-                    <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Category</p>
+                    <div className="grid grid-cols-1 gap-1">
                         {availableCategories.map(cat => (
-                        <button key={cat} onClick={() => addFilter('category', cat)} className="w-full text-left px-2 py-1.5 text-xs hover:bg-slate-100 rounded-md transition-colors">{cat}</button>
+                        <button key={cat} onClick={() => addFilter('category', cat)} className="w-full text-left px-2 py-2 text-xs hover:bg-slate-100 rounded-lg transition-colors font-medium">{cat}</button>
                         ))}
                     </div>
                 </div>
-                <div className="h-px bg-slate-100 my-2"></div>
+                <div className="h-px bg-slate-100 my-2 mx-2"></div>
                 <div className="px-3 py-2">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Timeframe</p>
-                    <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Timeframe</p>
+                    <div className="grid grid-cols-1 gap-1">
                         {availablePeriods.map(per => (
-                        <button key={per} onClick={() => addFilter('period', per)} className="w-full text-left px-2 py-1.5 text-xs hover:bg-slate-100 rounded-md transition-colors">{per}</button>
+                        <button key={per} onClick={() => addFilter('period', per)} className="w-full text-left px-2 py-2 text-xs hover:bg-slate-100 rounded-lg transition-colors font-medium">{per}</button>
                         ))}
                     </div>
                 </div>
@@ -163,34 +168,39 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
       </div>
 
       <div className="flex flex-col gap-6 pt-6 border-t border-slate-100">
-        <div className="flex items-center gap-4">
-          <span className="text-xs font-medium text-slate-500">Output Format</span>
-          <div className="flex p-1 bg-slate-100 rounded-lg">
-            {(['PDF', 'Excel'] as FormatType[]).map((format) => (
-              <button 
-                key={format} 
-                onClick={() => setSelectedFormat(format)} 
-                className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  selectedFormat === format ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {format}
-              </button>
-            ))}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-tighter">Output Format</span>
+            <div className="flex p-1 bg-slate-100 rounded-xl">
+              {(['PDF', 'Excel'] as FormatType[]).map((format) => (
+                <button 
+                  key={format} 
+                  onClick={() => setSelectedFormat(format)} 
+                  className={`px-6 py-2 rounded-lg text-xs font-semibold transition-all ${
+                    selectedFormat === format ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {format}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         <button 
           onClick={handleGenerateReport} 
           disabled={generating || analyticsLoading} 
-          className="w-full md:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-slate-800 disabled:opacity-50 transition-all shadow-md"
+          className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-xl text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-all shadow-lg active:scale-[0.98]"
         >
           {generating ? (
-              <Loader2 className="animate-spin" size={18} />
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                <span>Preparing Engine...</span>
+              </>
           ) : (
               <>
-                  <Wand2 size={16} /> 
-                  <span>Generate Report</span>
+                  <Wand2 size={18} /> 
+                  <span>Compile Custom Report</span>
               </>
           )}
         </button>
