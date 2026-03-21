@@ -51,10 +51,8 @@ const EventRegistrationPage: React.FC = () => {
     return null;
   }
 
-  // Robust Data Retrieval
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
-  const displayImage = eventData.image || localEvent?.image || DEFAULT_FALLBACK;
   const displayTime = eventData.startTime ? `${eventData.startTime} - ${eventData.endTime || ''}` : 'TBA';
   
   const finalDateDisplay = eventData.displayDate || 
@@ -78,7 +76,8 @@ const EventRegistrationPage: React.FC = () => {
       showToast("Please agree to the terms.", "error");
       return;
     }
-    if (eventData.isPaid || Number(eventData.nonMemberPrice) > 0) {
+    // Logic: If the event is paid OR non-member price is > 0, go to step 2 (Payment)
+    if (eventData.isPaid || (eventData.nonMemberPrice && eventData.nonMemberPrice > 0)) {
       setStep(2);
     } else {
       handleFinalSubmit();
@@ -88,12 +87,18 @@ const EventRegistrationPage: React.FC = () => {
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     const data = new FormData();
-    data.append('full_name', formData.fullName);
+    
+    data.append('fullName', formData.fullName);
     data.append('email', formData.email);
-    data.append('phone_number', formData.phoneNumber);
-    data.append('company_name', formData.companyName);
-    data.append('event_id', eventData.eventId);
-    if (proofOfPayment) data.append('proof_of_payment', proofOfPayment);
+    data.append('phoneNumber', formData.phoneNumber);
+    data.append('companyName', formData.companyName);
+    data.append('eventId', eventData.eventId);
+    data.append('attendanceMode', 'Physical'); 
+
+   
+    if (proofOfPayment) {
+        data.append('proof', proofOfPayment);
+    }
 
     try {
       await eventService.registerAttendee(data);
@@ -101,6 +106,7 @@ const EventRegistrationPage: React.FC = () => {
       setStep(3);
     } catch (error) {
       showToast("Submission failed. Please try again.", "error");
+      console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -126,7 +132,6 @@ const EventRegistrationPage: React.FC = () => {
                 {eventData.eventTitle}
               </h1>
               
-              {/* Info Grid */}
               <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8">
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/20">
                   <MapPin size={16} className="text-purple-400 shrink-0" />
@@ -220,7 +225,7 @@ const EventRegistrationPage: React.FC = () => {
                       type="submit"
                       className="w-full bg-purple-600 text-white py-4 rounded-2xl font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-3 mt-4"
                     >
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? (
+                      {(eventData.isPaid || (eventData.nonMemberPrice && eventData.nonMemberPrice > 0)) ? (
                         <>Proceed to Payment <ArrowLeft className="rotate-180" size={18} /></>
                       ) : (
                         'Complete Registration'
