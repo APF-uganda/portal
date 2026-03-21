@@ -3,7 +3,7 @@ import { Category, PostStatus, CreatePostRequest } from '../adminForum-component
 
 interface CreatePostFormProps {
   categories: Category[];
-  tags: any[]; // Kept for prop compatibility but unused in UI
+  tags: any[]; 
   onSubmit: (data: CreatePostRequest) => Promise<void>;
   loading?: boolean;
   initialData?: any;
@@ -27,16 +27,14 @@ const CreatePostForm = ({
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // ==========================================
-  // SYNC DATA WHEN EDITING
-  // ==========================================
+  // Sync data when editing
   useEffect(() => {
     if (initialData) {
       setFormData({
         title: initialData.title || '',
         content: initialData.content || '',
         status: initialData.status || 'draft',
-        category_id: initialData.category?.id || initialData.category_id,
+        category_id: initialData.category?.id || initialData.category_id || undefined,
         tag_ids: initialData.tags?.map((t: any) => t.id) || initialData.tag_ids || [],
       });
     }
@@ -70,8 +68,17 @@ const CreatePostForm = ({
       return;
     }
 
-    // Submit with existing tag_ids from state (allows keeping tags on edit without editing them)
-    await onSubmit(formData);
+    // Clean data for submission
+    const submitData: CreatePostRequest = {
+      ...formData,
+      title: formData.title.trim(),
+      content: formData.content.trim(),
+    
+      category_id: formData.category_id ? Number(formData.category_id) : undefined,
+      tag_ids: formData.tag_ids || []
+    };
+
+    await onSubmit(submitData);
   };
 
   return (
@@ -149,17 +156,20 @@ const CreatePostForm = ({
         <select
           id="category"
           value={formData.category_id || ''}
-          onChange={(e) => setFormData({ 
-            ...formData, 
-            category_id: e.target.value ? Number(e.target.value) : undefined 
-          })}
+          onChange={(e) => {
+            const val = e.target.value;
+            setFormData({ 
+              ...formData, 
+              category_id: val ? Number(val) : undefined 
+            });
+          }}
           className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5C32A3] transition-all text-sm md:text-base"
           disabled={loading}
         >
           <option value="">Select a category...</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name} ({category.post_count || 0} posts)
+              {category.name}
             </option>
           ))}
         </select>
