@@ -2,9 +2,13 @@ import { Announcement } from './types';
 
 const AnnouncementTable = ({ data }: { data: Announcement[] }) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden max-w-full">
      
-      <div className="w-full overflow-x-auto">
+     .
+      
+      <div className="w-full overflow-x-auto custom-scrollbar">
+       
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -34,12 +38,17 @@ const AnnouncementTable = ({ data }: { data: Announcement[] }) => {
                 <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap"></td>
                 <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap"></td>
                 <td className="px-6 py-4 text-right whitespace-nowrap">
-                  
+                 
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+      
+     
+      <div className="md:hidden bg-gray-50 px-4 py-2 text-[10px] text-gray-400 text-center border-t border-gray-100">
+        ← Swipe horizontally to view more →
       </div>
     </div>
   );

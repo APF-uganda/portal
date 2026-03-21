@@ -16,6 +16,7 @@ export interface ForumPost {
   likes: number
   views: number
   content?: string
+  initialData?: any;
   status?: 'published' | 'draft' | 'archived'
 }
 

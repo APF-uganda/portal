@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom"
 import MemberSideNav from "../common/memberSideNav"
 import { useProfile } from "../../hooks/useProfile"
 import { clearAuth } from "../../utils/authStorage"
+import { getUnreadCount } from "../../services/notifications.service"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -26,6 +27,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const { profile, loading } = useProfile()
   const navigate = useNavigate()
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -33,6 +35,35 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const displayName = profile?.full_name || profile?.email?.split('@')[0] || 'User'
   const initials = profile?.initials || 'U'
   const membershipType = profile?.user_role === '1' ? 'Administrator' : 'Member'
+
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const count = await getUnreadCount()
+        setUnreadCount(count)
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error)
+      }
+    }
+
+    fetchUnreadCount()
+
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000)
+
+    // Listen for notification changes
+    const handleNotificationChange = () => {
+      fetchUnreadCount()
+    }
+    
+    window.addEventListener('notificationStatsChanged', handleNotificationChange)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('notificationStatsChanged', handleNotificationChange)
+    }
+  }, [])
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
@@ -124,8 +155,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5 text-gray-400" />
-                {/* Notification badge - can be made dynamic later */}
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                {/* Dynamic notification badge - only shows when there are unread notifications */}
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </button>
 
               {/* Profile Dropdown */}
@@ -138,9 +173,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     <div className="w-7 h-7 md:w-8 md:h-8 bg-gray-200 rounded-full animate-pulse"></div>
                   ) : profile?.profile_picture_url ? (
                     <img
-                      src={profile.profile_picture_url}
+                      src={`${profile.profile_picture_url}?v=${profile.updated_at || new Date().getTime()}`}
                       alt={displayName}
                       className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover"
+                      key={`${profile.profile_picture_url}-${profile.updated_at}`}
                     />
                   ) : (
                     <div className="w-7 h-7 md:w-8 md:h-8 bg-[#60308C] rounded-full flex items-center justify-center">
@@ -167,9 +203,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       <div className="flex items-center space-x-3">
                         {profile?.profile_picture_url ? (
                           <img
-                            src={profile.profile_picture_url}
+                            src={`${profile.profile_picture_url}?v=${profile.updated_at || new Date().getTime()}`}
                             alt={displayName}
                             className="w-10 h-10 rounded-full object-cover"
+                            key={`${profile.profile_picture_url}-${profile.updated_at}`}
                           />
                         ) : (
                           <div className="w-10 h-10 bg-[#60308C] rounded-full flex items-center justify-center">

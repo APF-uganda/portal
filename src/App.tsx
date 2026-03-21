@@ -8,6 +8,7 @@ import {
 import { Toaster } from "./components/ui/toaster";
 import { isAuthenticated, getUser, migrateFromLocalStorage } from "./utils/authStorage";
 
+
 /* Lazy loaded public pages */
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 const AboutPage = React.lazy(() => import("./pages/AboutPage"));
@@ -55,6 +56,7 @@ const NewsManagement = React.lazy(() => import("./pages/admin/newsMgt"));
 const ManageUsers = React.lazy(() => import("./pages/admin/manageusers"));
 const EventCreatePage = React.lazy(() => import("./pages/admin/eventMgt"));
 const ManagePayments = React.lazy(() => import("./pages/admin/managePayments"));
+const AdminEvents = React.lazy(() => import("./pages/admin/admineventMgt"));
 const MembershipEditor = React.lazy(() => import('./components/admincms/editMembership'));
 const AboutPageEditor = React.lazy(() => import('./components/admincms/editAbout'));
 const HomePageEditor = React.lazy(() => import('./components/admincms/editLandingpage'));
@@ -130,6 +132,7 @@ const App: React.FC = () => {
              <Route path="/admincms/leadership" element={<LeadershipManager />} />
              <Route path="/news/:id" element={<NewsDetail />} />
              <Route path="/management" element={<ManagementPage />} />
+             <Route path="/admineventMgt" element={<AdminEvents />} />
             {/* Auth routes */}
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -252,6 +255,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute role="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/admineventMgt"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminEvents />
                 </ProtectedRoute>
               }
             />
