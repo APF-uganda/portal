@@ -143,7 +143,7 @@ function OurGovernance() {
           </div>
         )}
 
-        {/* Navigation Link to Management */}
+        {/* Navigation Link to Management
         <div className="text-center mt-16 pt-10 border-t border-gray-100">
          
           <button 
@@ -159,7 +159,7 @@ function OurGovernance() {
             View Management Team 
             <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
           </button>
-        </div>
+        </div> */}
       </div>
     </section>
   );

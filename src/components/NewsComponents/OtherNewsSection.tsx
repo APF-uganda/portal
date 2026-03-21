@@ -5,9 +5,17 @@ import { prefetchNewsArticle } from '../../hooks/useCMS';
 
 interface OtherNewsProps {
   articles: any[];
+  title?: string;
+  showTopBorder?: boolean;
+  embedded?: boolean;
 }
 
-const OtherNewsSection = ({ articles }: OtherNewsProps) => {
+const OtherNewsSection = ({
+  articles,
+  title = 'Our Other News',
+  showTopBorder = true,
+  embedded = false,
+}: OtherNewsProps) => {
   const navigate = useNavigate();
   const FALLBACK_IMAGE = "/images/Hero.jpg";
 
@@ -22,11 +30,15 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
     }
   };
 
+  const sectionClass = embedded
+    ? `${showTopBorder ? 'pt-10 border-t border-gray-100' : ''}`
+    : `py-16 px-6 max-w-6xl mx-auto ${showTopBorder ? 'border-t border-gray-100' : ''}`;
+
   return (
-    <section className="py-16 px-6 max-w-6xl mx-auto border-t border-gray-100">
+    <section className={sectionClass}>
       <div className="flex flex-col items-center mb-12 text-center">
         <h3 className="text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">
-          Our Other News
+          {title}
         </h3>
         <div className="w-12 h-[2px] bg-black mt-2"></div>
       </div>
@@ -34,7 +46,7 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {articles.map((item) => (
           <article 
-            key={item.id} 
+            key={item.documentId || item.id || item.slug || item.title} 
             onClick={() => handleNavigation(item)}
             onMouseEnter={() => void prefetchNewsArticle(item.documentId || item.id || item.slug)}
             className="group cursor-pointer flex flex-col bg-white rounded-[2rem] p-4 border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-100 transition-all duration-300"
@@ -51,7 +63,7 @@ const OtherNewsSection = ({ articles }: OtherNewsProps) => {
               />
               <div className="absolute top-3 left-3">
                 <span className="bg-white/95 backdrop-blur-sm text-black px-3 py-1 rounded-lg text-[9px] font-semibold uppercase tracking-widest shadow-sm">
-                  {item.category}
+                  {item.displayCategory || item.category || 'General'}
                 </span>
               </div>
             </div>

@@ -99,7 +99,7 @@ type NewsCacheEntry = {
 let newsMemoryCache: NewsCacheEntry | null = null;
 let newsInFlightPromise: Promise<NewsArticle[]> | null = null;
 const EVENTS_CACHE_KEY = 'apf.events.cache.v1';
-const EVENTS_CACHE_TTL_MS = 5 * 60 * 1000;
+const EVENTS_CACHE_TTL_MS = 15 * 60 * 1000;
 
 type EventsCacheEntry = {
   timestamp: number;
@@ -203,6 +203,16 @@ const NEWS_QUERY_CANDIDATES = [
   'populate=*&sort=createdAt:desc',
 ];
 
+const EVENTS_QUERY_CANDIDATES = [
+  // Preferred lightweight query: fetch only required fields and image URL.
+  'sort[0]=date:asc&fields[0]=title&fields[1]=description&fields[2]=date&fields[3]=time&fields[4]=location&fields[5]=registrationLink&fields[6]=cpdPoints&fields[7]=isFeatured&fields[8]=isPaid&fields[9]=memberPrice&fields[10]=nonMemberPrice&populate[image][fields][0]=url',
+  // Compatibility fallback for varying CMS schemas.
+  'sort[0]=date:asc&populate[image]=*',
+  // Last-resort broad query.
+  'populate=*&sort=date:asc',
+  'populate=*',
+];
+
 const fetchNewsResponse = async () => {
   for (const query of NEWS_QUERY_CANDIDATES) {
     try {
@@ -217,55 +227,73 @@ const fetchNewsResponse = async () => {
   throw new Error('Unable to fetch news with available query strategies');
 };
 
+const fetchEventsResponse = async () => {
+  for (const query of EVENTS_QUERY_CANDIDATES) {
+    try {
+      return await api.get(`/events?${query}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 400) continue;
+      throw error;
+    }
+  }
+
+  throw new Error('Unable to fetch events with available query strategies');
+};
+
 export const getNews = async () => {
+  const cached = readNewsCache();
+  if (cached) return cached;
+
+  if (newsInFlightPromise) return newsInFlightPromise;
+
+  const request = (async () => {
+    const res = await fetchNewsResponse();
+
+    if (!res.data || !res.data.data) return [];
+
+    const mappedNews: NewsArticle[] = res.data.data.map((item: any) => {
+      const data = item.attributes || item;
+
+      const rawImg = data.featuredImage?.data || data.featuredImage || data.image?.data || data.image;
+      let imageUrl = '';
+      if (rawImg) {
+        const imgObj = Array.isArray(rawImg) ? rawImg[0] : rawImg;
+        imageUrl = imgObj?.attributes?.url || imgObj?.url || '';
+      }
+
+      const articleContent = data.content || data.contentBlocks || [];
+
+      return {
+        id: item.id,
+        documentId: item.documentId || item.id?.toString(),
+        title: data.title || 'Untitled',
+        content: articleContent,
+        description: data.description || '',
+        image: getImageUrl(imageUrl),
+        category: data.news?.data?.attributes?.name || data.category || 'News',
+        readTime: data.readTime || 5,
+        date: data.publishDate || data.createdAt,
+        isFeatured: !!(data.isFeatured || data.isTopic),
+        isTopPick: !!(data.isTopPick || data.isFeatured || data.isTopic)
+      };
+    });
+
+    writeNewsCache(mappedNews);
+    return mappedNews;
+  })();
+
+  newsInFlightPromise = request;
+
   try {
-    const cached = readNewsCache();
-    if (cached) return cached;
-
-    if (newsInFlightPromise) return newsInFlightPromise;
-
-    newsInFlightPromise = (async () => {
-      const res = await fetchNewsResponse();
-
-      if (!res.data || !res.data.data) return [];
-
-      const mappedNews: NewsArticle[] = res.data.data.map((item: any) => {
-        const data = item.attributes || item;
-
-        const rawImg = data.featuredImage?.data || data.featuredImage || data.image?.data || data.image;
-        let imageUrl = '';
-        if (rawImg) {
-          const imgObj = Array.isArray(rawImg) ? rawImg[0] : rawImg;
-          imageUrl = imgObj?.attributes?.url || imgObj?.url || '';
-        }
-
-        const articleContent = data.content || data.contentBlocks || [];
-
-        return {
-          id: item.id,
-          documentId: item.documentId || item.id?.toString(),
-          title: data.title || 'Untitled',
-          content: articleContent,
-          description: data.description || '',
-          image: getImageUrl(imageUrl),
-          category: data.news?.data?.attributes?.name || data.category || 'News',
-          readTime: data.readTime || 5,
-          date: data.publishDate || data.createdAt,
-          isFeatured: !!(data.isFeatured || data.isTopic),
-          isTopPick: !!(data.isTopPick || data.isFeatured || data.isTopic)
-        };
-      });
-
-      writeNewsCache(mappedNews);
-      return mappedNews;
-    })();
-
-    return await newsInFlightPromise;
+    return await request;
   } catch (error) {
     console.error("News Fetch Error:", error);
     return [];
   } finally {
-    newsInFlightPromise = null;
+    if (newsInFlightPromise === request) {
+      newsInFlightPromise = null;
+    }
   }
 };
 
@@ -285,58 +313,59 @@ export const deleteNews = async (id: number) => {
  * EVENTS
  */
 export const getEvents = async (): Promise<Event[]> => {
+  const cached = readEventsCache();
+  if (cached) return cached;
+
+  if (eventsInFlightPromise) return eventsInFlightPromise;
+
+  const request = (async () => {
+    const res = await fetchEventsResponse();
+
+    const mappedEvents: Event[] = (res.data.data || []).map((item: any) => {
+      // Handle both direct and nested attribute structures
+      const data = item.attributes || item;
+
+      // Better image URL extraction with fallback handling
+      let imageUrl = '';
+      if (data.image?.data?.attributes?.url) {
+        imageUrl = data.image.data.attributes.url;
+      } else if (data.image?.url) {
+        imageUrl = data.image.url;
+      }
+
+      return {
+        id: item.id,
+        documentId: item.documentId,
+        title: data.title || '',
+        description: data.description || '',
+        date: data.date || '',
+        time: data.time || '',
+        location: data.location || '',
+        registrationLink: data.registrationLink || '',
+        cpdPoints: data.cpdPoints || 0,
+        isFeatured: data.isFeatured || false,
+        isPaid: data.isPaid || false,
+        memberPrice: data.memberPrice || 0,
+        nonMemberPrice: data.nonMemberPrice || 0,
+        image: getImageUrl(imageUrl),
+      };
+    });
+
+    writeEventsCache(mappedEvents);
+    return mappedEvents;
+  })();
+
+  eventsInFlightPromise = request;
+
   try {
-    const cached = readEventsCache();
-    if (cached) return cached;
-
-    if (eventsInFlightPromise) return eventsInFlightPromise;
-
-    eventsInFlightPromise = (async () => {
-      const res = await api.get('/events', {
-        params: { populate: '*' }
-      });
-
-      const mappedEvents: Event[] = (res.data.data || []).map((item: any) => {
-        // Handle both direct and nested attribute structures
-        const data = item.attributes || item;
-
-        // Better image URL extraction with fallback handling
-        let imageUrl = '';
-        if (data.image?.data?.attributes?.url) {
-          imageUrl = data.image.data.attributes.url;
-        } else if (data.image?.url) {
-          imageUrl = data.image.url;
-        }
-
-        return {
-          id: item.id,
-          documentId: item.documentId,
-          title: data.title || '',
-          description: data.description || '',
-          date: data.date || '',
-          time: data.time || '',
-          location: data.location || '',
-          registrationLink: data.registrationLink || '',
-          cpdPoints: data.cpdPoints || 0,
-          isFeatured: data.isFeatured || false,
-
-          isPaid: data.isPaid || false,
-          memberPrice: data.memberPrice || 0,
-          nonMemberPrice: data.nonMemberPrice || 0,
-          image: getImageUrl(imageUrl),
-        };
-      });
-
-      writeEventsCache(mappedEvents);
-      return mappedEvents;
-    })();
-
-    return await eventsInFlightPromise;
+    return await request;
   } catch (error) {
     console.error("Error fetching events:", error);
     return [];
   } finally {
-    eventsInFlightPromise = null;
+    if (eventsInFlightPromise === request) {
+      eventsInFlightPromise = null;
+    }
   }
 };
 

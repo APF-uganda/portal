@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import EventCard from "../../components/cards/EventCard";
 import { useEvents } from "../../hooks/useCMS";
 import { CMS_BASE_URL } from "../../config/api";
@@ -10,7 +10,7 @@ const UpcomingEvents = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const { events, loading } = useEvents();
+  const { events } = useEvents();
 
   // Helper function to format the date before sending it to the registration page
   const formatReadableDate = (dateStr: string) => {
@@ -48,12 +48,6 @@ const UpcomingEvents = () => {
     const distance = direction === 'left' ? -350 : 350; // Match PreviousEvents scroll distance
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
-
-  if (loading) return (
-    <div className="flex justify-center py-20 bg-white">
-      <Loader2 className="animate-spin text-purple-600" size={40} />
-    </div>
-  );
 
   return (
     <section className="bg-white py-8 -mx-[50vw] px-[50vw] relative">

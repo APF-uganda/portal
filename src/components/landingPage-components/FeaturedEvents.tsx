@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import EventCard from "../common/EventCard"
@@ -22,6 +22,8 @@ const fallbackEvents = [
 const FeaturedEvents = () => {
   const navigate = useNavigate()
   const [activeIndex, setActiveIndex] = useState(0)
+  const touchStartX = useRef(0)
+  const touchEndX = useRef(0)
   
   // Fetch events from CMS
   const { events, error } = useEvents()
@@ -98,6 +100,15 @@ const FeaturedEvents = () => {
     })
   }
 
+  const handleTouchEnd = () => {
+    const swipeDistance = touchStartX.current - touchEndX.current
+    if (swipeDistance > 50) {
+      setActiveIndex((prev) => Math.min(prev + 1, upcomingEvents.length - 1))
+    } else if (swipeDistance < -50) {
+      setActiveIndex((prev) => Math.max(prev - 1, 0))
+    }
+  }
+
   return (
     <ErrorBoundary fallback={
       <section className="bg-white py-16 font-montserrat">
@@ -162,23 +173,53 @@ const FeaturedEvents = () => {
             {/* Mobile View */}
             <div className="sm:hidden">
               {upcomingEvents.length > 1 ? (
-                <div className="overflow-hidden">
-                  <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
-                    {upcomingEvents.map((event) => (
-                      <div key={event.id || event.documentId || `event-${event.title}`} className="w-full flex-shrink-0 px-2">
-                        <EventCard
-                          image={event.image}
-                          title={event.title}
-                          date={event.date}
-                          time={event.time}
-                          location={event.location}
-                          description={event.description}
-                          onRegister={() => handleRegister(event)}
-                        />
-                      </div>
-                    ))}
+                <>
+                  <div
+                    className="overflow-hidden"
+                    onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+                    onTouchMove={(e) => { touchEndX.current = e.touches[0].clientX }}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+                      {upcomingEvents.map((event) => (
+                        <div key={event.id || event.documentId || `event-${event.title}`} className="w-full flex-shrink-0 px-2">
+                          <EventCard
+                            image={event.image}
+                            title={event.title}
+                            date={event.date}
+                            time={event.time}
+                            location={event.location}
+                            description={event.description}
+                            onRegister={() => handleRegister(event)}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                  <div className="mt-5 flex items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveIndex((prev) => Math.max(prev - 1, 0))}
+                      disabled={activeIndex === 0}
+                      className="bg-[#7E49B3] text-white w-10 h-10 rounded-full shadow flex items-center justify-center disabled:opacity-40"
+                      aria-label="Previous event card"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <span className="text-[#7E49B3] text-xs font-semibold tracking-wide">
+                      {activeIndex + 1} / {upcomingEvents.length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveIndex((prev) => Math.min(prev + 1, upcomingEvents.length - 1))}
+                      disabled={activeIndex >= upcomingEvents.length - 1}
+                      className="bg-[#7E49B3] text-white w-10 h-10 rounded-full shadow flex items-center justify-center disabled:opacity-40"
+                      aria-label="Next event card"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </>
               ) : (
                 <div className="px-2">
                   {upcomingEvents.map((event) => (

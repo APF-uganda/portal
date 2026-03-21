@@ -76,18 +76,19 @@ export const boardMembers: BoardMember[] = [
   },
 
   {
-    id: 2,
-    slug: 'ronald-mutumba',
-    name: 'CPA Ronald Mutumba',
-    role: 'Implementing Director / Board Member',
-    photo: leader2,
+    id: 5,
+    slug: 'silver-boss-mwebesa',
+    name: 'CPA Silver Boss Mwebesa',
+    role: 'Treasurer',
+    photo: leader5,
     summary:
-      'CPA Ronald Mutumba serves as Implementing Director and Board Member, leading execution of APF priorities and day-to-day delivery of strategic programs. He supports institutional coordination, member engagement, and operational excellence. Outside APF, he works across professional practice and business advisory assignments that strengthen organizations and reporting quality.',
+      'CPA Silver Boss Mwebesa serves as Treasurer, overseeing APF financial stewardship, planning discipline, and prudent resource allocation. He supports transparent reporting and sustainable financing for member-focused programs. Outside APF, he is engaged in financial management and advisory work that helps organizations strengthen controls and performance.',
     whoTheyAre:
-      'A results-oriented accounting professional with strong execution and stakeholder coordination skills.',
+      'A finance-focused CPA with strong expertise in stewardship, controls, and fiscal planning.',
     outsideApf:
-      'Involved in advisory and practice operations supporting compliance and business improvement.',
+      'Works in financial management and advisory roles across private and institutional settings.',
   },
+
   {
     id: 7,
     slug: 'charles-lutimba',
@@ -102,17 +103,17 @@ export const boardMembers: BoardMember[] = [
       'Contributes to accountancy capacity-building, compliance guidance, and technical mentorship.',
   },
   {
-    id: 5,
-    slug: 'silver-boss-mwebesa',
-    name: 'CPA Silver Boss Mwebesa',
-    role: 'Treasurer',
-    photo: leader5,
+    id: 2,
+    slug: 'ronald-mutumba',
+    name: 'CPA Ronald Mutumba',
+    role: 'Implementing Director / Board Member',
+    photo: leader2,
     summary:
-      'CPA Silver Boss Mwebesa serves as Treasurer, overseeing APF financial stewardship, planning discipline, and prudent resource allocation. He supports transparent reporting and sustainable financing for member-focused programs. Outside APF, he is engaged in financial management and advisory work that helps organizations strengthen controls and performance.',
+      'CPA Ronald Mutumba serves as Implementing Director and Board Member, leading execution of APF priorities and day-to-day delivery of strategic programs. He supports institutional coordination, member engagement, and operational excellence. Outside APF, he works across professional practice and business advisory assignments that strengthen organizations and reporting quality.',
     whoTheyAre:
-      'A finance-focused CPA with strong expertise in stewardship, controls, and fiscal planning.',
+      'A results-oriented accounting professional with strong execution and stakeholder coordination skills.',
     outsideApf:
-      'Works in financial management and advisory roles across private and institutional settings.',
+      'Involved in advisory and practice operations supporting compliance and business improvement.',
   },
   
  

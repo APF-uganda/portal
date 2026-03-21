@@ -1,11 +1,11 @@
 import { useRef, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import EventCard from "../../components/cards/EventCard";
 import { useEvents } from "../../hooks/useCMS";
 
 const PreviousEvents = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { events, loading } = useEvents();
+  const { events } = useEvents();
 
  
   const previousEvents = useMemo(() => {
@@ -23,12 +23,6 @@ const PreviousEvents = () => {
     const distance = direction === 'left' ? -350 : 350;
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
-
-  if (loading) return (
-    <div className="flex justify-center py-20 bg-[#F5EFFB]">
-      <Loader2 className="animate-spin text-purple-600" size={40} />
-    </div>
-  );
 
   if (previousEvents.length === 0) return null;
 

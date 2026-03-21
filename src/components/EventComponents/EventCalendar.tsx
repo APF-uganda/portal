@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react"
-import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
 import { useEvents } from "../../hooks/useCMS"
 import { useNavigate } from 'react-router-dom'
 
@@ -29,7 +29,7 @@ const EventCalendar = () => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const navigate = useNavigate()
   
-  const { events, loading } = useEvents()
+  const { events } = useEvents()
   
   // Character limit for description
   const DESCRIPTION_LIMIT = 150
@@ -122,13 +122,7 @@ const EventCalendar = () => {
           Event Calendar
         </h2>
         
-        {loading ? (
-          <div className="flex flex-col items-center py-20">
-            <Loader2 className="animate-spin text-[#7E49B3] mb-2" size={32} />
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Fetching Calendar...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {/* Calendar Grid - Compact Height */}
             <div className="bg-white rounded-2xl shadow-sm p-6 border border-purple-100 h-[420px] flex flex-col">
               <div className="flex justify-between items-center mb-4">
@@ -274,7 +268,6 @@ const EventCalendar = () => {
               )}
             </div>
           </div>
-        )}
       </div>
     </section>
   )
