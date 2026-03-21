@@ -13,7 +13,6 @@ const TopPickSection = ({ article }: TopPickProps) => {
 
   if (!article) return null;
 
- 
   const displaySummary = article.description || article.summary || "";
   const displayImage = article.featuredImage || article.image || FALLBACK_IMAGE;
 
@@ -26,19 +25,21 @@ const TopPickSection = ({ article }: TopPickProps) => {
   };
 
   return (
-    <section className="py-10 px-4 md:px-6 max-w-7xl mx-auto w-full">
-      <div className="flex items-center gap-3 mb-8">
+    <section className="py-10 px-4 md:px-6 max-w-7xl mx-auto w-full flex flex-col items-center">
+     
+      <div className="flex items-center gap-3 mb-8 w-full">
         <h3 className="text-lg md:text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">
           Our Latest News: <span className="text-[#5F1C9F]">Top Pick</span>
         </h3>
         <div className="h-[1px] flex-1 bg-gray-100"></div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-center bg-white rounded-[2.5rem] p-5 md:p-10 border border-gray-100 shadow-sm">
+     
+      <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-center justify-center bg-white rounded-[2.5rem] p-5 md:p-10 border border-gray-100 shadow-sm w-full">
         
-        {/* Image side */}
-        <div className="w-full md:w-1/2">
-          <div className="relative aspect-[16/9] md:aspect-[4/3] rounded-3xl overflow-hidden shadow-xl bg-gray-100">
+        
+        <div className="w-full md:w-2/5">
+          <div className="relative aspect-[16/9] md:aspect-square rounded-3xl overflow-hidden shadow-xl bg-gray-100">
             <img 
               src={displayImage}
               alt={article.title}
@@ -48,8 +49,8 @@ const TopPickSection = ({ article }: TopPickProps) => {
           </div>
         </div>
 
-        {/* Content side */}
-        <div className="w-full md:w-1/2 flex flex-col space-y-4">
+       
+        <div className="w-full md:w-3/5 flex flex-col space-y-4">
           <div className="flex items-center gap-2 text-[#5F1C9F] font-bold text-[10px] uppercase tracking-[0.2em]">
             <span className="w-6 h-[2px] bg-[#5F1C9F]"></span>
             Featured Story
