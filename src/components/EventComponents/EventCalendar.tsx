@@ -29,7 +29,7 @@ const EventCalendar = () => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const navigate = useNavigate()
   
-  const { events } = useEvents()
+  const { events, loading } = useEvents()
   
   const DESCRIPTION_LIMIT = 150
 
@@ -268,6 +268,7 @@ const EventCalendar = () => {
               )}
             </div>
           </div>
+        )}
       </div>
     </section>
   )

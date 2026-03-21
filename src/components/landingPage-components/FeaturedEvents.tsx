@@ -5,8 +5,24 @@ import EventCard from "../common/EventCard"
 import { useEvents } from "../../hooks/useCMS"
 import ErrorBoundary from "../common/ErrorBoundary"
 
+type FeaturedEvent = {
+  id?: string | number
+  documentId?: string
+  title?: string
+  date?: string
+  startDate?: string
+  endDate?: string
+  location?: string
+  image?: string
+  cpdPoints?: number | string
+  memberPrice?: number | string
+  nonMemberPrice?: number | string
+  isPaid?: boolean
+  description?: string
+}
 
-const formatNormalDate = (dateString: string) => {
+
+const formatNormalDate = (dateString?: string) => {
   if (!dateString) return '';
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return dateString; 
@@ -50,7 +66,7 @@ const FeaturedEvents = () => {
     }
   }
 
-  const handleRegister = (event: any) => {
+  const handleRegister = (event: FeaturedEvent) => {
     const start = formatNormalDate(event.startDate || event.date);
     const end = formatNormalDate(event.endDate);
     
@@ -77,15 +93,6 @@ const FeaturedEvents = () => {
     })
   }
 
-  const handleTouchEnd = () => {
-    const swipeDistance = touchStartX.current - touchEndX.current
-    if (swipeDistance > 50) {
-      setActiveIndex((prev) => Math.min(prev + 1, upcomingEvents.length - 1))
-    } else if (swipeDistance < -50) {
-      setActiveIndex((prev) => Math.max(prev - 1, 0))
-    }
-  }
-
   return (
     <ErrorBoundary fallback={<div className="py-16 text-center">Events unavailable.</div>}>
       <section className="bg-white py-16 font-montserrat overflow-hidden">
@@ -107,17 +114,20 @@ const FeaturedEvents = () => {
             <div 
               ref={scrollRef}
               className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              style={{ scrollbarWidth: 'none' }}
             >
-              {upcomingEvents.map((event: any) => (
+              {upcomingEvents.map((event: FeaturedEvent) => (
                 <div 
                   key={event.id || event.documentId || event.title} 
                   className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] snap-center"
                 >
                   <EventCard
-                    {...event}
-                  
+                    image={event.image || "/images/annual.png"}
+                    title={event.title || "Untitled Event"}
                     date={formatNormalDate(event.startDate || event.date)}
+                    time={"Time TBD"}
+                    location={event.location || "Location TBD"}
+                    description={event.description || "No description available."}
                     onRegister={() => handleRegister(event)}
                   />
                 </div>
@@ -131,6 +141,10 @@ const FeaturedEvents = () => {
               <ChevronRight className="w-6 h-6" />
             </button>
           </div>
+
+          {error && (
+            <p className="text-center text-sm text-red-500 mt-3">{error}</p>
+          )}
           
           <p className="text-center text-sm text-gray-400 mt-4 md:hidden animate-pulse">
             Swipe to explore events
