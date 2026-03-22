@@ -129,16 +129,22 @@ export async function fetchApplications(signal?: AbortSignal): Promise<Applicati
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await axios.get<ApplicationListItem[]>(
+    const response = await axios.get<ApplicationListItem[] | { count: number; results: ApplicationListItem[] }>(
       `${API_BASE_URL}/api/v1/applications/`,
       {
         headers,
+        params: { page_size: 100 },
         timeout: 30000,
         signal,
       }
     );
 
-    return response.data.map(mapApiApplicationToApplication);
+    // Handle both paginated { results: [...] } and plain array responses
+    const items = Array.isArray(response.data)
+      ? response.data
+      : (response.data as { results: ApplicationListItem[] }).results ?? [];
+
+    return items.map(mapApiApplicationToApplication);
   } catch (error) {
     // Don't log errors if request was aborted
     if (axios.isCancel(error) || (error as Error).name === 'AbortError') {
