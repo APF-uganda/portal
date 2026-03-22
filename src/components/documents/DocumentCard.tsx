@@ -107,56 +107,49 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-3 border-t border-gray-100">
-        {/* View - Always available if fileUrl exists */}
+      <div className="flex gap-1.5 pt-3 border-t border-gray-100">
         {canView && onView && (
-          <Button 
-            variant="outline" 
-            size="sm"
+          <button
             onClick={() => onView(document)}
-            className="flex-1 flex items-center justify-center gap-2"
+            title="View"
+            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium transition-colors"
           >
-            <Eye className="w-4 h-4" />
-            View
-          </Button>
+            <Eye className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden lg:inline">View</span>
+          </button>
         )}
-        
-        {/* Download - Always available if fileUrl exists */}
+
         {canView && onDownload && (
-          <Button 
-            variant="outline" 
-            size="sm"
+          <button
             onClick={() => onDownload(document)}
-            className="flex-1 flex items-center justify-center gap-2"
+            title="Download"
+            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium transition-colors"
           >
-            <Download className="w-4 h-4" />
-            Download
-          </Button>
+            <Download className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Download</span>
+          </button>
         )}
-        
-        {/* Replace - Only for expired or rejected documents */}
+
         {showReupload && onReupload && (
-          <Button 
-            size="sm"
+          <button
             onClick={() => onReupload(document)}
-            className="flex-1 bg-purple-600 hover:bg-purple-700 flex items-center justify-center gap-2"
+            title="Replace"
+            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium transition-colors"
           >
-            <Upload className="w-4 h-4" />
-            Replace
-          </Button>
+            <Upload className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Replace</span>
+          </button>
         )}
-        
-        {/* Remove - Only for pending or rejected documents */}
+
         {showRemove && onRemove && (
-          <Button 
-            variant="outline"
-            size="sm"
+          <button
             onClick={() => onRemove(document)}
-            className="flex-1 flex items-center justify-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+            title="Remove"
+            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md border border-red-200 bg-white hover:bg-red-50 text-red-600 text-xs font-medium transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
-            Remove
-          </Button>
+            <Trash2 className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden lg:inline">Remove</span>
+          </button>
         )}
       </div>
     </div>

@@ -1,86 +1,55 @@
-import { useState, useEffect } from 'react'
-import { Globe, Save } from 'lucide-react'
-import { useToast } from '../../../hooks/useToast'
-import { getLanguageRegionPreferences, saveLanguageRegionPreferences } from './settingsStorage'
-import { LanguageRegionPreferences } from './types'
+import { useState, useEffect } from "react"
+import { Globe, Save } from "lucide-react"
+import { useToast } from "../../../hooks/useToast"
+import { useProfile } from "../../../hooks/useProfile"
 
 const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'es', label: 'Spanish (Español)' },
-  { value: 'fr', label: 'French (Français)' },
-  { value: 'de', label: 'German (Deutsch)' },
-  { value: 'zh', label: 'Chinese (中文)' },
-  { value: 'ar', label: 'Arabic (العربية)' },
-  { value: 'pt', label: 'Portuguese (Português)' },
-  { value: 'ru', label: 'Russian (Русский)' },
-  { value: 'ja', label: 'Japanese (日本語)' },
-  { value: 'hi', label: 'Hindi (हिन्दी)' },
+  { value: "en", label: "English" },
+  { value: "sw", label: "Swahili" },
+  { value: "lg", label: "Luganda" },
 ]
 
 const TIMEZONES = [
-  { value: 'Africa/Kampala', label: 'East Africa Time (EAT)' },
-  { value: 'Africa/Nairobi', label: 'East Africa Time (Nairobi)' },
-  { value: 'UTC', label: 'UTC' },
-]
-
-const DATE_FORMATS = [
-  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY (31/12/2024)' },
-  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (12/31/2024)' },
-  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (2024-12-31)' },
-]
-
-const CURRENCIES = [
-  { value: 'UGX', label: 'Ugandan Shilling (UGX)' },
+  { value: "Africa/Kampala", label: "Africa/Kampala (EAT, UTC+3)" },
+  { value: "Africa/Nairobi", label: "Africa/Nairobi (EAT, UTC+3)" },
+  { value: "UTC", label: "UTC" },
 ]
 
 export function LanguageRegionSettings() {
   const { toast } = useToast()
-  const [preferences, setPreferences] = useState<LanguageRegionPreferences>(getLanguageRegionPreferences())
+  const { profile, loading, updateProfile } = useProfile()
+  const [preferred_language, setLanguage] = useState("en")
+  const [timezone, setTimezone] = useState("Africa/Kampala")
   const [isSaving, setIsSaving] = useState(false)
 
-  const handleChange = (key: keyof LanguageRegionPreferences, value: string) => {
-    setPreferences(prev => ({
-      ...prev,
-      [key]: value
-    }))
-  }
+  useEffect(() => {
+    if (profile) {
+      setLanguage(profile.preferred_language ?? "en")
+      setTimezone(profile.timezone ?? "Africa/Kampala")
+    }
+  }, [profile])
 
   const handleSave = async () => {
     setIsSaving(true)
-    
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    // Save to localStorage (frontend-only for now)
-    saveLanguageRegionPreferences(preferences)
-    
-    // TODO: API Integration - When backend endpoint is available:
-    // try {
-    //   const response = await fetch('/api/v1/user/preferences/', {
-    //     method: 'PUT',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${getAccessToken()}`
-    //     },
-    //     body: JSON.stringify({
-    //       language: preferences.language,
-    //       timezone: preferences.timezone,
-    //       date_format: preferences.dateFormat,
-    //       currency: preferences.currency
-    //     })
-    //   })
-    //   if (!response.ok) throw new Error('Failed to save preferences')
-    // } catch (error) {
-    //   toast({ title: 'Error', description: 'Failed to save preferences' })
-    //   setIsSaving(false)
-    //   return
-    // }
-    
-    toast({
-      title: 'Preferences saved',
-      description: 'Your language and region preferences have been updated.',
-    })
-    
+    const success = await updateProfile({ preferred_language, timezone })
     setIsSaving(false)
+    if (success) {
+      toast({ title: "Settings saved", description: "Your language and region preferences have been updated." })
+    } else {
+      toast({ title: "Error", description: "Failed to save settings. Please try again.", variant: "destructive" })
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="flex items-center gap-2 pb-3 border-b border-gray-100 mb-4">
+          <Globe className="w-5 h-5 text-purple-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Language & Region</h2>
+        </div>
+        <p className="text-sm text-gray-500">Loading settings...</p>
+      </div>
+    )
   }
 
   return (
@@ -89,86 +58,43 @@ export function LanguageRegionSettings() {
         <Globe className="w-5 h-5 text-purple-600" />
         <h2 className="text-lg font-semibold text-gray-900">Language & Region</h2>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Language
-          </label>
+      <div className="space-y-4">
+        <div className="py-2.5 border-b border-gray-50">
+          <p className="text-sm font-medium text-gray-900 mb-1.5">Preferred Language</p>
+          <p className="text-xs text-gray-500 mb-2">Choose the language for the portal interface</p>
           <select
-            value={preferences.language}
-            onChange={(e) => handleChange('language', e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            value={preferred_language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
-            {LANGUAGES.map(lang => (
-              <option key={lang.value} value={lang.value}>
-                {lang.label}
-              </option>
+            {LANGUAGES.map((l) => (
+              <option key={l.value} value={l.value}>{l.label}</option>
             ))}
           </select>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Timezone
-          </label>
+        <div className="py-2.5">
+          <p className="text-sm font-medium text-gray-900 mb-1.5">Timezone</p>
+          <p className="text-xs text-gray-500 mb-2">Used for displaying dates and times</p>
           <select
-            value={preferences.timezone}
-            onChange={(e) => handleChange('timezone', e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+            className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
-            {TIMEZONES.map(tz => (
-              <option key={tz.value} value={tz.value}>
-                {tz.label}
-              </option>
+            {TIMEZONES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Date Format
-          </label>
-          <select
-            value={preferences.dateFormat}
-            onChange={(e) => handleChange('dateFormat', e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        <div className="pt-3 border-t border-gray-100">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-5 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {DATE_FORMATS.map(format => (
-              <option key={format.value} value={format.value}>
-                {format.label}
-              </option>
-            ))}
-          </select>
+            <Save className="w-4 h-4" />
+            {isSaving ? "Saving..." : "Save Settings"}
+          </button>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Currency Display
-          </label>
-          <select
-            value={preferences.currency}
-            onChange={(e) => handleChange('currency', e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            {CURRENCIES.map(curr => (
-              <option key={curr.value} value={curr.value}>
-                {curr.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="pt-4 border-t border-gray-100 mt-4">
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center gap-2 px-5 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Save className="w-4 h-4" />
-          {isSaving ? 'Saving...' : 'Save Preferences'}
-        </button>
       </div>
     </div>
   )

@@ -126,6 +126,17 @@ export const prefetchNewsArticle = async (targetId: string | number | undefined 
   }
 };
 
+// Simple in-memory cache to avoid redundant CMS fetches within the same session
+const cache: Record<string, { data: any; ts: number }> = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const hit = cache[key];
+  if (hit && Date.now() - hit.ts < CACHE_TTL) return hit.data as T;
+  const data = await fetcher();
+  cache[key] = { data, ts: Date.now() };
+  return data;
+}
 
 export const useEvents = () => {
   const [events, setEvents] = useState<any[]>(() => getCachedEventsSync());
@@ -134,7 +145,8 @@ export const useEvents = () => {
 
   const fetchEvents = useCallback(async () => {
     try {
-      const data = await getEvents();
+      setLoading(true);
+      const data = await cachedFetch('events', getEvents);
       setEvents(data || []);
     } catch (err) {
       console.error("Fetch Events Error:", err);
@@ -160,7 +172,7 @@ export const useNews = () => {
   const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getNews();
+      const data = await cachedFetch('news', getNews);
       setNews(data || []); 
     } catch (err) {
       console.error("Fetch News Error:", err);
@@ -186,7 +198,7 @@ export const useHomepage = () => {
   const fetchHome = useCallback(async () => {
     try {
       setLoading(true);
-      const homeData = await getHomepage();
+      const homeData = await cachedFetch('homepage', getHomepage);
       setData(homeData);
     } catch (err) {
       console.error("Home Fetch Error:", err);
