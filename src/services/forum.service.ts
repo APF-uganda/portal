@@ -3,7 +3,6 @@
  */
 
 import axios from 'axios'
-import { toast } from 'react-hot-toast'
 import { ForumPost, ForumCategory, ActiveUser, ForumStats } from '../types/forum'
 import { API_BASE_URL } from '../config/api'
 import { getAccessToken } from '../utils/authStorage';
@@ -104,6 +103,7 @@ const mapPost = (post: ApiPost): ForumPost => {
     authorProfilePictureUrl: post.author?.profile_picture_url || null,
     viewers: post.viewers || [],
     time: formatRelativeTime(post.created_at),
+    createdAt: post.created_at,
     category: post.category?.name || 'General',
     excerpt: toExcerpt(post.content),
     replies: post.comment_count || 0,
@@ -275,14 +275,10 @@ export const updateForumPost = async (_postId: number, _postData: any): Promise<
   } catch (error: any) {
     console.error('Failed to update forum post:', error)
     
-    // Handle 403 error for edit window expiry
+    // Log the error details for debugging
     if (error.response?.status === 403) {
       const errorData = error.response?.data;
-      if (errorData?.error === 'Edit window expired') {
-        toast.error(errorData.message || 'Posts can only be edited within 30 minutes of creation');
-      } else {
-        toast.error(errorData?.error || 'You do not have permission to edit this post');
-      }
+      console.error('Edit window expired:', errorData?.message || 'Posts can only be edited within 30 minutes of creation');
     }
     
     return null
