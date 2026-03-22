@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "./components/ui/toaster";
 import { isAuthenticated, getUser, migrateFromLocalStorage } from "./utils/authStorage";
 
@@ -97,10 +98,11 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Suspense fallback={null}>
-          <Routes>
+    <HelmetProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <Suspense fallback={null}>
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/chairperson-message" element={<ChairpersonMessagePage />} />
@@ -465,11 +467,12 @@ const App: React.FC = () => {
 
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-        <Toaster />
-      </div>
-    </Router>
+            </Routes>
+          </Suspense>
+          <Toaster />
+        </div>
+      </Router>
+    </HelmetProvider>
   );
 };
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNews } from '../hooks/useNews';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
+import SEO from '../components/common/SEO';
 import HeroSection from '../components/NewsComponents/HeroSection';
 import NewsletterSection from '../components/NewsComponents/NewsletterSection';
 import TopPickSection from '../components/NewsComponents/TopPickSection';
@@ -174,6 +175,11 @@ function NewsPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO 
+        title="News & Insights"
+        description="Stay updated with the latest news, announcements, and insights from the Accountancy Practitioners Forum. Read articles on accounting trends, regulations, and professional updates."
+        keywords="accounting news, APF updates, professional insights, accounting trends, announcements"
+      />
       <Navbar />
       <HeroSection title={selectedArticle?.title || 'News and Insights'} />
       {/* <TopPickSection article={topPickArticle} /> */}

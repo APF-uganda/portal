@@ -78,8 +78,24 @@ function LoginPage() {
         // Navigate to OTP page
         navigate('/otp')
       } else {
-        // Show error message
-        setError(data.error?.message || 'Invalid email or password')
+        // Handle account lockout
+        if (response.status === 403 && data.error?.code === 'ACCOUNT_LOCKED') {
+          const remainingMinutes = data.error.remaining_minutes || 30
+          setError(`Account locked due to multiple failed login attempts. Please try again in ${remainingMinutes} minutes.`)
+        } 
+        // Handle invalid credentials with remaining attempts
+        else if (data.error?.remaining_attempts !== undefined) {
+          const attempts = data.error.remaining_attempts
+          if (attempts > 0) {
+            setError(`Invalid email or password. ${attempts} attempt(s) remaining before account lockout.`)
+          } else {
+            setError('Invalid email or password.')
+          }
+        }
+        // Generic error
+        else {
+          setError(data.error?.message || 'Invalid email or password')
+        }
       }
     } catch (err) {
       console.error('❌ Login error:', err)

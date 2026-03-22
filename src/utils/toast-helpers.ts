@@ -79,10 +79,10 @@ export const toastMessages = {
     deleted: () => showSuccess('Post deleted successfully'),
     savedAsDraft: () => showSuccess('Post saved as draft successfully!'),
     draftUpdated: () => showSuccess('Draft updated successfully!'),
-    publishFailed: () => showError('Failed to publish post. Please try again'),
-    updateFailed: () => showError('Failed to update post. Please try again'),
+    publishFailed: (msg?: string) => showError(msg || 'Failed to publish post. Please try again'),
+    updateFailed: (msg?: string) => showError(msg || 'Failed to update post. Please try again'),
     deleteFailed: () => showError('Failed to delete post. Please try again'),
-    saveDraftFailed: () => showError('Failed to save draft. Please try again'),
+    saveDraftFailed: (msg?: string) => showError(msg || 'Failed to save draft. Please try again'),
   },
   
   // Comment messages

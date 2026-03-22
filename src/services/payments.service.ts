@@ -293,81 +293,75 @@ export const getPaymentLedger = async (): Promise<any[]> => {
     }
 
     const data = await response.json()
-    const payments = data.results || []
+    const payments: any[] = data.results || []
+    const invoices: any[] = data.invoices || []
 
-    // Convert payments to ledger entries with proper double-entry accounting
-    let runningBalance = 0
-    const ledgerEntries: any[] = []
+    const fmt = (iso: string) =>
+      new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }).replace(/ /g, '-')
 
-    payments.forEach((payment: any) => {
-      const amount = Number(payment.amount)
-      const date = new Date(payment.created_at)
-      const formattedDate = date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: '2-digit'
-      }).replace(/ /g, '-')
+    // Build a map of invoice_number → completed payment for quick lookup
+    const paidInvoiceNums = new Set(
+      payments.filter(p => p.status === 'completed' && p.invoice_number).map(p => p.invoice_number)
+    )
 
-      // Use membership renewal invoice number if available, otherwise generate from transaction reference
-      const invoiceNumber = payment.invoice_number 
-        || (payment.transaction_reference ? `INV-${payment.transaction_reference.substring(4, 16)}` : 'N/A')
+    const rawEntries: Array<{ sortKey: string; entry: any }> = []
 
-      const providerLabel = payment.provider === 'mtn' ? 'MTN Mobile Money' : 'Airtel Money'
-
-      // MEMBERSHIP RENEWAL LEDGER LOGIC:
-      // For membership renewals, we need two entries per transaction:
-      // 1. DEBIT entry when invoice is raised (amount owed)
-      // 2. CREDIT entry when payment is made (amount paid)
-
-      if (payment.status === 'completed') {
-        // Step 1: Create DEBIT entry for the invoice (amount billed)
-        ledgerEntries.push({
-          date: formattedDate,
-          invoiceNumber: invoiceNumber,
-          description: payment.description || 'Membership Renewal Fee',
-          debit: amount,
+    // 1. One DEBIT row per invoice (the charge)
+    invoices.forEach((inv: any) => {
+      rawEntries.push({
+        sortKey: inv.invoice_date,
+        entry: {
+          id: `inv-${inv.invoice_number}`,
+          date: fmt(inv.invoice_date),
+          invoiceNumber: inv.invoice_number,
+          description: 'Membership Renewal Fee',
+          debit: Number(inv.amount),
           credit: null,
-          balance: 0, // Will be calculated below
-          transactionRef: payment.transaction_reference,
+          balance: 0,
+          transactionRef: inv.invoice_number,
           hasReceipt: false,
           hasInvoice: true,
-        })
-        runningBalance += amount
+          amount: Number(inv.amount),
+          status: inv.status,
+        },
+      })
+    })
 
-        // Step 2: Create CREDIT entry for the payment (amount paid)
-        ledgerEntries.push({
-          date: formattedDate,
-          invoiceNumber: invoiceNumber,
-          description: `Payment for ${payment.description || 'Membership Renewal'} - ${providerLabel}`,
+    // 2. One CREDIT row per completed payment
+    payments.forEach((payment: any) => {
+      if (payment.status !== 'completed') return
+      const amount = Number(payment.amount)
+      const methodLabel =
+        payment.payment_method === 'bank' ? 'Bank Transfer'
+        : payment.provider === 'mtn' ? 'MTN Mobile Money'
+        : payment.provider === 'airtel' ? 'Airtel Money'
+        : 'Mobile Money'
+      rawEntries.push({
+        sortKey: payment.completed_at || payment.created_at,
+        entry: {
+          id: `pay-${payment.transaction_reference}`,
+          date: fmt(payment.completed_at || payment.created_at),
+          invoiceNumber: payment.invoice_number || payment.transaction_reference,
+          description: `Payment received – ${methodLabel}`,
           debit: null,
           credit: amount,
-          balance: 0, // Will be calculated below
+          balance: 0,
           transactionRef: payment.transaction_reference,
           hasReceipt: true,
           hasInvoice: false,
-        })
-        runningBalance -= amount
-      } else if (payment.status === 'pending' || payment.status === 'processing') {
-        // For pending payments, only create DEBIT entry (invoice raised but not paid)
-        ledgerEntries.push({
-          date: formattedDate,
-          invoiceNumber: invoiceNumber,
-          description: payment.description || `Membership Renewal Fee - Payment ${payment.status}`,
-          debit: amount,
-          credit: null,
-          balance: 0, // Will be calculated below
-          transactionRef: payment.transaction_reference,
-          hasReceipt: false,
-          hasInvoice: true,
-        })
-        runningBalance += amount
-      }
-      // Note: Failed payments are not included in the ledger
+          amount,
+          method: methodLabel,
+          status: 'completed',
+        },
+      })
     })
 
-    // Calculate running balance for each entry
+    // Sort chronologically
+    rawEntries.sort((a, b) => new Date(a.sortKey).getTime() - new Date(b.sortKey).getTime())
+
+    // Calculate running balance
     let balance = 0
-    return ledgerEntries.map(entry => {
+    return rawEntries.map(({ entry }) => {
       if (entry.debit) balance += entry.debit
       if (entry.credit) balance -= entry.credit
       return { ...entry, balance }
@@ -426,4 +420,111 @@ export const processPayment = async (paymentData: any): Promise<any> => {
   }
 
   return response.json()
+}
+
+// ─── Renewal / Merchant Code Payment Flow ────────────────────────────────────
+
+export interface MemberInvoice {
+  id: number
+  invoice_number: string
+  user_email: string
+  user_name: string
+  invoice_date: string
+  due_date: string
+  period_start: string
+  period_end: string
+  total_amount: number
+  amount_paid: number
+  balance_due: number
+  status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled'
+}
+
+export interface RenewalProof {
+  id: number
+  invoice_number: string
+  amount: number
+  provider: string
+  phone_number: string
+  reference_note: string
+  proof_file_url: string | null
+  status: 'pending_verification' | 'approved' | 'rejected'
+  review_notes: string
+  reviewed_at: string | null
+  created_at: string
+  // admin only
+  member_email?: string
+  member_name?: string
+  reviewed_by?: string | null
+}
+
+export const getMemberInvoices = async (): Promise<MemberInvoice[]> => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/payments/renewal/invoices/`, {
+      headers: getAuthHeaders(),
+    })
+    if (!res.ok) return []
+    return await res.json()
+  } catch {
+    return []
+  }
+}
+
+export const uploadRenewalProof = async (formData: FormData): Promise<{ success: boolean; message: string }> => {
+  const token = getAccessToken()
+  const headers: Record<string, string> = {}
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  const res = await fetch(`${API_BASE_URL}/api/v1/payments/renewal/upload-proof/`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  })
+  const data = await res.json()
+  if (!res.ok) return { success: false, message: data.error || 'Upload failed' }
+  return { success: true, message: data.message || 'Submitted successfully' }
+}
+
+export const getMemberProofs = async (): Promise<RenewalProof[]> => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/payments/renewal/my-proofs/`, {
+      headers: getAuthHeaders(),
+    })
+    if (!res.ok) return []
+    return await res.json()
+  } catch {
+    return []
+  }
+}
+
+export const getAdminRenewalProofs = async (statusFilter?: string): Promise<RenewalProof[]> => {
+  try {
+    const url = statusFilter
+      ? `${API_BASE_URL}/api/v1/payments/renewal/admin/proofs/?status=${statusFilter}`
+      : `${API_BASE_URL}/api/v1/payments/renewal/admin/proofs/`
+    const res = await fetch(url, { headers: getAuthHeaders() })
+    if (!res.ok) return []
+    return await res.json()
+  } catch {
+    return []
+  }
+}
+
+export const approveRenewalProof = async (proofId: number, notes = ''): Promise<{ success: boolean; message: string }> => {
+  const res = await fetch(`${API_BASE_URL}/api/v1/payments/renewal/admin/proofs/${proofId}/approve/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ notes }),
+  })
+  const data = await res.json()
+  return { success: res.ok, message: data.message || data.error || '' }
+}
+
+export const rejectRenewalProof = async (proofId: number, notes = ''): Promise<{ success: boolean; message: string }> => {
+  const res = await fetch(`${API_BASE_URL}/api/v1/payments/renewal/admin/proofs/${proofId}/reject/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ notes }),
+  })
+  const data = await res.json()
+  return { success: res.ok, message: data.message || data.error || '' }
 }

@@ -10,6 +10,7 @@ export interface ForumPost {
   authorProfilePictureUrl?: string | null
   viewers?: ForumViewer[]
   time: string
+  createdAt: string
   category: string
   excerpt: string
   replies: number

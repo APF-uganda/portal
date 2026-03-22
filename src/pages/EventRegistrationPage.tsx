@@ -90,27 +90,27 @@ const EventRegistrationPage: React.FC = () => {
     }
   };
 
- 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     const data = new FormData();
     
     // User Contact Information
-    data.append('fullName', formData.fullName);
+    data.append('full_name', formData.fullName);
     data.append('email', formData.email);
-    data.append('phoneNumber', formData.phoneNumber);
-    data.append('companyName', formData.companyName);
+    data.append('phone_number', formData.phoneNumber);
+    data.append('company_name', formData.companyName);
     
-    // Event Context for Django (Fixes the "Event not found" issue)
-    data.append('eventId', eventData.eventId);
-    data.append('eventTitle', eventData.eventTitle);
-    data.append('eventDate', finalDateDisplay);
+    // Event Context for Django
+    data.append('strapi_event_id', eventData.eventId);
+    data.append('event_title', eventData.eventTitle);
     
-    // Static attributes
-    data.append('attendanceMode', 'Physical'); 
+    
+    data.append('event_date', eventData.startDate || finalDateDisplay);
+    
+    data.append('attendance_mode', 'Physical'); 
 
     if (proofOfPayment) {
-        data.append('proof', proofOfPayment);
+        data.append('proof_of_payment', proofOfPayment);
     }
 
     try {

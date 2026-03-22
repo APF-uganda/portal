@@ -5,11 +5,34 @@ import { fetchRecentPayments, RecentPayment } from "../../services/dashboard";
 function RecentPayments() {
   const [payments, setPayments] = useState<RecentPayment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadPayments = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const data = await fetchRecentPayments();
+      setPayments(data);
+    } catch (error) {
+      console.error('Failed to load recent payments:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    fetchRecentPayments()
-      .then(setPayments)
-      .finally(() => setLoading(false));
+    loadPayments();
+    
+    // Auto-refresh every 30 seconds
+    const intervalId = setInterval(() => {
+      loadPayments(true);
+    }, 30 * 1000); // 30 seconds
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const formatPaymentMethod = (method?: string) => {
@@ -44,7 +67,12 @@ function RecentPayments() {
   return (
     <div className="animate-slide-up rounded-xl border border-border bg-card p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm md:text-base font-semibold">Recent Payments</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm md:text-base font-semibold">Recent Payments</h2>
+          {refreshing && (
+            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          )}
+        </div>
         <Link to="/admin/payments" className="text-xs md:text-sm text-purple-600 hover:underline">
           View All -&gt;
         </Link>

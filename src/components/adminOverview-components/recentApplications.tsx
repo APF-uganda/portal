@@ -6,11 +6,34 @@ import { fetchRecentApplications,RecentApplication } from "../../services/dashbo
 function RecentApplications() {
   const [applications, setApplications] = useState<RecentApplication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadApplications = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const data = await fetchRecentApplications();
+      setApplications(data);
+    } catch (error) {
+      console.error('Failed to load recent applications:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    fetchRecentApplications()
-      .then(setApplications)
-      .finally(() => setLoading(false));
+    loadApplications();
+    
+    // Auto-refresh every 30 seconds
+    const intervalId = setInterval(() => {
+      loadApplications(true);
+    }, 30 * 1000); // 30 seconds
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const formatDate = (date: string) => {
@@ -38,9 +61,14 @@ function RecentApplications() {
     <div className="rounded-xl border border-border bg-white p-4 md:p-5">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm md:text-base font-semibold text-gray-700">
-          Recent Applications
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm md:text-base font-semibold text-gray-700">
+            Recent Applications
+          </h2>
+          {refreshing && (
+            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          )}
+        </div>
         <Link
           to="/admin/approval"
           className="text-xs md:text-sm text-purple-600 hover:underline"

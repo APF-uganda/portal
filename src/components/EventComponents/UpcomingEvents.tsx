@@ -12,7 +12,6 @@ const UpcomingEvents = () => {
 
   const { events } = useEvents();
 
- 
   const formatReadableDate = (dateStr: string) => {
     if (!dateStr) return "Date TBA";
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -95,10 +94,11 @@ const UpcomingEvents = () => {
                           eventTitle: event.title, 
                           eventId: event.documentId || event.id,
                           location: event.location || "Location TBD",
-                          date: formatReadableDate(event.date),
+                          
+                          startDate: event.date, 
+                          displayDate: formatReadableDate(event.date), 
                           time: event.time,
                           image: finalImageUrl,
-                         
                           isPaid: event.isPaid,
                           memberPrice: event.memberPrice,
                           nonMemberPrice: event.nonMemberPrice,
