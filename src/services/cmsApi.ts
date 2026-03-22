@@ -35,7 +35,9 @@ export interface NewsArticle {
   image?: string;
   description?: string;
   category?: string;
-  readTime?: number;
+  readTime?: number | string;
+  isFeatured?: boolean;
+  isTopPick?: boolean;
 }
 
 const api = axios.create({ 
@@ -48,20 +50,16 @@ const api = axios.create({
  */
 const getImageUrl = (url: string | undefined): string => {
   if (!url) {
-    console.log('No image URL provided, using fallback');
     return '/images/Hero.jpg'; // Use existing image as fallback
   }
   
   // If the URL is already absolute (starts with http), return it
   if (url.startsWith('http')) {
-    console.log('Using absolute image URL:', url);
     return url;
   }
   
   // Otherwise, prepend the configured CMS base URL
-  const fullUrl = `${CMS_BASE_URL}${url}`;
-  console.log('Constructed image URL:', fullUrl);
-  return fullUrl;
+  return `${CMS_BASE_URL}${url}`;
 };
 
 /**
@@ -90,17 +88,173 @@ export const updateHomepage = async (payload: any) => {
 /**
  * NEWS
  */
-export const getNews = async () => {
+const NEWS_CACHE_KEY = 'apf.news.cache.v1';
+const NEWS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+type NewsCacheEntry = {
+  timestamp: number;
+  data: NewsArticle[];
+};
+
+let newsMemoryCache: NewsCacheEntry | null = null;
+let newsInFlightPromise: Promise<NewsArticle[]> | null = null;
+const EVENTS_CACHE_KEY = 'apf.events.cache.v1';
+const EVENTS_CACHE_TTL_MS = 15 * 60 * 1000;
+
+type EventsCacheEntry = {
+  timestamp: number;
+  data: Event[];
+};
+
+let eventsMemoryCache: EventsCacheEntry | null = null;
+let eventsInFlightPromise: Promise<Event[]> | null = null;
+
+const canUseStorage = () =>
+  typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
+
+const readNewsCache = (): NewsArticle[] | null => {
+  const now = Date.now();
+
+  if (newsMemoryCache && now - newsMemoryCache.timestamp < NEWS_CACHE_TTL_MS) {
+    return newsMemoryCache.data;
+  }
+
+  if (!canUseStorage()) return null;
+
   try {
-   
-    const res = await api.get('/news-articles?populate=*&sort=createdAt:desc');
+    const raw = window.sessionStorage.getItem(NEWS_CACHE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as NewsCacheEntry;
+    if (!parsed?.timestamp || !Array.isArray(parsed?.data)) return null;
+    if (now - parsed.timestamp >= NEWS_CACHE_TTL_MS) return null;
+
+    newsMemoryCache = parsed;
+    return parsed.data;
+  } catch {
+    return null;
+  }
+};
+
+const writeNewsCache = (data: NewsArticle[]) => {
+  const payload: NewsCacheEntry = { timestamp: Date.now(), data };
+  newsMemoryCache = payload;
+
+  if (!canUseStorage()) return;
+
+  try {
+    window.sessionStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore storage quota or browser privacy-mode errors.
+  }
+};
+
+const readEventsCache = (): Event[] | null => {
+  const now = Date.now();
+
+  if (eventsMemoryCache && now - eventsMemoryCache.timestamp < EVENTS_CACHE_TTL_MS) {
+    return eventsMemoryCache.data;
+  }
+
+  if (!canUseStorage()) return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(EVENTS_CACHE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as EventsCacheEntry;
+    if (!parsed?.timestamp || !Array.isArray(parsed?.data)) return null;
+    if (now - parsed.timestamp >= EVENTS_CACHE_TTL_MS) return null;
+
+    eventsMemoryCache = parsed;
+    return parsed.data;
+  } catch {
+    return null;
+  }
+};
+
+const writeEventsCache = (data: Event[]) => {
+  const payload: EventsCacheEntry = { timestamp: Date.now(), data };
+  eventsMemoryCache = payload;
+
+  if (!canUseStorage()) return;
+
+  try {
+    window.sessionStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore storage quota or browser privacy-mode errors.
+  }
+};
+
+export const getCachedNewsSync = (): NewsArticle[] => {
+  return readNewsCache() || [];
+};
+
+export const getCachedEventsSync = (): Event[] => {
+  return readEventsCache() || [];
+};
+
+const NEWS_QUERY_CANDIDATES = [
+  // Preferred lightweight query: only sort + featured image relation.
+  'sort[0]=publishDate:desc&sort[1]=createdAt:desc&populate[featuredImage]=*',
+  // Compatibility fallback for CMS schemas that differ.
+  'sort[0]=createdAt:desc&populate[featuredImage]=*',
+  // Last resort: broad query known to work in this project historically.
+  'populate=*&sort=createdAt:desc',
+];
+
+const EVENTS_QUERY_CANDIDATES = [
+  // Preferred lightweight query: fetch only required fields and image URL.
+  'sort[0]=date:asc&fields[0]=title&fields[1]=description&fields[2]=date&fields[3]=time&fields[4]=location&fields[5]=registrationLink&fields[6]=cpdPoints&fields[7]=isFeatured&fields[8]=isPaid&fields[9]=memberPrice&fields[10]=nonMemberPrice&populate[image][fields][0]=url',
+  // Compatibility fallback for varying CMS schemas.
+  'sort[0]=date:asc&populate[image]=*',
+  // Last-resort broad query.
+  'populate=*&sort=date:asc',
+  'populate=*',
+];
+
+const fetchNewsResponse = async () => {
+  for (const query of NEWS_QUERY_CANDIDATES) {
+    try {
+      return await api.get(`/news-articles?${query}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 400) continue;
+      throw error;
+    }
+  }
+
+  throw new Error('Unable to fetch news with available query strategies');
+};
+
+const fetchEventsResponse = async () => {
+  for (const query of EVENTS_QUERY_CANDIDATES) {
+    try {
+      return await api.get(`/events?${query}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 400) continue;
+      throw error;
+    }
+  }
+
+  throw new Error('Unable to fetch events with available query strategies');
+};
+
+export const getNews = async () => {
+  const cached = readNewsCache();
+  if (cached) return cached;
+
+  if (newsInFlightPromise) return newsInFlightPromise;
+
+  const request = (async () => {
+    const res = await fetchNewsResponse();
 
     if (!res.data || !res.data.data) return [];
 
-    return res.data.data.map((item: any) => {
+    const mappedNews: NewsArticle[] = res.data.data.map((item: any) => {
       const data = item.attributes || item;
 
-     
       const rawImg = data.featuredImage?.data || data.featuredImage || data.image?.data || data.image;
       let imageUrl = '';
       if (rawImg) {
@@ -108,25 +262,38 @@ export const getNews = async () => {
         imageUrl = imgObj?.attributes?.url || imgObj?.url || '';
       }
 
-      
       const articleContent = data.content || data.contentBlocks || [];
 
       return {
         id: item.id,
         documentId: item.documentId || item.id?.toString(),
         title: data.title || 'Untitled',
-        content: articleContent, 
+        content: articleContent,
         description: data.description || '',
         image: getImageUrl(imageUrl),
         category: data.news?.data?.attributes?.name || data.category || 'News',
         readTime: data.readTime || 5,
         date: data.publishDate || data.createdAt,
-        isFeatured: !!(data.isFeatured || data.isTopic)
+        isFeatured: !!(data.isFeatured || data.isTopic),
+        isTopPick: !!(data.isTopPick || data.isFeatured || data.isTopic)
       };
     });
+
+    writeNewsCache(mappedNews);
+    return mappedNews;
+  })();
+
+  newsInFlightPromise = request;
+
+  try {
+    return await request;
   } catch (error) {
     console.error("News Fetch Error:", error);
     return [];
+  } finally {
+    if (newsInFlightPromise === request) {
+      newsInFlightPromise = null;
+    }
   }
 };
 
@@ -146,29 +313,25 @@ export const deleteNews = async (id: number) => {
  * EVENTS
  */
 export const getEvents = async (): Promise<Event[]> => {
-  try {
-    const res = await api.get('/events', { 
-      params: { populate: '*' } 
-    });
+  const cached = readEventsCache();
+  if (cached) return cached;
 
-    return (res.data.data || []).map((item: any) => {
+  if (eventsInFlightPromise) return eventsInFlightPromise;
+
+  const request = (async () => {
+    const res = await fetchEventsResponse();
+
+    const mappedEvents: Event[] = (res.data.data || []).map((item: any) => {
       // Handle both direct and nested attribute structures
       const data = item.attributes || item;
-      
-      // Better image URL extraction with debugging
+
+      // Better image URL extraction with fallback handling
       let imageUrl = '';
       if (data.image?.data?.attributes?.url) {
         imageUrl = data.image.data.attributes.url;
       } else if (data.image?.url) {
         imageUrl = data.image.url;
       }
-      
-      console.log('Event item image processing:', {
-        title: data.title,
-        rawImageData: data.image,
-        extractedUrl: imageUrl,
-        finalUrl: getImageUrl(imageUrl)
-      });
 
       return {
         id: item.id,
@@ -181,16 +344,28 @@ export const getEvents = async (): Promise<Event[]> => {
         registrationLink: data.registrationLink || '',
         cpdPoints: data.cpdPoints || 0,
         isFeatured: data.isFeatured || false,
-        
         isPaid: data.isPaid || false,
         memberPrice: data.memberPrice || 0,
         nonMemberPrice: data.nonMemberPrice || 0,
         image: getImageUrl(imageUrl),
       };
     });
+
+    writeEventsCache(mappedEvents);
+    return mappedEvents;
+  })();
+
+  eventsInFlightPromise = request;
+
+  try {
+    return await request;
   } catch (error) {
     console.error("Error fetching events:", error);
     return [];
+  } finally {
+    if (eventsInFlightPromise === request) {
+      eventsInFlightPromise = null;
+    }
   }
 };
 

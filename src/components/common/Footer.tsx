@@ -27,6 +27,21 @@ const XLogo = ({ size = 16 }: { size?: number }) => (
 )
 
 function Footer() {
+  const quickLinks = [
+    { label: 'Membership', to: '/membership' },
+    { label: 'Governance', to: '/about#governance' },
+    { label: 'Management', to: '/management' },
+    { label: 'Policy Documents', to: '/membership' },
+    { label: 'Annual Reports', to: '/membership' },
+    { label: 'FAQs', to: '/contact' },
+  ]
+
+  const connectLinks = [
+    { label: 'Member Directory', to: '/membership' },
+    { label: 'Partners', to: '/about' },
+    { label: 'Sponsorship', to: '/contact' },
+  ]
+
   return (
     <footer className="bg-white border-t border-gray-100 pt-16 pb-8">
       <div className="max-w-6xl mx-auto px-6">
@@ -67,10 +82,10 @@ function Footer() {
           <div>
             <h6 className="text-[#1e293b] mb-6 text-lg font-bold">Quick Links</h6>
             <ul className="space-y-4">
-              {['Membership', 'Governance', 'Policy Documents', 'Annual Reports', 'FAQs'].map((link) => (
-                <li key={link}>
-                  <Link to="#" className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">
-                    {link}
+              {quickLinks.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">
+                    {link.label}
                   </Link>
                 </li>
               ))}
@@ -81,10 +96,10 @@ function Footer() {
           <div>
             <h6 className="text-[#1e293b] mb-6 text-lg font-bold">Connect</h6>
             <ul className="space-y-4">
-              {['Member Directory', 'Partners', 'Sponsorship'].map((link) => (
-                <li key={link}>
-                  <Link to="#" className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">
-                    {link}
+              {connectLinks.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">
+                    {link.label}
                   </Link>
                 </li>
               ))}

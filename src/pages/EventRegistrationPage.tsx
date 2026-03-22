@@ -1,47 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Calendar, Award,CheckCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard, Upload, FileText, X, Clock, AlertCircle } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { baseEvents } from '../components/EventComponents/eventsData';
+import eventService from '../services/eventService'; 
 
 const EventRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fallback image constant
   const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
   const eventData = location.state as { 
     eventTitle: string; 
     eventId: string;
     location?: string;
-    date?: string;
+    date?: string;        
+    time?: string;        
+    startDate?: string; 
+    endDate?: string;   
+    displayDate?: string; 
+    startTime?: string;
+    endTime?: string;
     image?: string;
     isPaid?: boolean;
     memberPrice?: number;
     nonMemberPrice?: number;
     cpdPoints?: number;
+    description?: string;
   } | null;
 
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [proofOfPayment, setProofOfPayment] = useState<File | null>(null);
+  
+  const [notification, setNotification] = useState<{show: boolean, msg: string, type: 'success' | 'error'}>({
+    show: false, msg: '', type: 'success'
+  });
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    countryCode: '+256',
     phoneNumber: '',
     companyName: '',
-    attendanceMode: 'Physical',
-    sessions: '',
-    accessibilityRequests: '',
     agreeToTerms: false
-  });
-
-  const [errors, setErrors] = useState({
-    fullName: '',
-    email: '',
-    phoneNumber: '',
-    agreeToTerms: ''
   });
 
   if (!eventData) {
@@ -52,252 +56,193 @@ const EventRegistrationPage: React.FC = () => {
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
 
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
-  const displayDate = eventData.date || localEvent?.date || 'TBA';
-  // Applied fallback image logic here
-  const displayImage = eventData.image || localEvent?.image || DEFAULT_FALLBACK;
+  
+  const displayTime = eventData.time || eventData.startTime || localEvent?.time || 'TBA';
+  
+  const finalDateDisplay = 
+    eventData.displayDate || 
+    eventData.date || 
+    (eventData.startDate ? new Date(eventData.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null) || 
+    localEvent?.date || 
+    'TBA';
 
-  const validateForm = () => {
-    const newErrors = { fullName: '', email: '', phoneNumber: '', agreeToTerms: '' };
-
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
-    if (!formData.agreeToTerms) newErrors.agreeToTerms = 'You must agree to the terms and conditions';
-
-    setErrors(newErrors);
-    return !newErrors.fullName && !newErrors.email && !newErrors.phoneNumber && !newErrors.agreeToTerms;
+  const showToast = (msg: string, type: 'success' | 'error') => {
+    setNotification({ show: true, msg, type });
+    setTimeout(() => setNotification(prev => ({ ...prev, show: false })), 4000);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProofOfPayment(e.target.files[0]);
+    }
+  };
+
+  const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (!formData.agreeToTerms) {
+      showToast("Please agree to the terms.", "error");
+      return;
+    }
+    if (eventData.isPaid || (eventData.nonMemberPrice && eventData.nonMemberPrice > 0)) {
       setStep(2);
+    } else {
+      handleFinalSubmit();
     }
   };
 
-  const handleBackToEvents = () => {
-    navigate('/events');
+ 
+  const handleFinalSubmit = async () => {
+    setIsSubmitting(true);
+    const data = new FormData();
+    
+    // User Contact Information
+    data.append('fullName', formData.fullName);
+    data.append('email', formData.email);
+    data.append('phoneNumber', formData.phoneNumber);
+    data.append('companyName', formData.companyName);
+    
+    // Event Context for Django (Fixes the "Event not found" issue)
+    data.append('eventId', eventData.eventId);
+    data.append('eventTitle', eventData.eventTitle);
+    data.append('eventDate', finalDateDisplay);
+    
+    // Static attributes
+    data.append('attendanceMode', 'Physical'); 
+
+    if (proofOfPayment) {
+        data.append('proof', proofOfPayment);
+    }
+
+    try {
+      await eventService.registerAttendee(data);
+      showToast("Registration submitted successfully!", "success");
+      setStep(3);
+    } catch (error) {
+      showToast("Submission failed. Please check your connection.", "error");
+      console.error("Submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col font-sans relative">
+      {notification.show && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border bg-white animate-in slide-in-from-top-5 duration-300 border-slate-100">
+          {notification.type === 'success' ? <CheckCircle size={20} className="text-green-500"/> : <AlertCircle size={20} className="text-red-500"/>}
+          <span className="font-semibold text-sm text-slate-800">{notification.msg}</span>
+        </div>
+      )}
+
       <Navbar />
       
-      {step === 1 ? (
+      {step === 1 && (
         <>
-          <section
-            className="relative h-[500px] flex items-center justify-center overflow-hidden pt-[56px] sm:pt-[64px] mt-[-56px] sm:mt-[-64px] bg-cover bg-center"
-            style={{ backgroundImage: `url(${displayImage})` }}
-          >
-            <div className="absolute inset-0 bg-[#171a1f]/50" />
-
-            <div className="relative z-10 max-w-4xl mx-auto text-center text-white px-4 fade-in-up">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 fade-in-up delay-200">
+          <section className="relative min-h-[450px] py-16 flex items-center justify-center overflow-hidden bg-cover bg-center">
+            <div className="absolute inset-0 bg-slate-900/80" />
+            <div className="relative z-20 max-w-5xl mx-auto text-center text-white px-6">
+              <h1 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight uppercase leading-tight">
                 {eventData.eventTitle}
               </h1>
-              <p className="text-lg md:text-xl mb-6 fade-in-up delay-400">
-                {localEvent?.description || 'Join us for this exciting event'}
-              </p>
-              <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base fade-in-up delay-600">
-                <div className="flex items-center gap-2">
-                  <MapPin size={20} />
-                  <span className="font-medium">{displayLocation}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={20} />
-                  <span className="font-medium">{displayDate}</span>
-                </div>
               
-                {eventData.cpdPoints && (
-  <div className="mb-6 flex items-center gap-2 bg-purple-50 w-fit px-4 py-2 rounded-full border border-purple-100">
-    <Award size={16} className="text-purple-600" />
-    <span className="text-xs font-bold text-purple-700 uppercase tracking-widest">
-      {eventData.cpdPoints} CPD Units
-    </span>
-  </div>
-)}
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/20">
+                  <MapPin size={16} className="text-purple-400 shrink-0" />
+                  <span className="font-semibold text-xs md:text-sm">{displayLocation}</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/20">
+                  <Calendar size={16} className="text-purple-400 shrink-0" />
+                  <span className="font-semibold text-xs md:text-sm">{finalDateDisplay}</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/20">
+                  <Clock size={16} className="text-purple-400 shrink-0" />
+                  <span className="font-semibold text-xs md:text-sm">{displayTime}</span>
+                </div>
+              </div>
 
-{(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-  <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex justify-between items-center mb-6">
-    <div>
-      <p className="text-[10px] text-gray-400 font-bold uppercase">Member Price</p>
-      <p className="text-lg font-black text-purple-700">UGX {Number(eventData.memberPrice).toLocaleString()}</p>
-    </div>
-    <div className="text-right">
-      <p className="text-[10px] text-gray-400 font-bold uppercase">Non-Member</p>
-      <p className="text-lg font-black text-slate-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</p>
-    </div>
-  </div>
-)}
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {Number(eventData.cpdPoints) > 0 && (
+                  <div className="flex items-center gap-2 bg-amber-500 px-4 py-2 rounded-full shadow-lg">
+                    <Award size={16} />
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">{eventData.cpdPoints} CPD Units</span>
+                  </div>
+                )}
+                <div className="bg-purple-600 px-4 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider shadow-lg">
+                  Mbr: UGX {Number(eventData.memberPrice).toLocaleString()} | Non-Mbr: UGX {Number(eventData.nonMemberPrice).toLocaleString()}
+                </div>
               </div>
             </div>
-
-            <style>
-              {`
-                @keyframes fadeInUp {
-                  0% { opacity: 0; transform: translateY(30px); }
-                  100% { opacity: 1; transform: translateY(0); }
-                }
-                .fade-in-up { animation: fadeInUp 1s ease-out both; }
-                .delay-200 { animation-delay: 0.2s; }
-                .delay-400 { animation-delay: 0.4s; }
-                .delay-600 { animation-delay: 0.6s; }
-              `}
-            </style>
           </section>
 
-          <main className="flex-1 py-12" style={{ backgroundColor: '#d0c9ea' }}>
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-              <button
-                onClick={handleBackToEvents}
-                className="flex items-center text-purple-600 hover:text-purple-700 mb-6 transition-colors"
-              >
-                <ArrowLeft size={20} className="mr-2" />
-                Back to Events
+          <main className="flex-1 py-12 bg-slate-50">
+            <div className="max-w-3xl mx-auto px-4">
+              <button onClick={() => navigate('/events')} className="flex items-center text-slate-500 font-semibold mb-6">
+                <ArrowLeft size={20} className="mr-2" /> Back to Events
               </button>
 
-              <div className="bg-white rounded-lg shadow-md border border-purple-300 overflow-hidden">
-                <form onSubmit={handleSubmit} className="p-6 sm:p-8">
-                  <div className="space-y-5">
-                    {/* Check both isPaid flag and price for banner visibility */}
-                    {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && (
-                      <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg flex justify-between items-center mb-6">
-                        <span className="text-sm font-bold text-purple-700 uppercase tracking-wider">Registration Fee</span>
-                        <span className="text-xl font-bold text-purple-900">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</span>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Full name <span className="text-red-500">*</span></label>
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-200">
+                <form onSubmit={handleInitialSubmit} className="p-6 md:p-10">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-900 ml-1">Full Name</label>
                         <input
-                          type="text"
-                          required
-                          placeholder="Enter your Full name"
-                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.fullName ? 'border-red-500' : 'border-gray-300'}`}
+                          type="text" required
+                          className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-purple-500 outline-none transition-all text-slate-900"
                           value={formData.fullName}
-                          onChange={(e) => { setFormData({...formData, fullName: e.target.value}); setErrors({...errors, fullName: ''}); }}
+                          onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                         />
-                        {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
                       </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Email address <span className="text-red-500">*</span></label>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-900 ml-1">Email Address</label>
                         <input
-                          type="email"
-                          required
-                          placeholder="Enter your email address"
-                          className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                          type="email" required
+                          className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-purple-500 outline-none transition-all text-slate-900"
                           value={formData.email}
-                          onChange={(e) => { setFormData({...formData, email: e.target.value}); setErrors({...errors, email: ''}); }}
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
                         />
-                        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Phone number <span className="text-red-500">*</span></label>
-                        <div className="flex gap-2">
-                          <select
-                            value={formData.countryCode}
-                            onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
-                            className="w-24 px-2 py-2.5 border border-gray-300 rounded-lg bg-white text-sm"
-                          >
-                            <option value="+256">+256</option>
-                            <option value="+254">+254</option>
-                          </select>
-                          <input
-                            type="tel"
-                            required
-                            placeholder="Enter your Phone number"
-                            className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
-                            value={formData.phoneNumber}
-                            onChange={(e) => { setFormData({...formData, phoneNumber: e.target.value}); setErrors({...errors, phoneNumber: ''}); }}
-                          />
-                        </div>
-                        {errors.phoneNumber && <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>}
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Company name</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-900 ml-1">Phone Number</label>
                         <input
-                          type="text"
-                          placeholder="Enter your company name"
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm"
+                          type="tel" required placeholder="0700 000 000"
+                          className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-purple-500 outline-none transition-all text-slate-900"
+                          value={formData.phoneNumber}
+                          onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-900 ml-1">Company Name</label>
+                        <input
+                          type="text" placeholder="Optional"
+                          className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:border-purple-500 outline-none transition-all text-slate-900"
                           value={formData.companyName}
                           onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Attendee Category <span className="text-red-500">*</span></label>
-                        <select
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"
-                          value={formData.attendanceMode}
-                          onChange={(e) => setFormData({...formData, attendanceMode: e.target.value})}
-                        >
-                          <option value="Physical">Physical Attendance</option>
-                          <option value="Virtual">Virtual Attendance</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Sessions <span className="text-red-500">*</span></label>
-                        <select
-                          required
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"
-                          value={formData.sessions}
-                          onChange={(e) => setFormData({...formData, sessions: e.target.value})}
-                        >
-                          <option value="">Select your preferred session</option>
-                          <option value="Morning">Morning Session</option>
-                          <option value="Afternoon">Afternoon Session</option>
-                          <option value="Full Day">Full Day</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Accessibility requests <span className="text-red-500">*</span></label>
-                      <select
-                        required
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"
-                        value={formData.accessibilityRequests}
-                        onChange={(e) => setFormData({...formData, accessibilityRequests: e.target.value})}
-                      >
-                        <option value="">Select your answer</option>
-                        <option value="None">No special requirements</option>
-                        <option value="Wheelchair">Wheelchair access</option>
-                        <option value="Other">Other requirements</option>
-                      </select>
-                    </div>
-
-                    <div className="pt-2">
-                      <div className="flex items-start gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.agreeToTerms}
-                          onChange={(e) => { setFormData({...formData, agreeToTerms: e.target.checked}); setErrors({...errors, agreeToTerms: ''}); }}
-                          className="mt-1 w-4 h-4 text-purple-600"
-                        />
-                        <label className="text-sm text-gray-700">I agree to the terms and conditions.</label>
-                      </div>
-                      {errors.agreeToTerms && <p className="text-xs text-red-500 mt-1">{errors.agreeToTerms}</p>}
+                    <div className="flex items-center gap-3 pt-2">
+                      <input
+                        type="checkbox" required checked={formData.agreeToTerms}
+                        onChange={(e) => setFormData({...formData, agreeToTerms: e.target.checked})}
+                        className="w-5 h-5 rounded border-slate-300 text-purple-600"
+                      />
+                      <label className="text-sm text-slate-700 font-semibold">I agree to the terms and conditions.</label>
                     </div>
 
                     <button
                       type="submit"
-                      className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors mt-6 flex items-center justify-center gap-2"
+                      className="w-full bg-purple-600 text-white py-4 rounded-2xl font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-3 mt-4"
                     >
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) && <CreditCard size={18} />}
-                      {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Proceed to Payment' : 'Register'}
+                      {(eventData.isPaid || (eventData.nonMemberPrice && eventData.nonMemberPrice > 0)) ? (
+                        <>Proceed to Payment <ArrowLeft className="rotate-180" size={18} /></>
+                      ) : (
+                        'Complete Registration'
+                      )}
                     </button>
                   </div>
                 </form>
@@ -305,35 +250,86 @@ const EventRegistrationPage: React.FC = () => {
             </div>
           </main>
         </>
-      ) : (
-        <main className="flex-1 py-12 pt-24" style={{ backgroundColor: '#d0c9ea' }}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-md border border-purple-300 p-12 text-center">
-              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle size={48} />
+      )}
+
+      {step === 2 && (
+        <main className="flex-1 py-12 flex items-center bg-slate-50">
+          <div className="max-w-2xl mx-auto px-4 w-full">
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 sm:p-12 text-center">
+              <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <CreditCard size={32} />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {(eventData.isPaid || Number(eventData.nonMemberPrice) > 0) ? 'Payment Successful!' : 'Registration Successful!'}
-              </h2>
-              <div className="space-y-3 mb-8">
-                <p className="text-gray-600 text-lg">
-                  Hello <span className="font-semibold text-gray-900">{formData.fullName}</span>, 
-                  you are successfully registered for:
-                </p>
-                <p className="text-xl font-bold text-purple-600 px-4">
-                  {eventData.eventTitle}
-                </p>
-                <p className="text-gray-500 pt-4">
-                  A confirmation has been sent to <span className="font-semibold">{formData.email}</span>.
-                </p>
+              <h2 className="text-2xl font-bold text-slate-900 mb-6 uppercase tracking-tight">Complete Payment</h2>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Member Rate</p>
+                  <p className="text-xl font-bold text-slate-900 underline decoration-purple-200">UGX {Number(eventData.memberPrice).toLocaleString()}</p>
+                </div>
+                <div className="bg-purple-50 p-5 rounded-2xl border border-purple-100">
+                  <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Non-Member Rate</p>
+                  <p className="text-xl font-bold text-purple-700 underline decoration-purple-200">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</p>
+                </div>
               </div>
-              <button
-                onClick={handleBackToEvents}
-                className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
-              >
-                Back to Events
-              </button>
+
+              <div className="bg-slate-900 rounded-2xl p-6 mb-8 shadow-inner">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Merchant Code</span>
+                <span className="text-3xl font-bold text-white tracking-widest">345678</span>
+              </div>
+
+              <div className="space-y-4 text-left">
+                <label className="text-sm font-semibold text-slate-900 ml-1">Upload Receipt</label>
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl p-8 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${proofOfPayment ? 'border-green-500 bg-green-50' : 'border-slate-200 bg-slate-50'}`}
+                >
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,.pdf" />
+                  {proofOfPayment ? (
+                    <div className="flex items-center gap-3 text-green-700 font-bold">
+                      <FileText size={20} />
+                      <span className="truncate max-w-[200px] text-sm">{proofOfPayment.name}</span>
+                      <X size={18} className="text-slate-400" onClick={(e) => { e.stopPropagation(); setProofOfPayment(null); }} />
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="text-slate-400" size={24} />
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tap to upload proof</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-10">
+                <button onClick={() => setStep(1)} className="py-4 text-slate-400 font-bold uppercase tracking-widest">Back</button>
+                <button 
+                  disabled={!proofOfPayment || isSubmitting}
+                  onClick={handleFinalSubmit}
+                  className="bg-purple-600 text-white py-4 rounded-2xl font-bold uppercase tracking-widest disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                </button>
+              </div>
             </div>
+          </div>
+        </main>
+      )}
+
+      {step === 3 && (
+        <main className="flex-1 py-12 flex items-center bg-slate-50">
+          <div className="max-w-xl mx-auto px-4 text-center">
+            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8">
+              <CheckCircle size={40} />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight uppercase">Success!</h2>
+            <p className="text-slate-600 mb-10 font-medium">
+              Thank you <span className="font-bold text-slate-900">{formData.fullName}</span>. Your registration for <span className="font-bold text-purple-600">{eventData.eventTitle}</span> has been received. Check <span className="font-bold text-slate-900">{formData.email}</span> for confirmation.
+            </p>
+            <button
+              onClick={() => navigate('/events')}
+              className="w-full py-4 bg-purple-600 text-white rounded-2xl font-bold uppercase tracking-widest"
+            >
+              Return to Events
+            </button>
           </div>
         </main>
       )}

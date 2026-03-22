@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import {
   CreditCard,
@@ -10,7 +10,6 @@ import {
   Calendar,
   Eye,
   Download,
-  Lock,
   CheckCircle,
   FileArchive,
   ExternalLink,
@@ -24,17 +23,18 @@ import { Badge } from "../../components/ui/badge"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
 import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/receiptGenerator"
 import { useRecentTransactions, useReceipts } from "../../hooks/usePaymentHistory"
-import PaymentModal from "../../components/payment-components/PaymentModal"
-import { PaymentProvider } from "../../types/payment"
-import { API_BASE_URL } from "../../config/api"
+import ProofOfPaymentUpload from "../../components/register-components/ProofOfPaymentUpload"
+import { submitManualRenewalPayment } from "../../services/payments.service"
+
+const RENEWAL_AMOUNT = 150000
 
 const PaymentsPage: React.FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mtn')
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('mtn')
-  const [paymentAmount, setPaymentAmount] = useState<number | null>(null)
-  const [loadingFee, setLoadingFee] = useState(true)
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [reference, setReference] = useState('')
+  const [proofOfPayment, setProofOfPayment] = useState<File | null>(null)
+  const paymentAmount = RENEWAL_AMOUNT
 
   // Get recent transactions from payment history (shared data source)
   const recentTransactionsResult = useRecentTransactions(3)
@@ -47,40 +47,8 @@ const PaymentsPage: React.FC = () => {
   const receipts = receiptsResult?.receipts || []
   const receiptsLoading = receiptsResult?.loading || false
 
-  // Fetch membership fee from API
-  useEffect(() => {
-    const fetchMembershipFee = async () => {
-      try {
-        setLoadingFee(true)
-        const response = await fetch(`${API_BASE_URL}/api/v1/payments/membership-fee/`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setPaymentAmount(Number(data.amount))
-        } else {
-          console.error('Failed to fetch membership fee')
-          // Fallback to default amount
-          setPaymentAmount(50000)
-        }
-      } catch (error) {
-        console.error('Error fetching membership fee:', error)
-        // Fallback to default amount
-        setPaymentAmount(50000)
-      } finally {
-        setLoadingFee(false)
-      }
-    }
-
-    fetchMembershipFee()
-  }, [])
-
   // Show loading state while initial data is being fetched
-  if (!recentTransactionsResult || !receiptsResult || loadingFee || paymentAmount === null) {
+  if (!recentTransactionsResult || !receiptsResult) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-screen">
@@ -108,9 +76,9 @@ const PaymentsPage: React.FC = () => {
     {
       id: 'bank',
       name: 'DFCU Bank',
-      description: 'Direct bank transfer (Currently unavailable)',
+      description: 'Direct bank transfer with receipt upload',
       icon: Building2,
-      disabled: true,
+      disabled: false,
     },
   ]
 
@@ -118,28 +86,78 @@ const PaymentsPage: React.FC = () => {
     setSelectedPaymentMethod(methodId)
   }
 
-  const handleProceedPayment = () => {
+  const handleProofOfPaymentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification('File size must be less than 5MB', 'error')
+      return
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
+    if (!allowedTypes.includes(file.type)) {
+      showNotification('Please upload a JPG, PNG, or PDF file', 'error')
+      return
+    }
+
+    setProofOfPayment(file)
+  }
+
+  const handleRemoveProofOfPayment = () => {
+    setProofOfPayment(null)
+    const fileInput = document.getElementById('proofOfPayment') as HTMLInputElement | null
+    if (fileInput) fileInput.value = ''
+  }
+
+  const validatePhoneForMethod = (): string | null => {
+    if (selectedPaymentMethod === 'bank') return null
+    if (!/^256\d{9}$/.test(phoneNumber)) {
+      return 'Phone number must be in format 256XXXXXXXXX'
+    }
+    const mtnPrefixes = ['25677', '25678', '25676', '25679']
+    const airtelPrefixes = ['25670', '25675', '25674']
+    if (selectedPaymentMethod === 'mtn' && airtelPrefixes.some((p) => phoneNumber.startsWith(p))) {
+      return 'Please enter an MTN number for MTN payment method'
+    }
+    if (selectedPaymentMethod === 'airtel' && mtnPrefixes.some((p) => phoneNumber.startsWith(p))) {
+      return 'Please enter an Airtel number for Airtel payment method'
+    }
+    return null
+  }
+
+  const handleProceedPayment = async () => {
+    if (!proofOfPayment) {
+      showNotification('Please upload proof of payment before submitting', 'error')
+      return
+    }
+
+    const phoneValidationError = validatePhoneForMethod()
+    if (phoneValidationError) {
+      showNotification(phoneValidationError, 'error')
+      return
+    }
+
     setIsProcessing(true)
-    
-    // Set the selected provider and open modal
-    setSelectedProvider(selectedPaymentMethod as PaymentProvider)
-    setIsModalOpen(true)
-    setIsProcessing(false)
-  }
-
-  const handlePaymentSuccess = () => {
-    // Refresh payment history after successful payment
-    refetchTransactions()
-    
-    // Close modal after success
-    setIsModalOpen(false)
-    
-    // Show success notification
-    showNotification('Payment completed successfully!', 'success')
-  }
-
-  const handleModalClose = () => {
-    setIsModalOpen(false)
+    try {
+      const result = await submitManualRenewalPayment({
+        amount: paymentAmount,
+        paymentMethod: selectedPaymentMethod as 'mtn' | 'airtel' | 'bank',
+        phoneNumber: selectedPaymentMethod === 'bank' ? undefined : phoneNumber.trim(),
+        reference: reference.trim() || undefined,
+        description: 'Membership Renewal Fee',
+        proofOfPayment,
+      })
+      showNotification(`Receipt submitted successfully. Ref: ${result.reference}`, 'success')
+      setPhoneNumber('')
+      setReference('')
+      setProofOfPayment(null)
+      refetchTransactions()
+    } catch (error: any) {
+      showNotification(error?.message || 'Failed to submit renewal payment', 'error')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleDownloadReceipt = async (receipt: any) => {
@@ -271,9 +289,6 @@ const PaymentsPage: React.FC = () => {
                         <div className="flex-1 text-left">
                           <div className="flex items-center gap-2">
                             <p className="font-semibold text-gray-900">{method.name}</p>
-                            {method.disabled && (
-                              <Lock className="w-4 h-4 text-gray-400" />
-                            )}
                           </div>
                           <p className="text-sm text-gray-600">{method.description}</p>
                         </div>
@@ -293,23 +308,59 @@ const PaymentsPage: React.FC = () => {
                     UGX {paymentAmount.toLocaleString()}
                   </span>
                 </div>
+                {selectedPaymentMethod !== 'bank' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="256XXXXXXXXX"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-purple-600"
+                    />
+                  </div>
+                )}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Payment Reference (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                    placeholder="Transaction ID / Receipt No."
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-purple-600"
+                  />
+                </div>
+                <div className="mb-4">
+                  <ProofOfPaymentUpload
+                    proofOfPayment={proofOfPayment}
+                    onFileChange={handleProofOfPaymentChange}
+                    onRemoveFile={handleRemoveProofOfPayment}
+                  />
+                </div>
                 <Button
                   onClick={handleProceedPayment}
-                  disabled={isProcessing || !selectedPaymentMethod}
+                  disabled={isProcessing || !selectedPaymentMethod || !proofOfPayment}
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isProcessing ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Processing...
+                      Submitting...
                     </>
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      Proceed to Payment
+                      Submit Renewal Receipt
                     </>
                   )}
                 </Button>
+                <p className="mt-3 text-xs text-gray-500">
+                  Your payment will appear under pending transactions and move to revenue after admin verification.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -450,14 +501,6 @@ const PaymentsPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        provider={selectedProvider}
-        amount={paymentAmount}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
     </DashboardLayout>
   )
 }

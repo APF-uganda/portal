@@ -38,6 +38,28 @@ const MyPostsPage = () => {
   // Use hook to fetch user's posts
   const { posts: myPosts, loading, error, refetch } = useUserPosts();
 
+  // Helper function to check if post can be edited (within 30 minutes)
+  const canEditPost = (createdAt: string): boolean => {
+    const postDate = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - postDate.getTime();
+    const diffMinutes = diffMs / (1000 * 60);
+    return diffMinutes <= 30;
+  };
+
+  // Helper function to get remaining edit time
+  const getRemainingEditTime = (createdAt: string): string => {
+    const postDate = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - postDate.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const remainingMinutes = 30 - diffMinutes;
+    
+    if (remainingMinutes <= 0) return 'Edit window expired';
+    if (remainingMinutes === 1) return '1 minute left to edit';
+    return `${remainingMinutes} minutes left to edit`;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'published':
@@ -330,6 +352,11 @@ const MyPostsPage = () => {
                         <Calendar className="w-4 h-4" />
                         <span>Created {post.time}</span>
                       </div>
+                      {canEditPost(post.createdAt) && (
+                        <span className="text-xs text-orange-600 font-medium">
+                          ⏱ {getRemainingEditTime(post.createdAt)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -349,11 +376,24 @@ const MyPostsPage = () => {
                         <Send className="w-4 h-4" />
                       </button>
                     )}
-                    <Link to={`/forum/post/${post.id}/edit`}>
-                      <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                    {canEditPost(post.createdAt) ? (
+                      <Link to={`/forum/post/${post.id}/edit`}>
+                        <button 
+                          className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                          title={getRemainingEditTime(post.createdAt)}
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                      </Link>
+                    ) : (
+                      <button 
+                        className="p-2 text-gray-300 cursor-not-allowed"
+                        title="Edit window expired (posts can only be edited within 30 minutes)"
+                        disabled
+                      >
                         <Edit3 className="w-4 h-4" />
                       </button>
-                    </Link>
+                    )}
                     <button
                       className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                       onClick={async () => {

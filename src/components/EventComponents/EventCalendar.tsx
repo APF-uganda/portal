@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react" 
 import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Loader2, ChevronDown, ChevronUp } from "lucide-react"
 import { useEvents } from "../../hooks/useCMS"
 import { useNavigate } from 'react-router-dom'
@@ -31,10 +31,33 @@ const EventCalendar = () => {
   
   const { events, loading } = useEvents()
   
-  // Character limit for description
   const DESCRIPTION_LIMIT = 150
+
+  // 1. Logic to find the "Next Upcoming Event" and auto-select it
+  useEffect(() => {
+    if (!loading && events.length > 0 && selectedDate === "") {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+     
+      const futureEvents = events
+        .filter(e => e.date && new Date(e.date) >= now)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      if (futureEvents.length > 0) {
+        const nextEvent = futureEvents[0];
+        const d = new Date(nextEvent.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        
+        // Update calendar view to the month of the next event
+        setYear(d.getFullYear());
+        setMonth(d.getMonth());
+        // Select the date
+        setSelectedDate(key);
+      }
+    }
+  }, [events, loading, selectedDate]);
   
-  // Maps dates to event objects for easy calendar lookup
   const eventsMap = useMemo(() => {
     const map: Record<string, any> = {}
     events.forEach(event => {
@@ -70,18 +93,16 @@ const EventCalendar = () => {
   const handlePrev = () => {
     if (month === 0) { setMonth(11); setYear(year - 1) } 
     else { setMonth(month - 1) }
-    setSelectedDate("")
+    
     setIsDescriptionExpanded(false)
   }
 
   const handleNext = () => {
     if (month === 11) { setMonth(0); setYear(year + 1) } 
     else { setMonth(month + 1) }
-    setSelectedDate("")
     setIsDescriptionExpanded(false)
   }
 
-  // Helper function to truncate description
   const getTruncatedDescription = (description: string) => {
     if (!description) return "No description available."
     if (description.length <= DESCRIPTION_LIMIT) return description
@@ -92,11 +113,8 @@ const EventCalendar = () => {
     return description || "No description available."
   }
 
-  // Navigation Logic that matches the working EventCard pattern
   const handleRegisterClick = (event: any) => {
     if (!event) return;
-
-    // Format the date here to be human-readable
     const readableDate = new Date(event.date).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -106,6 +124,7 @@ const EventCalendar = () => {
 
     navigate('/event-registration', { 
       state: { 
+        ...event, 
         eventTitle: event.title, 
         eventId: event.id,
         location: event.location, 
@@ -129,7 +148,7 @@ const EventCalendar = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {/* Calendar Grid - Compact Height */}
+            {/* Calendar Grid */}
             <div className="bg-white rounded-2xl shadow-sm p-6 border border-purple-100 h-[420px] flex flex-col">
               <div className="flex justify-between items-center mb-4">
                 <button onClick={handlePrev} className="p-1.5 hover:bg-purple-50 rounded-full transition-colors text-purple-600">
@@ -168,7 +187,7 @@ const EventCalendar = () => {
                         ${isSelected 
                           ? "bg-[#7E49B3] text-white scale-105 shadow-md z-10" 
                           : isToday 
-                            ? "bg-purple-600 text-white shadow-sm ring-1 ring-purple-200 font-semibold" 
+                            ? "bg-purple-100 text-[#7E49B3] ring-1 ring-[#7E49B3] font-semibold" 
                             : "text-gray-600 hover:bg-gray-50"
                         }
                         ${!isSelected && showEventRing ? "border-2 border-[#7E49B3] text-[#7E49B3] font-semibold" : ""}
@@ -184,12 +203,12 @@ const EventCalendar = () => {
               </div>
             </div>
 
-            {/* Event Details - Compact Height */}
+            {/* Event Details */}
             <div className="bg-white rounded-2xl shadow-sm p-6 h-[420px] border border-slate-100 flex flex-col">
               {selectedEvent ? (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col h-full">
                   <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full mb-3 self-start ${isExpired(selectedEvent.date) ? 'bg-slate-100 text-slate-600' : 'bg-purple-100 text-purple-700'}`}>
-                    {isExpired(selectedEvent.date) ? 'Past Event' : 'Upcoming Event'}
+                    {selectedEvent.date === selectedDate && !events.find(e => e.date === selectedDate) ? 'Next Event' : (isExpired(selectedEvent.date) ? 'Past Event' : 'Upcoming Event')}
                   </span>
                   
                   <h4 className="text-lg font-bold text-gray-900 mb-3 leading-tight line-clamp-2">
@@ -201,52 +220,31 @@ const EventCalendar = () => {
                       <Calendar className="w-4 h-4 mr-2.5 text-purple-500 flex-shrink-0" />
                       <span className="truncate">{new Date(selectedEvent.date).toLocaleDateString(undefined, { dateStyle: 'full' })}</span>
                     </div>
-                    
+                   
                     <div className="flex items-center text-gray-600 font-medium text-sm">
                       <Clock className="w-4 h-4 mr-2.5 text-purple-500 flex-shrink-0" />
-                      <span className="truncate">
-                        {typeof selectedEvent.time === 'string' && selectedEvent.time.length > 0 
-                          ? selectedEvent.time 
-                          : "Time to be announced"}
-                      </span>
+                      <span className="truncate">{selectedEvent.time || "Time TBD"}</span>
                     </div>
-
                     <div className="flex items-center text-gray-600 font-medium text-sm">
                       <MapPin className="w-4 h-4 mr-2.5 text-purple-500 flex-shrink-0" />
                       <span className="truncate">{selectedEvent.location}</span>
                     </div>
                   </div>
 
-                  {/* Description with Read More */}
-<div className="flex-1 overflow-y-auto mb-4 pr-1 custom-scrollbar"> 
-  <p className="text-gray-600 text-sm leading-relaxed">
-    {isDescriptionExpanded 
-      ? getFullDescription(selectedEvent.description)
-      : getTruncatedDescription(selectedEvent.description)
-    }
-  </p>
-  
-  {selectedEvent.description && selectedEvent.description.length > DESCRIPTION_LIMIT && (
-    <button
-      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-      className="mt-2 sticky bottom-0 bg-white py-1 flex items-center text-purple-600 hover:text-purple-700 text-xs font-medium transition-colors"
-    >
-      {isDescriptionExpanded ? (
-        <>
-          <ChevronUp className="w-3 h-3 mr-1" />
-          Read Less
-        </>
-      ) : (
-        <>
-          <ChevronDown className="w-3 h-3 mr-1" />
-          Read More
-        </>
-      )}
-    </button>
-  )}
-</div>
+                  <div className="flex-1 overflow-y-auto mb-4 pr-1 custom-scrollbar"> 
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {isDescriptionExpanded 
+                        ? getFullDescription(selectedEvent.description)
+                        : getTruncatedDescription(selectedEvent.description)
+                      }
+                    </p>
+                    {selectedEvent.description?.length > DESCRIPTION_LIMIT && (
+                      <button onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} className="mt-2 text-purple-600 text-xs font-medium">
+                        {isDescriptionExpanded ? "Read Less" : "Read More"}
+                      </button>
+                    )}
+                  </div>
 
-                  {/* Register Button - Fixed at bottom */}
                   <div className="flex-shrink-0">
                     {!isExpired(selectedEvent.date) ? (
                       <button
@@ -256,7 +254,7 @@ const EventCalendar = () => {
                         Register
                       </button>
                     ) : (
-                      <div className="w-full bg-gray-100 text-gray-500 rounded-lg py-3 text-center font-medium text-sm border border-gray-200">
+                      <div className="w-full bg-gray-100 text-gray-500 rounded-lg py-3 text-center font-medium text-sm">
                         Registration Closed
                       </div>
                     )}
@@ -264,12 +262,8 @@ const EventCalendar = () => {
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center">
-                   <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                      <Calendar className="text-slate-400 w-6 h-6" />
-                   </div>
-                   <p className="text-slate-500 font-medium text-sm leading-relaxed">
-                     Select a date with a <span className="text-[#7E49B3] font-semibold">purple ring</span> to view event details
-                   </p>
+                   <Calendar className="text-slate-300 w-12 h-12 mb-3" />
+                   <p className="text-slate-500 text-sm">Select a date to view details</p>
                 </div>
               )}
             </div>
@@ -280,4 +274,4 @@ const EventCalendar = () => {
   )
 }
 
-export default EventCalendar
+export default EventCalendar;

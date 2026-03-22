@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { ChevronDown, Menu, X } from 'lucide-react'
 import logoPurple from '../../assets/logo_purple.png'
 import whitelogo from '../../assets/whitelogo.png'
 import { isAuthenticated, getUser } from '../../utils/authStorage'
@@ -12,6 +12,7 @@ type NavbarProps = {
 function Navbar({ forceSolid = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [mobileAboutOpen, setMobileAboutOpen] = useState(false)
   const location = useLocation()
   const isSolid = forceSolid || isScrolled
 
@@ -32,17 +33,63 @@ function Navbar({ forceSolid = false }: NavbarProps) {
   }, [])
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // Keep hash-driven section navigation (e.g. /about#governance) intact.
+    if (!location.hash) {
+      window.scrollTo(0, 0)
+    }
     setIsScrolled(false)
     setIsMenuOpen(false)
-  }, [location.pathname])
+    setMobileAboutOpen(false)
+  }, [location.pathname, location.hash])
 
   const toggleMenu = () => setIsMenuOpen((prev) => !prev)
-  const isActive = (path: string) => location.pathname === path
 
-  const navLinks = [
+  type NavChild = {
+    path: string
+    label: string
+  }
+
+  type NavLink = {
+    path: string
+    label: string
+    children?: NavChild[]
+  }
+
+  const isPathActive = (path: string) => {
+    const [pathname, hash] = path.split('#')
+    if (location.pathname !== pathname) return false
+    if (!hash) return true
+    return location.hash === `#${hash}`
+  }
+
+  const isChildActive = (path: string) => {
+    if (path === '/about#governance') {
+      return (
+        (location.pathname === '/about' && location.hash === '#governance') ||
+        location.pathname.startsWith('/about/governance/')
+      )
+    }
+    return isPathActive(path)
+  }
+
+  const isParentActive = (link: NavLink) => {
+    if (!link.children) return isPathActive(link.path)
+    return (
+      isPathActive(link.path) ||
+      link.children.some((child) => isChildActive(child.path))
+    )
+  }
+
+  const navLinks: NavLink[] = [
     { path: '/', label: 'Home' },
-    { path: '/about', label: 'About APF' },
+    {
+      path: '/about',
+      label: 'About APF',
+      children: [
+        { path: '/about#governance', label: 'Governance' },
+        { path: '/management', label: 'Management' },
+      ],
+    },
     { path: '/membership', label: 'Membership' },
     { path: '/events', label: 'Events' },
     { path: '/news', label: 'News' },
@@ -71,21 +118,59 @@ function Navbar({ forceSolid = false }: NavbarProps) {
         {/* DESKTOP LINKS */}
         <div className="hidden lg:flex gap-8">
           {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`text-[0.9rem] font-medium transition-colors ${
-                isActive(link.path)
-                  ? isSolid
-                    ? 'text-primary border-b-2 border-primary'
-                    : 'text-white border-b-2 border-white'
-                  : isSolid
-                  ? 'text-secondary hover:text-primary'
-                  : 'text-white hover:text-white/80'
-              }`}
-            >
-              {link.label}
-            </Link>
+            link.children ? (
+              <div key={link.path} className="relative group">
+                <Link
+                  to={link.path}
+                  className={`inline-flex items-center gap-1 text-[0.9rem] font-medium transition-colors ${
+                    isParentActive(link)
+                      ? isSolid
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-white border-b-2 border-white'
+                      : isSolid
+                      ? 'text-secondary hover:text-primary'
+                      : 'text-white hover:text-white/80'
+                  }`}
+                >
+                  {link.label}
+                  <ChevronDown className="h-4 w-4" />
+                </Link>
+
+                <div className="absolute left-0 top-full pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200">
+                  <div className="min-w-[210px] bg-white shadow-lg border border-gray-100 overflow-hidden divide-y divide-gray-100">
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.path}
+                        to={child.path}
+                        className={`flex items-center px-4 py-4 text-sm font-medium transition-colors ${
+                          isChildActive(child.path)
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-secondary hover:bg-black/5'
+                        }`}
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`text-[0.9rem] font-medium transition-colors ${
+                  isParentActive(link)
+                    ? isSolid
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-white border-b-2 border-white'
+                    : isSolid
+                    ? 'text-secondary hover:text-primary'
+                    : 'text-white hover:text-white/80'
+                }`}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
         </div>
 
@@ -152,18 +237,67 @@ function Navbar({ forceSolid = false }: NavbarProps) {
             {/* CONTENT*/}
             <div className="flex-1 px-4 space-y-2 overflow-y-auto">
               {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-lg font-medium transition ${
-                    isActive(link.path)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-secondary hover:bg-black/5'
-                  }`}
-                >
-                  {link.label}
-                </Link>
+                link.children ? (
+                  <div key={link.path} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to={link.path}
+                        onClick={() => setIsMenuOpen(false)}
+                        className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
+                          isParentActive(link)
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-secondary hover:bg-black/5'
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setMobileAboutOpen((prev) => !prev)}
+                        className="p-2 rounded-lg text-secondary hover:bg-black/5"
+                        aria-label="Toggle About submenu"
+                      >
+                        <ChevronDown
+                          className={`w-5 h-5 transition-transform ${
+                            mobileAboutOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {mobileAboutOpen && (
+                      <div className="ml-5 mt-2 border border-gray-100 bg-gray-50/70 overflow-hidden divide-y divide-gray-200">
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.path}
+                            to={child.path}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={`flex items-center px-4 py-4 text-sm font-medium transition ${
+                              isChildActive(child.path)
+                                ? 'bg-primary/10 text-primary'
+                                : 'text-secondary hover:bg-black/5'
+                            }`}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`block px-4 py-3 rounded-lg font-medium transition ${
+                      isParentActive(link)
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-secondary hover:bg-black/5'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
               ))}
 
               {/* ACTION BUTTONS */}
@@ -183,7 +317,7 @@ function Navbar({ forceSolid = false }: NavbarProps) {
                 ) : (
                   <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                     <button className="w-full bg-[#5F1C9F] text-white rounded-full py-3 font-medium shadow transition hover:-translate-y-0.5">
-                      Members Login
+                      Login
                     </button>
                   </Link>
                 )}

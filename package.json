@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "lighthouse": "node run-lighthouse.js",
+    "audit": "npm run lighthouse"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -26,6 +28,7 @@
     "react": "^19.2.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.1",
+    "react-helmet-async": "^3.0.0",
     "react-icons": "^5.5.0",
     "react-progress": "^0.0.12",
     "react-router-dom": "^7.10.0",
@@ -44,8 +47,11 @@
     "@types/react-slick": "^0.23.13",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.23",
+    "chrome-launcher": "^1.2.1",
+    "dotenv": "^17.3.1",
     "fast-check": "^4.5.3",
     "jsdom": "^27.4.0",
+    "lighthouse": "^12.8.2",
     "postcss": "^8.5.6",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.18",

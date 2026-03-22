@@ -29,7 +29,7 @@ const EventCreatePage = () => {
     startTime: '09:00',
     endTime: '17:00',
     location: '',
-    cpdPoints: 0,
+    cpdHours: 0,
     registrationLink: '',
     isFeatured: false,
     isPaid: false,
@@ -71,7 +71,7 @@ const EventCreatePage = () => {
       setEventData(prev => ({ 
         ...prev, 
         imageId: uploadedFile.id,
-        imagePreview: fullImageUrl // Updates to the server URL once done
+        imagePreview: fullImageUrl 
       }));
       showToast("Poster uploaded successfully", "success");
     } catch (err) {
@@ -83,41 +83,50 @@ const EventCreatePage = () => {
   };
 
   const handlePublish = async () => {
+  
     if (!eventData.title.trim() || !eventData.startDate || !eventData.location) {
-      showToast("Please fill in all required fields", "error");
+      showToast("Please fill in Headline, Start Date, and Venue", "error");
       return;
     }
   
     setLoading(true);
     try {
-      const payload = {
-        data: {
-          title: eventData.title,
-          description: eventData.description,
-          date: new Date(`${eventData.startDate}T${eventData.startTime}:00`).toISOString(),
-          time: `${eventData.startTime} - ${eventData.endTime}`,
-          location: eventData.location,
-          cpdPoints: Number(eventData.cpdPoints),
-          registrationLink: eventData.registrationLink,
-          isFeatured: eventData.isFeatured,
-          isPaid: eventData.isPaid,
-          memberPrice: Number(eventData.memberPrice),
-          nonMemberPrice: Number(eventData.nonMemberPrice),
-          image: eventData.imageId, 
-          publishedAt: new Date().toISOString()
-        }
+      // 2. Build base payload
+      const dataPayload: any = {
+        title: eventData.title,
+        description: eventData.description,
+        date: new Date(`${eventData.startDate}T${eventData.startTime}:00`).toISOString(),
+        time: `${eventData.startTime} - ${eventData.endTime}`,
+        location: eventData.location,
+        cpdHours: Number(eventData.cpdHours),
+        registrationLink: eventData.registrationLink,
+        isFeatured: eventData.isFeatured,
+        isPaid: eventData.isPaid,
+        memberPrice: Number(eventData.memberPrice),
+        nonMemberPrice: Number(eventData.nonMemberPrice),
+        image: eventData.imageId,
+        publishedAt: new Date().toISOString()
       };
   
-      await api.post('/events', payload);
-      showToast("Event Published Successfully! 🚀", "success");
+      
+      if (eventData.endDate) {
+        dataPayload.endDate = new Date(`${eventData.endDate}T${eventData.endTime}:00`).toISOString();
+      }
+  
+      await api.post('/events', { data: dataPayload });
+      
+      showToast("Event Published Successfully!", "success");
       setTimeout(() => navigate('/events'), 1500);
     } catch (err: any) {
-      showToast("Publishing Failed", "error");
+      console.error("Publishing error:", err.response?.data || err.message);
+      showToast(
+        err.response?.data?.error?.message || "Publishing Failed. Check your connection.", 
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="flex min-h-screen bg-[#F4F2FE] relative overflow-hidden">
       

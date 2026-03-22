@@ -85,9 +85,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <div className="w-20 md:w-24 h-20 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-200">
           {profile.profile_picture_url ? (
             <img 
-              src={profile.profile_picture_url}
+              src={`${profile.profile_picture_url}?v=${profile.updated_at || new Date().getTime()}`}
               alt={profile.full_name}
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-cover"
+              key={`${profile.profile_picture_url}-${profile.updated_at}`}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#5C32A3] to-[#4A2882] flex items-center justify-center">

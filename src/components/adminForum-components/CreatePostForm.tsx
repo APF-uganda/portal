@@ -1,16 +1,22 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
-import { Category, Tag, PostStatus, CreatePostRequest } from '../adminForum-components/types';
+import { useState, useEffect } from 'react';
+import { Category, PostStatus, CreatePostRequest } from '../adminForum-components/types';
 
 interface CreatePostFormProps {
   categories: Category[];
-  tags: Tag[];
+  tags: any[]; 
   onSubmit: (data: CreatePostRequest) => Promise<void>;
   loading?: boolean;
+  initialData?: any;
   error?: string | null;
 }
 
-const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = null }: CreatePostFormProps) => {
+const CreatePostForm = ({ 
+  categories, 
+  onSubmit, 
+  loading = false, 
+  initialData, 
+  error = null 
+}: CreatePostFormProps) => {
   const [formData, setFormData] = useState<CreatePostRequest>({
     title: '',
     content: '',
@@ -19,8 +25,20 @@ const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = n
     tag_ids: [],
   });
 
-  const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Sync data when editing
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        title: initialData.title || '',
+        content: initialData.content || '',
+        status: initialData.status || 'draft',
+        category_id: initialData.category?.id || initialData.category_id || undefined,
+        tag_ids: initialData.tags?.map((t: any) => t.id) || initialData.tag_ids || [],
+      });
+    }
+  }, [initialData]);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -50,28 +68,17 @@ const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = n
       return;
     }
 
-    const submitData = {
+    // Clean data for submission
+    const submitData: CreatePostRequest = {
       ...formData,
-      tag_ids: selectedTags.length > 0 ? selectedTags : undefined,
+      title: formData.title.trim(),
+      content: formData.content.trim(),
+    
+      category_id: formData.category_id ? Number(formData.category_id) : undefined,
+      tag_ids: formData.tag_ids || []
     };
 
     await onSubmit(submitData);
-  };
-
-  const handleTagToggle = (tagId: number) => {
-    setSelectedTags(prev => 
-      prev.includes(tagId) 
-        ? prev.filter(id => id !== tagId)
-        : [...prev, tagId]
-    );
-  };
-
-  const handleRemoveTag = (tagId: number) => {
-    setSelectedTags(prev => prev.filter(id => id !== tagId));
-  };
-
-  const getSelectedTagsData = () => {
-    return tags.filter(tag => selectedTags.includes(tag.id));
   };
 
   return (
@@ -149,71 +156,23 @@ const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = n
         <select
           id="category"
           value={formData.category_id || ''}
-          onChange={(e) => setFormData({ 
-            ...formData, 
-            category_id: e.target.value ? Number(e.target.value) : undefined 
-          })}
+          onChange={(e) => {
+            const val = e.target.value;
+            setFormData({ 
+              ...formData, 
+              category_id: val ? Number(val) : undefined 
+            });
+          }}
           className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5C32A3] transition-all text-sm md:text-base"
           disabled={loading}
         >
           <option value="">Select a category...</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name} ({category.post_count} posts)
+              {category.name}
             </option>
           ))}
         </select>
-      </div>
-
-      {/* Tag Selection */}
-      <div>
-        <label className="block text-sm font-bold text-gray-700 mb-2">
-          Tags (Optional)
-        </label>
-        
-        {/* Selected Tags Display */}
-        {getSelectedTagsData().length > 0 && (
-          <div className="flex flex-wrap gap-1 md:gap-2 mb-3 p-2 md:p-3 bg-gray-50 rounded-lg">
-            {getSelectedTagsData().map(tag => (
-              <span 
-                key={tag.id}
-                className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium"
-              >
-                #{tag.name}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag.id)}
-                  className="hover:bg-indigo-200 rounded-full p-0.5 transition-colors"
-                  disabled={loading}
-                >
-                  <X size={12} className="md:w-[14px] md:h-[14px]" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Tag Selection Buttons */}
-        <div className="flex flex-wrap gap-1 md:gap-2">
-          {tags.map(tag => (
-            <button
-              key={tag.id}
-              type="button"
-              onClick={() => handleTagToggle(tag.id)}
-              className={`px-2 md:px-3 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${
-                selectedTags.includes(tag.id)
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-              disabled={loading}
-            >
-              #{tag.name}
-            </button>
-          ))}
-        </div>
-        {tags.length === 0 && (
-          <p className="text-gray-400 text-xs md:text-sm">No tags available</p>
-        )}
       </div>
 
       {/* Status Selection */}
@@ -262,7 +221,7 @@ const CreatePostForm = ({ categories, tags, onSubmit, loading = false, error = n
           disabled={loading}
           className="w-full bg-[#5C32A3] text-white px-4 md:px-6 py-3 rounded-xl font-bold hover:bg-[#4A2885] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
         >
-          {loading ? 'Creating Post...' : 'Create Post'}
+          {loading ? 'Saving...' : initialData ? 'Update Post' : 'Create Post'}
         </button>
         <button
           type="button"

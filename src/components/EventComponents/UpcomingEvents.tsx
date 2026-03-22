@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import EventCard from "../../components/cards/EventCard";
 import { useEvents } from "../../hooks/useCMS";
 import { CMS_BASE_URL } from "../../config/api";
@@ -10,9 +10,9 @@ const UpcomingEvents = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const { events, loading } = useEvents();
+  const { events } = useEvents();
 
-  // Helper function to format the date before sending it to the registration page
+ 
   const formatReadableDate = (dateStr: string) => {
     if (!dateStr) return "Date TBA";
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -37,7 +37,7 @@ const UpcomingEvents = () => {
     const interval = setInterval(() => {
       if (scrollRef.current) {
         const nextIndex = (activeIndex + 1) % upcomingEvents.length;
-        scrollRef.current.scrollTo({ left: nextIndex * 350, behavior: "smooth" }); // Match PreviousEvents width
+        scrollRef.current.scrollTo({ left: nextIndex * 350, behavior: "smooth" });
         setActiveIndex(nextIndex);
       }
     }, 60000);
@@ -45,15 +45,9 @@ const UpcomingEvents = () => {
   }, [activeIndex, upcomingEvents.length]);
 
   const scroll = (direction: 'left' | 'right') => {
-    const distance = direction === 'left' ? -350 : 350; // Match PreviousEvents scroll distance
+    const distance = direction === 'left' ? -350 : 350;
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
-
-  if (loading) return (
-    <div className="flex justify-center py-20 bg-white">
-      <Loader2 className="animate-spin text-purple-600" size={40} />
-    </div>
-  );
 
   return (
     <section className="bg-white py-8 -mx-[50vw] px-[50vw] relative">
@@ -64,7 +58,6 @@ const UpcomingEvents = () => {
 
         {upcomingEvents.length > 0 ? (
           <div className="flex items-center gap-4">
-            {/* Left scroll button - only show if more than 4 events */}
             {upcomingEvents.length > 4 && (
               <button 
                 onClick={() => scroll('left')} 
@@ -103,7 +96,14 @@ const UpcomingEvents = () => {
                           eventId: event.documentId || event.id,
                           location: event.location || "Location TBD",
                           date: formatReadableDate(event.date),
-                          image: finalImageUrl
+                          time: event.time,
+                          image: finalImageUrl,
+                         
+                          isPaid: event.isPaid,
+                          memberPrice: event.memberPrice,
+                          nonMemberPrice: event.nonMemberPrice,
+                          cpdPoints: event.cpdPoints,
+                          description: event.description
                         } 
                       })}
                     />
@@ -112,7 +112,6 @@ const UpcomingEvents = () => {
               })}
             </div>
 
-            {/* Right scroll button - only show if more than 4 events */}
             {upcomingEvents.length > 4 && (
               <button 
                 onClick={() => scroll('right')} 

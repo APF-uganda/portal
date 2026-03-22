@@ -23,4 +23,7 @@ export interface Payment {
   reference?: string;
   proof_of_payment?: string;
   user?: string;
+  requires_document_review?: boolean;
+  linked_document_id?: number | null;
+  linked_document_status?: string | null;
 }

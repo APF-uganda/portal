@@ -1,20 +1,46 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Share2, ChevronLeft } from 'lucide-react';
-import { useNewsArticle } from '../../hooks/useCMS';
+import React, { useEffect, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useNews, useNewsArticle, prefetchNewsArticle } from '../../hooks/useCMS';
 import { CMS_BASE_URL } from '../../config/api';
-import OtherNewsSection from './OtherNewsSection';
+import Navbar from '../common/Navbar';
+import Footer from '../common/Footer';
+import HeroSection from './HeroSection';
+import NewsletterSection from './NewsletterSection';
 
 const NewsDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { article, otherArticles, loading, error } = useNewsArticle(id);
+  const { article, loading, error } = useNewsArticle(id);
+  const { news } = useNews();
+  const FALLBACK_IMAGE = "/images/Hero.jpg";
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // Helper to format video URLs correctly for the iframe
+  const getArticleId = (item: any) => item?.documentId || item?.id || item?.slug;
+
+  const formatDate = (dateValue?: string) => {
+    if (!dateValue) return 'Date unavailable';
+    const parsedDate = new Date(dateValue);
+    if (Number.isNaN(parsedDate.getTime())) return dateValue;
+
+    return parsedDate.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  const formatReadTime = (value: unknown) => {
+    if (value === null || value === undefined) return '';
+    const text = String(value).trim();
+    if (!text) return '';
+    if (/min/i.test(text) || /read/i.test(text)) return text;
+    if (/^\d+(\.\d+)?$/.test(text)) return `${text} min read`;
+    return text;
+  };
+
   const getEmbedUrl = (url: string) => {
     if (!url) return "";
     if (url.includes('youtube.com/watch?v=')) return url.replace("watch?v=", "embed/");
@@ -29,213 +55,221 @@ const NewsDetail = () => {
     return url;
   };
 
-  if (loading) {
+  const latestNews = useMemo(() => {
+    return [...news].sort((a, b) => {
+      const dateA = new Date(a?.publishDate || a?.date || a?.createdAt || 0).getTime();
+      const dateB = new Date(b?.publishDate || b?.date || b?.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+  }, [news]);
+
+  const renderMainContent = (contentBlocks: any[]) => {
+    if (!Array.isArray(contentBlocks) || contentBlocks.length === 0) {
+      return (
+        <p className="text-sm md:text-base leading-relaxed text-[#1F1F1F]">
+          {article?.description || "No further details available for this article."}
+        </p>
+      );
+    }
+
+    return contentBlocks.map((block: any, i: number) => {
+      if (block.type === 'paragraph' || block.type === 'text') {
+        const textValue = block.value || block.children?.map((c: any) => c.text).join('') || "";
+
+        if (textValue.includes('__IMAGE__')) {
+          const imageUrl = textValue.replace(/__IMAGE__/g, '');
+          const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
+          return (
+            <div key={i} className="my-8">
+              <img src={fullUrl} className="w-full object-cover" alt="Article" />
+            </div>
+          );
+        }
+
+        if (textValue.includes('__VIDEO__')) {
+          const videoUrl = textValue.replace(/__VIDEO__/g, '');
+          return (
+            <div key={i} className="my-8 aspect-video overflow-hidden bg-gray-900">
+              <iframe
+                src={getEmbedUrl(videoUrl)}
+                className="w-full h-full border-none"
+                allowFullScreen
+                title="Article Video"
+              />
+            </div>
+          );
+        }
+
+        return (
+          <p key={i} className="mb-6 text-sm md:text-base leading-relaxed text-[#1F1F1F]">
+            {textValue}
+          </p>
+        );
+      }
+
+      if (block.type === 'heading') {
+        const headingText = block.value || block.children?.map((c: any) => c.text).join('') || "";
+        return (
+          <h3 key={i} className="font-black text-[#111] text-xl md:text-2xl mt-10 mb-4">
+            {headingText}
+          </h3>
+        );
+      }
+
+      if (block.type === 'image') {
+        const imageUrl = block.image?.url || block.url || block.value;
+        if (!imageUrl) return null;
+
+        const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
+        return (
+          <div key={i} className="my-8">
+            <img
+              src={fullUrl}
+              className="w-full object-cover"
+              alt={block.image?.alternativeText || "Article Image"}
+            />
+          </div>
+        );
+      }
+
+      if (block.type === 'video') {
+        const videoUrl = block.url || block.value;
+        if (!videoUrl) return null;
+        return (
+          <div key={i} className="my-8 aspect-video overflow-hidden bg-gray-900">
+            <iframe
+              src={getEmbedUrl(videoUrl)}
+              className="w-full h-full border-none"
+              allowFullScreen
+              title="Article Video"
+            />
+          </div>
+        );
+      }
+
+      return null;
+    });
+  };
+
+  if (error || (!loading && !article)) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white font-montserrat">
-        <div className="w-12 h-12 border-4 border-purple-100 border-t-[#5F1C9F] rounded-full animate-spin mb-4"></div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Loading Story...</p>
+      <div className="min-h-screen bg-[#f7f3ff]">
+        <Navbar />
+        <main className="px-6 pt-28 pb-16">
+          <div className="max-w-6xl mx-auto min-h-[50vh] flex flex-col items-center justify-center text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">Article Not Found</h2>
+            <button
+              onClick={() => navigate('/news')}
+              className="bg-[#5F1C9F] text-white px-6 py-3 font-semibold"
+            >
+              Return to News
+            </button>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
-  if (error || !article) {
+  if (!article) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center font-montserrat">
-        <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 uppercase tracking-tight">Article Not Found</h2>
-        <button onClick={() => navigate('/news')} className="flex items-center gap-2 bg-[#5F1C9F] text-white px-8 py-4 rounded-full font-bold text-[10px] uppercase tracking-widest transition-transform active:scale-95">
-          <ArrowLeft size={16} strokeWidth={3} /> Return to News
-        </button>
+      <div className="min-h-screen bg-[#f7f3ff]">
+        <Navbar />
+        <main className="px-6 pt-28 pb-16">
+          <div className="max-w-6xl mx-auto min-h-[50vh]" />
+        </main>
+        <Footer />
       </div>
     );
   }
 
   const mainContent = article.content || article.contentBlocks || [];
-  const displayImage = article.image || "/images/Hero.jpg";
+  const displayImage = article.image || FALLBACK_IMAGE;
+  const displayDate = formatDate(article.publishDate || article.date || article.createdAt);
+  const currentArticleId = getArticleId(article);
 
   return (
-    <main className="bg-white min-h-screen font-montserrat animate-fade-in-up overflow-x-hidden">
-     
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-50 px-4 py-4 md:px-10">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-900 hover:text-[#5F1C9F] font-bold text-[10px] uppercase tracking-widest transition-all group">
-            <ChevronLeft size={18} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
-            <span>Back</span>
-          </button>
-          <div className="flex items-center gap-4">
-             <span className="hidden md:block text-[9px] font-bold text-gray-300 uppercase tracking-widest">APF Uganda News</span>
-             <button className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-500"><Share2 size={18} /></button>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      <HeroSection title={article?.title || 'News and Insights'} />
+      <section
+        className="bg-[#f7f3ff] py-6 md:py-10 px-4 md:px-6"
+        style={{ fontFamily: 'Montserrat, sans-serif' }}
+      >
+        <div className="max-w-[1320px] mx-auto grid grid-cols-1 xl:grid-cols-[1.7fr_1fr] gap-6 items-start">
+          <article className="bg-white">
+            <img
+              src={displayImage}
+              alt={article.title}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = FALLBACK_IMAGE;
+              }}
+              className="w-full h-[260px] sm:h-[360px] lg:h-[520px] object-cover"
+            />
 
-      {/* Header Section */}
-      <header className="max-w-4xl mx-auto pt-10 md:pt-20 px-6">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="w-10 h-[2.5px] bg-[#5F1C9F] rounded-full"></span>
-          <span className="text-[#5F1C9F] font-bold text-[10px] uppercase tracking-[0.4em]">{article.displayCategory || article.category || 'Featured'}</span>
-        </div>
-        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight mb-10 uppercase">
-          {article.title}
-        </h1>
-        <div className="flex flex-wrap items-center gap-y-4 gap-x-8 mb-12 py-6 border-y border-gray-100 text-gray-500 font-bold text-[10px] uppercase tracking-widest">
-          <span className="flex items-center gap-2 whitespace-nowrap"><Calendar size={14} className="text-[#5F1C9F]" /> {article.date}</span>
-          <span className="flex items-center gap-2 whitespace-nowrap"><Clock size={14} className="text-[#5F1C9F]" /> {article.readTime || '5'} MIN READ</span>
-        </div>
-      </header>
+            <div className="px-6 md:px-8 pt-6 pb-8">
+              <p className="text-gray-500 text-sm md:text-base leading-tight mb-5">
+                {displayDate}
+                {formatReadTime(article?.readTime) ? ` | ${formatReadTime(article?.readTime)}` : ''}
+              </p>
+              <div className="text-[#1F1F1F]">
+                {renderMainContent(mainContent)}
+              </div>
+            </div>
+          </article>
 
-      {/* Hero Image */}
-      <div className="max-w-4xl mx-auto px-6 mb-12 md:mb-20">
-        <div className="aspect-[16/9] md:aspect-[21/10] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-xl border border-gray-100">
-          <img src={displayImage} alt={article.title} className="w-full h-full object-cover" />
-        </div>
-      </div>
+          <aside className="bg-white p-5 md:p-6 self-start">
+            <h3 className="text-2xl font-bold text-[#060606] uppercase mb-6">
+              Latest News
+            </h3>
 
-      {/* Content Area */}
-      <article className="max-w-3xl mx-auto px-6 pb-24">
-        <div className="text-gray-700 leading-relaxed font-medium text-lg md:text-xl">
-          {Array.isArray(mainContent) && mainContent.length > 0 ? (
-            mainContent.map((block: any, i: number) => {
-              
-              //  TEXT BLOCKS (Handles both 'value' and 'children' formats)
-              if (block.type === 'paragraph' || block.type === 'text') {
-                const textValue = block.value || block.children?.map((c: any) => c.text).join('') || "";
-                
-                // Check if this is an image marker (new format)
-                if (textValue.includes('__IMAGE__')) {
-                  const imageUrl = textValue.replace(/__IMAGE__/g, '');
-                  const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
-                  
-                  return (
-                    <div key={i} className="my-12 group">
-                      <img 
-                        src={fullUrl} 
-                        className="w-full rounded-[2rem] shadow-md border border-gray-50 group-hover:shadow-xl transition-shadow duration-500" 
-                        alt="Article Image" 
+            <div className="space-y-6 max-h-[820px] overflow-y-auto pr-1">
+              {latestNews.slice(0, 10).map((item) => {
+                const itemId = getArticleId(item);
+                const isActive = itemId === currentArticleId;
+                return (
+                  <button
+                    key={itemId || item.title}
+                    type="button"
+                    onClick={() => itemId && navigate(`/news/${itemId}`)}
+                    onMouseEnter={() => void prefetchNewsArticle(itemId)}
+                    className={`w-full text-left transition-colors ${
+                      isActive
+                        ? 'opacity-100 bg-white/60 border-l-4 border-[#5F1C9F] pl-2'
+                        : 'opacity-95 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex gap-4 items-start">
+                      <img
+                        src={item.image || FALLBACK_IMAGE}
+                        alt={item.title}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = FALLBACK_IMAGE;
+                        }}
+                        className="w-[86px] h-[86px] object-cover flex-shrink-0"
                       />
-                    </div>
-                  );
-                }
-                
-                // Check if this is a video marker (new format)
-                if (textValue.includes('__VIDEO__')) {
-                  const videoUrl = textValue.replace(/__VIDEO__/g, '');
-                  
-                  return (
-                    <div key={i} className="my-12 aspect-video rounded-[2rem] overflow-hidden shadow-lg bg-gray-900">
-                      <iframe 
-                        src={getEmbedUrl(videoUrl)} 
-                        className="w-full h-full border-none"
-                        allowFullScreen
-                        title="Article Video"
-                      ></iframe>
-                    </div>
-                  );
-                }
-                
-                // Check if this is an old format image marker
-                if (textValue.includes('[Image:') && textValue.includes(']')) {
-                  const match = textValue.match(/\[Image:\s*(.*?)\]/);
-                  if (match && match[1]) {
-                    const imageUrl = match[1].trim();
-                    const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
-                    
-                    return (
-                      <div key={i} className="my-12 group">
-                        <img 
-                          src={fullUrl} 
-                          className="w-full rounded-[2rem] shadow-md border border-gray-50 group-hover:shadow-xl transition-shadow duration-500" 
-                          alt="Article Image" 
-                        />
+                      <div>
+                        <h4 className="text-[1.04rem] leading-7 font-semibold text-[#090909] hover:text-[#5F1C9F] transition-colors line-clamp-4">
+                          {item.title}
+                        </h4>
+                        <p className="mt-2 text-[1.02rem] text-[#7A828C]">
+                          {formatDate(item.publishDate || item.date || item.createdAt)}
+                          {formatReadTime(item?.readTime) ? ` | ${formatReadTime(item?.readTime)}` : ''}
+                        </p>
                       </div>
-                    );
-                  }
-                }
-                
-                // Check if this is a video URL (YouTube/Vimeo patterns)
-                if (textValue.includes('youtube.com') || textValue.includes('youtu.be') || textValue.includes('vimeo.com')) {
-                  // Extract URL from text if it's mixed with other text
-                  const urlMatch = textValue.match(/(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|vimeo\.com\/)[\w-]+)/);
-                  if (urlMatch) {
-                    const videoUrl = urlMatch[1];
-                    return (
-                      <div key={i} className="my-12 aspect-video rounded-[2rem] overflow-hidden shadow-lg bg-gray-900">
-                        <iframe 
-                          src={getEmbedUrl(videoUrl)} 
-                          className="w-full h-full border-none"
-                          allowFullScreen
-                          title="Article Video"
-                        ></iframe>
-                      </div>
-                    );
-                  }
-                }
-                
-                // Regular text paragraph
-                return <p key={i} className="mb-8">{textValue}</p>;
-              }
-             
-              //  HEADINGS
-              if (block.type === 'heading') {
-                const headingText = block.value || block.children?.map((c: any) => c.text).join('') || "";
-                return (
-                  <h3 key={i} className="font-bold text-gray-900 text-2xl md:text-3xl mt-12 mb-6 uppercase tracking-tight">
-                    {headingText}
-                  </h3>
+                    </div>
+                  </button>
                 );
-              }
-
-              //  IN-CONTENT IMAGES 
-              if (block.type === 'image') {
-                const imageUrl = block.image?.url || block.url || block.value;
-                if (!imageUrl) return null;
-                
-                const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
-
-                return (
-                  <div key={i} className="my-12 group">
-                    <img 
-                      src={fullUrl} 
-                      className="w-full rounded-[2rem] shadow-md border border-gray-50 group-hover:shadow-xl transition-shadow duration-500" 
-                      alt={block.image?.alternativeText || "Article Image"} 
-                    />
-                    {(block.caption || block.image?.caption) && (
-                      <p className="mt-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
-                        {block.caption || block.image?.caption}
-                      </p>
-                    )}
-                  </div>
-                );
-              }
-
-              // VIDEO BLOCKS 
-              if (block.type === 'video') {
-                const videoUrl = block.url || block.value;
-                if (!videoUrl) return null;
-
-                return (
-                  <div key={i} className="my-12 aspect-video rounded-[2rem] overflow-hidden shadow-lg bg-gray-900">
-                    <iframe 
-                      src={getEmbedUrl(videoUrl)} 
-                      className="w-full h-full border-none"
-                      allowFullScreen
-                      title="Article Video"
-                    ></iframe>
-                  </div>
-                );
-              }
-
-              return null;
-            })
-          ) : (
-            <p className="text-xl font-medium leading-relaxed text-gray-600 italic">
-              {article.description || "No further details available for this article."}
-            </p>
-          )}
+              })}
+            </div>
+          </aside>
         </div>
-      </article>
-
-      
-    </main>
+      </section>
+      <NewsletterSection />
+      <Footer />
+    </div>
   );
 };
 

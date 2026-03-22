@@ -23,7 +23,7 @@ function ChairpersonMessagePage() {
           <section className="border border-slate-200 bg-white rounded-sm p-5 sm:p-8">
             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8 items-start">
               <div>
-                <div className="relative overflow-hidden rounded-lg w-full max-w-[300px] h-[350px] flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] group flex-shrink-0 shadow-lg mx-auto lg:mx-0">
+                <div className="relative overflow-hidden rounded-lg w-full max-w-[300px] h-[350px] flex items-center justify-center bg-slate-100 group flex-shrink-0 shadow-lg mx-auto lg:mx-0">
                   <img
                     src={photo}
                     alt={name}

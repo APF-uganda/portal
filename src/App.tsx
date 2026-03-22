@@ -5,19 +5,10 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "./components/ui/toaster";
 import { isAuthenticated, getUser, migrateFromLocalStorage } from "./utils/authStorage";
-import { Loader2 } from "lucide-react";
 
-// Loading component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <Loader2 className="animate-spin text-purple-600 mx-auto mb-4" size={40} />
-      <p className="text-gray-600 font-medium">Loading...</p>
-    </div>
-  </div>
-);
 
 /* Lazy loaded public pages */
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
@@ -66,6 +57,7 @@ const NewsManagement = React.lazy(() => import("./pages/admin/newsMgt"));
 const ManageUsers = React.lazy(() => import("./pages/admin/manageusers"));
 const EventCreatePage = React.lazy(() => import("./pages/admin/eventMgt"));
 const ManagePayments = React.lazy(() => import("./pages/admin/managePayments"));
+const AdminEvents = React.lazy(() => import("./pages/admin/admineventMgt"));
 const MembershipEditor = React.lazy(() => import('./components/admincms/editMembership'));
 const AboutPageEditor = React.lazy(() => import('./components/admincms/editAbout'));
 const HomePageEditor = React.lazy(() => import('./components/admincms/editLandingpage'));
@@ -106,10 +98,11 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+    <HelmetProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <Suspense fallback={null}>
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/chairperson-message" element={<ChairpersonMessagePage />} />
@@ -141,6 +134,7 @@ const App: React.FC = () => {
              <Route path="/admincms/leadership" element={<LeadershipManager />} />
              <Route path="/news/:id" element={<NewsDetail />} />
              <Route path="/management" element={<ManagementPage />} />
+             <Route path="/admineventMgt" element={<AdminEvents />} />
             {/* Auth routes */}
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -263,6 +257,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute role="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/admineventMgt"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminEvents />
                 </ProtectedRoute>
               }
             />
@@ -465,11 +467,12 @@ const App: React.FC = () => {
 
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-        <Toaster />
-      </div>
-    </Router>
+            </Routes>
+          </Suspense>
+          <Toaster />
+        </div>
+      </Router>
+    </HelmetProvider>
   );
 };
 

@@ -5,42 +5,61 @@ import { fetchRecentPayments, RecentPayment } from "../../services/dashboard";
 function RecentPayments() {
   const [payments, setPayments] = useState<RecentPayment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchRecentPayments()
-      .then(setPayments)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const formatAmount = (amount: number) => {
-    return `UGX ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  const loadPayments = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const data = await fetchRecentPayments();
+      setPayments(data);
+    } catch (error) {
+      console.error('Failed to load recent payments:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  const formatPaymentMethod = (method: string) => {
+  useEffect(() => {
+    loadPayments();
+    
+    // Auto-refresh every 30 seconds
+    const intervalId = setInterval(() => {
+      loadPayments(true);
+    }, 30 * 1000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const formatPaymentMethod = (method?: string) => {
+    if (!method) return "Manual Payment";
     const methodMap: Record<string, string> = {
-      'mobile_money': 'Mobile Money',
-      'credit_card': 'Credit Card',
-      'bank_transfer': 'Bank Transfer',
-      'mtn': 'MTN Mobile Money',
-      'airtel': 'Airtel Money',
+      manual_payment: "Manual Payment",
+      mobile_money: "Mobile Money",
+      credit_card: "Credit Card",
+      bank_transfer: "Bank Transfer",
+      mtn: "MTN Mobile Money",
+      airtel: "Airtel Money",
     };
-    return methodMap[method] || method.toUpperCase();
+    return methodMap[method] || method.replace(/_/g, " ").toUpperCase();
   };
 
   const formatDate = (date: string) => {
     const diffMs = Date.now() - new Date(date).getTime();
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    
-    // If less than 24 hours, show "hours ago"
+
     if (hours < 24) {
       if (hours < 1) return "Just now";
       return `${hours} hours ago`;
     }
-    
-    // If 24 hours or more, show date in dd/mm/yyyy format
+
     const dateObj = new Date(date);
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
     const year = dateObj.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -48,9 +67,14 @@ function RecentPayments() {
   return (
     <div className="animate-slide-up rounded-xl border border-border bg-card p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm md:text-base font-semibold">Recent Payments</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm md:text-base font-semibold">Recent Payments</h2>
+          {refreshing && (
+            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          )}
+        </div>
         <Link to="/admin/payments" className="text-xs md:text-sm text-purple-600 hover:underline">
-          View All →
+          View All -&gt;
         </Link>
       </div>
 
@@ -76,15 +100,29 @@ function RecentPayments() {
           {payments.map((payment) => (
             <div key={payment.id} className="flex items-center justify-between rounded-lg border p-3 gap-2">
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{payment.member_name}</p>
+                <p className="font-medium text-sm truncate">
+                  {payment.member_name || payment.member_email || payment.reference || "Payment Record"}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  <span className="hidden sm:inline">{formatPaymentMethod(payment.payment_method)} • </span>
+                  <span className="hidden sm:inline">
+                    {(payment.description || formatPaymentMethod(payment.payment_method))} {"\u2022"} 
+                  </span>
                   {formatDate(payment.created_at)}
                 </p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="font-medium text-sm">{formatAmount(payment.amount)}</p>
-                <span className="rounded-full border border-green-600 px-2 py-0.5 text-xs text-green-600">
+                <p className="font-medium text-sm">
+                  {(payment.currency || "UGX")} {Number(payment.amount || 0).toLocaleString("en-US")}
+                </p>
+                <span
+                  className={`rounded-full border px-2 py-0.5 text-xs ${
+                    payment.status?.toLowerCase() === "verified" || payment.status?.toLowerCase() === "completed"
+                      ? "border-green-600 text-green-600"
+                      : payment.status?.toLowerCase() === "rejected" || payment.status?.toLowerCase() === "failed"
+                        ? "border-red-600 text-red-600"
+                        : "border-amber-600 text-amber-600"
+                  }`}
+                >
                   {payment.status}
                 </span>
               </div>

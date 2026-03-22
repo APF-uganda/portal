@@ -36,7 +36,7 @@ export const usePayments = () => {
         }))
       ]);
 
-      // Set statistics with dynamic growth rates
+      // Set statistics from backend response
       setStats({
         total_transactions: statisticsData.total_transactions,
         pending_revenue: statisticsData.pending_revenue,
@@ -63,6 +63,9 @@ export const usePayments = () => {
         reference: p.reference,
         proof_of_payment: p.proof_of_payment,
         user: p.member_name,
+        requires_document_review: p.requires_document_review,
+        linked_document_id: p.linked_document_id ?? null,
+        linked_document_status: p.linked_document_status ?? null,
       }));
       setPayments(mappedPayments);
 

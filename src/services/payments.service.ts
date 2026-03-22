@@ -21,6 +21,30 @@ const getAuthHeaders = (): Record<string, string> => {
   return headers
 }
 
+interface MemberManualPayment {
+  id: number
+  reference: string
+  description: string
+  amount: number
+  currency: string
+  status: 'pending' | 'verified' | 'rejected'
+  invoice_number?: string | null
+  application_reference?: string | null
+  proof_of_payment?: string | null
+  created_at: string
+  verified_at?: string | null
+}
+
+interface SubmitManualPaymentPayload {
+  amount: number
+  paymentMethod: 'mtn' | 'airtel' | 'bank'
+  phoneNumber?: string
+  reference?: string
+  invoiceNumber?: string
+  description?: string
+  proofOfPayment: File
+}
+
 /**
  * Map a backend payment record to the frontend Transaction type
  */
@@ -42,25 +66,78 @@ const mapPaymentToTransaction = (payment: any): Transaction => {
   }
 }
 
+const mapManualPaymentToTransaction = (payment: MemberManualPayment): Transaction => {
+  const statusText = payment.status.toLowerCase()
+  return {
+    date: payment.created_at,
+    type: payment.description || 'Membership Renewal Fee',
+    reference: payment.reference || payment.invoice_number || payment.application_reference || `MP-${payment.id}`,
+    amount: `UGX ${Number(payment.amount || 0).toLocaleString()}`,
+    method: 'Manual Receipt Upload',
+    methodIcon: null,
+    status: statusText,
+    description:
+      statusText === 'verified'
+        ? 'Receipt verified by admin'
+        : statusText === 'rejected'
+        ? 'Receipt rejected by admin'
+        : 'Receipt submitted, awaiting admin verification',
+  }
+}
+
+const sortTransactionsByDateDesc = (rows: Transaction[]) =>
+  [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+const fetchMobileTransactions = async (): Promise<Transaction[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed mobile payment history: ${response.status}`)
+  }
+
+  const data = await response.json()
+  return (data.results || []).map(mapPaymentToTransaction)
+}
+
+const fetchMemberManualTransactions = async (): Promise<Transaction[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/manual/history/`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed manual payment history: ${response.status}`)
+  }
+
+  const data = await response.json()
+  return (data.results || []).map(mapManualPaymentToTransaction)
+}
+
 /**
  * Get payment history/transactions
  * @returns Promise with array of transactions
  */
 export const getPaymentHistory = async (): Promise<Transaction[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    })
+    const [mobileResult, manualResult] = await Promise.allSettled([
+      fetchMobileTransactions(),
+      fetchMemberManualTransactions(),
+    ])
 
-    if (!response.ok) {
-      console.error(`Failed to fetch payment history: ${response.status}`)
-      return []
+    const mobileRows = mobileResult.status === 'fulfilled' ? mobileResult.value : []
+    const manualRows = manualResult.status === 'fulfilled' ? manualResult.value : []
+
+    if (mobileResult.status === 'rejected') {
+      console.error('Error fetching mobile payment history:', mobileResult.reason)
+    }
+    if (manualResult.status === 'rejected') {
+      console.error('Error fetching manual payment history:', manualResult.reason)
     }
 
-    const data = await response.json()
-    const transactions = (data.results || []).map(mapPaymentToTransaction)
-    return transactions
+    return sortTransactionsByDateDesc([...mobileRows, ...manualRows])
   } catch (error) {
     console.error('Error fetching payment history:', error)
     return []
@@ -74,19 +151,8 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
  */
 export const getRecentTransactions = async (limit: number = 3): Promise<Transaction[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/?limit=${limit}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    })
-
-    if (!response.ok) {
-      console.error(`Failed to fetch recent transactions: ${response.status}`)
-      return []
-    }
-
-    const data = await response.json()
-    const transactions = (data.results || []).map(mapPaymentToTransaction)
-    return transactions
+    const all = await getPaymentHistory()
+    return all.slice(0, limit)
   } catch (error) {
     console.error('Error fetching recent transactions:', error)
     return []
@@ -111,7 +177,7 @@ export const getReceipts = async (): Promise<Receipt[]> => {
     }
 
     const data = await response.json()
-    const receipts = (data.results || []).map((payment: any): Receipt => ({
+    const mobileReceipts = (data.results || []).map((payment: any): Receipt => ({
       id: payment.id,
       title: 'Membership Fee Payment',
       date: payment.completed_at || payment.created_at,
@@ -119,11 +185,69 @@ export const getReceipts = async (): Promise<Receipt[]> => {
       type: 'receipt',
       reference: payment.transaction_reference,
     }))
-    
-    return receipts
+
+    const manualResponse = await fetch(`${API_BASE_URL}/api/v1/payments/manual/history/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    })
+
+    let manualReceipts: Receipt[] = []
+    if (manualResponse.ok) {
+      const manualData = await manualResponse.json()
+      manualReceipts = (manualData.results || [])
+        .filter((payment: MemberManualPayment) => payment.status === 'verified')
+        .map((payment: MemberManualPayment): Receipt => ({
+          id: String(payment.id),
+          title: payment.description || 'Membership Renewal Payment',
+          date: payment.verified_at || payment.created_at,
+          amount: `UGX ${Number(payment.amount).toLocaleString()}`,
+          type: 'receipt',
+          reference: payment.reference || payment.invoice_number || payment.application_reference || `MP-${payment.id}`,
+        }))
+    }
+
+    return [...mobileReceipts, ...manualReceipts]
   } catch (error) {
     console.error('Error fetching receipts:', error)
     return []
+  }
+}
+
+export const submitManualRenewalPayment = async (
+  payload: SubmitManualPaymentPayload
+): Promise<{ id: number; status: string; reference: string }> => {
+  const token = getAccessToken()
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const form = new FormData()
+  form.append('amount', String(payload.amount))
+  form.append('description', payload.description || 'Membership Renewal Fee')
+  form.append('reference', payload.reference || '')
+  form.append('invoice_number', payload.invoiceNumber || '')
+  form.append('payment_method', payload.paymentMethod)
+  if (payload.phoneNumber) {
+    form.append('phone_number', payload.phoneNumber)
+  }
+  form.append('proof_of_payment', payload.proofOfPayment)
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/manual/submit/`, {
+    method: 'POST',
+    headers,
+    body: form,
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to submit payment receipt')
+  }
+
+  return {
+    id: Number(data.id),
+    status: String(data.status || 'pending'),
+    reference: String(data.reference || ''),
   }
 }
 

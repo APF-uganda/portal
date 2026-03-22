@@ -103,6 +103,7 @@ const mapPost = (post: ApiPost): ForumPost => {
     authorProfilePictureUrl: post.author?.profile_picture_url || null,
     viewers: post.viewers || [],
     time: formatRelativeTime(post.created_at),
+    createdAt: post.created_at,
     category: post.category?.name || 'General',
     excerpt: toExcerpt(post.content),
     replies: post.comment_count || 0,
@@ -264,8 +265,17 @@ export const createForumPost = async (_postData: any): Promise<ForumPost | null>
 }
 
 export const updateForumPost = async (_postId: number, _postData: any): Promise<ForumPost | null> => {
-  const response = await api.patch<ApiPost>(`/api/v1/forum/posts/${_postId}/`, _postData)
-  return mapPost(response.data)
+  try {
+    const response = await api.patch<ApiPost>(`/api/v1/forum/posts/${_postId}/`, _postData)
+    return mapPost(response.data)
+  } catch (error: any) {
+    console.error('Failed to update forum post:', error)
+    if (error.response?.status === 403) {
+      const errorData = error.response?.data;
+      console.error('Edit window expired:', errorData?.message || 'Posts can only be edited within 30 minutes of creation');
+    }
+    return null
+  }
 }
 
 export const getForumComments = async (_postId: number): Promise<ApiComment[]> => {
