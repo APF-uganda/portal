@@ -36,29 +36,13 @@ export const usePayments = () => {
         }))
       ]);
 
-      // Set statistics with dynamic growth rates
+      // Set statistics from backend response
       setStats({
         total_transactions: statisticsData.total_transactions,
         pending_revenue: statisticsData.pending_revenue,
         total_revenue: statisticsData.total_revenue,
-        growth_rates: {
-          // Use real data if available, otherwise use test data to show arrows work
-          transactions: statisticsData.growth_rates.transactions !== 0 ? statisticsData.growth_rates.transactions : 25.8,
-          pending: statisticsData.growth_rates.pending !== 0 ? statisticsData.growth_rates.pending : -12.4,
-          revenue: statisticsData.growth_rates.revenue !== 0 ? statisticsData.growth_rates.revenue : 35.6,
-        },
+        growth_rates: statisticsData.growth_rates,
       });
-
-      // Debug logging for payment statistics
-      console.log('=== PAYMENT STATISTICS DEBUG ===');
-      console.log('Raw API Response:', statisticsData);
-      console.log('Final Stats Object:', {
-        total_revenue: statisticsData.total_revenue,
-        revenue_growth: statisticsData.growth_rates.revenue !== 0 ? statisticsData.growth_rates.revenue : 35.6,
-        transactions_growth: statisticsData.growth_rates.transactions !== 0 ? statisticsData.growth_rates.transactions : 25.8,
-        pending_growth: statisticsData.growth_rates.pending !== 0 ? statisticsData.growth_rates.pending : -12.4,
-      });
-      console.log('=== END DEBUG ===');
 
       // Map backend payments to Payment shape
       const mappedPayments: Payment[] = (paymentsData || []).slice(0, 10).map((p: AdminPaymentResponse) => ({
@@ -75,6 +59,9 @@ export const usePayments = () => {
         reference: p.reference,
         proof_of_payment: p.proof_of_payment,
         user: p.member_name,
+        requires_document_review: p.requires_document_review,
+        linked_document_id: p.linked_document_id ?? null,
+        linked_document_status: p.linked_document_status ?? null,
       }));
       setPayments(mappedPayments);
 

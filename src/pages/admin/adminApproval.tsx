@@ -83,8 +83,11 @@ const AdminApprovals = () => {
         clearError();
         setSuccessMessage(null);
         setActionLoadingId(applicationId);
-        try {
+    try {
             const result = await approve(applicationId);
+            if (!result.success) {
+                throw new Error(result.error || "Failed to approve application");
+            }
             if (result.success) {
                 setSuccessMessage("Application approved successfully");
                 
@@ -104,6 +107,7 @@ const AdminApprovals = () => {
             }, 3000);
         } catch (error) {
             console.error("Failed to approve application:", error);
+            throw error;
         } finally {
             setActionLoadingId(null);
         }
@@ -115,6 +119,9 @@ const handleReject = async (applicationId: number) => {
     setActionLoadingId(applicationId);
     try {
         const result = await reject(applicationId);
+        if (!result.success) {
+            throw new Error(result.error || "Failed to reject application");
+        }
         if (result.success) {
             setSuccessMessage("Application rejected successfully");
             
@@ -127,6 +134,7 @@ const handleReject = async (applicationId: number) => {
         }
     } catch (error) {
         console.error("Failed to reject application:", error);
+        throw error;
     } finally {
         setActionLoadingId(null);
     }
@@ -138,6 +146,9 @@ const handleRetry = async (applicationId: number) => {
     setActionLoadingId(applicationId);
     try {
         const result = await retry(applicationId);
+        if (!result.success) {
+            throw new Error(result.error || "Failed to reset application");
+        }
         if (result.success) {
             setSuccessMessage("Application reset to pending successfully");
             
@@ -150,6 +161,7 @@ const handleRetry = async (applicationId: number) => {
         }
     } catch (error) {
         console.error("Failed to reset application:", error);
+        throw error;
     } finally {
         setActionLoadingId(null);
     }

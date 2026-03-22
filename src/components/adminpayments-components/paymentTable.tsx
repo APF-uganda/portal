@@ -7,7 +7,7 @@ import { ReceiptGenerator, ReceiptData, showNotification } from '../../services/
 interface PaymentTableProps {
   payments: Payment[];
   loading: boolean;
-  onStatusUpdate?: (id: string, newStatus: string) => void;
+  onStatusUpdate?: (id: number, newStatus: 'verified' | 'rejected') => Promise<void> | void;
 }
 
 export const PaymentTable = ({ 
@@ -19,6 +19,8 @@ export const PaymentTable = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
 
   const totalPages = Math.max(1, Math.ceil(payments.length / rowsPerPage));
@@ -95,6 +97,22 @@ export const PaymentTable = ({
     }
   };
 
+  const handleStatusAction = async (paymentId: string, newStatus: 'verified' | 'rejected') => {
+    if (!onStatusUpdate) return;
+    const numericId = Number(paymentId);
+    if (Number.isNaN(numericId)) return;
+    try {
+      setActionError(null);
+      setActionLoadingId(paymentId);
+      await onStatusUpdate(numericId, newStatus);
+      setActiveMenuId(null);
+    } catch (error: any) {
+      setActionError(error?.message || `Failed to ${newStatus} payment`);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl md:rounded-[24px] shadow-sm border border-slate-100 overflow-hidden w-full font-montserrat">
       <div className="px-4 md:px-8 py-4 md:py-6 border-b border-slate-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white">
@@ -107,6 +125,11 @@ export const PaymentTable = ({
           </h2>
         </div>
       </div>
+      {actionError && (
+        <div className="mx-4 md:mx-8 mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+          {actionError}
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <div className="min-w-[1300px]">
@@ -137,12 +160,19 @@ export const PaymentTable = ({
                   const { transactionId, description } = getTransactionDetails(p);
                   // Converting p.id to string once to avoid repeated casting
                   const stringId = String(p.id);
+                  const reviewViaDocuments = !!p.requires_document_review;
+                  const canVerifyFromPayments = !reviewViaDocuments && p.status?.toLowerCase() === 'pending';
 
                   return (
                     <tr key={stringId} className="hover:bg-slate-50/50 transition-all group">
                       <td className="px-6 md:px-8 py-4 md:py-6">
                         <div className="font-bold text-gray-900 text-sm">{p.member_name}</div>
                         <div className="text-xs text-gray-500">{p.member_email}</div>
+                        {reviewViaDocuments && (
+                          <div className="mt-1 text-[10px] font-semibold text-purple-600">
+                            Review via Documents
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 md:px-8 py-4 md:py-6 font-mono text-xs">{transactionId}</td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-sm">{description}</td>
@@ -175,23 +205,24 @@ export const PaymentTable = ({
                             {activeMenuId === stringId && (
                               <div className="absolute right-0 mt-2 w-36 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-2">
                                 <button 
-                                  onClick={() => {
-                                    onStatusUpdate?.(stringId, 'verified');
-                                    setActiveMenuId(null);
-                                  }}
+                                  disabled={actionLoadingId === stringId || !canVerifyFromPayments}
+                                  onClick={() => handleStatusAction(stringId, 'verified')}
                                   className="w-full px-4 py-2 text-left text-xs font-bold text-emerald-600 hover:bg-emerald-50 flex items-center gap-2"
                                 >
                                   <CheckCircle size={14} /> Verify
                                 </button>
                                 <button 
-                                  onClick={() => {
-                                    onStatusUpdate?.(stringId, 'rejected');
-                                    setActiveMenuId(null);
-                                  }}
+                                  disabled={actionLoadingId === stringId || !canVerifyFromPayments}
+                                  onClick={() => handleStatusAction(stringId, 'rejected')}
                                   className="w-full px-4 py-2 text-left text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2"
                                 >
                                   <XCircle size={14} /> Reject
                                 </button>
+                                {reviewViaDocuments && (
+                                  <div className="px-4 py-2 text-[10px] font-semibold text-slate-500">
+                                    Use Documents Review
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>

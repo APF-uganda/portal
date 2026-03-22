@@ -27,6 +27,7 @@ const MemberDocumentsModal = ({ isOpen, onClose, userId, userName }: MemberDocum
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [viewingDoc, setViewingDoc] = useState<Document | null>(null);
   const [imageBlob, setImageBlob] = useState<string | null>(null);
+  const [viewingMimeType, setViewingMimeType] = useState<string>('');
   const [loadingImage, setLoadingImage] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [updating, setUpdating] = useState(false);
@@ -43,6 +44,7 @@ const MemberDocumentsModal = ({ isOpen, onClose, userId, userName }: MemberDocum
       fetchAuthenticatedFile(viewingDoc.fileUrl);
     } else {
       setImageBlob(null);
+      setViewingMimeType('');
     }
   }, [viewingDoc]);
 
@@ -62,12 +64,24 @@ const MemberDocumentsModal = ({ isOpen, onClose, userId, userName }: MemberDocum
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       setImageBlob(blobUrl);
+      setViewingMimeType(blob.type || response.headers.get('content-type') || '');
     } catch (err: any) {
       console.error('Error fetching authenticated file:', err);
       setImageBlob(null);
+      setViewingMimeType('');
     } finally {
       setLoadingImage(false);
     }
+  };
+
+  const isImagePreview = (doc: Document) => {
+    if (viewingMimeType.startsWith('image/')) return true;
+    return !!doc.name.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i);
+  };
+
+  const isPdfPreview = (doc: Document) => {
+    if (viewingMimeType === 'application/pdf') return true;
+    return !!doc.name.match(/\.pdf$/i);
   };
 
   useEffect(() => {
@@ -302,14 +316,14 @@ const MemberDocumentsModal = ({ isOpen, onClose, userId, userName }: MemberDocum
               ) : viewingDoc.fileUrl && imageBlob ? (
                 <div className="h-full flex items-center justify-center">
                   {/* Check file type and render accordingly */}
-                  {viewingDoc.name.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) ? (
+                  {isImagePreview(viewingDoc) ? (
                     // Image viewer - fit within preview window
                     <img
                       src={imageBlob}
                       alt={viewingDoc.name}
                       className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
                     />
-                  ) : viewingDoc.name.match(/\.pdf$/i) ? (
+                  ) : isPdfPreview(viewingDoc) ? (
                     // PDF viewer - full width, scrollable
                     <div className="w-full h-full min-h-[500px]">
                       <iframe

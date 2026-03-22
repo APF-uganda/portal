@@ -22,11 +22,19 @@ import { PaymentStatCard } from '../../components/payment-components/statcard';
 const ManagePayments = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { payments, stats, loading, error, refresh } = usePayments();
+  const { payments, stats, loading, error, refresh, verifyPayment, rejectPayment } = usePayments();
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [nextRefresh, setNextRefresh] = useState<Date>(new Date(Date.now() + 2 * 60 * 60 * 1000));
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
+  const handleStatusUpdate = async (id: number, newStatus: 'verified' | 'rejected') => {
+    if (newStatus === 'verified') {
+      await verifyPayment(id);
+      return;
+    }
+    await rejectPayment(id);
+  };
 
   useEffect(() => {
     if (!loading) {
@@ -129,7 +137,7 @@ const ManagePayments = () => {
               <PaymentStatCard 
                 title="Total Transactions" 
                 value={(stats?.total_transactions ?? 0).toLocaleString()} 
-                change={25.8}
+                change={stats?.growth_rates?.transactions ?? 0}
                 icon={Hash}
                 iconBg="bg-[#7E49B3]"
                 color="border-purple-100" 
@@ -138,7 +146,7 @@ const ManagePayments = () => {
               <PaymentStatCard 
                 title="Pending Amount" 
                 value={`UGX ${(stats?.pending_revenue ?? 0).toLocaleString()}`} 
-                change={-12.4}
+                change={stats?.growth_rates?.pending ?? 0}
                 icon={Clock}
                 iconBg="bg-amber-500"
                 color="border-amber-100" 
@@ -147,7 +155,7 @@ const ManagePayments = () => {
               <PaymentStatCard 
                 title="Total Revenue" 
                 value={`UGX ${(stats?.total_revenue ?? 0).toLocaleString()}`} 
-                change={35.6}
+                change={stats?.growth_rates?.revenue ?? 0}
                 icon={Banknote}
                 iconBg="bg-emerald-500"
                 color="border-emerald-100" 
@@ -160,6 +168,7 @@ const ManagePayments = () => {
                 <PaymentTable 
                   payments={payments}
                   loading={loading}
+                  onStatusUpdate={handleStatusUpdate}
                 />
               </div>
 

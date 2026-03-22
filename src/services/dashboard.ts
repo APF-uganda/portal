@@ -31,6 +31,17 @@ export interface DashboardStatistics {
 /**
  * Recent application item for dashboard display
  */
+interface PaymentStatisticsApiResponse {
+  total_transactions: number;
+  pending_revenue: number;
+  total_revenue: number;
+  growth_rates: {
+    transactions: number;
+    pending: number;
+    revenue: number;
+  };
+}
+
 export interface RecentApplication {
   id: number;
   first_name: string;
@@ -45,10 +56,14 @@ export interface RecentApplication {
  */
 export interface RecentPayment {
   id: number;
-  payment_id: string;
+  payment_id?: string;
   member_name: string;
+  member_email?: string;
   amount: number;
-  payment_method: string;
+  payment_method?: string;
+  description?: string;
+  reference?: string;
+  currency?: string;
   status: string;
   created_at: string;
 }
@@ -104,7 +119,30 @@ export async function fetchDashboardStatistics(signal?: AbortSignal): Promise<Da
       }
     );
 
-    return response.data;
+    const appStats = response.data;
+
+    try {
+      const paymentStatsRes = await axios.get<PaymentStatisticsApiResponse>(
+        `${API_BASE_URL}/api/v1/payments/statistics/`,
+        {
+          headers: getAuthHeaders(),
+          timeout: 30000,
+          signal,
+        }
+      );
+
+      return {
+        ...appStats,
+        total_revenue: paymentStatsRes.data.total_revenue ?? appStats.total_revenue,
+        trends: {
+          ...appStats.trends,
+          revenue_change: paymentStatsRes.data.growth_rates?.revenue ?? appStats.trends.revenue_change,
+        },
+      };
+    } catch (paymentStatsError) {
+      console.warn('Failed to align dashboard revenue with payment statistics:', paymentStatsError);
+      return appStats;
+    }
   } catch (error) {
     // Don't log errors if request was aborted
     if (axios.isCancel(error) || (error as Error).name === 'AbortError') {
@@ -184,16 +222,32 @@ export async function fetchRecentApplications(limit: number = 5): Promise<Recent
  */
 export async function fetchRecentPayments(limit: number = 5): Promise<RecentPayment[]> {
   try {
-    const response = await axios.get<RecentPayment[]>(
-      `${API_BASE_URL}/api/v1/applications/recent-payments/`,
+    const response = await axios.get<any[]>(
+      `${API_BASE_URL}/api/v1/payments/`,
       {
         headers: getAuthHeaders(),
-        params: { limit },
         timeout: 30000,
       }
     );
 
-    return response.data;
+    const rows = Array.isArray(response.data) ? response.data : [];
+
+    return rows
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, limit)
+      .map((p) => ({
+        id: Number(p.id),
+        payment_id: p.reference || p.invoice_number || p.application_id || String(p.id),
+        member_name: p.member_name || p.member_email || p.reference || "Payment Record",
+        member_email: p.member_email || "",
+        amount: Number(p.amount || 0),
+        payment_method: "manual_payment",
+        description: p.description || "Manual Payment",
+        reference: p.reference || p.invoice_number || p.application_id || "",
+        currency: p.currency || "UGX",
+        status: p.status || "pending",
+        created_at: p.created_at,
+      }));
   } catch (error) {
     console.error('Failed to fetch recent payments:', error);
     return [];

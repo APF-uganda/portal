@@ -10,7 +10,15 @@ import { PaymentTable } from '../../components/adminpayments-components/paymentT
 const ManagePayments = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { payments, stats, loading, error, refresh } = usePayments();
+  const { payments, stats, loading, error, refresh, verifyPayment, rejectPayment } = usePayments();
+
+  const handleStatusUpdate = async (id: number, newStatus: 'verified' | 'rejected') => {
+    if (newStatus === 'verified') {
+      await verifyPayment(id);
+      return;
+    }
+    await rejectPayment(id);
+  };
 
   // Function for handle Report Download
   const downloadReport = () => {
@@ -98,15 +106,19 @@ const ManagePayments = () => {
 
            
             <div className="w-full">
-               <PaymentTable payments={payments} loading={loading} />
-            </div>
+               <PaymentTable payments={payments} loading={loading} onStatusUpdate={handleStatusUpdate} />
+             </div>
 
            
             <div className="bg-white p-4 md:p-6 rounded-[24px] shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                <div>
                   <h3 className="font-bold text-slate-800">Financial Summary</h3>
                   <p className="text-sm text-slate-500 mt-1">
-                    Your revenue is tracking <span className="text-emerald-500 font-bold">35.6%</span> higher than last month.
+                    Your revenue is tracking{" "}
+                    <span className={`font-bold ${(stats?.growth_rates?.revenue ?? 0) >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                      {(stats?.growth_rates?.revenue ?? 0) >= 0 ? "+" : ""}{(stats?.growth_rates?.revenue ?? 0)}%
+                    </span>{" "}
+                    compared to last month.
                   </p>
                </div>
                <div className="text-left md:text-right">

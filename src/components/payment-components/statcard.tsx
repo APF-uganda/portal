@@ -17,12 +17,6 @@ export const PaymentStatCard = ({
   iconBg = "bg-indigo-500", 
   color = "border-gray-200" 
 }: StatCardProps) => {
-  // Debug logging
-  console.log(`=== STATCARD ${title.toUpperCase()} ===`);
-  console.log('Props received:', { title, value, change, iconBg, color });
-  console.log('Change type:', typeof change, 'Change value:', change);
-  console.log('=== END STATCARD ===');
-  
   return (
     <div className={`bg-white p-4 md:p-6 rounded-[20px] shadow-sm border-l-4 ${color} border border-y-gray-100 border-r-gray-100`}>
       <div className="flex justify-between items-start">

@@ -15,6 +15,8 @@ const DocumentsPage: React.FC = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [documentToRemove, setDocumentToRemove] = useState<Document | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const pendingReviewDocs = documents.user.filter((doc) => doc.status !== 'approved')
+  const approvedDocs = [...documents.system, ...documents.user.filter((doc) => doc.status === 'approved')]
 
   const handleViewDocument = async (doc: Document) => {
     if (!doc.fileUrl) {
@@ -177,9 +179,9 @@ const DocumentsPage: React.FC = () => {
           </div>
 
           {/* Grid of user-uploaded documents */}
-          {documents.user.length > 0 ? (
+          {pendingReviewDocs.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {documents.user.map((doc) => (
+              {pendingReviewDocs.map((doc) => (
                 <DocumentCard
                   key={doc.id}
                   document={doc}
@@ -212,18 +214,26 @@ const DocumentsPage: React.FC = () => {
           </div>
 
           {/* Grid of approved/system documents */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {documents.system.map((doc) => (
-              <DocumentCard
-                key={doc.id}
-                document={doc}
-                onView={handleViewDocument}
-                onDownload={handleDownloadDocument}
-                onReupload={handleReuploadDocument}
-                onRemove={handleRemoveDocument}
-              />
-            ))}
-          </div>
+          {approvedDocs.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {approvedDocs.map((doc) => (
+                <DocumentCard
+                  key={doc.id}
+                  document={doc}
+                  onView={handleViewDocument}
+                  onDownload={handleDownloadDocument}
+                  onReupload={handleReuploadDocument}
+                  onRemove={handleRemoveDocument}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+              <ShieldCheck className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">No approved documents yet</p>
+              <p className="text-sm text-gray-500 mt-1">Approved documents will appear here</p>
+            </div>
+          )}
         </div>
       </div>
 

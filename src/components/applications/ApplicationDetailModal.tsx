@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { X, User, FileText, Loader2, Download } from 'lucide-react';
+import { X, FileText, Loader2, Download } from 'lucide-react';
 import { getAccessToken } from '../../utils/authStorage';
 import { API_BASE_URL } from '../../config/api';
+import { fetchApplicationDetail } from '../../services/applicationApi';
 
 interface Application {
   id: number;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
-  phoneNumber: string;
-  age_range: string;
-  address: string;
-  icpauCertificateNumber: string;
-  organization: string;
+  phoneNumber?: string;
+  phone_number?: string;
+  age_range?: string;
+  address?: string;
+  icpauCertificateNumber?: string;
+  icpau_certificate_number?: string;
+  organization?: string;
   status: string;
   submitted_at: string;
   documents?: Array<{
@@ -132,6 +137,9 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [confirmApprove, setConfirmApprove] = useState(false);
 
   useEffect(() => {
     if (isOpen) fetchDetails();
@@ -139,19 +147,70 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
 
   const fetchDetails = async () => {
     setLoading(true);
+    setActionError(null);
+    setActionSuccess(null);
+    setConfirmApprove(false);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/applications/${applicationId}/`, {
-        headers: { 'Authorization': `Bearer ${getAccessToken()}` }
-      });
-      setApplication(await response.json());
+      const detail = await fetchApplicationDetail(applicationId);
+      if (detail) {
+        setApplication(detail as unknown as Application);
+      } else {
+        setApplication(null);
+        setActionError("Failed to load application details.");
+      }
     } catch (err) {
       console.error(err);
+      setActionError("Failed to load application details.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleApprove = async () => {
+    if (!onApprove) return;
+    if (!confirmApprove) {
+      setConfirmApprove(true);
+      return;
+    }
+
+    setSubmitting(true);
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      await onApprove(applicationId);
+      setActionSuccess("Application approved successfully.");
+      setApplication((prev) => (prev ? { ...prev, status: "approved" } : prev));
+      setConfirmApprove(false);
+    } catch (error: any) {
+      setActionError(error?.message || "Failed to approve application.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!onReject) return;
+    setSubmitting(true);
+    setActionError(null);
+    setActionSuccess(null);
+    setConfirmApprove(false);
+    try {
+      await onReject(applicationId);
+      setActionSuccess("Application rejected successfully.");
+      setApplication((prev) => (prev ? { ...prev, status: "rejected" } : prev));
+    } catch (error: any) {
+      setActionError(error?.message || "Failed to reject application.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (!isOpen) return null;
+
+  const applicantName = `${application?.first_name || application?.firstName || ""} ${application?.last_name || application?.lastName || ""}`.trim();
+  const applicantPhone = application?.phone_number || application?.phoneNumber || "N/A";
+  const applicantCert = application?.icpau_certificate_number || application?.icpauCertificateNumber || "N/A";
+  const applicantStatus = (application?.status || "").toLowerCase();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
@@ -165,15 +224,28 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
           {loading ? <div className="py-20 flex justify-center"><Loader2 className="animate-spin" /></div> : 
            application && (
             <>
+              {actionError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {actionError}
+                </div>
+              )}
+              {actionSuccess && (
+                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                  {actionSuccess}
+                </div>
+              )}
+
               <section>
                 <h4 className="text-[10px] font-semibold text-[#5C32A3] uppercase tracking-widest mb-4">Applicant Profile</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-5 rounded-xl">
                   {[
-                    { label: "Name", value: `${application.firstName} ${application.lastName}` },
+                    { label: "Name", value: applicantName || "N/A" },
                     { label: "Email", value: application.email },
-                    { label: "Phone", value: application.phoneNumber },
-                    { label: "Organization", value: application.organization },
-                    { label: "Address", value: application.address }
+                    { label: "Phone", value: applicantPhone },
+                    { label: "ICPA Cert.", value: applicantCert },
+                    { label: "Organization", value: application.organization || "N/A" },
+                    { label: "Address", value: application.address || "N/A" },
+                    { label: "Status", value: applicantStatus ? applicantStatus.charAt(0).toUpperCase() + applicantStatus.slice(1) : "N/A" }
                   ].map((item, i) => (
                     <div key={i}>
                       <span className="text-[9px] uppercase text-gray-400 block mb-0.5">{item.label}</span>
@@ -194,10 +266,22 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
         </div>
 
         <div className="p-4 bg-gray-50 border-t flex justify-between">
-          <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-600">Cancel</button>
+          <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-600" disabled={submitting}>Cancel</button>
           <div className="flex gap-2">
-            <button onClick={() => onReject?.(applicationId)} className="px-6 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium">Reject</button>
-            <button onClick={() => onApprove?.(applicationId)} className="px-6 py-2 bg-[#5C32A3] text-white rounded-lg text-sm font-medium">Approve Application</button>
+            <button
+              onClick={handleReject}
+              disabled={submitting || applicantStatus === "approved" || applicantStatus === "rejected"}
+              className="px-6 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium disabled:opacity-50"
+            >
+              {submitting ? "Processing..." : "Reject"}
+            </button>
+            <button
+              onClick={handleApprove}
+              disabled={submitting || applicantStatus === "approved" || applicantStatus === "rejected"}
+              className={`px-6 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 ${confirmApprove ? "bg-green-600 hover:bg-green-700" : "bg-[#5C32A3] hover:bg-[#4A2783]"}`}
+            >
+              {submitting ? "Processing..." : confirmApprove ? "Confirm Approve" : "Approve Application"}
+            </button>
           </div>
         </div>
       </div>
