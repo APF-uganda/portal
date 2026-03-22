@@ -20,6 +20,9 @@ export const PaymentTable = ({
  
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
 
   const totalPages = Math.max(1, Math.ceil(payments.length / rowsPerPage));
@@ -108,12 +111,10 @@ export const PaymentTable = ({
 
   const handleStatusAction = async (paymentId: string, newStatus: 'verified' | 'rejected') => {
     if (!onStatusUpdate) return;
-    const numericId = Number(paymentId);
-    if (Number.isNaN(numericId)) return;
     try {
       setActionError(null);
       setActionLoadingId(paymentId);
-      await onStatusUpdate(numericId, newStatus);
+      await onStatusUpdate(paymentId, newStatus);
       setActiveMenuId(null);
     } catch (error: any) {
       setActionError(error?.message || `Failed to ${newStatus} payment`);
