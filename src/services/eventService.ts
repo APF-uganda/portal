@@ -23,9 +23,14 @@ const eventService = {
     return response.data;
   },
 
-  // Fetch all registrations 
-  getAllRegistrations: async () => {
-    const response = await axios.get(`${EVENTS_BASE_ROUTE}/admin/registrations/`, {
+
+  getAllRegistrations: async (search: string = '') => {
+   
+    const url = search 
+      ? `${EVENTS_BASE_ROUTE}/admin/registrations/?event_title=${encodeURIComponent(search)}`
+      : `${EVENTS_BASE_ROUTE}/admin/registrations/`;
+
+    const response = await axios.get(url, {
       headers: getAuthHeader()
     });
     return response.data;
@@ -38,6 +43,12 @@ const eventService = {
       headers: getAuthHeader()
     });
     return response.data;
+  },
+
+  // New helper for PDF Export URL
+  getExportPdfUrl: (search: string = '') => {
+    const token = localStorage.getItem('token');
+    return `${EVENTS_BASE_ROUTE}/export-pdf/?event_title=${encodeURIComponent(search)}&token=${token}`;
   }
 };
 

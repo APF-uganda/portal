@@ -21,7 +21,6 @@ type FeaturedEvent = {
   description?: string
 }
 
-
 const formatNormalDate = (dateString?: string) => {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -46,7 +45,6 @@ const FeaturedEvents = () => {
     
     return sourceEvents
       .filter(event => {
-       
         const dateToCheck = event.startDate || event.date;
         return dateToCheck && new Date(dateToCheck) >= today;
       })
@@ -67,11 +65,11 @@ const FeaturedEvents = () => {
   }
 
   const handleRegister = (event: FeaturedEvent) => {
-    const start = formatNormalDate(event.startDate || event.date);
-    const end = formatNormalDate(event.endDate);
+    const startStr = event.startDate || event.date; // The raw ISO string for backend
+    const startPretty = formatNormalDate(startStr);
+    const endPretty = formatNormalDate(event.endDate);
     
-   
-    const displayDate = end && end !== start ? `${start} - ${end}` : start;
+    const displayDate = endPretty && endPretty !== startPretty ? `${startPretty} - ${endPretty}` : startPretty;
 
     navigate('/event-registration', {
       state: {
@@ -79,11 +77,11 @@ const FeaturedEvents = () => {
         eventTitle: event.title,
         location: event.location,
         image: event.image,
-        // Pass the raw dates AND the pretty display version
-        startDate: event.startDate || event.date,
+       
+        startDate: startStr, 
+        displayDate: displayDate, 
         endDate: event.endDate,
-        displayDate: displayDate,
-        // Ensure numbers are passed correctly
+        
         cpdPoints: Number(event.cpdPoints || 0),
         memberPrice: Number(event.memberPrice || 0),
         nonMemberPrice: Number(event.nonMemberPrice || 0),
