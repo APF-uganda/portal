@@ -33,11 +33,14 @@ function Navbar({ forceSolid = false }: NavbarProps) {
   }, [])
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // Keep hash-driven section navigation (e.g. /about#governance) intact.
+    if (!location.hash) {
+      window.scrollTo(0, 0)
+    }
     setIsScrolled(false)
     setIsMenuOpen(false)
     setMobileAboutOpen(false)
-  }, [location.pathname])
+  }, [location.pathname, location.hash])
 
   const toggleMenu = () => setIsMenuOpen((prev) => !prev)
 

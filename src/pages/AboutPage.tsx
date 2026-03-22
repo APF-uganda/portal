@@ -1,4 +1,5 @@
-import { useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
 import Hero from '../components/aboutPage-components/Hero'
@@ -12,7 +13,22 @@ import BoardMemberProfilePage from './BoardMemberProfilePage';
 
 function AboutPage() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const memberSlug = searchParams.get('member');
+
+  useEffect(() => {
+    if (location.hash !== '#governance') return;
+
+    // Wait one frame so the section is guaranteed to be in the DOM.
+    const id = window.requestAnimationFrame(() => {
+      const section = document.getElementById('governance');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+
+    return () => window.cancelAnimationFrame(id);
+  }, [location.hash]);
 
   if (memberSlug) {
     return <BoardMemberProfilePage forcedSlug={memberSlug} />;
