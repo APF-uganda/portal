@@ -13,8 +13,7 @@ import {
   Lightbulb,
   HelpCircle,
   Briefcase,
-  UserPlus,
-  Loader2
+  UserPlus
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useForumPosts, useForumCategories, useActiveUsers } from '../../hooks/useForum';
@@ -83,36 +82,7 @@ const ForumPage = () => {
   };
 
 
-  // Loading state
-  if (postsLoading || categoriesLoading || usersLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Loading forum...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
 
-  // Error state
-  if (postsError) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-8 h-8 text-red-600" />
-            </div>
-            <p className="text-gray-900 font-semibold mb-2">Failed to load forum</p>
-            <p className="text-gray-600 text-sm">{postsError}</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
 
   return (
     <DashboardLayout>
@@ -148,7 +118,29 @@ const ForumPage = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-4 border-b border-gray-200">
                 Forum Categories
               </h3>
+              {categoriesLoading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : (
               <div className="space-y-2">
+                <button
+                  onClick={() => setActiveCategory(undefined)}
+                  className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                    activeCategory === undefined
+                      ? 'bg-purple-50 text-purple-600'
+                      : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                  }`}
+                >
+                  <div className="min-w-0 flex items-center gap-3">
+                    <div className="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <span className="font-medium text-left">All Categories</span>
+                  </div>
+                </button>
                 {displayCategories.map((category) => {
                   const IconComponent = category.icon;
                   return (
@@ -174,6 +166,7 @@ const ForumPage = () => {
                   );
                 })}
               </div>
+              )}
             </div>
 
             {/* Active Members */}
@@ -250,7 +243,32 @@ const ForumPage = () => {
 
             {/* Forum Posts */}
             <div className="space-y-6">
-              {forumPosts.length === 0 ? (
+              {postsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 animate-pulse">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-9 h-9 bg-gray-200 rounded-full" />
+                        <div className="space-y-2">
+                          <div className="h-3 bg-gray-200 rounded w-24" />
+                          <div className="h-2 bg-gray-100 rounded w-16" />
+                        </div>
+                      </div>
+                      <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
+                      <div className="h-3 bg-gray-100 rounded w-full mb-2" />
+                      <div className="h-3 bg-gray-100 rounded w-5/6" />
+                    </div>
+                  ))}
+                </div>
+              ) : postsError ? (
+                <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 text-center">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="w-8 h-8 text-red-600" />
+                  </div>
+                  <p className="text-gray-900 font-semibold mb-2">Failed to load posts</p>
+                  <p className="text-gray-600 text-sm">{postsError}</p>
+                </div>
+              ) : forumPosts.length === 0 ? (
                 <div className="bg-white rounded-lg p-8 sm:p-12 shadow-sm border border-gray-200 text-center">
                   <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No posts yet</h3>

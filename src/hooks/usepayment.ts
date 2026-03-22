@@ -42,32 +42,20 @@ export const usePayments = () => {
         pending_revenue: statisticsData.pending_revenue,
         total_revenue: statisticsData.total_revenue,
         growth_rates: {
-          // Use real data if available, otherwise use test data to show arrows work
-          transactions: statisticsData.growth_rates.transactions !== 0 ? statisticsData.growth_rates.transactions : 25.8,
-          pending: statisticsData.growth_rates.pending !== 0 ? statisticsData.growth_rates.pending : -12.4,
-          revenue: statisticsData.growth_rates.revenue !== 0 ? statisticsData.growth_rates.revenue : 35.6,
+          transactions: statisticsData.growth_rates.transactions,
+          pending: statisticsData.growth_rates.pending,
+          revenue: statisticsData.growth_rates.revenue,
         },
       });
 
-      // Debug logging for payment statistics
-      console.log('=== PAYMENT STATISTICS DEBUG ===');
-      console.log('Raw API Response:', statisticsData);
-      console.log('Final Stats Object:', {
-        total_revenue: statisticsData.total_revenue,
-        revenue_growth: statisticsData.growth_rates.revenue !== 0 ? statisticsData.growth_rates.revenue : 35.6,
-        transactions_growth: statisticsData.growth_rates.transactions !== 0 ? statisticsData.growth_rates.transactions : 25.8,
-        pending_growth: statisticsData.growth_rates.pending !== 0 ? statisticsData.growth_rates.pending : -12.4,
-      });
-      console.log('=== END DEBUG ===');
-
       // Map backend payments to Payment shape
-      const mappedPayments: Payment[] = (paymentsData || []).slice(0, 10).map((p: AdminPaymentResponse) => ({
+      const mappedPayments: Payment[] = (paymentsData || []).map((p: AdminPaymentResponse) => ({
         id: p.id,
         member_name: p.member_name,
-        member_email: '',
+        member_email: p.member_email || '',
         description: p.description,
         amount: p.amount || 0,
-        currency: 'UGX',
+        currency: p.currency || 'UGX',
         status: p.status || 'unknown',
         created_at: p.created_at || null,
         invoice_number: p.invoice_number,

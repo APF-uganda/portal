@@ -139,6 +139,7 @@ export const getForumPosts = async (
   }
 
   params.status = 'published'
+  params.page_size = '10'
 
   const response = await api.get<any>('/api/v1/forum/posts/', { params })
   const payload = Array.isArray(response.data) ? response.data : response.data?.results || []
@@ -255,35 +256,23 @@ export const getForumStats = async (): Promise<ForumStats> => {
 /**
  * Create a new forum post
  * @param _postData - Post data
- * @returns Promise with created post
+ * @returns Promise with created post, or throws with a user-friendly message
  */
 export const createForumPost = async (_postData: any): Promise<ForumPost | null> => {
-  try {
-    const response = await api.post<ApiPost>('/api/v1/forum/posts/', _postData)
-    return mapPost(response.data)
-  } catch (error) {
-    console.error('Failed to create forum post:', error)
-    return null
-  }
+  const response = await api.post<ApiPost>('/api/v1/forum/posts/', _postData)
+  return mapPost(response.data)
 }
 
 export const updateForumPost = async (_postId: number, _postData: any): Promise<ForumPost | null> => {
-  try {
-    const response = await api.patch<ApiPost>(`/api/v1/forum/posts/${_postId}/`, _postData)
-    return mapPost(response.data)
-  } catch (error) {
-    console.error('Failed to update forum post:', error)
-    return null
-  }
+  const response = await api.patch<ApiPost>(`/api/v1/forum/posts/${_postId}/`, _postData)
+  return mapPost(response.data)
 }
 
 export const getForumComments = async (_postId: number): Promise<ApiComment[]> => {
   try {
-    console.log('Fetching comments for post:', _postId);
     const response = await api.get<ApiComment[]>('/api/v1/forum/comments/', {
       params: { post: _postId, parent_only: 'true' }
     })
-    console.log('Comments API response:', response.data);
     return response.data
   } catch (error) {
     console.error('Failed to fetch comments:', error)

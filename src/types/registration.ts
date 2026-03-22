@@ -42,7 +42,7 @@ export interface DocumentData {
 /**
  * Payment method types
  */
-export type PaymentMethod = 'mtn' | 'airtel' | 'credit_card';
+export type PaymentMethod = 'mtn' | 'airtel' | 'credit_card' | 'bank';
 
 /**
  * Payment status types

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft,
   Bold,
@@ -22,6 +22,7 @@ import { toastMessages } from '../../utils/toast-helpers';
 
 const CreatePostPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const isEditMode = Boolean(id);
   const [postTitle, setPostTitle] = useState('');
   const [postCategory, setPostCategory] = useState('');
@@ -88,12 +89,20 @@ const CreatePostPage = () => {
       toastMessages.validation.titleRequired();
       return false;
     }
+    if (postTitle.trim().length < 10) {
+      toastMessages.post.publishFailed('Title must be at least 10 characters long.');
+      return false;
+    }
     if (!postCategory) {
       toastMessages.validation.categoryRequired();
       return false;
     }
     if (!postContent.trim()) {
       toastMessages.validation.contentRequired();
+      return false;
+    }
+    if (postContent.trim().length < 20) {
+      toastMessages.post.publishFailed('Content must be at least 20 characters long.');
       return false;
     }
     return true;
@@ -109,21 +118,31 @@ const CreatePostPage = () => {
         category_id: selectedCategory?.rawId ?? undefined,
         status: 'published'
       };
-      const response = isEditMode && id
-        ? await updateForumPost(Number(id), payload)
-        : await createForumPost(payload);
-      setIsSubmitting(false);
-
-      if (response) {
+      try {
+        await (isEditMode && id
+          ? updateForumPost(Number(id), payload)
+          : createForumPost(payload));
         isEditMode ? toastMessages.post.updated() : toastMessages.post.published();
         if (!isEditMode) {
-          setPostTitle('');
-          setPostCategory('');
-          setPostContent('');
-          setTags([]);
+          navigate('/forum');
         }
-      } else {
-        isEditMode ? toastMessages.post.updateFailed() : toastMessages.post.publishFailed();
+      } catch (err: any) {
+        const detail = err?.response?.data;
+        let message = 'Failed to publish post.';
+        if (detail) {
+          if (typeof detail === 'string') message = detail;
+          else if (detail.detail) message = detail.detail;
+          else {
+            // Collect field-level errors
+            const fieldErrors = Object.entries(detail)
+              .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+              .join(' | ');
+            if (fieldErrors) message = fieldErrors;
+          }
+        }
+        toastMessages.post.publishFailed(message);
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -138,15 +157,27 @@ const CreatePostPage = () => {
         category_id: selectedCategory?.rawId ?? undefined,
         status: 'draft'
       };
-      const response = isEditMode && id
-        ? await updateForumPost(Number(id), payload)
-        : await createForumPost(payload);
-      setIsSubmitting(false);
-
-      if (response) {
+      try {
+        await (isEditMode && id
+          ? updateForumPost(Number(id), payload)
+          : createForumPost(payload));
         isEditMode ? toastMessages.post.draftUpdated() : toastMessages.post.savedAsDraft();
-      } else {
-        isEditMode ? toastMessages.post.updateFailed() : toastMessages.post.saveDraftFailed();
+      } catch (err: any) {
+        const detail = err?.response?.data;
+        let message = 'Failed to save draft.';
+        if (detail) {
+          if (typeof detail === 'string') message = detail;
+          else if (detail.detail) message = detail.detail;
+          else {
+            const fieldErrors = Object.entries(detail)
+              .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+              .join(' | ');
+            if (fieldErrors) message = fieldErrors;
+          }
+        }
+        isEditMode ? toastMessages.post.updateFailed(message) : toastMessages.post.saveDraftFailed(message);
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };

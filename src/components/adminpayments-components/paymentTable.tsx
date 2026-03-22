@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { RotateCcw, Download, CheckCircle, XCircle, MoreHorizontal } from 'lucide-react';
+import { RotateCcw, Download, Eye } from 'lucide-react';
 import { Payment } from '../payment-components/types';
 
 import { ReceiptGenerator, ReceiptData, showNotification } from '../../services/receiptGenerator';
@@ -8,17 +8,18 @@ interface PaymentTableProps {
   payments: Payment[];
   loading: boolean;
   onStatusUpdate?: (id: string, newStatus: string) => void;
+  onView?: (payment: Payment) => void;
 }
 
 export const PaymentTable = ({ 
   payments, 
   loading,
-  onStatusUpdate
+  onStatusUpdate,
+  onView,
 }: PaymentTableProps) => {
  
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
 
   const totalPages = Math.max(1, Math.ceil(payments.length / rowsPerPage));
@@ -48,6 +49,16 @@ export const PaymentTable = ({
     if (s === 'pending') return 'bg-amber-50 text-amber-700 border-amber-100';
     if (s === 'failed' || s === 'rejected') return 'bg-rose-50 text-rose-700 border-rose-100';
     return 'bg-gray-50 text-gray-700 border-gray-100';
+  };
+
+  const getStatusLabel = (status: string) => {
+    const s = status?.toLowerCase();
+    if (s === 'verified') return 'Approved';
+    if (s === 'completed') return 'Completed';
+    if (s === 'pending') return 'Pending';
+    if (s === 'rejected') return 'Rejected';
+    if (s === 'failed') return 'Failed';
+    return status;
   };
 
   const getTransactionDetails = (payment: Payment) => {
@@ -151,50 +162,26 @@ export const PaymentTable = ({
                       </td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-center">
                         <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border ${getStatusColor(p.status)}`}>
-                          {p.status}
+                          {getStatusLabel(p.status)}
                         </span>
                       </td>
                       
                       <td className="px-6 md:px-8 py-4 md:py-6 text-center">
-                        <div className="flex justify-center items-center gap-2">
+                        <div className="flex justify-center items-center gap-1">
+                          <button 
+                            onClick={() => onView?.(p)}
+                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                          </button>
                           <button 
                             onClick={() => handleDownloadReceipt(p)}
                             className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
                             title="Download Receipt"
                           >
-                            <Download size={18} />
+                            <Download size={16} />
                           </button>
-                          
-                          <div className="relative">
-                            <button 
-                              onClick={() => setActiveMenuId(activeMenuId === stringId ? null : stringId)}
-                              className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg"
-                            >
-                              <MoreHorizontal size={18} />
-                            </button>
-                            {activeMenuId === stringId && (
-                              <div className="absolute right-0 mt-2 w-36 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-2">
-                                <button 
-                                  onClick={() => {
-                                    onStatusUpdate?.(stringId, 'verified');
-                                    setActiveMenuId(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-xs font-bold text-emerald-600 hover:bg-emerald-50 flex items-center gap-2"
-                                >
-                                  <CheckCircle size={14} /> Verify
-                                </button>
-                                <button 
-                                  onClick={() => {
-                                    onStatusUpdate?.(stringId, 'rejected');
-                                    setActiveMenuId(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2"
-                                >
-                                  <XCircle size={14} /> Reject
-                                </button>
-                              </div>
-                            )}
-                          </div>
                         </div>
                       </td>
                     </tr>

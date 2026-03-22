@@ -2,19 +2,11 @@ import { useState, useEffect } from 'react'
 import { Bell, Save } from 'lucide-react'
 import { useToast } from '../../../hooks/useToast'
 import { useProfile } from '../../../hooks/useProfile'
-import { getAccessToken } from '../../../utils/authStorage'
-import { API_BASE_URL } from '../../../config/api'
-
-interface NotificationPreferences {
-  email_notifications: boolean
-  sms_notifications: boolean
-  newsletter_subscription: boolean
-  event_notifications: boolean
-}
+import { NotificationPreferences } from '../../../services/profileApi'
 
 export function NotificationSettings() {
   const { toast } = useToast()
-  const { profile } = useProfile()
+  const { profile, loading, updateNotifications } = useProfile()
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     email_notifications: true,
     sms_notifications: false,
@@ -22,9 +14,7 @@ export function NotificationSettings() {
     event_notifications: true,
   })
   const [isSaving, setIsSaving] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
-  // Load preferences from profile
   useEffect(() => {
     if (profile) {
       setPreferences({
@@ -33,54 +23,26 @@ export function NotificationSettings() {
         newsletter_subscription: profile.newsletter_subscription ?? true,
         event_notifications: profile.event_notifications ?? true,
       })
-      setIsLoading(false)
     }
   }, [profile])
 
   const handleToggle = (key: keyof NotificationPreferences) => {
-    setPreferences(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }))
+    setPreferences(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
   const handleSave = async () => {
     setIsSaving(true)
-    
-    try {
-      const token = getAccessToken()
-      const response = await fetch(`${API_BASE_URL}/profiles/notification-preferences/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(preferences)
-      })
+    const success = await updateNotifications(preferences)
+    setIsSaving(false)
 
-      if (!response.ok) {
-        throw new Error('Failed to save notification preferences')
-      }
-
-      const data = await response.json()
-      
-      toast({
-        title: 'Preferences saved',
-        description: 'Your notification preferences have been updated.',
-      })
-    } catch (error) {
-      console.error('Error saving notification preferences:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to save notification preferences. Please try again.',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsSaving(false)
+    if (success) {
+      toast({ title: 'Preferences saved', description: 'Your notification preferences have been updated.' })
+    } else {
+      toast({ title: 'Error', description: 'Failed to save notification preferences. Please try again.', variant: 'destructive' })
     }
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <div className="flex items-center gap-2 pb-3 border-b border-gray-100 mb-4">
@@ -106,20 +68,18 @@ export function NotificationSettings() {
           checked={preferences.email_notifications}
           onChange={() => handleToggle('email_notifications')}
         />
-
         <ToggleItem
           label="SMS Notifications"
           description="Receive notifications via SMS"
           checked={preferences.sms_notifications}
           onChange={() => handleToggle('sms_notifications')}
         />
-
-        <ToggleItemDisabled
+        <ToggleItem
           label="Newsletter Subscription"
           description="Receive newsletters and updates"
-          badge="Coming Soon"
+          checked={preferences.newsletter_subscription}
+          onChange={() => handleToggle('newsletter_subscription')}
         />
-
         <ToggleItem
           label="Event Notifications"
           description="Get notified about upcoming events"
@@ -167,36 +127,6 @@ function ToggleItem({ label, description, checked, onChange }: ToggleItemProps) 
             checked ? 'translate-x-6' : 'translate-x-1'
           }`}
         />
-      </button>
-    </div>
-  )
-}
-
-interface ToggleItemDisabledProps {
-  label: string
-  description: string
-  badge?: string
-}
-
-function ToggleItemDisabled({ label, description, badge }: ToggleItemDisabledProps) {
-  return (
-    <div className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 opacity-60">
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-900">{label}</p>
-          {badge && (
-            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
-              {badge}
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-      </div>
-      <button
-        disabled
-        className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 cursor-not-allowed"
-      >
-        <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
       </button>
     </div>
   )
