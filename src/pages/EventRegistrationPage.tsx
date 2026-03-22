@@ -55,20 +55,16 @@ const EventRegistrationPage: React.FC = () => {
 
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
 
- 
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
   
-
   const displayTime = eventData.time || eventData.startTime || localEvent?.time || 'TBA';
   
- 
   const finalDateDisplay = 
     eventData.displayDate || 
     eventData.date || 
     (eventData.startDate ? new Date(eventData.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null) || 
     localEvent?.date || 
     'TBA';
- 
 
   const showToast = (msg: string, type: 'success' | 'error') => {
     setNotification({ show: true, msg, type });
@@ -94,16 +90,23 @@ const EventRegistrationPage: React.FC = () => {
     }
   };
 
+ 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     const data = new FormData();
     
-    // Ensure these keys match your Django request.POST.get() exactly
+    // User Contact Information
     data.append('fullName', formData.fullName);
     data.append('email', formData.email);
     data.append('phoneNumber', formData.phoneNumber);
     data.append('companyName', formData.companyName);
+    
+    // Event Context for Django (Fixes the "Event not found" issue)
     data.append('eventId', eventData.eventId);
+    data.append('eventTitle', eventData.eventTitle);
+    data.append('eventDate', finalDateDisplay);
+    
+    // Static attributes
     data.append('attendanceMode', 'Physical'); 
 
     if (proofOfPayment) {
@@ -111,7 +114,6 @@ const EventRegistrationPage: React.FC = () => {
     }
 
     try {
-     
       await eventService.registerAttendee(data);
       showToast("Registration submitted successfully!", "success");
       setStep(3);
