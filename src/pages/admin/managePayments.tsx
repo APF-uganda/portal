@@ -12,12 +12,20 @@ const ManagePayments = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { payments, stats, loading, error, refresh, verifyPayment, rejectPayment } = usePayments();
 
-  const handleStatusUpdate = async (id: number, newStatus: 'verified' | 'rejected') => {
-    if (newStatus === 'verified') {
-      await verifyPayment(id);
+  const handleStatusUpdate = async (id: string | number, newStatus: string) => {
+    const paymentId = typeof id === 'number' ? id : Number(id);
+    if (Number.isNaN(paymentId)) {
       return;
     }
-    await rejectPayment(id);
+
+    if (newStatus === 'verified') {
+      await verifyPayment(paymentId);
+      return;
+    }
+
+    if (newStatus === 'rejected') {
+      await rejectPayment(paymentId);
+    }
   };
 
   // Function for handle Report Download

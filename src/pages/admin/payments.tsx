@@ -28,12 +28,20 @@ const ManagePayments = () => {
   const [nextRefresh, setNextRefresh] = useState<Date>(new Date(Date.now() + 2 * 60 * 60 * 1000));
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
-  const handleStatusUpdate = async (id: number, newStatus: 'verified' | 'rejected') => {
-    if (newStatus === 'verified') {
-      await verifyPayment(id);
+  const handleStatusUpdate = async (id: string | number, newStatus: string) => {
+    const paymentId = typeof id === 'number' ? id : Number(id);
+    if (Number.isNaN(paymentId)) {
       return;
     }
-    await rejectPayment(id);
+
+    if (newStatus === 'verified') {
+      await verifyPayment(paymentId);
+      return;
+    }
+
+    if (newStatus === 'rejected') {
+      await rejectPayment(paymentId);
+    }
   };
 
   useEffect(() => {
