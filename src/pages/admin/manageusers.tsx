@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Filter, FileText, Users, Clock, AlertCircle } from 'lucide-react';
+import { Filter, FileText, Users, Clock, AlertCircle, Download, StickyNote } from 'lucide-react';
 import StatCard from '../../components/manageusers-components/stats';
 import MemberDocumentsModal from '../../components/manageusers-components/MemberDocumentsModal';
+import AdminNotesModal from '../../components/manageusers-components/AdminNotesModal';
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
 import { useUserManagement } from '../../hooks/userMgt';
+import { API_V1_BASE_URL } from '../../config/api';
+import { getAuth } from '../../utils/authStorage';
 
 type FilterType = 'all' | 'with-documents' | 'without-documents' | 'recent-uploads';
 type SortType = 'documents-first' | 'name' | 'status' | 'recent-activity';
@@ -16,14 +19,74 @@ const ManageUsers = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+  const [selectedMemberForNotes, setSelectedMemberForNotes] = useState<{ id: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [sortType, setSortType] = useState<SortType>('documents-first');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
   
   // Use the hook to get data, loading state, and action handlers
   const { users, loading, error, handleToggleStatus } = useUserManagement();
+
+  // Export to CSV function
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const auth = getAuth();
+      if (!auth?.access_token) {
+        alert('Please login to export data');
+        return;
+      }
+
+      // Build query params based on current filters
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (filterType === 'with-documents' || filterType === 'without-documents') {
+        // Note: Backend doesn't have document filter, so we export all and let admin filter in Excel
+      }
+
+      const url = `${API_V1_BASE_URL}/admin-management/members/export/?${params.toString()}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${auth.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to export data');
+      }
+
+      // Get the blob from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filename = contentDisposition
+        ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+        : `apf_members_export_${new Date().toISOString().slice(0, 10)}.csv`;
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to export data. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Filter and sort users
   const filteredAndSortedUsers = useMemo(() => {
@@ -153,6 +216,20 @@ const ManageUsers = () => {
             {/* Filter and Search Controls */}
             <div className="bg-white rounded-xl md:rounded-[20px] shadow-sm border border-gray-100 p-3 md:p-6">
               <div className="flex flex-col gap-4 items-start justify-between">
+                {/* Export Button Row */}
+                <div className="flex justify-between items-center w-full">
+                  <h3 className="text-base md:text-lg font-semibold text-gray-800">Filter & Search</h3>
+                  <button
+                    onClick={handleExportCSV}
+                    disabled={isExporting || loading}
+                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[#5E2590] text-white rounded-lg hover:bg-[#4a1d73] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export to CSV'}</span>
+                    <span className="sm:hidden">{isExporting ? '...' : 'Export'}</span>
+                  </button>
+                </div>
+
                 <div className="flex flex-col gap-3 md:gap-4 w-full">
                   {/* Search */}
                   <div className="relative w-full">
@@ -216,7 +293,7 @@ const ManageUsers = () => {
                         <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Status</th>
                         <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Documents</th>
                         <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px]">Last Upload</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 text-right min-w-[200px]">Actions</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 text-right min-w-[250px]">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -286,25 +363,36 @@ const ManageUsers = () => {
                                 {/* View Documents Button */}
                                 <button 
                                   onClick={() => setSelectedMember({ id: user.id, name: user.name })}
-                                  className="font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-purple-50 text-[#5E2590]"
+                                  className="font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-purple-50 text-[#5E2590]"
+                                  title="View Documents"
                                 >
-                                  <span className="hidden sm:inline">View Documents</span>
-                                  <span className="sm:hidden">View</span>
+                                  <span className="hidden lg:inline">Documents</span>
+                                  <FileText className="w-4 h-4 lg:hidden" />
+                                </button>
+                                
+                                {/* Admin Notes Button */}
+                                <button 
+                                  onClick={() => setSelectedMemberForNotes({ id: user.id, name: user.name })}
+                                  className="font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-blue-50 text-blue-600"
+                                  title="Admin Notes"
+                                >
+                                  <span className="hidden lg:inline">Notes</span>
+                                  <StickyNote className="w-4 h-4 lg:hidden" />
                                 </button>
                                 
                                 {/* Logic to show Suspend or Reactivate based on backend data */}
                                 <button 
                                   onClick={() => handleToggleStatus(user.id, user.status)}
-                                  className={`font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-gray-100 ${
+                                  className={`font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-gray-100 ${
                                     user.status === 'Suspended' 
                                     ? 'text-green-600' 
                                     : 'text-[#5E2590] hover:text-red-600'
                                   }`}
                                 >
                                   <span className="hidden lg:inline">
-                                    {user.status === 'Suspended' ? 'Reactivate Account' : 'Suspend Account'}
+                                    {user.status === 'Suspended' ? 'Reactivate' : 'Suspend'}
                                   </span>
-                                  <span className="lg:hidden">
+                                  <span className="lg:hidden text-xs">
                                     {user.status === 'Suspended' ? 'Reactivate' : 'Suspend'}
                                   </span>
                                 </button>
@@ -386,6 +474,16 @@ const ManageUsers = () => {
           onClose={() => setSelectedMember(null)}
           userId={selectedMember.id}
           userName={selectedMember.name}
+        />
+      )}
+
+      {/* Admin Notes Modal */}
+      {selectedMemberForNotes && (
+        <AdminNotesModal
+          isOpen={!!selectedMemberForNotes}
+          onClose={() => setSelectedMemberForNotes(null)}
+          userId={selectedMemberForNotes.id}
+          userName={selectedMemberForNotes.name}
         />
       )}
     </div>
