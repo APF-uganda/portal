@@ -1,5 +1,6 @@
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
+import SEO from '../components/common/SEO'
 import Hero from '../components/landingPage-components/Hero'
 import Stats from '../components/landingPage-components/Stats'
 import ChairMessage from '../components/landingPage-components/ChairMessage'
@@ -11,6 +12,11 @@ import Partners from '../components/landingPage-components/Partners'
 function LandingPage() {
   return (
     <div className="overflow-x-hidden">
+      <SEO 
+        title="Home"
+        description="Accountancy Practitioners Forum - Connecting accounting professionals across Uganda. Join our community for CPD events, networking, and professional development."
+        keywords="accountancy, accounting professionals, Uganda, APF, membership, CPD, accounting forum"
+      />
       <Navbar />
       
       <Hero />

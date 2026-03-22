@@ -1,5 +1,8 @@
-﻿/* 1. Correct Font Import: Using Montserrat exclusively */
+﻿/* 1. Font Import: Must come before Tailwind */
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap");
+
+/* Tailwind CSS directives */
+@import 'tailwindcss';
 
 /* Custom animations & Utilities */
 @layer utilities {

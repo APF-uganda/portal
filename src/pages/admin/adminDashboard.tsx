@@ -22,6 +22,8 @@ function AdminDashboard(){
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+    const [refreshInterval, setRefreshInterval] = useState(30); // seconds
     
     // Get profile data for welcome banner
     const { profile } = useProfile();
@@ -54,13 +56,15 @@ function AdminDashboard(){
    useEffect(() => {
       loadDashboardStats();
       
-      // Auto-refresh every 15 seconds to keep revenue stats current
-      const intervalId = setInterval(() => {
-        loadDashboardStats(true);
-      }, 15 * 1000); // 15 seconds
+      // Auto-refresh based on interval setting
+      if (autoRefreshEnabled) {
+        const intervalId = setInterval(() => {
+          loadDashboardStats(true);
+        }, refreshInterval * 1000);
 
-      return () => clearInterval(intervalId);
-   }, []);
+        return () => clearInterval(intervalId);
+      }
+   }, [autoRefreshEnabled, refreshInterval]);
 
   const displayName = getDisplayName(profile, "Admin");
 
@@ -127,8 +131,37 @@ function AdminDashboard(){
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-4">
             <WelcomeBanner name={displayName} />
             <div className="flex items-center gap-2 md:gap-3">
+              {/* Auto-refresh toggle */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoRefreshEnabled}
+                    onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
+                    className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                  />
+                  <span className="text-xs md:text-sm text-gray-700 hidden md:inline">Auto-refresh</span>
+                  <span className="text-xs text-gray-700 md:hidden">Auto</span>
+                </label>
+              </div>
+              
+              {/* Refresh interval selector */}
+              {autoRefreshEnabled && (
+                <select
+                  value={refreshInterval}
+                  onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                  className="text-xs md:text-sm px-2 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value={15}>15s</option>
+                  <option value={30}>30s</option>
+                  <option value={60}>1m</option>
+                  <option value={120}>2m</option>
+                  <option value={300}>5m</option>
+                </select>
+              )}
+              
               <span className="text-xs md:text-sm text-gray-500">
-                Updated: {formatLastUpdated()}
+                {autoRefreshEnabled ? `Updated: ${formatLastUpdated()}` : 'Auto-refresh off'}
               </span>
               <button
                 onClick={() => loadDashboardStats(true)}

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Calendar, Clock, Video, MapPin, Sparkles, Award, CreditCard } from 'lucide-react';
 
 export const LogisticsSidebar = ({ data, onChange }: any) => {
@@ -122,7 +123,7 @@ export const LogisticsSidebar = ({ data, onChange }: any) => {
 
       {/* ACCREDITATION */}
       <div className="pt-6 border-t border-slate-50">
-        <label className={labelStyles}><Award size={12} /> CPD Points</label>
+        <label className={labelStyles}><Award size={12} /> CPD Hours</label>
         <div className="mt-3 relative group">
           <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500" size={16} />
           <input type="number" className={`${inputStyles} pl-12 focus:ring-amber-500/20`} placeholder="0" value={data.cpdPoints || ''} onChange={(e) => onChange('cpdPoints', Number(e.target.value))} />
