@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Filter, FileText, Users, Clock, AlertCircle, Download, StickyNote } from 'lucide-react';
+import { Filter, FileText, Clock, Download } from 'lucide-react';
 import StatCard from '../../components/manageusers-components/stats';
 import MemberDocumentsModal from '../../components/manageusers-components/MemberDocumentsModal';
-import AdminNotesModal from '../../components/manageusers-components/AdminNotesModal';
 
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
@@ -19,7 +18,6 @@ const ManageUsers = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
-  const [selectedMemberForNotes, setSelectedMemberForNotes] = useState<{ id: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -370,16 +368,6 @@ const ManageUsers = () => {
                                   <FileText className="w-4 h-4 lg:hidden" />
                                 </button>
                                 
-                                {/* Admin Notes Button */}
-                                <button 
-                                  onClick={() => setSelectedMemberForNotes({ id: user.id, name: user.name })}
-                                  className="font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-blue-50 text-blue-600"
-                                  title="Admin Notes"
-                                >
-                                  <span className="hidden lg:inline">Notes</span>
-                                  <StickyNote className="w-4 h-4 lg:hidden" />
-                                </button>
-                                
                                 {/* Logic to show Suspend or Reactivate based on backend data */}
                                 <button 
                                   onClick={() => handleToggleStatus(user.id, user.status)}
@@ -474,16 +462,6 @@ const ManageUsers = () => {
           onClose={() => setSelectedMember(null)}
           userId={selectedMember.id}
           userName={selectedMember.name}
-        />
-      )}
-
-      {/* Admin Notes Modal */}
-      {selectedMemberForNotes && (
-        <AdminNotesModal
-          isOpen={!!selectedMemberForNotes}
-          onClose={() => setSelectedMemberForNotes(null)}
-          userId={selectedMemberForNotes.id}
-          userName={selectedMemberForNotes.name}
         />
       )}
     </div>

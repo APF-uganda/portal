@@ -303,22 +303,24 @@ const MemberDocumentsModal = ({ isOpen, onClose, userId, userName }: MemberDocum
           >
             Close
           </button>
-          <div className="flex gap-2">
-            <button
-              onClick={() => currentDoc && handleUpdateStatus(currentDoc.id, 'rejected')}
-              disabled={updating || !currentDoc}
-              className="px-6 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {updating ? "Processing..." : "Reject"}
-            </button>
-            <button
-              onClick={() => currentDoc && handleUpdateStatus(currentDoc.id, 'approved')}
-              disabled={updating || !currentDoc}
-              className="px-6 py-2 bg-[#5C32A3] text-white rounded-lg text-sm font-medium hover:bg-[#4A2783] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {updating ? "Processing..." : "Approve"}
-            </button>
-          </div>
+          {currentDoc && currentDoc.status.toLowerCase() === 'pending' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleUpdateStatus(currentDoc.id, 'rejected')}
+                disabled={updating}
+                className="px-6 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {updating ? "Processing..." : "Reject"}
+              </button>
+              <button
+                onClick={() => handleUpdateStatus(currentDoc.id, 'approved')}
+                disabled={updating}
+                className="px-6 py-2 bg-[#5C32A3] text-white rounded-lg text-sm font-medium hover:bg-[#4A2783] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {updating ? "Processing..." : "Approve"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
