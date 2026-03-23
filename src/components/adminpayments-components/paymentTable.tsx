@@ -7,7 +7,8 @@ import { ReceiptGenerator, ReceiptData, showNotification } from '../../services/
 interface PaymentTableProps {
   payments: Payment[];
   loading: boolean;
-  onStatusUpdate?: (id: string, newStatus: string) => void;
+  // Update types to match your actual handler in payments.tsx
+  onStatusUpdate?: (id: number, newStatus: 'verified' | 'rejected') => Promise<void> | void;
   onView?: (payment: Payment) => void;
 }
 
@@ -109,19 +110,23 @@ export const PaymentTable = ({
     }
   };
 
-  const handleStatusAction = async (paymentId: string, newStatus: 'verified' | 'rejected') => {
+  const handleStatusAction = async (paymentId: number, newStatus: 'verified' | 'rejected') => {
     if (!onStatusUpdate) return;
     try {
       setActionError(null);
-      setActionLoadingId(paymentId);
+      // Convert to string here ONLY if your loading state specifically requires a string
+      setActionLoadingId(String(paymentId)); 
+      
+      // Now this matches the interface (number, string)
       await onStatusUpdate(paymentId, newStatus);
+      
       setActiveMenuId(null);
     } catch (error: any) {
       setActionError(error?.message || `Failed to ${newStatus} payment`);
     } finally {
       setActionLoadingId(null);
     }
-  };
+  }; 
 
   return (
     <div className="bg-white rounded-xl md:rounded-[24px] shadow-sm border border-slate-100 overflow-hidden w-full font-montserrat">

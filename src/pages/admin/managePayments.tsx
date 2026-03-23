@@ -15,14 +15,14 @@ const ManagePayments = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const { payments, stats, loading, error, refresh, verifyPayment, rejectPayment } = usePayments();
 
-  const handleStatusUpdate = async (id: string, newStatus: string) => {
-    const numId = Number(id);
+  // Updated signature to use number and union type
+  const handleStatusUpdate = async (id: number, newStatus: 'verified' | 'rejected') => {
     setActionLoading(true);
     try {
       if (newStatus === 'verified') {
-        await verifyPayment(numId);
+        await verifyPayment(id);
       } else if (newStatus === 'rejected') {
-        await rejectPayment(numId);
+        await rejectPayment(id);
       }
     } catch (err: any) {
       console.error('Payment action failed:', err.message);
@@ -184,25 +184,28 @@ const ManagePayments = () => {
               {selectedPayment.status?.toLowerCase() === 'pending' && (
                 <>
                   <button
-                    disabled={actionLoading}
-                    onClick={async () => {
-                      await handleStatusUpdate(String(selectedPayment.id), 'verified');
-                      setSelectedPayment(null);
-                    }}
-                    className="px-4 py-2 text-sm font-bold text-emerald-600 border border-emerald-200 hover:bg-emerald-50 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {actionLoading ? 'Processing...' : 'Approve'}
-                  </button>
-                  <button
-                    disabled={actionLoading}
-                    onClick={async () => {
-                      await handleStatusUpdate(String(selectedPayment.id), 'rejected');
-                      setSelectedPayment(null);
-                    }}
-                    className="px-4 py-2 text-sm font-bold text-rose-600 border border-rose-200 hover:bg-rose-50 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {actionLoading ? 'Processing...' : 'Reject'}
-                  </button>
+  disabled={actionLoading}
+  onClick={async () => {
+    // Force the ID to be a number to satisfy the function's type
+    await handleStatusUpdate(Number(selectedPayment.id), 'verified');
+    setSelectedPayment(null);
+  }}
+  className="..."
+>
+  {actionLoading ? 'Processing...' : 'Approve'}
+</button>
+
+<button
+  disabled={actionLoading}
+  onClick={async () => {
+    // Force the ID to be a number here too
+    await handleStatusUpdate(Number(selectedPayment.id), 'rejected');
+    setSelectedPayment(null);
+  }}
+  className="..."
+>
+  {actionLoading ? 'Processing...' : 'Reject'}
+</button>
                 </>
               )}
               <button

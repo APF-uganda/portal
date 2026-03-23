@@ -100,18 +100,24 @@ const EventRegistrationPage: React.FC = () => {
     data.append('phone_number', formData.phoneNumber);
     data.append('company_name', formData.companyName);
     
-    // Event Context for Django
+    //  Event Context
     data.append('strapi_event_id', eventData.eventId);
     data.append('event_title', eventData.eventTitle);
     
     
-    data.append('event_date', eventData.startDate || finalDateDisplay);
+    data.append('location', displayLocation); 
+  
+   
+    data.append('event_date', eventData.startDate || eventData.date || finalDateDisplay);
     
     data.append('attendance_mode', 'Physical'); 
-
-    if (proofOfPayment) {
-        data.append('proof_of_payment', proofOfPayment);
-    }
+  
+    if (proofOfPayment instanceof File) {
+      data.append('proof_of_payment', proofOfPayment);
+  } else {
+      
+      data.append('payment_status', 'Verified'); 
+  }
 
     try {
       await eventService.registerAttendee(data);
