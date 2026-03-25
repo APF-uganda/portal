@@ -46,6 +46,27 @@ interface SubmitManualPaymentPayload {
 }
 
 /**
+ * Format ISO date string to readable format
+ * @param isoDate - ISO 8601 date string
+ * @returns Formatted date string (e.g., "Mar 23, 2026 6:10 PM")
+ */
+const formatDate = (isoDate: string): string => {
+  try {
+    const date = new Date(isoDate)
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
+  } catch {
+    return isoDate
+  }
+}
+
+/**
  * Map a backend payment record to the frontend Transaction type
  */
 const mapPaymentToTransaction = (payment: any): Transaction => {
@@ -53,7 +74,7 @@ const mapPaymentToTransaction = (payment: any): Transaction => {
   // Force UGX currency regardless of what backend returns
   const currency = 'UGX'
   return {
-    date: payment.created_at,
+    date: formatDate(payment.created_at),
     type: 'Membership Fee',
     reference: payment.transaction_reference,
     amount: `${currency} ${Number(payment.amount).toLocaleString()}`,
@@ -69,7 +90,7 @@ const mapPaymentToTransaction = (payment: any): Transaction => {
 const mapManualPaymentToTransaction = (payment: MemberManualPayment): Transaction => {
   const statusText = payment.status.toLowerCase()
   return {
-    date: payment.created_at,
+    date: formatDate(payment.created_at),
     type: payment.description || 'Membership Renewal Fee',
     reference: payment.reference || payment.invoice_number || payment.application_reference || `MP-${payment.id}`,
     amount: `UGX ${Number(payment.amount || 0).toLocaleString()}`,
@@ -180,7 +201,7 @@ export const getReceipts = async (): Promise<Receipt[]> => {
     const mobileReceipts = (data.results || []).map((payment: any): Receipt => ({
       id: payment.id,
       title: 'Membership Fee Payment',
-      date: payment.completed_at || payment.created_at,
+      date: formatDate(payment.completed_at || payment.created_at),
       amount: `UGX ${Number(payment.amount).toLocaleString()}`,
       type: 'receipt',
       reference: payment.transaction_reference,
@@ -199,7 +220,7 @@ export const getReceipts = async (): Promise<Receipt[]> => {
         .map((payment: MemberManualPayment): Receipt => ({
           id: String(payment.id),
           title: payment.description || 'Membership Renewal Payment',
-          date: payment.verified_at || payment.created_at,
+          date: formatDate(payment.verified_at || payment.created_at),
           amount: `UGX ${Number(payment.amount).toLocaleString()}`,
           type: 'receipt',
           reference: payment.reference || payment.invoice_number || payment.application_reference || `MP-${payment.id}`,

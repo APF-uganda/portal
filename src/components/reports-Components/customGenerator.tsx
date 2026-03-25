@@ -190,7 +190,7 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         <button 
           onClick={handleGenerateReport} 
           disabled={generating || analyticsLoading} 
-          className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-xl text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-all shadow-lg active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-3 bg-[#4B1D91] text-white px-8 py-4 rounded-xl text-sm font-semibold hover:bg-slate-800 disabled:opacity-50 transition-all shadow-lg active:scale-[0.98]"
         >
           {generating ? (
               <>

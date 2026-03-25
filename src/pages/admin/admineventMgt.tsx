@@ -18,7 +18,7 @@ const AdminEvents: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Data State
-  const [registrations, setRegistrations] = useState([]);
+  const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,9 +38,20 @@ const AdminEvents: React.FC = () => {
     try {
       setLoading(true);
       const data = await eventService.getAllRegistrations(search);
-      setRegistrations(data);
-    } catch (error) {
-      showNotification("Could not load registration data.", "error");
+      
+     
+      const results = data && data.results ? data.results : data;
+      setRegistrations(Array.isArray(results) ? results : []);
+      
+    } catch (error: any) {
+     
+      console.error("Fetch registrations error:", error);
+      
+      const errorMsg = error.response?.status === 401 
+        ? "Session expired. Please log in again." 
+        : "Could not load registration data.";
+        
+      showNotification(errorMsg, "error");
       setRegistrations([]);
     } finally {
       setLoading(false);
