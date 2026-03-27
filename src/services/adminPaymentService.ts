@@ -83,7 +83,7 @@ class AdminPaymentService {
   /**
    * Verify a manual payment
    */
-  async verifyPayment(paymentId: number, notes?: string): Promise<void> {
+  async verifyPayment(paymentId: number, notes?: string, linkedDocumentId?: number | null): Promise<void> {
     const headers = this.getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/api/v1/payments/${paymentId}/verify/`, {
       method: 'POST',
@@ -91,10 +91,38 @@ class AdminPaymentService {
       body: JSON.stringify({ notes: notes || '' }),
     });
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to verify payment');
+    if (response.ok) {
+      return;
     }
+
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = String(errorData.error || errorData.message || errorData.detail || 'Failed to verify payment');
+    const normalizedMessage = errorMessage.toLowerCase();
+    const shouldRouteToDocumentReview =
+      errorData.requires_document_review === true ||
+      normalizedMessage.includes('document review') ||
+      normalizedMessage.includes('linked receipt document');
+
+    const resolvedDocumentId =
+      linkedDocumentId ??
+      (typeof errorData.linked_document_id === 'number' ? errorData.linked_document_id : null);
+
+    if (shouldRouteToDocumentReview && resolvedDocumentId) {
+      const documentResponse = await fetch(`${API_BASE_URL}/api/v1/documents/${resolvedDocumentId}/admin-review/`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ status: 'approved', admin_feedback: notes || '' }),
+      });
+
+      if (!documentResponse.ok) {
+        const documentErrorData = await documentResponse.json().catch(() => ({}));
+        throw new Error(documentErrorData.error || documentErrorData.message || 'Failed to approve linked document');
+      }
+
+      return;
+    }
+
+    throw new Error(errorMessage);
   }
 
   /**

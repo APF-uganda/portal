@@ -19,8 +19,9 @@ const ManagePayments = () => {
   const handleStatusUpdate = async (id: number, newStatus: 'verified' | 'rejected') => {
     setActionLoading(true);
     try {
+      const currentPayment = payments.find((p) => Number(p.id) === Number(id));
       if (newStatus === 'verified') {
-        await verifyPayment(id);
+        await verifyPayment(id, undefined, currentPayment?.linked_document_id ?? null);
       } else if (newStatus === 'rejected') {
         await rejectPayment(id);
       }

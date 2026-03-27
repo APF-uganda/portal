@@ -71,13 +71,13 @@ export const PaymentTable = ({
     
     if (payment.application_id && payment.application_id.startsWith('APF-')) {
       transactionId = payment.application_id;
-      description = 'Application Fee';
+      description = 'Application';
     } else if (payment.invoice_number && payment.invoice_number.startsWith('INV-')) {
       transactionId = payment.invoice_number;
-      description = 'Renewal Fee';
+      description = 'Renewal';
     } else if (payment.reference && payment.reference.startsWith('EVT-')) {
       transactionId = payment.reference;
-      description = 'Event Fee';
+      description = 'Event';
     } else {
       transactionId = payment.application_id || payment.invoice_number || payment.reference || '-';
       description = payment.description || 'Other';
@@ -175,19 +175,12 @@ export const PaymentTable = ({
                   const { transactionId, description } = getTransactionDetails(p);
                   // Converting p.id to string once to avoid repeated casting
                   const stringId = String(p.id);
-                  const reviewViaDocuments = !!p.requires_document_review;
-                  const canVerifyFromPayments = !reviewViaDocuments && p.status?.toLowerCase() === 'pending';
 
                   return (
                     <tr key={stringId} className="hover:bg-slate-50/50 transition-all group">
                       <td className="px-6 md:px-8 py-4 md:py-6">
                         <div className="font-bold text-gray-900 text-sm">{p.member_name}</div>
                         <div className="text-xs text-gray-500">{p.member_email}</div>
-                        {reviewViaDocuments && (
-                          <div className="mt-1 text-[10px] font-semibold text-purple-600">
-                            Review via Documents
-                          </div>
-                        )}
                       </td>
                       <td className="px-6 md:px-8 py-4 md:py-6 font-mono text-xs">{transactionId}</td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-sm">{description}</td>
