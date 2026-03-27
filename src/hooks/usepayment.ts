@@ -2,6 +2,24 @@ import { useState, useEffect } from 'react';
 import { Payment, DashboardStats } from '../components/payment-components/types'; 
 import { adminPaymentService, AdminPaymentResponse } from '../services/adminPaymentService';
 
+const derivePaymentDescription = (payment: AdminPaymentResponse): string => {
+  const applicationId = payment.application_id || '';
+  const invoiceNumber = payment.invoice_number || '';
+  const reference = payment.reference || '';
+  const rawDescription = (payment.description || '').toLowerCase();
+
+  if (applicationId.startsWith('APF-') || rawDescription.includes('application')) {
+    return 'Application';
+  }
+  if (invoiceNumber.startsWith('INV-') || rawDescription.includes('renew')) {
+    return 'Renewal';
+  }
+  if (reference.startsWith('EVT-') || rawDescription.includes('event')) {
+    return 'Event';
+  }
+  return payment.description || 'Other';
+};
+
 export const usePayments = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   
@@ -53,7 +71,7 @@ export const usePayments = () => {
         id: p.id,
         member_name: p.member_name,
         member_email: p.member_email || '',
-        description: p.description,
+        description: derivePaymentDescription(p),
         amount: p.amount || 0,
         currency: p.currency || 'UGX',
         status: p.status || 'unknown',
@@ -77,9 +95,9 @@ export const usePayments = () => {
     }
   };
 
-  const verifyPayment = async (paymentId: number, notes?: string) => {
+  const verifyPayment = async (paymentId: number, notes?: string, linkedDocumentId?: number | null) => {
     try {
-      await adminPaymentService.verifyPayment(paymentId, notes);
+      await adminPaymentService.verifyPayment(paymentId, notes, linkedDocumentId);
       await fetchPayments(); // Refresh data
     } catch (err: any) {
       setError(err.message);

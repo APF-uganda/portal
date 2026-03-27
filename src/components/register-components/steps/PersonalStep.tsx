@@ -201,7 +201,7 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
         />
 
         <Input
-          label="Organization / Firm"
+          label="Firm"
           type="text"
           placeholder="ABC Accounting Firm"
           name="organization"

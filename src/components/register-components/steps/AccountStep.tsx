@@ -149,7 +149,7 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
         {/* Username and Email Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Input
-            label="Username"
+            label="Preferred Username"
             name="username"
             value={data.username}
             onChange={(e) => {

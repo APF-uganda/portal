@@ -543,6 +543,41 @@ function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
+async function autoApproveDocumentIds(documentIds: number[]): Promise<{
+  total: number;
+  approved: number;
+  failed: number;
+}> {
+  if (documentIds.length === 0) {
+    return { total: 0, approved: 0, failed: 0 };
+  }
+
+  const results = await Promise.allSettled(
+    documentIds.map((documentId) =>
+      axios.patch(
+        `${API_BASE_URL}/api/v1/documents/${documentId}/admin-review/`,
+        {
+          status: 'approved',
+          admin_feedback: 'Auto-approved during application approval.',
+        },
+        {
+          headers: getAuthHeaders(),
+          timeout: 15000,
+        }
+      )
+    )
+  );
+
+  const approved = results.filter((result) => result.status === 'fulfilled').length;
+  const failed = results.length - approved;
+
+  return {
+    total: results.length,
+    approved,
+    failed,
+  };
+}
+
 /**
  * Approve an application
  * 
@@ -551,6 +586,11 @@ function getAuthHeaders(): Record<string, string> {
  */
 export async function approveApplication(applicationId: number): Promise<AdminActionResult> {
   try {
+    const detailBeforeApproval = await fetchApplicationDetail(applicationId);
+    const documentIds = (detailBeforeApproval?.documents || [])
+      .map((doc) => doc.id)
+      .filter((id): id is number => typeof id === 'number');
+
     const response = await axios.patch<AdminActionResponse>(
       `${API_BASE_URL}/api/v1/applications/${applicationId}/approve/`,
       {},
@@ -559,6 +599,13 @@ export async function approveApplication(applicationId: number): Promise<AdminAc
         timeout: 30000,
       }
     );
+
+    const autoApproval = await autoApproveDocumentIds(documentIds);
+    if (autoApproval.failed > 0) {
+      console.warn(
+        `[approveApplication] Application ${applicationId} approved, but ${autoApproval.failed}/${autoApproval.total} documents failed auto-approval.`
+      );
+    }
 
     return {
       success: true,
