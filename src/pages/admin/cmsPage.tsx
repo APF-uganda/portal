@@ -116,20 +116,20 @@ const CmsContentPage = () => {
               </button>
 
               <button 
-                onClick={() => navigate('/admin/eventMgt')}
-                className="flex items-center justify-between p-8 bg-white border border-gray-100 rounded-3xl hover:border-amber-300 hover:shadow-lg transition-all text-left group h-full"
-              >
-                <div className="flex items-center gap-6">
-                  <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all">
-                    <Calendar size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Create Event</h3>
-                    <p className="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest">Manage schedules</p>
-                  </div>
-                </div>
-                <ChevronRight size={18} className="text-gray-300 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
-              </button>
+  onClick={() => navigate('/admin/eventlist')} 
+  className="flex items-center justify-between p-8 bg-white border border-gray-100 rounded-3xl hover:border-amber-300 hover:shadow-lg transition-all text-left group h-full"
+>
+  <div className="flex items-center gap-6">
+    <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-600 group-hover:text-white transition-all">
+      <Calendar size={24} />
+    </div>
+    <div>
+      <h3 className="text-lg font-semibold text-slate-900">Events Manager</h3>
+      <p className="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest">Create & Edit Events</p>
+    </div>
+  </div>
+  <ChevronRight size={18} className="text-gray-300 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
+</button>
 
               <button 
                 onClick={() => navigate('/admineventMgt')}

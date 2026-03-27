@@ -65,6 +65,9 @@ const LeadershipManager = React.lazy(() => import('./components/admincms/leaders
 const NewsDetail = React.lazy(() => import('./components/NewsComponents/NewsDetail'));
 const AdminInquiryDashboard = React.lazy(() => import('./pages/admin/inquiries'));
 const PendingApprovalPage = React.lazy(() => import('./components/register-components/pendingApproval'));
+
+const EventsList = React.lazy(() => import("./components/adminEvents/eventlist"));
+const EventForm = React.lazy(() => import("./components/adminEvents/eventCreate"));
 /* Auth guard with session validation */
 const ProtectedRoute: React.FC<{
   children: JSX.Element;
@@ -135,6 +138,8 @@ const App: React.FC = () => {
              <Route path="/news/:id" element={<NewsDetail />} />
              <Route path="/management" element={<ManagementPage />} />
              <Route path="/admineventMgt" element={<AdminEvents />} />
+             <Route path="/eventlist" element={<EventsList />} />
+            
             {/* Auth routes */}
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />

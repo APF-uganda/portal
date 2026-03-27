@@ -149,3 +149,4 @@ export const EventForm: React.FC<EventFormProps> = ({ initialData, onSuccess, on
     </div>
   );
 };
+export default EventForm;

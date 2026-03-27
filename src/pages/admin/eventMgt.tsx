@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; 
 import api from '../../services/cmsApi'; 
 import { CMS_BASE_URL } from '../../config/api'; 
 
@@ -16,27 +16,31 @@ const EventCreatePage = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  
   const navigate = useNavigate();
+  const location = useLocation(); 
 
+  
+  const editData = location.state?.editEvent;
   
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
 
   const [eventData, setEventData] = useState({
-    title: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    startTime: '09:00',
-    endTime: '17:00',
-    location: '',
-    cpdPoints: 0,
-    registrationLink: '',
-    isFeatured: false,
-    isPaid: false,
-    memberPrice: 0,
-    nonMemberPrice: 0,
-    imageId: null as number | null,
-    imagePreview: '' 
+    title: editData?.title || '',
+    description: editData?.description || '',
+    startDate: editData?.date ? editData.date.split('T')[0] : '',
+    endDate: editData?.endDate ? editData.endDate.split('T')[0] : '',
+    startTime: editData?.time?.split(' - ')[0] || '09:00',
+    endTime: editData?.time?.split(' - ')[1] || '17:00',
+    location: editData?.location || '',
+    cpdPoints: editData?.cpdPoints || 0,
+    registrationLink: editData?.registrationLink || '',
+    isFeatured: editData?.isFeatured || false,
+    isPaid: editData?.isPaid || false,
+    memberPrice: editData?.memberPrice || 0,
+    nonMemberPrice: editData?.nonMemberPrice || 0,
+    imageId: editData?.image?.id || null,
+    imagePreview: editData?.featuredImage || '' 
   });
 
   const showToast = (msg: string, type: 'success' | 'error') => {
@@ -63,7 +67,6 @@ const EventCreatePage = () => {
       const res = await api.post('/upload', formData);
       const uploadedFile = res.data[0];
       
-     
       const fullImageUrl = uploadedFile.url.startsWith('http') 
         ? uploadedFile.url 
         : `${CMS_BASE_URL}${uploadedFile.url}`;
@@ -83,7 +86,6 @@ const EventCreatePage = () => {
   };
 
   const handlePublish = async () => {
-  
     if (!eventData.title.trim() || !eventData.startDate || !eventData.location) {
       showToast("Please fill in Headline, Start Date, and Venue", "error");
       return;
@@ -91,7 +93,6 @@ const EventCreatePage = () => {
   
     setLoading(true);
     try {
-      // 2. Build base payload
       const dataPayload: any = {
         title: eventData.title,
         description: eventData.description,
@@ -105,32 +106,38 @@ const EventCreatePage = () => {
         memberPrice: Number(eventData.memberPrice),
         nonMemberPrice: Number(eventData.nonMemberPrice),
         image: eventData.imageId,
-        publishedAt: new Date().toISOString()
+        publishedAt: editData?.publishedAt || new Date().toISOString()
       };
   
-      
       if (eventData.endDate) {
         dataPayload.endDate = new Date(`${eventData.endDate}T${eventData.endTime}:00`).toISOString();
       }
-  
-      await api.post('/events', { data: dataPayload });
+
       
-      showToast("Event Published Successfully!", "success");
-      setTimeout(() => navigate('/events'), 1500);
+      if (editData?.id) {
+        await api.put(`/events/${editData.documentId || editData.id}`, { data: dataPayload });
+        showToast("Event Updated Successfully!", "success");
+      } else {
+        await api.post('/events', { data: dataPayload });
+        showToast("Event Published Successfully!", "success");
+      }
+      
+      // Navigate back to the list
+      setTimeout(() => navigate('/admin/events'), 1500);
     } catch (err: any) {
-      console.error("Publishing error:", err.response?.data || err.message);
+      console.error("Save error:", err.response?.data || err.message);
       showToast(
-        err.response?.data?.error?.message || "Publishing Failed. Check your connection.", 
+        err.response?.data?.error?.message || "Save Failed. Check your connection.", 
         "error"
       );
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="flex min-h-screen bg-[#F4F2FE] relative overflow-hidden">
       
-      {/* PREMIUM NOTIFICATION POP */}
       {notification && (
         <div className={`fixed top-4 md:top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 md:gap-4 px-4 md:px-8 py-3 md:py-5 rounded-xl md:rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-2 transition-all animate-in fade-in slide-in-from-top-10 duration-500 mx-4 ${
           notification.type === 'success' ? 'bg-white border-emerald-50 text-emerald-900' : 'bg-white border-red-50 text-red-900'
@@ -140,7 +147,7 @@ const EventCreatePage = () => {
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-xs md:text-sm opacity-40 leading-none mb-1">Status</span>
-            <span className="text-xs truncate">{notification.msg}</span>
+            <span className="text-xs truncate font-bold">{notification.msg}</span>
           </div>
           <button onClick={() => setNotification(null)} className="ml-2 md:ml-4 p-1.5 md:p-2 hover:bg-slate-50 rounded-lg md:rounded-xl transition-colors flex-shrink-0">
             <X size={14} className="md:w-4 md:h-4 text-slate-300" />
@@ -157,7 +164,7 @@ const EventCreatePage = () => {
 
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} flex flex-col min-w-0 overflow-hidden`}>
         <Header 
-          title="Create Event Content" 
+          title={editData ? "Update Event Content" : "Create Event Content"} 
           onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
         />
 
@@ -165,9 +172,10 @@ const EventCreatePage = () => {
           <div className="max-w-full lg:max-w-6xl mx-auto">
             
             <ActionHeader 
-              onBack={() => navigate(-1)} 
+              onBack={() => navigate('/admin/events')} 
               onPublish={handlePublish} 
               loading={loading}
+              isEdit={!!editData} 
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
@@ -191,7 +199,6 @@ const EventCreatePage = () => {
                     </button>
                   </div>
                   
-                  {/* PREVIEW BOX MOBILE RESPONSIVE */}
                   <div className="relative h-48 md:h-64 lg:h-80 bg-slate-50 rounded-xl md:rounded-2xl lg:rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden mb-6 md:mb-8 group transition-all hover:border-purple-300 hover:bg-purple-50/30">
                     {eventData.imagePreview ? (
                       <div className="relative w-full h-full">
@@ -199,10 +206,6 @@ const EventCreatePage = () => {
                           src={eventData.imagePreview} 
                           className="w-full h-full object-cover" 
                           alt="Event preview" 
-                          onLoad={() => {
-                           
-                            if (!uploading) console.log("Image Loaded");
-                          }}
                         />
                         {uploading && (
                           <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
