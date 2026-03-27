@@ -235,7 +235,7 @@ export const getReceipts = async (): Promise<Receipt[]> => {
 }
 
 export const submitManualRenewalPayment = async (
-  payload: SubmitManualPaymentPayload
+  payload: SubmitManualPaymentPayload & { paymentType?: string }
 ): Promise<{ id: number; status: string; reference: string }> => {
   const token = getAccessToken()
   const headers: Record<string, string> = {}
@@ -249,6 +249,7 @@ export const submitManualRenewalPayment = async (
   form.append('reference', payload.reference || '')
   form.append('invoice_number', payload.invoiceNumber || '')
   form.append('payment_method', payload.paymentMethod)
+  form.append('payment_type', payload.paymentType || 'membership_renewal')
   if (payload.phoneNumber) {
     form.append('phone_number', payload.phoneNumber)
   }

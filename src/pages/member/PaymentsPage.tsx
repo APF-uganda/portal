@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   CreditCard,
@@ -25,8 +25,27 @@ import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/
 import { useRecentTransactions, useReceipts } from "../../hooks/usePaymentHistory"
 import ProofOfPaymentUpload from "../../components/register-components/ProofOfPaymentUpload"
 import { submitManualRenewalPayment } from "../../services/payments.service"
+import mtnLogo from "../../assets/images/registerPage-images/mtn.png"
+import airtelLogo from "../../assets/images/registerPage-images/airtel.png"
+import dfcuLogo from "../../assets/images/registerPage-images/dfcu.jpg"
+import { getEvents, Event } from "../../services/cmsApi"
 
 const RENEWAL_AMOUNT = 150000
+
+// Payment details constants
+const MERCHANT_CODES = {
+  mtn: '123456',
+  airtel: '789012',
+}
+
+const BANK_DETAILS = {
+  accountName: 'Accountancy Practitioners Forum',
+  accountNumber: '01410017142250',
+  bankName: 'DFCU Bank',
+  branch: 'Main Branch'
+}
+
+type PaymentType = 'membership_renewal' | 'donation' | 'event' | 'other'
 
 const PaymentsPage: React.FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mtn')
@@ -34,7 +53,18 @@ const PaymentsPage: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [reference, setReference] = useState('')
   const [proofOfPayment, setProofOfPayment] = useState<File | null>(null)
-  const paymentAmount = RENEWAL_AMOUNT
+  const [paymentType, setPaymentType] = useState<PaymentType>('membership_renewal')
+  const [customAmount, setCustomAmount] = useState('')
+  const [selectedEvent, setSelectedEvent] = useState<string>('')
+  const [paymentDescription, setPaymentDescription] = useState('')
+  const [paidEvents, setPaidEvents] = useState<Event[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(false)
+  
+  const paymentAmount = paymentType === 'membership_renewal' 
+    ? RENEWAL_AMOUNT 
+    : paymentType === 'event' && selectedEvent
+    ? paidEvents.find(e => e.documentId === selectedEvent)?.memberPrice || 0
+    : parseInt(customAmount) || 0
 
   // Get recent transactions from payment history (shared data source)
   const recentTransactionsResult = useRecentTransactions(3)
@@ -46,6 +76,26 @@ const PaymentsPage: React.FC = () => {
   const receiptsResult = useReceipts()
   const receipts = receiptsResult?.receipts || []
   const receiptsLoading = receiptsResult?.loading || false
+
+  // Fetch paid events when payment type is 'event'
+  useEffect(() => {
+    const fetchPaidEvents = async () => {
+      if (paymentType === 'event') {
+        setLoadingEvents(true)
+        try {
+          const allEvents = await getEvents()
+          const paid = allEvents.filter(event => event.isPaid)
+          setPaidEvents(paid)
+        } catch (error) {
+          console.error('Failed to fetch events:', error)
+          showNotification('Failed to load events', 'error')
+        } finally {
+          setLoadingEvents(false)
+        }
+      }
+    }
+    fetchPaidEvents()
+  }, [paymentType])
 
   // Show loading state while initial data is being fetched
   if (!recentTransactionsResult || !receiptsResult) {
@@ -64,6 +114,7 @@ const PaymentsPage: React.FC = () => {
       name: 'MTN Mobile Money',
       description: 'Pay via MTN mobile wallet',
       icon: Smartphone,
+      logo: mtnLogo,
       disabled: false,
     },
     {
@@ -71,6 +122,7 @@ const PaymentsPage: React.FC = () => {
       name: 'Airtel Money',
       description: 'Pay via Airtel mobile wallet',
       icon: Wallet,
+      logo: airtelLogo,
       disabled: false,
     },
     {
@@ -78,12 +130,34 @@ const PaymentsPage: React.FC = () => {
       name: 'DFCU Bank',
       description: 'Direct bank transfer with receipt upload',
       icon: Building2,
+      logo: dfcuLogo,
       disabled: false,
     },
   ]
 
+  const paymentTypeOptions = [
+    { value: 'membership_renewal', label: 'Membership Renewal', description: 'Annual membership fee (UGX 150,000)' },
+    { value: 'donation', label: 'Donation', description: 'Support APF with a donation' },
+    { value: 'event', label: 'Event Payment', description: 'Pay for events and activities' },
+    { value: 'other', label: 'Other Services', description: 'Other payments and services' },
+  ]
+
   const handlePaymentMethodSelect = (methodId: string) => {
     setSelectedPaymentMethod(methodId)
+  }
+
+  const handlePaymentTypeChange = (type: PaymentType) => {
+    setPaymentType(type)
+    if (type === 'membership_renewal') {
+      setCustomAmount('')
+      setSelectedEvent('')
+      setPaymentDescription('')
+    } else if (type === 'event') {
+      setCustomAmount('')
+      setPaymentDescription('')
+    } else {
+      setSelectedEvent('')
+    }
   }
 
   const handleProofOfPaymentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,10 +206,32 @@ const PaymentsPage: React.FC = () => {
       return
     }
 
+    if (paymentType === 'event' && !selectedEvent) {
+      showNotification('Please select an event', 'error')
+      return
+    }
+
+    if (paymentType === 'other' && !paymentDescription.trim()) {
+      showNotification('Please specify what you are paying for', 'error')
+      return
+    }
+
+    if (paymentType !== 'membership_renewal' && paymentType !== 'event' && (!customAmount || parseInt(customAmount) <= 0)) {
+      showNotification('Please enter a valid amount', 'error')
+      return
+    }
+
     const phoneValidationError = validatePhoneForMethod()
     if (phoneValidationError) {
       showNotification(phoneValidationError, 'error')
       return
+    }
+
+    const paymentDescriptions = {
+      membership_renewal: 'Membership Renewal Fee',
+      donation: 'Donation',
+      event: selectedEvent ? `Event Payment - ${paidEvents.find(e => e.documentId === selectedEvent)?.title}` : 'Event Payment',
+      other: paymentDescription.trim() || 'Other Services Payment',
     }
 
     setIsProcessing(true)
@@ -145,16 +241,20 @@ const PaymentsPage: React.FC = () => {
         paymentMethod: selectedPaymentMethod as 'mtn' | 'airtel' | 'bank',
         phoneNumber: selectedPaymentMethod === 'bank' ? undefined : phoneNumber.trim(),
         reference: reference.trim() || undefined,
-        description: 'Membership Renewal Fee',
+        description: paymentDescriptions[paymentType],
         proofOfPayment,
+        paymentType: paymentType,
       })
       showNotification(`Receipt submitted successfully. Ref: ${result.reference}`, 'success')
       setPhoneNumber('')
       setReference('')
       setProofOfPayment(null)
+      setCustomAmount('')
+      setSelectedEvent('')
+      setPaymentDescription('')
       refetchTransactions()
     } catch (error: any) {
-      showNotification(error?.message || 'Failed to submit renewal payment', 'error')
+      showNotification(error?.message || 'Failed to submit payment', 'error')
     } finally {
       setIsProcessing(false)
     }
@@ -262,6 +362,24 @@ const PaymentsPage: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Payment Type Selection */}
+              <div className="pb-4 border-b border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What are you paying for?
+                </label>
+                <select
+                  value={paymentType}
+                  onChange={(e) => handlePaymentTypeChange(e.target.value as PaymentType)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-[#5F1C9F] focus:ring-2 focus:ring-purple-200 transition-all"
+                >
+                  {paymentTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} - {option.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="space-y-3">
                 {paymentMethods.map((method) => {
                   const Icon = method.icon
@@ -274,17 +392,21 @@ const PaymentsPage: React.FC = () => {
                       disabled={method.disabled}
                       className={`w-full p-4 rounded-lg border-2 transition-all ${
                         isSelected
-                          ? 'border-purple-600 bg-purple-50'
+                          ? 'border-[#5F1C9F] bg-purple-50'
                           : method.disabled
                           ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
-                          : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50/50'
+                          : 'border-gray-300 hover:border-[#5F1C9F] hover:bg-purple-50/50'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          isSelected ? 'bg-purple-600' : method.disabled ? 'bg-gray-300' : 'bg-gray-200'
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden ${
+                          isSelected ? 'ring-2 ring-[#5F1C9F]' : ''
                         }`}>
-                          <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-600'}`} />
+                          <img 
+                            src={method.logo} 
+                            alt={method.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <div className="flex-1 text-left">
                           <div className="flex items-center gap-2">
@@ -293,7 +415,7 @@ const PaymentsPage: React.FC = () => {
                           <p className="text-sm text-gray-600">{method.description}</p>
                         </div>
                         {isSelected && (
-                          <CheckCircle className="w-5 h-5 text-purple-600" />
+                          <CheckCircle className="w-5 h-5 text-[#5F1C9F]" />
                         )}
                       </div>
                     </button>
@@ -302,12 +424,185 @@ const PaymentsPage: React.FC = () => {
               </div>
 
               <div className="pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-gray-600">Amount to Pay</span>
-                  <span className="text-2xl font-bold text-purple-600">
-                    UGX {paymentAmount.toLocaleString()}
-                  </span>
-                </div>
+                {/* Payment Details Display - Merchant Code or Bank Details */}
+                {selectedPaymentMethod === 'mtn' && (
+                  <div className="mb-4 bg-white border border-[#5F1C9F] rounded-lg p-4">
+                    <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-black">Merchant Code:</span>
+                        <span className="font-mono font-bold text-black">{MERCHANT_CODES.mtn}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black">Amount:</span>
+                        <span className="font-bold text-black">UGX {paymentAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedPaymentMethod === 'airtel' && (
+                  <div className="mb-4 bg-white border border-[#5F1C9F] rounded-lg p-4">
+                    <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-black">Merchant Code:</span>
+                        <span className="font-mono font-bold text-black">{MERCHANT_CODES.airtel}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black">Amount:</span>
+                        <span className="font-bold text-black">UGX {paymentAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedPaymentMethod === 'bank' && (
+                  <div className="mb-4 bg-white border border-[#5F1C9F] rounded-lg p-4">
+                    <h4 className="font-medium text-black mb-3">Bank Transfer Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-black">Account Name:</span>
+                        <span className="font-medium text-black">{BANK_DETAILS.accountName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black">Account Number:</span>
+                        <span className="font-mono font-bold text-black">{BANK_DETAILS.accountNumber}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black">Bank:</span>
+                        <span className="font-medium text-black">{BANK_DETAILS.bankName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black">Branch:</span>
+                        <span className="font-medium text-black">{BANK_DETAILS.branch}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-[#5F1C9F] pt-2 mt-3">
+                        <span className="text-black">Amount:</span>
+                        <span className="font-bold text-black">UGX {paymentAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Instructions */}
+                {selectedPaymentMethod === 'mtn' && (
+                  <div className="mb-4 text-sm text-black bg-white border border-l-4 border-[#9333EA] p-4 rounded-lg">
+                    <p className="font-medium mb-2">Payment Instructions:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>Dial *165# (MTN)</li>
+                      <li>Select "Pay Bill"</li>
+                      <li>Enter Merchant Code: <span className="font-mono font-bold">{MERCHANT_CODES.mtn}</span></li>
+                      <li>Enter Amount: <span className="font-bold">{paymentAmount}</span></li>
+                      <li>Enter your name as Reference: <span className="font-mono">Your Full Name</span></li>
+                      <li>Confirm payment</li>
+                      <li>Upload proof of payment below</li>
+                    </ol>
+                  </div>
+                )}
+
+                {selectedPaymentMethod === 'airtel' && (
+                  <div className="mb-4 text-sm text-black bg-white border border-l-4 border-[#9333EA] p-4 rounded-lg">
+                    <p className="font-medium mb-2">Payment Instructions:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>Dial *185# (Airtel)</li>
+                      <li>Select "Pay Bill"</li>
+                      <li>Enter Merchant Code: <span className="font-mono font-bold">{MERCHANT_CODES.airtel}</span></li>
+                      <li>Enter Amount: <span className="font-bold">{paymentAmount}</span></li>
+                      <li>Enter your name as Reference: <span className="font-mono">Your Full Name</span></li>
+                      <li>Confirm payment</li>
+                      <li>Upload proof of payment below</li>
+                    </ol>
+                  </div>
+                )}
+
+                {selectedPaymentMethod === 'bank' && (
+                  <div className="mb-4 text-sm text-black bg-white border border-l-4 border-[#5F1C9F] p-4 rounded-lg">
+                    <p className="font-medium mb-2">Payment Instructions:</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>Transfer UGX {paymentAmount.toLocaleString()} to the account details above</li>
+                      <li>Use "APF - {paymentTypeOptions.find(opt => opt.value === paymentType)?.label}" as the reference</li>
+                      <li>Take a screenshot or photo of the transaction receipt</li>
+                      <li>Upload the proof of payment below</li>
+                    </ol>
+                  </div>
+                )}
+
+                {/* Custom Amount Input for non-renewal payments */}
+                {paymentType === 'event' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Event
+                    </label>
+                    {loadingEvents ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="w-5 h-5 text-[#5F1C9F] animate-spin" />
+                        <span className="ml-2 text-sm text-gray-600">Loading events...</span>
+                      </div>
+                    ) : paidEvents.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-3 px-4 bg-gray-50 rounded-lg border border-gray-200">
+                        No paid events available at the moment
+                      </div>
+                    ) : (
+                      <>
+                        <select
+                          value={selectedEvent}
+                          onChange={(e) => setSelectedEvent(e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-[#5F1C9F] focus:ring-2 focus:ring-purple-200 transition-all"
+                        >
+                          <option value="">-- Select an event --</option>
+                          {paidEvents.map((event) => (
+                            <option key={event.documentId} value={event.documentId}>
+                              {event.title} - UGX {event.memberPrice.toLocaleString()} ({event.date})
+                            </option>
+                          ))}
+                        </select>
+                        {selectedEvent && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Event Fee: UGX {paidEvents.find(e => e.documentId === selectedEvent)?.memberPrice.toLocaleString()}
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {paymentType === 'other' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      What are you paying for? <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={paymentDescription}
+                      onChange={(e) => setPaymentDescription(e.target.value)}
+                      placeholder="e.g., Training materials, Consultation fee, etc."
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#5F1C9F] focus:ring-2 focus:ring-purple-200 transition-all"
+                    />
+                  </div>
+                )}
+
+                {(paymentType === 'donation' || paymentType === 'other') && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Enter Amount (UGX) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={customAmount}
+                      onChange={(e) => setCustomAmount(e.target.value)}
+                      placeholder="Enter amount in UGX"
+                      min="1000"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#5F1C9F] focus:ring-2 focus:ring-purple-200 transition-all"
+                    />
+                    {customAmount && parseInt(customAmount) > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Amount: UGX {parseInt(customAmount).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {selectedPaymentMethod !== 'bank' && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -318,7 +613,7 @@ const PaymentsPage: React.FC = () => {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="256XXXXXXXXX"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-purple-600"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#5F1C9F]"
                     />
                   </div>
                 )}
@@ -331,7 +626,7 @@ const PaymentsPage: React.FC = () => {
                     value={reference}
                     onChange={(e) => setReference(e.target.value)}
                     placeholder="Transaction ID / Receipt No."
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-purple-600"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#5F1C9F]"
                   />
                 </div>
                 <div className="mb-4">
@@ -343,8 +638,15 @@ const PaymentsPage: React.FC = () => {
                 </div>
                 <Button
                   onClick={handleProceedPayment}
-                  disabled={isProcessing || !selectedPaymentMethod || !proofOfPayment}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={
+                    isProcessing || 
+                    !selectedPaymentMethod || 
+                    !proofOfPayment || 
+                    (paymentType === 'event' && !selectedEvent) ||
+                    (paymentType === 'other' && !paymentDescription.trim()) ||
+                    ((paymentType === 'donation' || paymentType === 'other') && (!customAmount || parseInt(customAmount) <= 0))
+                  }
+                  className="w-full bg-[#5F1C9F] hover:bg-[#4a1580] text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isProcessing ? (
                     <>
@@ -354,7 +656,7 @@ const PaymentsPage: React.FC = () => {
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      Submit Renewal Receipt
+                      Submit Payment Receipt
                     </>
                   )}
                 </Button>
