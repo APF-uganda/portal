@@ -23,6 +23,9 @@ const AdminEvents: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  
+  const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://64.225.121.230';
+
   const [notification, setNotification] = useState<{
     show: boolean;
     message: string;
@@ -38,19 +41,13 @@ const AdminEvents: React.FC = () => {
     try {
       setLoading(true);
       const data = await eventService.getAllRegistrations(search);
-      
-     
       const results = data && data.results ? data.results : data;
       setRegistrations(Array.isArray(results) ? results : []);
-      
     } catch (error: any) {
-     
       console.error("Fetch registrations error:", error);
-      
       const errorMsg = error.response?.status === 401 
         ? "Session expired. Please log in again." 
         : "Could not load registration data.";
-        
       showNotification(errorMsg, "error");
       setRegistrations([]);
     } finally {
@@ -80,19 +77,16 @@ const AdminEvents: React.FC = () => {
     }
   };
 
-  // Debounced Search Effect
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchRegistrations(searchTerm);
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] font-sans text-slate-800 relative">
       
-      {/* Sidebar Navigation */}
       <Sidebar 
         collapsed={collapsed} 
         onToggle={() => setCollapsed(!collapsed)}
@@ -100,15 +94,12 @@ const AdminEvents: React.FC = () => {
         onMobileToggle={() => setIsMobileOpen(!isMobileOpen)}
       />
 
-      {/* Main Content Area */}
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-20" : "md:ml-64"} flex flex-col min-h-screen`}>
         
-        {/* Navigation Header */}
         <Header title="Registrations Management" onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)} />
 
         <div className="flex-1 p-4 md:p-10 lg:p-12">
           
-          {/* Notification Overlay */}
           {notification.show && (
             <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${
               notification.type === 'success' ? 'bg-white border-green-100 text-green-800' : 
@@ -125,7 +116,6 @@ const AdminEvents: React.FC = () => {
 
           <div className="max-w-7xl mx-auto">
             
-            {/* Top Navigation Row */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
               <div>
                 <button 
@@ -200,7 +190,7 @@ const AdminEvents: React.FC = () => {
                             <td className="px-6 py-6">
                               {reg.proof_of_payment ? (
                                 <a 
-                                  href={reg.proof_of_payment} 
+                                  href={reg.proof_of_payment.startsWith('http') ? reg.proof_of_payment : `${BACKEND_URL}${reg.proof_of_payment}`} 
                                   target="_blank" 
                                   rel="noreferrer"
                                   className="text-purple-600 font-bold text-xs inline-flex items-center gap-1.5 bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors"
@@ -282,7 +272,7 @@ const AdminEvents: React.FC = () => {
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment</p>
                             {reg.proof_of_payment ? (
                               <a 
-                                href={reg.proof_of_payment} 
+                                href={reg.proof_of_payment.startsWith('http') ? reg.proof_of_payment : `${BACKEND_URL}${reg.proof_of_payment}`} 
                                 target="_blank" 
                                 rel="noreferrer"
                                 className="text-purple-600 font-bold text-[10px] inline-flex items-center gap-1"
