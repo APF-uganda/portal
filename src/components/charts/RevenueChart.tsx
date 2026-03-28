@@ -1,11 +1,11 @@
 /**
- * Revenue Trends Chart Component
+ * Revenue Trends Chart Component 
  */
 
 import React, { useState, useEffect } from 'react';
 import ChartWrapper from './ChartWrapper';
 import { analyticsApi, ChartData } from '../../services/analyticsApi';
-import { TrendingUp, DollarSign, Calendar } from 'lucide-react';
+import { TrendingUp, DollarSign, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface RevenueChartProps {
   className?: string;
@@ -28,7 +28,6 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
       setLoading(true);
       setError(null);
       
-      // Fetch real revenue data from API
       const data = await analyticsApi.getRevenueTrendsChart(period);
       
       if (!data || !data.labels || data.labels.length === 0) {
@@ -44,130 +43,10 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 ${className}`}>
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-4 md:w-5 h-4 md:h-5 text-[#5F2F8B]" />
-          <h3 className="text-base md:text-lg font-semibold text-gray-800">Revenue Trends</h3>
-        </div>
-        <div className="h-48 md:h-64 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-6 md:h-8 w-6 md:w-8 border-b-2 border-[#5F2F8B]"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 ${className}`}>
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-4 md:w-5 h-4 md:h-5 text-[#5F2F8B]" />
-          <h3 className="text-base md:text-lg font-semibold text-gray-800">Revenue Trends</h3>
-        </div>
-        <div className="h-48 md:h-64 flex items-center justify-center text-red-500">
-          <p className="text-sm">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const data = {
-    labels: chartData?.labels || [],
-    datasets: [
-      {
-        label: 'Daily Revenue (UGX)',
-        data: chartData?.data || [],
-        backgroundColor: 'rgba(95, 47, 139, 0.1)',
-        borderColor: '#5F2F8B',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3, // Smoother curves for daily data
-        pointBackgroundColor: '#5F2F8B',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        pointRadius: 4, // Smaller points for daily data
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#5F2F8B',
-        pointHoverBorderColor: '#ffffff',
-        pointHoverBorderWidth: 2,
-      },
-    ],
-  };
-
-  const options = {
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        callbacks: {
-          label: (context: any) => `Revenue: UGX ${context.parsed.y.toLocaleString()}`,
-          title: (context: any) => {
-            // Show full date in tooltip for better context
-            const label = context[0].label;
-            if (label && label.includes('/')) {
-              // Convert MM/DD format back to readable date
-              const [month, day] = label.split('/');
-              const currentYear = new Date().getFullYear();
-              const date = new Date(currentYear, parseInt(month) - 1, parseInt(day));
-              return date.toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                month: 'short', 
-                day: 'numeric' 
-              });
-            }
-            return label;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: (value: any) => {
-            if (value >= 1000000) {
-              return `UGX ${(value / 1000000).toFixed(1)}M`;
-            } else if (value >= 1000) {
-              return `UGX ${(value / 1000).toFixed(0)}K`;
-            }
-            return `UGX ${value.toLocaleString()}`;
-          },
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          maxTicksLimit: period === '7d' ? 7 : period === '30d' ? 10 : 8,
-          callback: function(value: any, index: number): string {
-            // For daily data, show every nth label to avoid crowding
-            if (period === '30d' && index % 3 !== 0) {
-              return ''; // Show every 3rd label for 30-day view
-            }
-            return String(value);
-          },
-        },
-      },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      intersect: false,
-      mode: 'index' as const,
-    },
-  };
-
   const totalRevenue = chartData?.data.reduce((a, b) => a + b, 0) || 0;
   const daysWithRevenue = chartData?.data.filter(value => value > 0).length || 0;
   const averageDailyRevenue = daysWithRevenue > 0 ? Math.round(totalRevenue / daysWithRevenue) : 0;
   
-  // Calculate growth (compare last day with previous day if available)
   const growth = chartData?.data && chartData.data.length > 1 
     ? (() => {
         const lastDay = chartData.data[chartData.data.length - 1];
@@ -179,43 +58,160 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
       })()
     : 0;
 
-  return (
-    <div className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 ${className}`}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 md:w-5 h-4 md:h-5 text-[#5F2F8B]" />
-          <h3 className="text-base md:text-lg font-semibold text-gray-800">Daily Revenue Trends</h3>
+  if (loading) {
+    return (
+      <div className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 h-80 flex flex-col ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="w-5 h-5 text-[#5F2F8B]" />
+          <h3 className="text-lg font-semibold text-gray-800">Revenue Trends</h3>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex items-center gap-4 text-xs md:text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <DollarSign className="w-3 md:w-4 h-3 md:h-4" />
-              <span>Avg/Day: UGX {(averageDailyRevenue / 1000).toFixed(0)}K</span>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5F2F8B]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 h-80 flex flex-col ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="w-5 h-5 text-[#5F2F8B]" />
+          <h3 className="text-lg font-semibold text-gray-800">Revenue Trends</h3>
+        </div>
+        <div className="flex-1 flex items-center justify-center text-red-500">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const data = {
+    labels: chartData?.labels || [],
+    datasets: [
+      {
+        label: 'Daily Revenue (UGX)',
+        data: chartData?.data || [],
+        backgroundColor: 'rgba(95, 47, 139, 0.05)',
+        borderColor: '#5F2F8B',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#5F2F8B',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: period === '7d' ? 4 : 0,
+        pointHoverRadius: 6,
+      },
+    ],
+  };
+
+  const options = {
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        padding: 12,
+        callbacks: {
+          label: (context: any) => ` Revenue: UGX ${context.parsed.y.toLocaleString()}`,
+          title: (context: any) => {
+            const label = context[0].label;
+            if (label && label.includes('/')) {
+              const [month, day] = label.split('/');
+              const currentYear = new Date().getFullYear();
+              const date = new Date(currentYear, parseInt(month) - 1, parseInt(day));
+              return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            }
+            return label;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: { size: 10 },
+          callback: (value: any) => {
+            if (value >= 1000000) return `UGX ${(value / 1000000).toFixed(1)}M`;
+            if (value >= 1000) return `UGX ${(value / 1000).toFixed(0)}K`;
+            return `UGX ${value.toLocaleString()}`;
+          },
+        },
+        grid: { color: 'rgba(0, 0, 0, 0.03)' },
+      },
+      x: {
+        grid: { display: false },
+        ticks: {
+          font: { size: 10 },
+          maxTicksLimit: period === '7d' ? 7 : 10,
+          
+          callback: (value: any, index: number) => {
+            const label = chartData?.labels[index] || '';
+            if (period === '30d' && index % 3 !== 0) return '';
+            return String(label);
+          },
+        },
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { intersect: false, mode: 'index' as const },
+  };
+
+  return (
+    <div className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${className}`}>
+      <div className="p-4 md:p-6 border-b border-gray-50">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-50 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-[#5F2F8B]" />
             </div>
-            <div className="flex items-center gap-1">
-              <span>Days Active: {daysWithRevenue}</span>
-            </div>
-            <div className={`flex items-center gap-1 ${growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              <span>{growth >= 0 ? '↗' : '↘'} {Math.abs(growth).toFixed(1)}%</span>
+            <div>
+              <h3 className="text-base md:text-lg font-bold text-gray-800 leading-tight">Daily Revenue Trends</h3>
+              <p className="text-[11px] text-gray-500 mt-0.5">Performance metrics for the selected period</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-3 md:w-4 h-3 md:h-4 text-gray-500" />
-            <select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value as PeriodType)}
-              className="text-xs md:text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#5F2F8B] focus:border-transparent"
-            >
-              <option value="7d">Last 7 Days</option>
-              <option value="30d">Last 30 Days</option>
-              <option value="90d">Last 90 Days</option>
-              <option value="12m">Last 12 Months</option>
-            </select>
+
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-4 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-gray-400">Avg/Day</span>
+                <span className="text-xs md:text-sm font-bold text-gray-700">UGX {(averageDailyRevenue / 1000).toFixed(0)}K</span>
+              </div>
+              <div className="w-px h-6 bg-gray-200"></div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-gray-400">Active</span>
+                <span className="text-xs md:text-sm font-bold text-gray-700">{daysWithRevenue} Days</span>
+              </div>
+              <div className="w-px h-6 bg-gray-200"></div>
+              <div className={`flex flex-col ${growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <span className="text-[10px] uppercase font-bold text-gray-400">Trend</span>
+                <div className="flex items-center gap-0.5 text-xs md:text-sm font-bold">
+                  {growth >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                  {Math.abs(growth).toFixed(1)}%
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-white shadow-sm">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value as PeriodType)}
+                className="text-xs font-bold text-gray-600 focus:outline-none bg-transparent cursor-pointer"
+              >
+                <option value="7d">7 Days</option>
+                <option value="30d">30 Days</option>
+                <option value="90d">90 Days</option>
+                <option value="12m">12 Months</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
       
-      <div className="h-48 md:h-64">
+      <div className="p-4 md:p-6 h-64 md:h-80 w-full">
         <ChartWrapper
           type="line"
           data={data}
