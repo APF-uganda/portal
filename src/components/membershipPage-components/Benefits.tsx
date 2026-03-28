@@ -1,10 +1,17 @@
 import { useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import image1 from "../../assets/images/membershipPage-images/image1.webp";
-import image2 from "../../assets/images/membershipPage-images/image2.webp";
-import image3 from "../../assets/images/membershipPage-images/image3.webp";
-import image4 from "../../assets/images/membershipPage-images/image3.webp";
+import image1 from "../../assets/images/membershipPage-images/2.jfif";
+import image2 from "../../assets/images/membershipPage-images/1.jfif";
+import image3 from "../../assets/images/membershipPage-images/3.jfif";
+import image4 from "../../assets/images/membershipPage-images/4.jfif";
+import image5 from "../../assets/images/membershipPage-images/5.jfif";
+import image6 from "../../assets/images/membershipPage-images/8.jfif";
+import image7 from "../../assets/images/membershipPage-images/7.jfif";
+import image8 from "../../assets/images/membershipPage-images/11.jfif";
+import image9 from "../../assets/images/membershipPage-images/9.jfif";
+import image10 from "../../assets/images/membershipPage-images/12.jfif";
+
 
 interface Benefit {
   id: string;
@@ -47,42 +54,42 @@ const benefits: Benefit[] = [
     title: "Collective Voice",
     description:
       "Participation in the APF Knowledge Hub, contributing to periodic publications and position papers that shape the future of the profession in Uganda.",
-    image: image1,
+    image: image5,
   },
   {
     id: "b6",
     title: "Exclusive Forums",
     description:
       "Invitations to quarterly 'Partners-Only' roundtables and social events designed to foster collaboration and multi-firm partnerships for large-scale assignments.",
-    image: image2,
+    image: image6,
   },
   {
     id: "b7",
     title: "Sector Bridges",
     description:
       "Facilitated networking with leaders in the banking, insurance, and manufacturing sectors to promote the value of independent audit and advisory services.",
-    image: image3,
+    image: image7,
   },
   {
     id: "b8",
     title: "Leadership Track",
     description:
       "Opportunities to serve on APF specialized committees or the Executive Board, enhancing your professional profile and influence within the national accountancy ecosystem.",
-    image: image4,
+    image: image8,
   },
   {
     id: "b9",
     title: "Professional Endorsement",
     description:
       "Right to display the 'APF Member' logo on firm stationery and websites, signaling a commitment to the highest standards of governance and innovation.",
-    image: image1,
+    image: image9,
   },
   {
     id: "b10",
     title: "Awards & Spotlights",
     description:
       "Eligibility for annual awards recognizing 'Innovative Practice of the Year' or 'Excellence in Advocacy,' providing public visibility for your firm's achievements.",
-    image: image2,
+    image: image10,
   },
 ];
 
