@@ -3,7 +3,7 @@ import { CMS_BASE_URL } from "../config/api";
 import api, { getCachedEventsSync, getCachedNewsSync, getEvents, getHomepage, getNews } from "../services/cmsApi";
 
 const NEWS_ARTICLE_CACHE_PREFIX = 'apf.news.article.cache.';
-const NEWS_ARTICLE_CACHE_TTL_MS = 10 * 60 * 1000;
+const NEWS_ARTICLE_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
 type CachedArticle = {
   timestamp: number;
@@ -15,6 +15,27 @@ const articleInFlightRequests = new Map<string, Promise<any | null>>();
 
 const canUseStorage = () =>
   typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
+
+// Utility to clear article cache (useful for debugging or after edits)
+export const clearArticleCache = (id?: string) => {
+  if (id) {
+    articleMemoryCache.delete(id);
+    if (canUseStorage()) {
+      window.sessionStorage.removeItem(`${NEWS_ARTICLE_CACHE_PREFIX}${id}`);
+    }
+  } else {
+    // Clear all article caches
+    articleMemoryCache.clear();
+    if (canUseStorage()) {
+      const keys = Object.keys(window.sessionStorage);
+      keys.forEach(key => {
+        if (key.startsWith(NEWS_ARTICLE_CACHE_PREFIX)) {
+          window.sessionStorage.removeItem(key);
+        }
+      });
+    }
+  }
+};
 
 const readCachedArticle = (id: string) => {
   const now = Date.now();
@@ -56,9 +77,11 @@ const writeCachedArticle = (id: string, data: any) => {
 
 const fetchNewsArticleResponse = async (id: string) => {
   const encodedId = encodeURIComponent(id);
+  // Add timestamp to bust cache
+  const timestamp = Date.now();
   const queryCandidates = [
-    `/news-articles/${encodedId}?populate=featuredImage`,
-    `/news-articles/${encodedId}?populate=deep`,
+    `/news-articles/${encodedId}?populate=featuredImage&_=${timestamp}`,
+    `/news-articles/${encodedId}?populate=deep&_=${timestamp}`,
   ];
 
   for (const path of queryCandidates) {
@@ -237,11 +260,23 @@ export const useNewsArticle = (id: string | undefined) => {
       return;
     }
 
+    // Check cache first
     const cachedArticle = readCachedArticle(id);
     if (cachedArticle) {
       setArticle(cachedArticle);
       setLoading(false);
       setError(null);
+      
+      // Fetch fresh data in background to update cache
+      fetchNewsArticleById(id).then(freshArticle => {
+        if (freshArticle) {
+          setArticle(freshArticle);
+          writeCachedArticle(id, freshArticle);
+        }
+      }).catch(err => {
+        console.error("Background refresh error:", err);
+      });
+      
       return;
     }
 
