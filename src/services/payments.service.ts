@@ -143,34 +143,64 @@ const fetchMemberManualTransactions = async (): Promise<Transaction[]> => {
 
 /**
  * Get payment history/transactions
+ * Uses the payment ledger API which includes invoices, payments, and applications
  * @returns Promise with array of transactions
  */
 export const getPaymentHistory = async (): Promise<Transaction[]> => {
   try {
-    console.log('🔍 getPaymentHistory - Starting fetch...')
-    const [mobileResult, manualResult] = await Promise.allSettled([
-      fetchMobileTransactions(),
-      fetchMemberManualTransactions(),
-    ])
-
-    const mobileRows = mobileResult.status === 'fulfilled' ? mobileResult.value : []
-    const manualRows = manualResult.status === 'fulfilled' ? manualResult.value : []
-
-    console.log('📱 Mobile transactions count:', mobileRows.length)
-    console.log('📝 Manual transactions count:', manualRows.length)
-
-    if (mobileResult.status === 'rejected') {
-      console.error('Error fetching mobile payment history:', mobileResult.reason)
-    }
-    if (manualResult.status === 'rejected') {
-      console.error('Error fetching manual payment history:', manualResult.reason)
-    }
-
-    const allTransactions = sortTransactionsByDateDesc([...mobileRows, ...manualRows])
-    console.log('✅ Total transactions returned:', allTransactions.length)
-    console.log('📋 All transactions:', allTransactions)
+    console.log('🔍 getPaymentHistory - Starting fetch using ledger...')
     
-    return allTransactions
+    // Use the ledger API which returns all payment data
+    const ledgerEntries = await getPaymentLedger()
+    console.log('📊 Ledger entries received:', ledgerEntries.length)
+    
+    // Convert ledger entries to transactions
+    // Only include credit entries (actual payments) for transaction history
+    const transactions: Transaction[] = ledgerEntries
+      .filter(entry => entry.credit !== null && entry.credit > 0)
+      .map(entry => {
+        // Parse the date format from ledger (e.g., "23-Mar-26" to a proper date string)
+        const parseDateFromLedger = (dateStr: string): string => {
+          try {
+            // Format is "DD-MMM-YY"
+            const parts = dateStr.split('-')
+            if (parts.length === 3) {
+              const day = parts[0]
+              const month = parts[1]
+              const year = `20${parts[2]}` // Convert YY to YYYY
+              
+              // Convert month abbreviation to number
+              const monthMap: { [key: string]: string } = {
+                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+              }
+              
+              const monthNum = monthMap[month] || '01'
+              return `${month} ${day}, ${year}`
+            }
+            return dateStr
+          } catch {
+            return dateStr
+          }
+        }
+        
+        return {
+          date: parseDateFromLedger(entry.date),
+          type: entry.description || 'Payment',
+          reference: entry.transactionRef || entry.invoiceNumber,
+          amount: `UGX ${Number(entry.credit).toLocaleString()}`,
+          method: entry.method || 'Mobile Money',
+          methodIcon: null,
+          status: entry.status || 'completed',
+          description: entry.description || 'Payment received',
+        }
+      })
+    
+    console.log('✅ Total transactions returned:', transactions.length)
+    console.log('📋 Transactions:', transactions)
+    
+    return transactions
   } catch (error) {
     console.error('Error fetching payment history:', error)
     return []
@@ -185,7 +215,9 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
 export const getRecentTransactions = async (limit: number = 3): Promise<Transaction[]> => {
   try {
     const all = await getPaymentHistory()
-    return all.slice(0, limit)
+    // Sort by date descending (most recent first) and take the limit
+    const sorted = sortTransactionsByDateDesc(all)
+    return sorted.slice(0, limit)
   } catch (error) {
     console.error('Error fetching recent transactions:', error)
     return []
