@@ -88,7 +88,10 @@ function transformNotification(notification: UserNotificationResponse): Notifica
     isRead: notification.is_read,
     createdAt: notification.created_at,
     readAt: notification.read_at,
-    metadata: notification.metadata || {
+    metadata: notification.metadata ? {
+      ...notification.metadata,
+      priority: notification.metadata.priority as 'low' | 'medium' | 'high' | undefined
+    } : {
       priority: notification.priority as 'low' | 'medium' | 'high'
     }
   };
