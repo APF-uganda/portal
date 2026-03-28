@@ -47,6 +47,11 @@ export interface UserNotificationResponse {
   is_read: boolean
   created_at: string
   read_at?: string
+  metadata?: {
+    priority?: string
+    actionUrl?: string
+    [key: string]: any
+  }
 }
 
 export interface NotificationStats {
@@ -83,7 +88,7 @@ function transformNotification(notification: UserNotificationResponse): Notifica
     isRead: notification.is_read,
     createdAt: notification.created_at,
     readAt: notification.read_at,
-    metadata: {
+    metadata: notification.metadata || {
       priority: notification.priority as 'low' | 'medium' | 'high'
     }
   };

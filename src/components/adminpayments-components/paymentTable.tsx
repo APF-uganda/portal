@@ -66,6 +66,9 @@ export const PaymentTable = ({
   };
 
   const getTransactionDetails = (payment: Payment) => {
+    console.log('[Payment Data]', payment); // Debug log
+    console.log('[Payment Type]', payment.payment_type); // Debug log
+    
     let transactionId = '';
     let description = '';
     
@@ -91,6 +94,7 @@ export const PaymentTable = ({
       description = payment.description || 'Other Payment';
     }
     
+    console.log('[Resolved]', { transactionId, description }); // Debug log
     return { transactionId, description };
   };
 

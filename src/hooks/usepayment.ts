@@ -79,6 +79,7 @@ export const usePayments = () => {
         invoice_number: p.invoice_number,
         application_id: p.application_id,
         reference: p.reference,
+        payment_type: p.payment_type, // Pass through payment_type
         proof_of_payment: p.proof_of_payment,
         user: p.member_name,
         requires_document_review: p.requires_document_review,

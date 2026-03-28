@@ -20,6 +20,7 @@ export interface AdminPaymentResponse {
   application_id?: string;
   reference: string;
   description: string;
+  payment_type?: string; // Added: donation, event, membership_renewal, etc.
   amount: number;
   currency: string;
   proof_of_payment?: string;
