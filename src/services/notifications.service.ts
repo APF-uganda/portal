@@ -67,9 +67,6 @@ const getAuthHeaders = () => {
   const token = getAccessToken();
   return {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
     ...(token && { Authorization: `Bearer ${token}` }),
   };
 };
