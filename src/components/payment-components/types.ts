@@ -26,4 +26,5 @@ export interface Payment {
   requires_document_review?: boolean;
   linked_document_id?: number | null;
   linked_document_status?: string | null;
+  payment_type?: string; // Added for donation, event, renewal, etc.
 }

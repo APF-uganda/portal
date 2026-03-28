@@ -87,6 +87,9 @@ const AdminNotificationsPage = () => {
   });
 
   const handleNotificationClick = async (notification: AdminNotification) => {
+    console.log('[Notification Click]', notification);
+    console.log('[Action URL]', notification.metadata?.actionUrl);
+    
     // Mark as read if unread
     if (!notification.isRead) {
       await handleMarkAsRead(notification.id);
@@ -94,7 +97,10 @@ const AdminNotificationsPage = () => {
     
     // Navigate to action URL if available
     if (notification.metadata?.actionUrl) {
+      console.log('[Navigating to]', notification.metadata.actionUrl);
       navigate(notification.metadata.actionUrl);
+    } else {
+      console.log('[No action URL found]');
     }
   };
 

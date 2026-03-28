@@ -70,15 +70,13 @@ export const PaymentTable = ({
     let description = '';
     
     // Check payment_type first if available
-    const paymentType = (payment as any).payment_type;
-    
-    if (paymentType === 'donation') {
+    if (payment.payment_type === 'donation') {
       transactionId = payment.reference || payment.application_id || '-';
       description = 'Donation';
-    } else if (paymentType === 'event') {
+    } else if (payment.payment_type === 'event') {
       transactionId = payment.reference || '-';
       description = 'Event Payment';
-    } else if (paymentType === 'membership_renewal' || (payment.invoice_number && payment.invoice_number.startsWith('INV-'))) {
+    } else if (payment.payment_type === 'membership_renewal' || (payment.invoice_number && payment.invoice_number.startsWith('INV-'))) {
       transactionId = payment.invoice_number || payment.reference || '-';
       description = 'Membership Renewal';
     } else if (payment.application_id && payment.application_id.startsWith('APF-')) {
@@ -86,8 +84,9 @@ export const PaymentTable = ({
       description = 'Application Fee';
     } else if (payment.reference && payment.reference.startsWith('EVT-')) {
       transactionId = payment.reference;
-      description = 'Event';
+      description = 'Event Payment';
     } else {
+      // Fallback to description from backend or use reference
       transactionId = payment.reference || payment.application_id || payment.invoice_number || '-';
       description = payment.description || 'Other Payment';
     }
