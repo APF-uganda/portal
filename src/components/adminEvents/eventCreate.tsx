@@ -112,7 +112,7 @@ export const EventForm: React.FC<EventFormProps> = ({ initialData, onSuccess, on
             <div className="flex justify-between items-start gap-4 mb-6">
               <input 
                 type="text" placeholder="Event Headline..."
-                className="w-full text-3xl font-black text-slate-900 outline-none uppercase tracking-tighter"
+                className="w-full text-3xl  text-slate-900 outline-none uppercase tracking-tighter"
                 value={eventData.title}
                 onChange={(e) => updateField('title', e.target.value)}
               />

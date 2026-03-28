@@ -76,7 +76,7 @@ const EventsManager = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900">Events Manager</h1>
+          <h1 className="text-3xl  text-slate-900">Events Manager</h1>
           <p className="text-slate-500 font-medium">Create and manage public website events</p>
         </div>
         <button 
@@ -124,7 +124,7 @@ const EventsManager = () => {
                       No Image
                     </div>
                   )}
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black uppercase text-purple-700 shadow-sm border border-purple-50">
+                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-[10px]  uppercase text-purple-700 shadow-sm border border-purple-50">
                     {item.category || 'General'}
                   </div>
                 </div>

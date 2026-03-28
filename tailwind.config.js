@@ -10,6 +10,10 @@ export default {
         primary: "#7c3aed",       // purple
         "primary-dark": "#6d28d9"
       },
+      fontFamily: {
+        sans: ['Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
+      },
     },
   },
   plugins: [],

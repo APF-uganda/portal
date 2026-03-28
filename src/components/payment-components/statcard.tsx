@@ -22,7 +22,7 @@ export const PaymentStatCard = ({
       <div className="flex justify-between items-start">
         <div className="space-y-1 flex-1 min-w-0">
           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest truncate">{title}</p>
-          <h3 className="text-xl md:text-2xl font-black text-slate-800 truncate">
+          <h3 className="text-xl md:text-2xl  text-slate-800 truncate">
             {value}
           </h3>
           

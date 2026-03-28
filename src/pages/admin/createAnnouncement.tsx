@@ -95,18 +95,18 @@ export default function CreateAnnouncement() {
                 <span className="font-semibold text-sm sm:text-base">Back to Announcements</span>
               </button>
               
-              <h1 className="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight uppercase">
+              <h1 className="text-2xl sm:text-3xl  text-gray-800 tracking-tight uppercase">
                 Create New Announcement
               </h1>
               
-              <nav className="hidden sm:flex text-[10px] font-black text-gray-400 mt-2 uppercase tracking-widest">
+              <nav className="hidden sm:flex text-[10px]  text-gray-400 mt-2 uppercase tracking-widest">
                 Admin <span className="mx-2 text-gray-300">/</span> Communications <span className="mx-2 text-gray-300">/</span> Create
               </nav>
             </div>
 
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-r-lg mb-6 shadow-sm animate-pulse">
-                <p className="text-xs font-black uppercase tracking-widest">Error Occurred</p>
+                <p className="text-xs  uppercase tracking-widest">Error Occurred</p>
                 <p className="text-sm font-bold">{error}</p>
               </div>
             )}
@@ -116,7 +116,7 @@ export default function CreateAnnouncement() {
                 
                 {/* Title Input */}
                 <div className="group">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-[#5C32A3] transition-colors">
+                  <label className="block text-[10px]  text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-[#5C32A3] transition-colors">
                     Announcement Title <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -132,7 +132,7 @@ export default function CreateAnnouncement() {
 
                 {/* Editor Section */}
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                  <label className="block text-[10px]  text-gray-400 uppercase tracking-widest mb-2">
                     Message Content <span className="text-red-500">*</span>
                   </label>
                   <div className="rich-text-wrapper rounded-xl overflow-hidden border-2 border-gray-100 focus-within:border-[#5C32A3] transition-all">
@@ -160,7 +160,7 @@ export default function CreateAnnouncement() {
                 {/* Responsive Grid for Dropdowns */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Target Audience</label>
+                    <label className="block text-[10px]  text-gray-400 uppercase tracking-widest">Target Audience</label>
                     <select
                       name="audience"
                       value={formData.audience}
@@ -176,7 +176,7 @@ export default function CreateAnnouncement() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Delivery Channel</label>
+                    <label className="block text-[10px]  text-gray-400 uppercase tracking-widest">Delivery Channel</label>
                     <select
                       name="channel"
                       value={formData.channel}
@@ -190,7 +190,7 @@ export default function CreateAnnouncement() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Priority Level</label>
+                    <label className="block text-[10px]  text-gray-400 uppercase tracking-widest">Priority Level</label>
                     <select
                       name="priority"
                       value={formData.priority}
@@ -204,7 +204,7 @@ export default function CreateAnnouncement() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Schedule Publication</label>
+                    <label className="block text-[10px]  text-gray-400 uppercase tracking-widest">Schedule Publication</label>
                     <input
                       type="datetime-local"
                       name="scheduled_for"
@@ -220,7 +220,7 @@ export default function CreateAnnouncement() {
                   <button
                     onClick={() => handleSubmit("draft")}
                     disabled={loading || !formData.title || !formData.content}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gray-100 text-gray-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gray-100 text-gray-600 rounded-xl  text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all disabled:opacity-50"
                   >
                     <Save size={18} />
                     Save Draft
@@ -230,7 +230,7 @@ export default function CreateAnnouncement() {
                     <button
                       onClick={() => handleSubmit("scheduled")}
                       disabled={loading || !formData.title || !formData.content}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-blue-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-blue-500 text-white rounded-xl  text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
                     >
                       <Calendar size={18} />
                       Schedule
@@ -240,7 +240,7 @@ export default function CreateAnnouncement() {
                   <button
                     onClick={() => handleSubmit("sent")}
                     disabled={loading || !formData.title || !formData.content}
-                    className="flex-[1.5] flex items-center justify-center gap-2 px-8 py-4 bg-[#5C32A3] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#4A2882] transition-all shadow-lg shadow-purple-200 disabled:opacity-50"
+                    className="flex-[1.5] flex items-center justify-center gap-2 px-8 py-4 bg-[#5C32A3] text-white rounded-xl  text-[10px] uppercase tracking-widest hover:bg-[#4A2882] transition-all shadow-lg shadow-purple-200 disabled:opacity-50"
                   >
                     <Send size={18} />
                     {loading ? "Processing..." : "Broadcast Now"}

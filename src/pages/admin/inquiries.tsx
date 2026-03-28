@@ -252,13 +252,13 @@ const AdminInquiryDashboard = () => {
                  </div>
                  <div>
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">Professional Reply</h2>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Direct Email Response</p>
+                    <p className="text-[10px]  text-gray-400 uppercase tracking-widest">Direct Email Response</p>
                  </div>
               </div>
 
               <div className="bg-slate-50 p-5 rounded-2xl mb-8 border border-slate-100">
                 <div className="flex justify-between items-start mb-3">
-                   <p className="text-[10px] font-black text-[#5E2590] uppercase tracking-widest">Original Message</p>
+                   <p className="text-[10px]  text-[#5E2590] uppercase tracking-widest">Original Message</p>
                    <span className="text-[10px] font-bold text-gray-400">{selectedInquiry.name}</span>
                 </div>
                 <p className="text-xs md:text-sm text-slate-600 leading-relaxed italic break-words line-clamp-4">"{selectedInquiry.message}"</p>

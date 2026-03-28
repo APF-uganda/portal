@@ -37,12 +37,12 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
       })
     })
     
-    // Filter only completed payment transactions (not invoices)
-    // Payments have methods like "MTN Mobile Money", "Airtel Money", "Bank Transfer"
+    // Filter only completed/verified payment transactions (not invoices)
+    // Payments have methods like "MTN Mobile Money", "Airtel Money", "Bank Transfer", "Manual Receipt Upload"
     // Invoices and fees have method "N/A"
     const completedPayments = transactions.filter(t => {
       const statusLower = t.status.toLowerCase()
-      const isCompleted = statusLower === 'completed' || statusLower === 'success'
+      const isCompleted = statusLower === 'completed' || statusLower === 'success' || statusLower === 'verified'
       const isPayment = t.method && t.method !== 'N/A'
       const include = isCompleted && isPayment
       

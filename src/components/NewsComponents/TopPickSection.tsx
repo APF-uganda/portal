@@ -31,7 +31,7 @@ const TopPickSection = ({ article }: TopPickProps) => {
     
       <div className="flex items-center gap-3 mb-8 w-full">
         <div className="h-[1px] flex-1 bg-gray-100"></div>
-        <h3 className="text-lg md:text-xl font-black text-[#1A1A1A] uppercase tracking-tighter whitespace-nowrap px-4">
+        <h3 className="text-lg md:text-xl text-[#1A1A1A] uppercase tracking-tighter whitespace-nowrap px-4">
           Our Latest News: <span className="text-[#5F1C9F]">Top Pick</span>
         </h3>
         <div className="h-[1px] flex-1 bg-gray-100"></div>
@@ -59,7 +59,7 @@ const TopPickSection = ({ article }: TopPickProps) => {
             Featured Story
           </div>
           
-          <h2 className="text-2xl md:text-3xl font-black text-[#1A1A1A] leading-tight tracking-tight">
+          <h2 className="text-2xl md:text-3xl text-[#1A1A1A] leading-tight tracking-tight">
             {article.title}
           </h2>
           

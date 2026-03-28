@@ -493,7 +493,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
     <div className="max-w-6xl mx-auto px-4 pb-20 space-y-8 animate-in fade-in duration-500 font-sans">
       {/* Action Header */}
       <div className="flex flex-col md:flex-row justify-between items-center py-6 border-b border-slate-100 gap-6">
-        <button onClick={onCancel} className="flex items-center gap-2 text-slate-400 hover:text-purple-700 text-[11px] font-black uppercase tracking-[0.2em] transition-all">
+        <button onClick={onCancel} className="flex items-center gap-2 text-slate-400 hover:text-purple-700 text-[11px]  uppercase tracking-[0.2em] transition-all">
           <ArrowLeft size={16} strokeWidth={3} /> Exit Editor
         </button>
         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -504,11 +504,11 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
             <Star size={20} fill={isTopPick ? "currentColor" : "none"} />
           </button>
           
-          <button onClick={() => handleSubmit('draft')} disabled={isLoading} className="flex-1 md:flex-none px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-50 transition-all">
+          <button onClick={() => handleSubmit('draft')} disabled={isLoading} className="flex-1 md:flex-none px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px]  uppercase tracking-[0.2em] hover:bg-slate-50 transition-all">
             Save Draft
           </button>
           
-          <button onClick={() => handleSubmit('published')} disabled={isLoading} className="flex-1 md:flex-none px-8 py-3.5 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-xl hover:bg-purple-700 transition-all active:scale-95 disabled:opacity-50">
+          <button onClick={() => handleSubmit('published')} disabled={isLoading} className="flex-1 md:flex-none px-8 py-3.5 bg-slate-900 text-white rounded-2xl text-[11px]  uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-xl hover:bg-purple-700 transition-all active:scale-95 disabled:opacity-50">
             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <><Send size={16} strokeWidth={2.5} /> Publish</>}
           </button>
         </div>
@@ -522,7 +522,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
               value={title} 
               onChange={(e) => setTitle(e.target.value)} 
               placeholder="ARTICLE TITLE" 
-              className="w-full text-3xl md:text-5xl font-black outline-none mb-6 uppercase tracking-tight placeholder:text-slate-100" 
+              className="w-full text-3xl md:text-5xl  outline-none mb-6 uppercase tracking-tight placeholder:text-slate-100" 
             />
             <textarea 
               value={summary} 
@@ -568,7 +568,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
                         >
                           <label className="flex flex-col items-center justify-center p-12 md:p-20 border-2 border-dashed rounded-[2rem] bg-white cursor-pointer hover:bg-slate-50 hover:border-purple-200 transition-all">
                             {blockUploading === block.id ? <Loader2 className="animate-spin text-purple-600" /> : <UploadCloud className="text-slate-300 mb-4" size={40} />}
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Upload Body Image</span>
+                            <span className="text-[11px]  uppercase tracking-[0.2em] text-slate-400 text-center">Upload Body Image</span>
                             <span className="text-[9px] font-medium text-slate-300 mt-1">Click to select or drag & drop</span>
                             <input type="file" accept="image/*" className="hidden" onChange={(e) => handleBlockMediaUpload(e, block.id)} />
                           </label>
@@ -614,7 +614,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
                                 <UploadCloud className="text-slate-300" size={32} />
                                 <Plus className="text-slate-300" size={20} />
                               </div>
-                              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">
+                              <span className="text-[11px]  uppercase tracking-[0.2em] text-slate-400 text-center">
                                 {Array.isArray(block.value) && block.value.length > 0 ? 'Add More Images' : 'Upload Multiple Images'}
                               </span>
                               <span className="text-[9px] font-medium text-slate-300 mt-1">Select multiple files or drag & drop</span>
@@ -641,7 +641,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
                         value={block.value} 
                         onChange={(e) => updateBlock(block.id, e.target.value)} 
                         placeholder="PASTE VIDEO URL (YOUTUBE/VIMEO)" 
-                        className="w-full bg-transparent outline-none text-[11px] font-black uppercase tracking-widest text-slate-600" 
+                        className="w-full bg-transparent outline-none text-[11px]  uppercase tracking-widest text-slate-600" 
                       />
                     </div>
                   )}
@@ -662,7 +662,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
         {/* Sidebar Settings Section */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-6">Featured Cover</label>
+            <label className="text-[11px]  uppercase tracking-[0.2em] text-slate-400 block mb-6">Featured Cover</label>
             <div className="relative aspect-[4/3] bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center overflow-hidden group hover:border-purple-200 transition-all cursor-pointer">
               {imagePreview ? (
                 <>
@@ -674,7 +674,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
               ) : (
                 <div className="text-center px-4">
                   <UploadCloud className="text-slate-200 mb-3 mx-auto" size={32} />
-                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-relaxed">Click to upload<br/>400x300 recommended</span>
+                  <span className="text-[10px]  text-slate-300 uppercase tracking-widest leading-relaxed">Click to upload<br/>400x300 recommended</span>
                 </div>
               )}
               <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageUpload} disabled={uploading} />
@@ -683,7 +683,7 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
           </div>
 
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-4 flex items-center gap-2">
+            <label className="text-[11px]  uppercase tracking-[0.2em] text-slate-400 block mb-4 flex items-center gap-2">
               <Clock size={14} /> Read Time
             </label>
             <div className="relative">
@@ -691,18 +691,18 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
                 type="number" 
                 value={readTime} 
                 onChange={(e) => setReadTime(e.target.value)} 
-                className="w-full p-5 bg-slate-50 rounded-2xl text-[11px] font-black outline-none border border-slate-100" 
+                className="w-full p-5 bg-slate-50 rounded-2xl text-[11px]  outline-none border border-slate-100" 
               />
-              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase tracking-widest">Minutes</span>
+              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px]  text-slate-300 uppercase tracking-widest">Minutes</span>
             </div>
           </div>
 
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-4">Category</label>
+            <label className="text-[11px]  uppercase tracking-[0.2em] text-slate-400 block mb-4">Category</label>
             <select 
               value={category} 
               onChange={(e) => setCategory(e.target.value)} 
-              className="w-full p-5 bg-slate-50 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] outline-none border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors"
+              className="w-full p-5 bg-slate-50 rounded-2xl text-[11px]  uppercase tracking-[0.15em] outline-none border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors"
             >
               {availableCategories.length > 0 
                 ? availableCategories.map(cat => {
@@ -728,6 +728,6 @@ const ToolbarButton = ({ icon, label, onClick }: any) => (
     <div className="p-6 md:p-8 bg-white rounded-[1.8rem] border border-slate-100 shadow-sm group-hover:border-purple-200 group-hover:text-purple-700 group-hover:-translate-y-1.5 transition-all duration-300 text-slate-400">
       {icon}
     </div>
-    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-300 group-hover:text-slate-900 transition-colors">{label}</span>
+    <span className="text-[10px]  uppercase tracking-[0.25em] text-slate-300 group-hover:text-slate-900 transition-colors">{label}</span>
   </button>
 );

@@ -61,7 +61,7 @@ export const EventForm = ({ initialData, onSave, onCancel }: any) => {
         <div className="flex gap-3">
           <button 
             onClick={handleFinalSave}
-            className="px-8 py-2.5 bg-[#5C32A3] text-white rounded-xl font-black text-sm shadow-lg shadow-purple-200 flex items-center gap-2"
+            className="px-8 py-2.5 bg-[#5C32A3] text-white rounded-xl  text-sm shadow-lg shadow-purple-200 flex items-center gap-2"
           >
             <Save size={18} /> {initialData ? "Update Event" : "Publish Event"}
           </button>
@@ -74,17 +74,17 @@ export const EventForm = ({ initialData, onSave, onCancel }: any) => {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm space-y-6">
             <div>
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-2 block">Event Identity</label>
+              <label className="text-[10px]  uppercase text-slate-400 tracking-[0.2em] mb-2 block">Event Identity</label>
               <input 
                 placeholder="e.g. Annual Members Conference 2026"
-                className="w-full text-3xl font-black text-slate-800 outline-none border-b-2 border-transparent focus:border-purple-100 py-2"
+                className="w-full text-3xl  text-slate-800 outline-none border-b-2 border-transparent focus:border-purple-100 py-2"
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-2 block">Short Description</label>
+              <label className="text-[10px]  uppercase text-slate-400 tracking-[0.2em] mb-2 block">Short Description</label>
               <textarea 
                 placeholder="Describe what will happen at this event..."
                 className="w-full h-32 bg-slate-50 rounded-2xl p-5 outline-none focus:ring-2 focus:ring-purple-100 text-slate-600 font-medium"
@@ -96,7 +96,7 @@ export const EventForm = ({ initialData, onSave, onCancel }: any) => {
             {/* Category & Status Selection */}
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
-                 <label className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-1"><Layers size={12}/> Category</label>
+                 <label className="text-[10px]  uppercase text-slate-400 flex items-center gap-1"><Layers size={12}/> Category</label>
                  <select 
                    className="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none border-none"
                    value={formData.category}
@@ -110,7 +110,7 @@ export const EventForm = ({ initialData, onSave, onCancel }: any) => {
                  </select>
                </div>
                <div className="space-y-2">
-                 <label className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-1"><Bookmark size={12}/> Status</label>
+                 <label className="text-[10px]  uppercase text-slate-400 flex items-center gap-1"><Bookmark size={12}/> Status</label>
                  <select 
                    className="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none border-none"
                    value={formData.state}
@@ -129,13 +129,13 @@ export const EventForm = ({ initialData, onSave, onCancel }: any) => {
         {/* Right Column: Logistics Card */}
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm space-y-6">
-            <h3 className="font-black text-slate-800 flex items-center gap-2">
+            <h3 className=" text-slate-800 flex items-center gap-2">
               <Clock size={18} className="text-purple-500" /> Logistics
             </h3>
 
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 rounded-2xl">
-                <label className="text-[10px] font-black text-slate-400 uppercase">Event Date & Time</label>
+                <label className="text-[10px]  text-slate-400 uppercase">Event Date & Time</label>
                 <input 
                   type="datetime-local" 
                   className="w-full bg-transparent font-bold text-slate-700 outline-none mt-1" 
@@ -168,14 +168,14 @@ export const EventForm = ({ initialData, onSave, onCancel }: any) => {
 
           {/* Featured Image Upload */}
           <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-             <label className="text-[10px] font-black uppercase text-slate-400 mb-3 block tracking-widest">Event Banner</label>
+             <label className="text-[10px]  uppercase text-slate-400 mb-3 block tracking-widest">Event Banner</label>
              <div className="relative h-40 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center group overflow-hidden">
                 {formData.image?.url ? (
                   <img src={`${CMS_BASE_URL}${formData.image.url}`} className="w-full h-full object-cover" />
                 ) : (
                   <>
                     <ImageIcon className="text-slate-300" size={32} />
-                    <span className="text-[10px] font-black text-purple-600 mt-2 uppercase">{uploading ? 'Uploading...' : 'Upload Image'}</span>
+                    <span className="text-[10px]  text-purple-600 mt-2 uppercase">{uploading ? 'Uploading...' : 'Upload Image'}</span>
                   </>
                 )}
                 <input 

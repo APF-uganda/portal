@@ -132,7 +132,7 @@ const AboutPageEditor = () => {
       <div className="space-y-8">
         {/* HERO SECTION WITH IMAGE */}
         <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-          <h2 className="text-xs font-black text-purple-600 uppercase mb-4">Hero Section & Image</h2>
+          <h2 className="text-xs  text-purple-600 uppercase mb-4">Hero Section & Image</h2>
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 space-y-4">
                <input 
@@ -172,7 +172,7 @@ const AboutPageEditor = () => {
         {/* VISION & MISSION */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-            <h2 className="text-xs font-black text-purple-600 uppercase mb-4">Vision</h2>
+            <h2 className="text-xs  text-purple-600 uppercase mb-4">Vision</h2>
             <textarea 
               className="w-full p-4 bg-slate-50 rounded-xl text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-purple-100"
               value={data.vision}
@@ -181,7 +181,7 @@ const AboutPageEditor = () => {
           </section>
 
           <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-            <h2 className="text-xs font-black text-purple-600 uppercase mb-4">Mission</h2>
+            <h2 className="text-xs  text-purple-600 uppercase mb-4">Mission</h2>
             <textarea 
               className="w-full p-4 bg-slate-50 rounded-xl text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-purple-100"
               value={data.mission}
@@ -192,7 +192,7 @@ const AboutPageEditor = () => {
 
         {/* HISTORY */}
         <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-          <h2 className="text-xs font-black text-purple-600 uppercase mb-4">Our History</h2>
+          <h2 className="text-xs  text-purple-600 uppercase mb-4">Our History</h2>
           <textarea 
             className="w-full p-4 bg-slate-50 rounded-xl text-sm min-h-[200px] outline-none focus:ring-2 focus:ring-purple-100"
             value={data.history}
@@ -204,7 +204,7 @@ const AboutPageEditor = () => {
         {/* OBJECTIVES */}
         <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xs font-black text-purple-600 uppercase">Strategic Objectives</h2>
+            <h2 className="text-xs  text-purple-600 uppercase">Strategic Objectives</h2>
             <button 
               onClick={() => setData({...data, objectives: [...data.objectives, { title: '', description: '' }]})}
               className="text-xs font-bold bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg hover:bg-purple-100"

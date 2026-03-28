@@ -178,7 +178,7 @@ export const PaymentTable = ({
     <div className="bg-white rounded-xl md:rounded-[24px] shadow-sm border border-slate-100 overflow-hidden w-full font-montserrat">
       <div className="px-4 md:px-8 py-4 md:py-6 border-b border-slate-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white">
         <div>
-          <h2 className="font-black text-slate-800 text-lg md:text-xl tracking-tight flex items-center gap-2 md:gap-3">
+          <h2 className="text-slate-800 text-lg md:text-xl tracking-tight flex items-center gap-2 md:gap-3">
             <div className="p-1.5 md:p-2 bg-slate-50 rounded-lg">
               <RotateCcw size={18} className="md:w-5 md:h-5 text-slate-400" />
             </div>
@@ -196,7 +196,7 @@ export const PaymentTable = ({
         <div className="min-w-[1300px]">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">
+              <tr className="bg-slate-50/50 text-[10px] md:text-[11px]  text-slate-400 uppercase tracking-[0.1em]">
                 <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[200px]">Member Information</th>
                 <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[160px]">Transaction ID</th>
                 <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[140px]">Description</th>
@@ -223,18 +223,18 @@ export const PaymentTable = ({
                   const stringId = String(p.id);
 
                   return (
-                    <tr key={stringId} className="hover:bg-slate-50/50 transition-all group">
-                      <td className="px-6 md:px-8 py-4 md:py-6">
+                    <tr key={stringId} className="hover:bg-slate-50/50 hover:text-[#4B1D91] transition-all group">
+                      <td className="px-6 md:px-8 py-4 hover:bg-slate-50/50 hover:text-[#4B1D91]] md:py-6">
                         <div className="font-bold text-gray-900 text-sm">{p.member_name}</div>
                         <div className="text-xs text-gray-500">{p.member_email}</div>
                       </td>
-                      <td className="px-6 md:px-8 py-4 md:py-6 font-mono text-xs">{transactionId}</td>
+                      <td className="px-6 md:px-8 py-4 md:py-6  text-sm">{transactionId}</td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-sm">{description}</td>
-                      <td className="px-6 md:px-8 py-4 md:py-6 text-right font-bold text-gray-900">
+                      <td className="px-6 md:px-8 py-4 md:py-6 text-right font-bold text-gray-900 hover:text-[#4B1D91]">
                         {p.currency || 'UGX'} {Number(p.amount || 0).toLocaleString()}
                       </td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-center">
-                        <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border ${getStatusColor(p.status)}`}>
+                        <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[10px]  uppercase tracking-widest border ${getStatusColor(p.status)}`}>
                           {getStatusLabel(p.status)}
                         </span>
                       </td>

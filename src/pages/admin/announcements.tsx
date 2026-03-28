@@ -31,7 +31,7 @@ const ModernAlert = ({
           }`}>
             {type === 'danger' ? <Trash2 size={32} /> : type === 'success' ? <CheckCircle2 size={32} /> : <AlertCircle size={32} />}
           </div>
-          <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight mb-2">{title}</h3>
+          <h3 className="text-xl  text-gray-800 uppercase tracking-tight mb-2">{title}</h3>
           <p className="text-gray-500 font-medium leading-relaxed">{message}</p>
         </div>
         <div className="bg-gray-50 px-6 py-4 flex gap-3">
@@ -197,14 +197,14 @@ export default function CommunicationsDashboard() {
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-3 md:px-6">
               <div>
-                <h1 className="text-2xl md:text-3xl font-black text-gray-800 mb-1 md:mb-2 uppercase tracking-tight">Communications</h1>
-                <nav className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest">
+                <h1 className="text-2xl md:text-3xl  text-gray-800 mb-1 md:mb-2 uppercase tracking-tight">Communications</h1>
+                <nav className="text-[10px] md:text-xs  text-gray-400 uppercase tracking-widest">
                   Admin <span className="mx-1 text-gray-300">/</span> Communications
                 </nav>
               </div>
               <button 
                 onClick={() => navigate('/admin/create-announcement')}
-                className="bg-[#5C32A3] text-white px-4 md:px-6 py-2 md:py-2.5 rounded-xl flex items-center gap-2 font-black uppercase tracking-widest shadow-lg shadow-purple-100 hover:bg-[#4A2882] transition-all text-xs md:text-sm w-full md:w-auto justify-center"
+                className="bg-[#5C32A3] text-white px-4 md:px-6 py-2 md:py-2.5 rounded-xl flex items-center gap-2  uppercase tracking-widest shadow-lg shadow-purple-100 hover:bg-[#4A2882] transition-all text-xs md:text-sm w-full md:w-auto justify-center"
               >
                 <Plus size={18} className="md:w-5 md:h-5" strokeWidth={3} /> 
                 <span>New Announcement</span>
@@ -221,7 +221,7 @@ export default function CommunicationsDashboard() {
             {/* Announcements Table */}
             <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/40 border border-gray-100 overflow-hidden mx-3 md:mx-6">
               <div className="p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-50 gap-3">
-                <h2 className="text-sm font-black text-gray-800 uppercase tracking-widest">Active Archives</h2>
+                <h2 className="text-sm  text-gray-800 uppercase tracking-widest">Active Archives</h2>
                 <div className="flex flex-col sm:flex-row gap-2 md:gap-3 w-full sm:w-auto">
                   <select
                     value={statusFilter}
@@ -251,7 +251,7 @@ export default function CommunicationsDashboard() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left min-w-[800px]">
                     <thead className="bg-gray-50/50">
-                      <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      <tr className="text-[10px]  text-gray-400 uppercase tracking-widest">
                         <th className="px-6 py-4">Title</th>
                         <th className="px-6 py-4">Audience</th>
                         <th className="px-6 py-4">Channel</th>

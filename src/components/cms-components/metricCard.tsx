@@ -13,7 +13,7 @@ export const MetricCard = ({ label, value, trend, isPositive, type }: MetricCard
     <div className="flex justify-between items-start mb-4">
       <div>
         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-        <div className="text-2xl font-black text-slate-800 tracking-tight">{value}</div>
+        <div className="text-2xl  text-slate-800 tracking-tight">{value}</div>
       </div>
       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <button className="p-2 hover:bg-indigo-50 rounded-lg text-slate-400 hover:text-indigo-600 transition-colors">

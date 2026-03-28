@@ -91,7 +91,7 @@ const HomepageEditor = () => {
     }
   };
 
-  if (loading) return <div className="p-20 text-center font-black">SYNCING CONTENT...</div>;
+  if (loading) return <div className="p-20 text-center ">SYNCING CONTENT...</div>;
   const attr = data.attributes || data;
 
   return (
@@ -105,9 +105,9 @@ const HomepageEditor = () => {
             <span className="text-xs font-bold text-slate-600">DASHBOARD</span>
           </button>
           <div className="h-6 w-px bg-slate-200 mx-2" />
-          <h1 className="font-black text-slate-800 tracking-tight text-xl">HOMEPAGE EDITOR</h1>
+          <h1 className=" text-slate-800 tracking-tight text-xl">HOMEPAGE EDITOR</h1>
         </div>
-        <button onClick={handleSave} disabled={saving} className="bg-[#5C32A3] hover:bg-[#4A2882] text-white px-8 py-2.5 rounded-xl font-black flex items-center gap-2 transition-all shadow-lg shadow-purple-200 disabled:opacity-50">
+        <button onClick={handleSave} disabled={saving} className="bg-[#5C32A3] hover:bg-[#4A2882] text-white px-8 py-2.5 rounded-xl  flex items-center gap-2 transition-all shadow-lg shadow-purple-200 disabled:opacity-50">
           {saving ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>}
           PUBLISH CHANGES
         </button>
@@ -117,7 +117,7 @@ const HomepageEditor = () => {
         {/* HERO SECTION */}
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
           <div className="flex justify-between items-start mb-8">
-            <div className="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full  text-[10px] uppercase tracking-widest flex items-center gap-2">
               <Layout size={14}/> Hero Header
             </div>
             <div className="w-40 h-24 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 overflow-hidden relative group cursor-pointer" onClick={() => heroFileRef.current?.click()}>
@@ -125,14 +125,14 @@ const HomepageEditor = () => {
             </div>
             <input type="file" ref={heroFileRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, (file) => setData({...data, attributes: {...attr, hero: {...attr.hero, backgroundImage: file}}}))}/>
           </div>
-          <input className="w-full text-4xl font-black outline-none mb-4" value={attr.hero?.title || ""} onChange={(e) => setData({...data, attributes: {...attr, hero: {...attr.hero, title: e.target.value}}})} />
+          <input className="w-full text-4xl  outline-none mb-4" value={attr.hero?.title || ""} onChange={(e) => setData({...data, attributes: {...attr, hero: {...attr.hero, title: e.target.value}}})} />
           <textarea className="w-full text-lg text-slate-500 outline-none h-24 resize-none leading-relaxed" value={attr.hero?.subtitle || ""} onChange={(e) => setData({...data, attributes: {...attr, hero: {...attr.hero, subtitle: e.target.value}}})} />
         </div>
 
         {/* STATS SECTION */}
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
           <div className="flex justify-between items-center mb-8">
-            <div className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full  text-[10px] uppercase tracking-widest flex items-center gap-2">
               <BarChart3 size={14}/> Impact Statistics
             </div>
             <button onClick={() => setData({...data, attributes: {...attr, stats: [...(attr.stats || []), { value: "0", label: "New Label" }]}})} className="text-emerald-600 flex items-center gap-1 text-xs font-bold hover:bg-emerald-50 px-3 py-1 rounded-lg"><Plus size={14}/> ADD STAT</button>
@@ -141,7 +141,7 @@ const HomepageEditor = () => {
             {attr.stats?.map((s: any, i: number) => (
               <div key={i} className="bg-slate-50 p-4 rounded-2xl border flex flex-col relative group">
                 <button onClick={() => setData({...data, attributes: {...attr, stats: attr.stats.filter((_:any, idx:number) => idx !== i)}})} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600"><Trash2 size={14}/></button>
-                <input className="w-full text-2xl font-black text-emerald-600 bg-transparent outline-none" value={s.value} onChange={(e) => { const next = [...attr.stats]; next[i].value = e.target.value; setData({...data, attributes: {...attr, stats: next}}); }} />
+                <input className="w-full text-2xl  text-emerald-600 bg-transparent outline-none" value={s.value} onChange={(e) => { const next = [...attr.stats]; next[i].value = e.target.value; setData({...data, attributes: {...attr, stats: next}}); }} />
                 <input className="w-full text-[10px] font-bold text-slate-400 bg-transparent outline-none uppercase" value={s.label} onChange={(e) => { const next = [...attr.stats]; next[i].label = e.target.value; setData({...data, attributes: {...attr, stats: next}}); }} />
               </div>
             ))}
@@ -151,7 +151,7 @@ const HomepageEditor = () => {
         {/* CHAIRPERSON SECTION */}
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
           <div className="flex justify-between items-center mb-8">
-            <div className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full  text-[10px] uppercase tracking-widest flex items-center gap-2">
               <Quote size={14}/> Leadership Message
             </div>
             <div className="relative group cursor-pointer" onClick={() => chairFileRef.current?.click()}>
@@ -161,14 +161,14 @@ const HomepageEditor = () => {
               <input type="file" ref={chairFileRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, (file) => setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, photo: file}}}))}/>
             </div>
           </div>
-          <input className="w-full text-2xl font-black outline-none mb-2" value={attr.chairMessage?.name || ""} onChange={(e) => setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, name: e.target.value}}})} />
+          <input className="w-full text-2xl  outline-none mb-2" value={attr.chairMessage?.name || ""} onChange={(e) => setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, name: e.target.value}}})} />
           <textarea className="w-full bg-slate-50 p-6 rounded-2xl outline-none h-48 resize-none text-slate-600" value={attr.chairMessage?.fullMessage || ""} onChange={(e) => setData({...data, attributes: {...attr, chairMessage: {...attr.chairMessage, fullMessage: e.target.value}}})} />
         </div>
 
         {/* PARTNER LOGOS */}
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
           <div className="flex justify-between items-center mb-8">
-            <div className="bg-slate-50 text-slate-600 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+            <div className="bg-slate-50 text-slate-600 px-4 py-1.5 rounded-full  text-[10px] uppercase tracking-widest flex items-center gap-2">
               <Building2 size={14}/> Partner Logos
             </div>
             <button onClick={() => setData({...data, attributes: {...attr, partnerlogo: [...(attr.partnerlogo || []), { name: "", logo: null }]}})} className="text-slate-600 flex items-center gap-1 text-xs font-bold hover:bg-slate-100 px-3 py-1 rounded-lg"><Plus size={14}/> ADD LOGO</button>

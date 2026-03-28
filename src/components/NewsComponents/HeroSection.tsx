@@ -6,7 +6,7 @@ type HeroSectionProps = {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ title = "News and Insights" }) => {
   return (
-    <section className="relative bg-cover bg-center bg-no-repeat h-[40vh] flex items-center justify-center text-white"
+    <section className="relative bg-cover bg-center bg-no-repeat min-h-[50vh] md:min-h-[60vh] flex items-center justify-center text-white"
       style={{ backgroundImage: "url('/images/News/news1.jpg')" }} 
     >
       <div className="absolute inset-0 bg-black/40" />

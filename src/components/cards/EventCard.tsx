@@ -91,12 +91,12 @@ export default function EventCard({
             <div className="pt-2 border-t border-slate-100 mt-2 flex flex-col gap-1">
               {memberPrice && (
                 <div className="text-[11px] font-bold text-gray-500 uppercase">
-                  Member: <span className="text-purple-700 font-black">UGX {Number(memberPrice).toLocaleString()}</span>
+                  Member: <span className="text-purple-700 ">UGX {Number(memberPrice).toLocaleString()}</span>
                 </div>
               )}
               {nonMemberPrice && (
                 <div className="text-[11px] font-bold text-gray-500 uppercase">
-                  Non-Member: <span className="text-purple-700 font-black">UGX {Number(nonMemberPrice).toLocaleString()}</span>
+                  Non-Member: <span className="text-purple-700 ">UGX {Number(nonMemberPrice).toLocaleString()}</span>
                 </div>
               )}
             </div>

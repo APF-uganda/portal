@@ -19,7 +19,7 @@ export const SectionEditor = ({ sectionTitle, fields, values, onUpdate }: Sectio
     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Section Header */}
       <div className="px-8 py-5 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="text-sm font-black text-[#5C32A3] uppercase tracking-widest flex items-center gap-2">
+        <h3 className="text-sm  text-[#5C32A3] uppercase tracking-widest flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-purple-500"></div>
           {sectionTitle}
         </h3>
@@ -37,7 +37,7 @@ export const SectionEditor = ({ sectionTitle, fields, values, onUpdate }: Sectio
               {field.type === 'textarea' && <AlignLeft size={14} className="text-slate-400" />}
               {field.type === 'image' && <ImageIcon size={14} className="text-slate-400" />}
               {field.type === 'url' && <LinkIcon size={14} className="text-slate-400" />}
-              <label className="text-xs font-black text-slate-500 uppercase tracking-wide">
+              <label className="text-xs  text-slate-500 uppercase tracking-wide">
                 {field.label}
               </label>
             </div>
@@ -90,7 +90,7 @@ export const SectionEditor = ({ sectionTitle, fields, values, onUpdate }: Sectio
                       {/* In a real scenario, this would trigger a file input or Strapi Media Library */}
                       <button 
                         onClick={() => onUpdate(field.id, 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800')} 
-                        className="mt-3 text-[10px] font-black text-purple-600 uppercase hover:underline"
+                        className="mt-3 text-[10px]  text-purple-600 uppercase hover:underline"
                       >
                         Select from Media Library
                       </button>

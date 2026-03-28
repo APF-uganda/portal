@@ -116,14 +116,14 @@ const LeadershipManager = () => {
             <ArrowLeft size={15} />
           </button>
           <div>
-            <h1 className="font-black text-slate-800 tracking-tight text-xl uppercase">Governance</h1>
+            <h1 className="text-slate-800 tracking-tight text-xl uppercase">Governance</h1>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team & Leadership</p>
           </div>
         </div>
         <button 
           onClick={handleAddLeader} 
           disabled={saving} 
-          className="bg-[#5C32A3] text-white px-6 py-2.5 rounded-xl font-black flex items-center gap-2 shadow-lg hover:bg-[#4a2885] transition-all disabled:opacity-50"
+          className="bg-[#5C32A3] text-white px-6 py-2.5 rounded-xl  flex items-center gap-2 shadow-lg hover:bg-[#4a2885] transition-all disabled:opacity-50"
         >
           {saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />} 
           NEW MEMBER
@@ -158,7 +158,7 @@ const LeadershipManager = () => {
                 {/* Info Column */}
                 <div className="flex-1 space-y-3">
                   <input 
-                    className="w-full text-lg font-black outline-none border-b border-transparent focus:border-purple-200"
+                    className="w-full text-lg  outline-none border-b border-transparent focus:border-purple-200"
                     placeholder="Name"
                     value={attr.name}
                     onChange={(e) => handleUpdateField(leader.id, 'name', e.target.value)}
@@ -171,7 +171,7 @@ const LeadershipManager = () => {
                   />
                   
                   <div className="flex items-center gap-2 mt-2">
-                     <span className="text-[9px] font-black text-slate-400">ORDER:</span>
+                     <span className="text-[9px]  text-slate-400">ORDER:</span>
                      <input 
                         type="number"
                         className="w-10 text-[10px] font-bold bg-slate-50 rounded p-1"
@@ -186,7 +186,7 @@ const LeadershipManager = () => {
               <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                 <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${isPublished ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
                   {isPublished ? <CheckCircle2 size={12}/> : <Globe size={12}/>}
-                  <span className="text-[10px] font-black uppercase tracking-widest">
+                  <span className="text-[10px]  uppercase tracking-widest">
                     {isPublished ? 'Live on Site' : 'Draft Only'}
                   </span>
                 </div>
@@ -195,7 +195,7 @@ const LeadershipManager = () => {
                   {!isPublished && (
                     <button 
                       onClick={() => handlePublish(leader.id)}
-                      className="text-[10px] font-black text-purple-600 hover:underline"
+                      className="text-[10px]  text-purple-600 hover:underline"
                     >
                       PUBLISH NOW
                     </button>

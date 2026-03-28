@@ -160,7 +160,7 @@ const ManagePayments = () => {
             
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl md:text-[28px] font-black text-slate-800 tracking-tight">Payments Dashboard</h1>
+                <h1 className="text-2xl md:text-[28px]  text-slate-800 tracking-tight">Payments Dashboard</h1>
                 <p className="text-slate-500 font-medium">Monitor member financial transactions.</p>
               </div>
               <div className="flex items-center gap-3">
@@ -267,7 +267,7 @@ const ManagePayments = () => {
                   </div>
                   <div>
                     <span className="text-[9px] uppercase text-gray-400 block mb-0.5">Status</span>
-                    <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                    <span className={`inline-block px-3 py-1 rounded-full text-[10px]  uppercase tracking-widest border ${
                       selectedPayment.status === 'verified' || selectedPayment.status === 'completed'
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                         : selectedPayment.status === 'pending'

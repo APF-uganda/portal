@@ -15,14 +15,14 @@ export const ActionHeader = ({ onPublish, onBack, loading }: any) => (
     <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto">
       <div className="hidden lg:flex items-center gap-2 px-3 md:px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full">
         <Globe size={12} className="md:w-3.5 md:h-3.5" />
-        <span className="text-xs md:text-sm font-black uppercase tracking-tighter">Public</span>
+        <span className="text-xs md:text-sm  uppercase tracking-tighter">Public</span>
       </div>
 
       <button 
         type="button"
         disabled={loading}
         onClick={onPublish} 
-        className="flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3 bg-[#5C32A3] text-white rounded-xl md:rounded-2xl font-black text-sm md:text-base shadow-xl shadow-purple-200 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex-1 sm:flex-none px-6 md:px-8 py-2.5 md:py-3 bg-[#5C32A3] text-white rounded-xl md:rounded-2xl  text-sm md:text-base shadow-xl shadow-purple-200 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? (
           <>

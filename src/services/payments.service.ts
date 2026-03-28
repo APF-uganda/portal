@@ -143,30 +143,21 @@ const fetchMemberManualTransactions = async (): Promise<Transaction[]> => {
 
 /**
  * Get payment history/transactions
- * Uses the payment ledger API which includes invoices, payments, and applications
+ * Combines ledger entries with manual payments
  * @returns Promise with array of transactions
  */
 export const getPaymentHistory = async (): Promise<Transaction[]> => {
   try {
-    console.log('🔍 getPaymentHistory - Starting fetch using ledger...')
+    console.log('🔍 getPaymentHistory - Starting fetch...')
     
-    // Use the ledger API which returns all payment data
-    const ledgerEntries = await getPaymentLedger()
+    // Fetch both ledger and manual payments in parallel
+    const [ledgerEntries, manualPaymentsData] = await Promise.all([
+      getPaymentLedger().catch(() => []),
+      fetchMemberManualTransactions().catch(() => [])
+    ])
+    
     console.log('📊 Ledger entries received:', ledgerEntries.length)
-    
-    // Log first entry for debugging
-    if (ledgerEntries.length > 0) {
-      console.log('🔍 First ledger entry:', ledgerEntries[0])
-      console.log('🔍 Entry details:', {
-        hasCredit: ledgerEntries[0].credit !== null,
-        creditValue: ledgerEntries[0].credit,
-        hasDebit: ledgerEntries[0].debit !== null,
-        debitValue: ledgerEntries[0].debit,
-        status: ledgerEntries[0].status,
-        method: ledgerEntries[0].method,
-        description: ledgerEntries[0].description
-      })
-    }
+    console.log('📊 Manual payments received:', manualPaymentsData.length)
     
     // Parse the date format from ledger (e.g., "23-Mar-26" to a proper date string)
     const parseDateFromLedger = (dateStr: string): string => {
@@ -195,19 +186,12 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
     }
     
     // Convert ledger entries to transactions
-    // Include both credit entries (payments) and debit entries (invoices/fees)
-    const transactions: Transaction[] = ledgerEntries
+    const ledgerTransactions: Transaction[] = ledgerEntries
       .filter(entry => {
         // Include entries that have either credit or debit
         const hasCredit = entry.credit !== null && entry.credit > 0
         const hasDebit = entry.debit !== null && entry.debit > 0
-        const include = hasCredit || hasDebit
-        
-        if (!include) {
-          console.log('⚠️ Skipping entry with no credit or debit:', entry)
-        }
-        
-        return include
+        return hasCredit || hasDebit
       })
       .map(entry => {
         // Determine if this is a payment (credit) or invoice/fee (debit)
@@ -215,12 +199,10 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
         const amount = isPayment ? entry.credit : entry.debit
         
         // For payments, use the method from the entry
-        // For fees/invoices, check if there's a method or default to appropriate label
         let method = 'N/A'
         if (isPayment && entry.method) {
           method = entry.method
         } else if (isPayment) {
-          // If it's a payment but no method specified, assume mobile money
           method = 'Mobile Money'
         }
         
@@ -236,10 +218,17 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
         }
       })
     
-    console.log('✅ Total transactions returned:', transactions.length)
-    console.log('📋 Transactions:', transactions)
+    // Combine ledger and manual transactions
+    const allTransactions = [...ledgerTransactions, ...manualPaymentsData]
     
-    return transactions
+    // Sort by date descending (most recent first)
+    const sorted = sortTransactionsByDateDesc(allTransactions)
+    
+    console.log('✅ Total transactions returned:', sorted.length)
+    console.log('   - Ledger:', ledgerTransactions.length)
+    console.log('   - Manual:', manualPaymentsData.length)
+    
+    return sorted
   } catch (error) {
     console.error('Error fetching payment history:', error)
     return []

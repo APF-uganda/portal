@@ -80,7 +80,7 @@ const LeadershipManager = () => {
             <ArrowLeft size={18} />
             <span className="text-xs font-bold">BACK </span>
           </button>
-          <h1 className="font-black text-slate-800 text-xl tracking-tight uppercase">Governance </h1>
+          <h1 className=" text-slate-800 text-xl tracking-tight uppercase">Governance </h1>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -130,7 +130,7 @@ const LeadershipManager = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
-            <h2 className="text-xl font-black mb-6">New Leader</h2>
+            <h2 className="text-xl  mb-6">New Leader</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input 
                 placeholder="Full Name" 

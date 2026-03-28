@@ -14,6 +14,8 @@ import { Button } from "../../components/ui/button"
 import { getCurrentDateFormatted } from "../../utils/dateUtils"
 import { showNotification, ReceiptGenerator, ReceiptData } from "../../services/receiptGenerator"
 import { getPaymentLedger } from "../../services/payments.service"
+import { API_BASE_URL } from "../../config/api"
+import { getAccessToken } from "../../utils/auth"
 
 // Ledger entry type for financial statement
 interface LedgerEntry {
@@ -43,8 +45,54 @@ const PaymentHistoryPage: React.FC = () => {
       try {
         setIsLoading(true)
         setError(null)
-        const entries = await getPaymentLedger()
-        setLedgerEntries(entries)
+        
+        // Fetch both ledger and manual payments
+        const [ledgerData, manualResponse] = await Promise.all([
+          getPaymentLedger(),
+          fetch(`${API_BASE_URL}/api/v1/payments/manual/history/`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${getAccessToken()}`
+            }
+          })
+        ])
+        
+        // Convert manual payments to ledger format
+        let manualLedgerEntries: LedgerEntry[] = []
+        if (manualResponse.ok) {
+          const manualData = await manualResponse.json()
+          const manualPayments = manualData.results || []
+          
+          manualLedgerEntries = manualPayments.map((payment: any) => ({
+            id: `manual-${payment.id}`,
+            date: new Date(payment.created_at).toLocaleDateString('en-GB', { 
+              day: '2-digit', 
+              month: 'short', 
+              year: '2-digit' 
+            }).replace(/ /g, '-'),
+            invoiceNumber: payment.reference || payment.invoice_number || `MP-${payment.id}`,
+            description: payment.description || 'Payment',
+            debit: null,
+            credit: Number(payment.amount),
+            balance: 0,
+            transactionRef: payment.reference || `MP-${payment.id}`,
+            hasReceipt: true,
+            hasInvoice: false,
+            amount: Number(payment.amount),
+            method: 'Manual Receipt Upload',
+            status: payment.status
+          }))
+        }
+        
+        // Combine and sort by date (most recent first)
+        const allEntries = [...ledgerData, ...manualLedgerEntries].sort((a, b) => {
+          const dateA = new Date(a.date.split('-').reverse().join('-'))
+          const dateB = new Date(b.date.split('-').reverse().join('-'))
+          return dateB.getTime() - dateA.getTime()
+        })
+        
+        setLedgerEntries(allEntries)
       } catch (err) {
         console.error('Error fetching payment history:', err)
         setError('Failed to load payment history')

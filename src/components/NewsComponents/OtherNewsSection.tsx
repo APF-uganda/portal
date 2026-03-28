@@ -37,7 +37,7 @@ const OtherNewsSection = ({
   return (
     <section className={sectionClass}>
       <div className="flex flex-col items-center mb-12 text-center">
-        <h3 className="text-xl font-black text-[#1A1A1A] uppercase tracking-tighter">
+        <h3 className="text-xl  text-[#1A1A1A] uppercase tracking-tighter">
           {title}
         </h3>
         <div className="w-12 h-[2px] bg-black mt-2"></div>
@@ -69,7 +69,7 @@ const OtherNewsSection = ({
             </div>
             
             <div className="flex-1 flex flex-col px-2 pb-2">
-              <h3 className="text-lg font-black text-[#1A1A1A] leading-snug group-hover:text-[#5F1C9F] transition-colors mb-3">
+              <h3 className="text-lg  text-[#1A1A1A] leading-snug group-hover:text-[#5F1C9F] transition-colors mb-3">
                 {item.title}
               </h3>
               

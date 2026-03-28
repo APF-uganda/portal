@@ -185,7 +185,7 @@ const EventCreatePage = () => {
                     <input 
                       type="text"
                       placeholder="Event Headline..."
-                      className="w-full text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 outline-none border-none placeholder:text-slate-200 uppercase tracking-tighter"
+                      className="w-full text-2xl md:text-3xl lg:text-4xl  text-slate-900 outline-none border-none placeholder:text-slate-200 uppercase tracking-tighter"
                       value={eventData.title}
                       onChange={(e) => updateField('title', e.target.value)}
                     />
@@ -210,11 +210,11 @@ const EventCreatePage = () => {
                         {uploading && (
                           <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
                             <Loader2 className="animate-spin text-purple-600 w-6 h-6 md:w-8 md:h-8" />
-                            <span className="text-xs md:text-sm font-black uppercase tracking-widest text-purple-700">Syncing...</span>
+                            <span className="text-xs md:text-sm  uppercase tracking-widest text-purple-700">Syncing...</span>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                           <p className="text-white text-xs md:text-sm font-black uppercase tracking-widest text-center px-4">Click to Replace Poster</p>
+                           <p className="text-white text-xs md:text-sm  uppercase tracking-widest text-center px-4">Click to Replace Poster</p>
                         </div>
                       </div>
                     ) : (
@@ -222,7 +222,7 @@ const EventCreatePage = () => {
                         <div className="p-3 md:p-4 lg:p-5 bg-white rounded-2xl md:rounded-3xl shadow-sm mb-2 md:mb-3 inline-block">
                           <ImageIcon size={24} className="md:w-8 md:h-8 text-purple-500" />
                         </div>
-                        <p className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-[0.2em] px-4">Upload Event Poster</p>
+                        <p className="text-xs md:text-sm  text-slate-400 uppercase tracking-[0.2em] px-4">Upload Event Poster</p>
                       </div>
                     )}
                     <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageUpload} accept="image/*" />

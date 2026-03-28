@@ -69,7 +69,7 @@ const MembershipEditor = () => {
           <ArrowLeft size={18} /> Back
         </button>
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-black text-slate-900">Membership Page Editor</h1>
+          <h1 className="text-xl  text-slate-900">Membership Page Editor</h1>
           <button 
             onClick={handleSave}
             disabled={saving}
@@ -83,7 +83,7 @@ const MembershipEditor = () => {
       <div className="space-y-8">
         {/* HERO SECTION */}
         <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-          <h2 className="text-xs font-black text-purple-600 uppercase tracking-widest mb-4">Hero Section</h2>
+          <h2 className="text-xs  text-purple-600 uppercase tracking-widest mb-4">Hero Section</h2>
           <div className="space-y-4">
             <input 
               placeholder="Hero Title"
@@ -103,7 +103,7 @@ const MembershipEditor = () => {
         {/* REPEATABLE PROCESS STEPS */}
         <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xs font-black text-purple-600 uppercase tracking-widest">Membership Steps</h2>
+            <h2 className="text-xs  text-purple-600 uppercase tracking-widest">Membership Steps</h2>
             <button 
               onClick={() => setData({...data, processSteps: [...data.processSteps, { title: '', description: '' }]})}
               className="text-[10px] font-bold bg-purple-50 text-purple-600 px-3 py-1 rounded-lg hover:bg-purple-100 transition-colors"
@@ -141,7 +141,7 @@ const MembershipEditor = () => {
 
         {/* INTRO TEXT (Richtext) */}
         <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-          <h2 className="text-xs font-black text-purple-600 uppercase tracking-widest mb-4">Introduction Text</h2>
+          <h2 className="text-xs  text-purple-600 uppercase tracking-widest mb-4">Introduction Text</h2>
           <textarea 
             className="w-full h-40 p-4 bg-slate-50 rounded-2xl text-slate-700 text-sm border-none focus:ring-2 focus:ring-purple-200"
             value={data.introText}

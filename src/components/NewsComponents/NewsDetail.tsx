@@ -110,7 +110,7 @@ const NewsDetail = () => {
       if (block.type === 'heading') {
         const headingText = block.value || block.children?.map((c: any) => c.text).join('') || "";
         return (
-          <h3 key={i} className="font-black text-[#111] text-xl md:text-2xl mt-10 mb-4">
+          <h3 key={i} className="text-[#111] text-xl md:text-2xl mt-10 mb-4">
             {headingText}
           </h3>
         );
