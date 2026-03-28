@@ -49,8 +49,8 @@ export const PaymentTable = ({
  
   const getStatusColor = (status: string) => {
     const s = status?.toLowerCase();
-    if (s === 'completed' || s === 'verified') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-    if (s === 'pending') return 'bg-amber-50 text-amber-700 border-amber-100';
+    if (s === 'completed' || s === 'verified') return 'bg-transparent text-[#081c15] border-[#40916c]';
+    if (s === 'pending') return 'bg-transparent text-[#bd0505] border-[#850a0a]';
     if (s === 'failed' || s === 'rejected') return 'bg-rose-50 text-rose-700 border-rose-100';
     return 'bg-gray-50 text-gray-700 border-gray-100';
   };
@@ -223,18 +223,18 @@ export const PaymentTable = ({
                   const stringId = String(p.id);
 
                   return (
-                    <tr key={stringId} className="hover:bg-slate-50/50 hover:text-[#4B1D91] transition-all group">
-                      <td className="px-6 md:px-8 py-4 hover:bg-slate-50/50 hover:text-[#4B1D91]] md:py-6">
+                    <tr key={stringId} className="hover:bg-slate-50/50  text-sm hover:text-[#10002b] transition-all group">
+                      <td className="px-6 md:px-8 py-4 hover:bg-slate-50/50 hover:text-[#10002b]] md:py-6">
                         <div className="font-bold text-gray-900 text-sm">{p.member_name}</div>
                         <div className="text-xs text-gray-500">{p.member_email}</div>
                       </td>
                       <td className="px-6 md:px-8 py-4 md:py-6  text-sm">{transactionId}</td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-sm">{description}</td>
-                      <td className="px-6 md:px-8 py-4 md:py-6 text-right font-bold text-gray-900 hover:text-[#4B1D91]">
+                      <td className="px-6 md:px-8 py-4 md:py-6 text-right font-bold text-gray-900 hover:text-[#10002b]">
                         {p.currency || 'UGX'} {Number(p.amount || 0).toLocaleString()}
                       </td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-center">
-                        <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[10px]  uppercase tracking-widest border ${getStatusColor(p.status)}`}>
+                        <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-full text-sm md:text-[10px]  uppercase tracking-widest border ${getStatusColor(p.status)}`}>
                           {getStatusLabel(p.status)}
                         </span>
                       </td>

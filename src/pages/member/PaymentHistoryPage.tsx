@@ -331,19 +331,19 @@ const PaymentHistoryPage: React.FC = () => {
                             <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 whitespace-nowrap">
                               {entry.date}
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 font-mono">
+                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200">
                               {entry.invoiceNumber}
                             </td>
                             <td className="py-3 px-4 text-sm text-gray-700 border-r border-gray-200">
                               {entry.description}
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 text-right font-medium">
+                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 text-right whitespace-nowrap font-medium">
                               {formatAmount(entry.debit)}
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 text-right font-medium">
+                            <td className="py-3 px-4 text-sm text-gray-900 border-r border-gray-200 whitespace-nowrap text-right font-medium">
                               {formatAmount(entry.credit)}
                             </td>
-                            <td className={`py-3 px-4 text-sm border-r border-gray-200 text-right font-semibold ${
+                            <td className={`py-3 px-4 text-sm border-r border-gray-200 whitespace-nowrap text-right font-semibold ${
                               entry.balance < 0 ? 'text-red-600' : 'text-gray-900'
                             }`}>
                               {formatBalance(entry.balance)}
@@ -353,7 +353,7 @@ const PaymentHistoryPage: React.FC = () => {
                                 {entry.hasReceipt && (
                                   <button
                                     onClick={() => handleDownloadReceipt(entry)}
-                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
+                                    className="px-3 py-1.5 bg-[#5a189a] hover:bg-[#240046] text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
                                   >
                                     <Download className="w-3 h-3" />
                                     Download Receipt
@@ -362,7 +362,7 @@ const PaymentHistoryPage: React.FC = () => {
                                 {entry.hasInvoice && (
                                   <button
                                     onClick={() => handleDownloadInvoice(entry)}
-                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
+                                    className="px-3 py-1.5 bg-[#5a189a] hover:bg-[#240046] text-white text-xs font-medium rounded transition-colors flex items-center gap-1.5"
                                   >
                                     <Download className="w-3 h-3" />
                                     Download Invoice
@@ -390,7 +390,7 @@ const PaymentHistoryPage: React.FC = () => {
                     <div className="text-sm text-gray-600">
                       Current Balance: 
                       <span className={`ml-2 font-bold text-lg ${
-                        ledgerEntries[ledgerEntries.length - 1].balance < 0 ? 'text-red-600' : 'text-green-600'
+                        ledgerEntries[ledgerEntries.length - 1].balance < 0 ? 'text-[#240046]' : 'text-[#240046]'
                       }`}>
                         UGX {formatBalance(ledgerEntries[ledgerEntries.length - 1].balance)}
                       </span>

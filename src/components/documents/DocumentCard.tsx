@@ -35,22 +35,22 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   const statusConfig = {
     approved: {
       icon: CheckCircle,
-      className: "bg-green-100 text-green-700",
+      className: "bg-transparent text-green-700",
       label: "Approved"
     },
     pending: {
       icon: Clock,
-      className: "bg-yellow-100 text-yellow-700",
+      className: "bg-transparent text-yellow-700",
       label: "Pending Review"
     },
     rejected: {
       icon: XCircle,
-      className: "bg-red-100 text-red-700",
+      className: "bg-transparent text-red-700",
       label: "Rejected"
     },
     expired: {
       icon: AlertTriangle,
-      className: "bg-orange-100 text-orange-700",
+      className: "bg-transparent text-orange-700",
       label: "Expired"
     }
   }
@@ -112,10 +112,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           <button
             onClick={() => onView(document)}
             title="View"
-            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center h-9 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition-colors"
           >
-            <Eye className="w-4 h-4 flex-shrink-0" />
-            <span className="hidden lg:inline">View</span>
+            <Eye className="w-4 h-4" />
           </button>
         )}
 
@@ -123,10 +122,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           <button
             onClick={() => onDownload(document)}
             title="Download"
-            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center h-9 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition-colors"
           >
-            <Download className="w-4 h-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Download</span>
+            <Download className="w-4 h-4" />
           </button>
         )}
 
@@ -134,10 +132,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           <button
             onClick={() => onReupload(document)}
             title="Replace"
-            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center h-9 rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors"
           >
-            <Upload className="w-4 h-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Replace</span>
+            <Upload className="w-4 h-4" />
           </button>
         )}
 
@@ -145,10 +142,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           <button
             onClick={() => onRemove(document)}
             title="Remove"
-            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-md border border-red-200 bg-white hover:bg-red-50 text-red-600 text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center h-9 rounded-md border border-red-200 bg-white hover:bg-red-50 text-red-600 transition-colors"
           >
-            <Trash2 className="w-4 h-4 flex-shrink-0" />
-            <span className="hidden lg:inline">Remove</span>
+            <Trash2 className="w-4 h-4" />
           </button>
         )}
       </div>

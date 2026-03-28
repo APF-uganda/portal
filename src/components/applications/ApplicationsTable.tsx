@@ -178,11 +178,10 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
                                         <div className="flex justify-center">
                                             <button
                                                 onClick={() => handleView(app.id)}
-                                                className="bg-transparent border-2 border-gray-200 hover:bg-[#5F2F8B] hover:border-[#5F2F8B] hover:text-white text-gray-900 px-2 md:px-3 py-1 rounded-lg text-xs transition-colors flex items-center gap-1"
+                                                className="bg-transparent border-2 border-gray-200 hover:bg-[#5F2F8B] hover:border-[#5F2F8B] hover:text-white text-gray-900 p-2 rounded-lg text-base transition-colors"
                                                 title="View Details"
                                             >
                                                 <FiEye />
-                                                <span className="hidden sm:inline">View</span>
                                             </button>
                                         </div>
                                     </td>
