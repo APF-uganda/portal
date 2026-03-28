@@ -125,7 +125,7 @@ const PaymentHistoryPage: React.FC = () => {
     }
 
     try {
-      let csvContent = 'Date,Invoice Number,Description,DR (UGX),CR (UGX),Balance (UGX)\n'
+      let csvContent = 'Date,Reference Number,Description,DR (UGX),CR (UGX),Balance (UGX)\n'
       
       ledgerEntries.forEach(entry => {
         const row = [
@@ -248,7 +248,7 @@ const PaymentHistoryPage: React.FC = () => {
                           Date
                         </th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
-                          Invoice Number
+                          Reference Number
                         </th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-800 text-sm border-r border-gray-300">
                           Description
