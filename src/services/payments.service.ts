@@ -120,6 +120,8 @@ const fetchMobileTransactions = async (): Promise<Transaction[]> => {
   }
 
   const data = await response.json()
+  console.log('📦 Mobile Transactions API Response:', data)
+  console.log('📊 Mobile Transactions Results:', data.results)
   return (data.results || []).map(mapPaymentToTransaction)
 }
 
@@ -134,6 +136,8 @@ const fetchMemberManualTransactions = async (): Promise<Transaction[]> => {
   }
 
   const data = await response.json()
+  console.log('📦 Manual Transactions API Response:', data)
+  console.log('📊 Manual Transactions Results:', data.results)
   return (data.results || []).map(mapManualPaymentToTransaction)
 }
 
@@ -143,6 +147,7 @@ const fetchMemberManualTransactions = async (): Promise<Transaction[]> => {
  */
 export const getPaymentHistory = async (): Promise<Transaction[]> => {
   try {
+    console.log('🔍 getPaymentHistory - Starting fetch...')
     const [mobileResult, manualResult] = await Promise.allSettled([
       fetchMobileTransactions(),
       fetchMemberManualTransactions(),
@@ -151,6 +156,9 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
     const mobileRows = mobileResult.status === 'fulfilled' ? mobileResult.value : []
     const manualRows = manualResult.status === 'fulfilled' ? manualResult.value : []
 
+    console.log('📱 Mobile transactions count:', mobileRows.length)
+    console.log('📝 Manual transactions count:', manualRows.length)
+
     if (mobileResult.status === 'rejected') {
       console.error('Error fetching mobile payment history:', mobileResult.reason)
     }
@@ -158,7 +166,11 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
       console.error('Error fetching manual payment history:', manualResult.reason)
     }
 
-    return sortTransactionsByDateDesc([...mobileRows, ...manualRows])
+    const allTransactions = sortTransactionsByDateDesc([...mobileRows, ...manualRows])
+    console.log('✅ Total transactions returned:', allTransactions.length)
+    console.log('📋 All transactions:', allTransactions)
+    
+    return allTransactions
   } catch (error) {
     console.error('Error fetching payment history:', error)
     return []
