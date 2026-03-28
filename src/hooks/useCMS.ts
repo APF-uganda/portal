@@ -57,8 +57,8 @@ const writeCachedArticle = (id: string, data: any) => {
 const fetchNewsArticleResponse = async (id: string) => {
   const encodedId = encodeURIComponent(id);
   const queryCandidates = [
-    `/news-articles/${encodedId}?populate[featuredImage]=*`,
-    `/news-articles/${encodedId}?populate=*`,
+    `/news-articles/${encodedId}?populate=featuredImage`,
+    `/news-articles/${encodedId}?populate=deep`,
   ];
 
   for (const path of queryCandidates) {

@@ -196,21 +196,21 @@ export const getCachedEventsSync = (): Event[] => {
 
 const NEWS_QUERY_CANDIDATES = [
   // Preferred lightweight query: only sort + featured image relation.
-  'sort[0]=publishDate:desc&sort[1]=createdAt:desc&populate[featuredImage]=*',
+  'sort[0]=publishDate:desc&sort[1]=createdAt:desc&populate=featuredImage',
   // Compatibility fallback for CMS schemas that differ.
-  'sort[0]=createdAt:desc&populate[featuredImage]=*',
+  'sort[0]=createdAt:desc&populate=featuredImage',
   // Last resort: broad query known to work in this project historically.
-  'populate=*&sort=createdAt:desc',
+  'populate=deep&sort=createdAt:desc',
 ];
 
 const EVENTS_QUERY_CANDIDATES = [
   // Preferred lightweight query: fetch only required fields and image URL.
   'sort[0]=date:asc&fields[0]=title&fields[1]=description&fields[2]=date&fields[3]=time&fields[4]=location&fields[5]=registrationLink&fields[6]=cpdPoints&fields[7]=isFeatured&fields[8]=isPaid&fields[9]=memberPrice&fields[10]=nonMemberPrice&populate[image][fields][0]=url',
   // Compatibility fallback for varying CMS schemas.
-  'sort[0]=date:asc&populate[image]=*',
+  'sort[0]=date:asc&populate=image',
   // Last-resort broad query.
-  'populate=*&sort=date:asc',
-  'populate=*',
+  'populate=deep&sort=date:asc',
+  'populate=deep',
 ];
 
 const fetchNewsResponse = async () => {
