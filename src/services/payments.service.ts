@@ -154,46 +154,66 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
     const ledgerEntries = await getPaymentLedger()
     console.log('📊 Ledger entries received:', ledgerEntries.length)
     
-    // Convert ledger entries to transactions
-    // Only include credit entries (actual payments) for transaction history
-    const transactions: Transaction[] = ledgerEntries
-      .filter(entry => entry.credit !== null && entry.credit > 0)
-      .map(entry => {
-        // Parse the date format from ledger (e.g., "23-Mar-26" to a proper date string)
-        const parseDateFromLedger = (dateStr: string): string => {
-          try {
-            // Format is "DD-MMM-YY"
-            const parts = dateStr.split('-')
-            if (parts.length === 3) {
-              const day = parts[0]
-              const month = parts[1]
-              const year = `20${parts[2]}` // Convert YY to YYYY
-              
-              // Convert month abbreviation to number
-              const monthMap: { [key: string]: string } = {
-                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-                'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-                'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-              }
-              
-              const monthNum = monthMap[month] || '01'
-              return `${month} ${day}, ${year}`
-            }
-            return dateStr
-          } catch {
-            return dateStr
+    // Log first entry for debugging
+    if (ledgerEntries.length > 0) {
+      console.log('🔍 First ledger entry:', ledgerEntries[0])
+    }
+    
+    // Parse the date format from ledger (e.g., "23-Mar-26" to a proper date string)
+    const parseDateFromLedger = (dateStr: string): string => {
+      try {
+        // Format is "DD-MMM-YY"
+        const parts = dateStr.split('-')
+        if (parts.length === 3) {
+          const day = parts[0]
+          const month = parts[1]
+          const year = `20${parts[2]}` // Convert YY to YYYY
+          
+          // Convert month abbreviation to number
+          const monthMap: { [key: string]: string } = {
+            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
           }
+          
+          const monthNum = monthMap[month] || '01'
+          return `${month} ${day}, ${year}`
         }
+        return dateStr
+      } catch {
+        return dateStr
+      }
+    }
+    
+    // Convert ledger entries to transactions
+    // Include both credit entries (payments) and debit entries (invoices/fees)
+    const transactions: Transaction[] = ledgerEntries
+      .filter(entry => {
+        // Include entries that have either credit or debit
+        const hasCredit = entry.credit !== null && entry.credit > 0
+        const hasDebit = entry.debit !== null && entry.debit > 0
+        const include = hasCredit || hasDebit
+        
+        if (!include) {
+          console.log('⚠️ Skipping entry with no credit or debit:', entry)
+        }
+        
+        return include
+      })
+      .map(entry => {
+        // Determine if this is a payment (credit) or invoice/fee (debit)
+        const isPayment = entry.credit !== null && entry.credit > 0
+        const amount = isPayment ? entry.credit : entry.debit
         
         return {
           date: parseDateFromLedger(entry.date),
-          type: entry.description || 'Payment',
+          type: entry.description || (isPayment ? 'Payment' : 'Invoice'),
           reference: entry.transactionRef || entry.invoiceNumber,
-          amount: `UGX ${Number(entry.credit).toLocaleString()}`,
-          method: entry.method || 'Mobile Money',
+          amount: `UGX ${Number(amount).toLocaleString()}`,
+          method: entry.method || (isPayment ? 'Mobile Money' : 'N/A'),
           methodIcon: null,
           status: entry.status || 'completed',
-          description: entry.description || 'Payment received',
+          description: entry.description || (isPayment ? 'Payment received' : 'Invoice generated'),
         }
       })
     

@@ -26,13 +26,26 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
     const transactions = await getPaymentHistory()
     console.log('📊 Spending Overview - Total transactions:', transactions.length)
     
-    // Filter only completed transactions
-    const completedTransactions = transactions.filter(t => t.status.toLowerCase() === 'completed')
-    console.log('✅ Spending Overview - Completed transactions:', completedTransactions.length)
+    // Filter only completed payment transactions (not invoices)
+    // Payments have methods like "MTN Mobile Money", "Airtel Money", "Bank Transfer"
+    // Invoices have method "N/A"
+    const completedPayments = transactions.filter(t => {
+      const isCompleted = t.status.toLowerCase() === 'completed'
+      const isPayment = t.method && t.method !== 'N/A'
+      const include = isCompleted && isPayment
+      
+      if (!include && isCompleted) {
+        console.log('⚠️ Skipping non-payment transaction:', t.type, t.method)
+      }
+      
+      return include
+    })
     
-    // If no completed transactions, return empty overview
-    if (completedTransactions.length === 0) {
-      console.log('⚠️ Spending Overview - No completed transactions found')
+    console.log('✅ Spending Overview - Completed payments:', completedPayments.length)
+    
+    // If no completed payments, return empty overview
+    if (completedPayments.length === 0) {
+      console.log('⚠️ Spending Overview - No completed payments found')
       return {
         totalSpent: 0,
         breakdown: []
@@ -40,7 +53,7 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
     }
     
     // Calculate total spent
-    const totalSpent = completedTransactions.reduce((sum, transaction) => {
+    const totalSpent = completedPayments.reduce((sum, transaction) => {
       // Extract numeric amount from string like "UGX 150,000"
       const amountStr = transaction.amount.replace(/[^0-9]/g, '')
       const amount = Number(amountStr)
@@ -53,7 +66,7 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
     // Group by year and calculate breakdown
     const yearlySpending: { [key: string]: number } = {}
     
-    completedTransactions.forEach(transaction => {
+    completedPayments.forEach(transaction => {
       const year = new Date(transaction.date).getFullYear().toString()
       const amountStr = transaction.amount.replace(/[^0-9]/g, '')
       const amount = Number(amountStr)
