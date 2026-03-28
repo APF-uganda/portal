@@ -53,14 +53,30 @@ const MemberDashboard: React.FC = () => {
   const documents = dashboardData?.documents ?? [];
   const recentActivity = dashboardData?.recent_activity ?? [];
   const notifications = dashboardData?.notifications ?? [];
-  const nextRenewalDate = profile?.next_renewal_date || profile?.subscription_due_date || null;
+  
+  // Calculate next renewal date - always March 31st
+  const getNextRenewalDate = (): Date => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const renewalDateThisYear = new Date(currentYear, 2, 31); // March 31st of current year (month is 0-indexed)
+    
+    // If we're past March 31st this year, renewal is March 31st next year
+    if (today > renewalDateThisYear) {
+      return new Date(currentYear + 1, 2, 31);
+    }
+    
+    // Otherwise, renewal is March 31st this year
+    return renewalDateThisYear;
+  };
+
+  const nextRenewalDate = getNextRenewalDate();
 
   // Get display name from dashboard profile
   const displayName = profile?.display_name || 'Member';
 
-  const formatDate = (value?: string | null) => {
+  const formatDate = (value?: string | null | Date) => {
     if (!value) return 'N/A';
-    const date = new Date(value);
+    const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) return 'N/A';
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
