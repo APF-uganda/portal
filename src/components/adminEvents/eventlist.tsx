@@ -134,7 +134,7 @@ const EventsList = () => {
               </div>
 
               <button 
-                onClick={() => navigate('/eventCreate')}
+                onClick={() => navigate('/eventMgt')}
                 className="w-full md:w-auto flex items-center justify-center gap-3 px-8 md:px-10 py-4 md:py-5 bg-[#5F1C9F] rounded-xl md:rounded-2xl text-white hover:bg-[#4a1480] transition-all font-bold text-[10px] md:text-[11px] uppercase tracking-[0.2em] shadow-lg active:scale-95"
               >
                 <Plus size={18} strokeWidth={3} /> Create Event
@@ -240,7 +240,7 @@ const EventsList = () => {
                         </div>
                         <div className="flex gap-2 pt-2 border-t border-slate-50">
                           <button 
-                            onClick={() => navigate(`/eventCreate`, { state: { editEvent: event } })} 
+                            onClick={() => navigate(`/eventMgt`, { state: { editEvent: event } })} 
                             className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-bold uppercase tracking-widest active:bg-slate-100 transition-colors"
                           >
                             <Edit3 size={14} /> Edit

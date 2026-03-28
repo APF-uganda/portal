@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard, Upload, FileText, X, Clock, AlertCircle } from 'lucide-react';
+import { MapPin, Calendar, Award, CheckCircle, ArrowLeft, CreditCard, Upload, FileText, X, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { baseEvents } from '../components/EventComponents/eventsData';
@@ -10,8 +10,6 @@ const EventRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
 
   const eventData = location.state as { 
     eventTitle: string; 
@@ -54,11 +52,8 @@ const EventRegistrationPage: React.FC = () => {
   }
 
   const localEvent = baseEvents.find(e => e.id === eventData.eventId);
-
   const displayLocation = eventData.location || localEvent?.location || 'TBA';
-  
   const displayTime = eventData.time || eventData.startTime || localEvent?.time || 'TBA';
-  
   const finalDateDisplay = 
     eventData.displayDate || 
     eventData.date || 
@@ -73,7 +68,13 @@ const EventRegistrationPage: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setProofOfPayment(e.target.files[0]);
+      const file = e.target.files[0];
+      
+      if (file.size > 10 * 1024 * 1024) {
+        showToast("File is too large for mobile upload. Please use a smaller image.", "error");
+        return;
+      }
+      setProofOfPayment(file);
     }
   };
 
@@ -94,38 +95,38 @@ const EventRegistrationPage: React.FC = () => {
     setIsSubmitting(true);
     const data = new FormData();
     
-    // User Contact Information
-    data.append('full_name', formData.fullName);
-    data.append('email', formData.email);
-    data.append('phone_number', formData.phoneNumber);
-    data.append('company_name', formData.companyName);
     
-    //  Event Context
-    data.append('strapi_event_id', eventData.eventId);
-    data.append('event_title', eventData.eventTitle);
+    data.append('full_name', String(formData.fullName || ''));
+    data.append('email', String(formData.email || ''));
+    data.append('phone_number', String(formData.phoneNumber || ''));
+    data.append('company_name', String(formData.companyName || ''));
+    data.append('strapi_event_id', String(eventData.eventId || ''));
+    data.append('event_title', String(eventData.eventTitle || ''));
+    data.append('location', String(displayLocation || 'TBA')); 
     
-    
-    data.append('location', displayLocation); 
-  
-   
-    data.append('event_date', eventData.startDate || eventData.date || finalDateDisplay);
-    
+    const rawDate = eventData.startDate || eventData.date || finalDateDisplay;
+    data.append('event_date', String(rawDate));
     data.append('attendance_mode', 'Physical'); 
   
     if (proofOfPayment instanceof File) {
       data.append('proof_of_payment', proofOfPayment);
-  } else {
-      
+    } else {
       data.append('payment_status', 'Verified'); 
-  }
+    }
 
     try {
+     
       await eventService.registerAttendee(data);
       showToast("Registration submitted successfully!", "success");
       setStep(3);
-    } catch (error) {
-      showToast("Submission failed. Please check your connection.", "error");
-      console.error("Submission error:", error);
+    } catch (error: any) {
+      console.error("Submission error details:", error);
+    
+      const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
+      showToast(
+        isTimeout ? "Upload took too long. Try a smaller file." : "Submission failed. Please check your connection.", 
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -134,8 +135,8 @@ const EventRegistrationPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col font-sans relative">
       {notification.show && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border bg-white animate-in slide-in-from-top-5 duration-300 border-slate-100">
-          {notification.type === 'success' ? <CheckCircle size={20} className="text-green-500"/> : <AlertCircle size={20} className="text-red-500"/>}
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border bg-white animate-in slide-in-from-top-5 duration-300 border-slate-100 max-w-[90%] w-auto">
+          {notification.type === 'success' ? <CheckCircle size={20} className="text-green-500 shrink-0"/> : <AlertCircle size={20} className="text-red-500 shrink-0"/>}
           <span className="font-semibold text-sm text-slate-800">{notification.msg}</span>
         </div>
       )}
@@ -144,8 +145,11 @@ const EventRegistrationPage: React.FC = () => {
       
       {step === 1 && (
         <>
-          <section className="relative min-h-[450px] py-16 flex items-center justify-center overflow-hidden bg-cover bg-center">
-            <div className="absolute inset-0 bg-slate-900/80" />
+          <section className="relative min-h-[450px] py-16 flex items-center justify-center overflow-hidden bg-slate-900">
+            {/* Background logic preserved */}
+            <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1600')] bg-cover bg-center" />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 to-slate-900" />
+            
             <div className="relative z-20 max-w-5xl mx-auto text-center text-white px-6">
               <h1 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight uppercase leading-tight">
                 {eventData.eventTitle}
@@ -242,12 +246,13 @@ const EventRegistrationPage: React.FC = () => {
 
                     <button
                       type="submit"
-                      className="w-full bg-purple-600 text-white py-4 rounded-2xl font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-3 mt-4"
+                      disabled={isSubmitting}
+                      className="w-full bg-purple-600 text-white py-4 rounded-2xl font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-3 mt-4 active:scale-[0.98] disabled:opacity-70"
                     >
                       {(eventData.isPaid || (eventData.nonMemberPrice && eventData.nonMemberPrice > 0)) ? (
                         <>Proceed to Payment <ArrowLeft className="rotate-180" size={18} /></>
                       ) : (
-                        'Complete Registration'
+                        isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Complete Registration'
                       )}
                     </button>
                   </div>
@@ -270,17 +275,17 @@ const EventRegistrationPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Member Rate</p>
-                  <p className="text-xl font-bold text-slate-900 underline decoration-purple-200">UGX {Number(eventData.memberPrice).toLocaleString()}</p>
+                  <p className="text-xl font-bold text-slate-900">UGX {Number(eventData.memberPrice).toLocaleString()}</p>
                 </div>
                 <div className="bg-purple-50 p-5 rounded-2xl border border-purple-100">
                   <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Non-Member Rate</p>
-                  <p className="text-xl font-bold text-purple-700 underline decoration-purple-200">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</p>
+                  <p className="text-xl font-bold text-purple-700">UGX {Number(eventData.nonMemberPrice).toLocaleString()}</p>
                 </div>
               </div>
 
               <div className="bg-slate-900 rounded-2xl p-6 mb-8 shadow-inner">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Merchant Code</span>
-                <span className="text-3xl font-bold text-white tracking-widest">345678</span>
+                <span className="text-3xl font-bold text-white tracking-widest uppercase">345678</span>
               </div>
 
               <div className="space-y-4 text-left">
@@ -310,9 +315,9 @@ const EventRegistrationPage: React.FC = () => {
                 <button 
                   disabled={!proofOfPayment || isSubmitting}
                   onClick={handleFinalSubmit}
-                  className="bg-purple-600 text-white py-4 rounded-2xl font-bold uppercase tracking-widest disabled:opacity-50"
+                  className="bg-purple-600 text-white py-4 rounded-2xl font-bold uppercase tracking-widest disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
                 >
-                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                  {isSubmitting ? <><Loader2 className="animate-spin" size={18}/> Submitting...</> : 'Submit'}
                 </button>
               </div>
             </div>
@@ -327,12 +332,12 @@ const EventRegistrationPage: React.FC = () => {
               <CheckCircle size={40} />
             </div>
             <h2 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight uppercase">Success!</h2>
-            <p className="text-slate-600 mb-10 font-medium">
+            <p className="text-slate-600 mb-10 font-medium leading-relaxed">
               Thank you <span className="font-bold text-slate-900">{formData.fullName}</span>. Your registration for <span className="font-bold text-purple-600">{eventData.eventTitle}</span> has been received. Check <span className="font-bold text-slate-900">{formData.email}</span> for confirmation.
             </p>
             <button
               onClick={() => navigate('/events')}
-              className="w-full py-4 bg-purple-600 text-white rounded-2xl font-bold uppercase tracking-widest"
+              className="w-full py-4 bg-purple-600 text-white rounded-2xl font-bold uppercase tracking-widest shadow-lg shadow-purple-200"
             >
               Return to Events
             </button>
