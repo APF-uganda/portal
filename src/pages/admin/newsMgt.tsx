@@ -12,7 +12,7 @@ import Footer from "../../components/layout/Footer";
 import { ArticleForm } from '../../components/createcms-components/article';
 
 const NewsManagement = () => {
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [articles, setArticles] = useState<any[]>([]);
@@ -24,6 +24,8 @@ const NewsManagement = () => {
   const [publicationState, setPublicationState] = useState<'published' | 'preview'>('published');
   
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
+  
+  
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, id: string | number | null }>({ isOpen: false, id: null });
 
   const showToast = (msg: string, type: 'success' | 'error') => {
@@ -125,6 +127,7 @@ const NewsManagement = () => {
   const confirmDelete = async () => {
     if (!deleteModal.id) return;
     try {
+     
       await api.delete(`/news-articles/${deleteModal.id}`);
       setDeleteModal({ isOpen: false, id: null });
       fetchNews();
@@ -144,7 +147,7 @@ const NewsManagement = () => {
   return (
     <div className="flex min-h-screen bg-[#F4F7FE] font-montserrat text-gray-900 relative">
       
-      {/* Delete Modal */}
+      {/* CUSTOM DELETE MODAL*/}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/20">
           <div className="bg-white rounded-[2.5rem] p-6 md:p-10 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 font-montserrat">
@@ -161,7 +164,7 @@ const NewsManagement = () => {
         </div>
       )}
 
-      {/* Toast Notifications */}
+      {/* CUSTOM TOAST NOTIFICATION  */}
       {notification && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3 px-6 py-4 bg-white rounded-2xl shadow-2xl border border-slate-50 animate-in slide-in-from-top-full font-montserrat">
           {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={18}/> : <AlertCircle className="text-red-500" size={18}/>}
@@ -177,7 +180,6 @@ const NewsManagement = () => {
         <div className="flex-1 p-4 md:p-8 lg:p-10 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6 md:space-y-10">
             
-            {/* NAVIGATION HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
               <div>
                 <button 
@@ -208,7 +210,6 @@ const NewsManagement = () => {
               />
             ) : (
               <div className="space-y-6">
-                {/* Filters and Search Bar */}
                 <div className="bg-white p-4 md:p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col xl:flex-row gap-6 font-montserrat">
                   <div className="flex bg-slate-100/50 p-1.5 rounded-[1.4rem] min-w-[300px]">
                     <button 
@@ -248,7 +249,6 @@ const NewsManagement = () => {
                   </div>
                 </div>
 
-                {/* News Table */}
                 <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden font-montserrat">
                   <div className="hidden md:block bg-white shadow rounded-lg p-3 md:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
@@ -302,7 +302,6 @@ const NewsManagement = () => {
                     </div>
                   </div>
 
-                  {/* Mobile View */}
                   <div className="md:hidden divide-y divide-slate-100">
                     {filteredArticles.length > 0 ? filteredArticles.map((article) => (
                       <div key={article.id} className="p-6 space-y-4 hover:bg-slate-50/50 transition-all">

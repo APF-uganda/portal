@@ -9,6 +9,7 @@ type FeaturedEvent = {
   id?: string | number
   documentId?: string
   title?: string
+  time?: string
   date?: string
   startDate?: string
   endDate?: string
@@ -123,7 +124,7 @@ const FeaturedEvents = () => {
                     image={event.image || "/images/annual.png"}
                     title={event.title || "Untitled Event"}
                     date={formatNormalDate(event.startDate || event.date)}
-                    time={"Time TBD"}
+                    time={event.time || "Time TBD"}
                     location={event.location || "Location TBD"}
                     description={event.description || "No description available."}
                     onRegister={() => handleRegister(event)}
