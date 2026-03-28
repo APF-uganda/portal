@@ -66,35 +66,69 @@ export const PaymentTable = ({
   };
 
   const getTransactionDetails = (payment: Payment) => {
-    console.log('[Payment Data]', payment); // Debug log
-    console.log('[Payment Type]', payment.payment_type); // Debug log
+    console.log('[Payment Data]', payment);
+    console.log('[Payment Type]', payment.payment_type);
     
     let transactionId = '';
     let description = '';
     
-    // Check payment_type first if available
-    if (payment.payment_type === 'donation') {
-      transactionId = payment.reference || payment.application_id || '-';
-      description = 'Donation';
-    } else if (payment.payment_type === 'event') {
-      transactionId = payment.reference || '-';
-      description = 'Event Payment';
-    } else if (payment.payment_type === 'membership_renewal' || (payment.invoice_number && payment.invoice_number.startsWith('INV-'))) {
-      transactionId = payment.invoice_number || payment.reference || '-';
+    // PRIORITY 1: Check payment_type field first (most reliable)
+    if (payment.payment_type) {
+      switch (payment.payment_type) {
+        case 'donation':
+          transactionId = payment.reference || '-';
+          description = payment.description || 'Donation';
+          break;
+        case 'event':
+          transactionId = payment.reference || '-';
+          description = payment.description || 'Event Payment';
+          break;
+        case 'other':
+          transactionId = payment.reference || '-';
+          description = payment.description || 'Other Payment';
+          break;
+        case 'membership_renewal':
+          transactionId = payment.invoice_number || payment.reference || '-';
+          description = payment.description || 'Membership Renewal';
+          break;
+        default:
+          transactionId = payment.reference || '-';
+          description = payment.description || 'Payment';
+      }
+    }
+    // PRIORITY 2: Check invoice number (membership renewals)
+    else if (payment.invoice_number && payment.invoice_number.startsWith('INV-')) {
+      transactionId = payment.invoice_number;
       description = 'Membership Renewal';
-    } else if (payment.application_id && payment.application_id.startsWith('APF-')) {
+    }
+    // PRIORITY 3: Check reference prefixes
+    else if (payment.reference) {
+      if (payment.reference.startsWith('DON-')) {
+        transactionId = payment.reference;
+        description = 'Donation';
+      } else if (payment.reference.startsWith('EVT-')) {
+        transactionId = payment.reference;
+        description = payment.description || 'Event Payment';
+      } else if (payment.reference.startsWith('OTH-')) {
+        transactionId = payment.reference;
+        description = payment.description || 'Other Payment';
+      } else {
+        transactionId = payment.reference;
+        description = payment.description || 'Payment';
+      }
+    }
+    // PRIORITY 4: Check application ID (application fees)
+    else if (payment.application_id && payment.application_id.startsWith('APF-')) {
       transactionId = payment.application_id;
       description = 'Application Fee';
-    } else if (payment.reference && payment.reference.startsWith('EVT-')) {
-      transactionId = payment.reference;
-      description = 'Event Payment';
-    } else {
-      // Fallback to description from backend or use reference
+    }
+    // FALLBACK: Use whatever is available
+    else {
       transactionId = payment.reference || payment.application_id || payment.invoice_number || '-';
-      description = payment.description || 'Other Payment';
+      description = payment.description || 'Payment';
     }
     
-    console.log('[Resolved]', { transactionId, description }); // Debug log
+    console.log('[Resolved]', { transactionId, description });
     return { transactionId, description };
   };
 

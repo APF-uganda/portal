@@ -3,21 +3,34 @@ import { Payment, DashboardStats } from '../components/payment-components/types'
 import { adminPaymentService, AdminPaymentResponse } from '../services/adminPaymentService';
 
 const derivePaymentDescription = (payment: AdminPaymentResponse): string => {
-  const applicationId = payment.application_id || '';
-  const invoiceNumber = payment.invoice_number || '';
+  // PRIORITY 1: Check payment_type field (most reliable for new payments)
+  if (payment.payment_type) {
+    // Backend sends correct descriptions based on payment_type, trust it
+    return payment.description || 'Payment';
+  }
+  
+  // PRIORITY 2: Check reference/transaction ID prefixes (for old payments)
   const reference = payment.reference || '';
-  const rawDescription = (payment.description || '').toLowerCase();
-
-  if (applicationId.startsWith('APF-') || rawDescription.includes('application')) {
-    return 'Application';
+  const invoiceNumber = payment.invoice_number || '';
+  
+  if (reference.startsWith('DON-')) {
+    return 'Donation';
   }
-  if (invoiceNumber.startsWith('INV-') || rawDescription.includes('renew')) {
-    return 'Renewal';
-  }
-  if (reference.startsWith('EVT-') || rawDescription.includes('event')) {
+  if (reference.startsWith('EVT-')) {
     return 'Event';
   }
-  return payment.description || 'Other';
+  if (reference.startsWith('OTH-')) {
+    return payment.description || 'Other';
+  }
+  if (invoiceNumber.startsWith('INV-')) {
+    return 'Renewal';
+  }
+  if (reference.startsWith('APF-')) {
+    return 'Application';
+  }
+  
+  // PRIORITY 3: Fallback to backend description
+  return payment.description || 'Payment';
 };
 
 export const usePayments = () => {
