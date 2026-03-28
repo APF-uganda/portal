@@ -69,18 +69,27 @@ export const PaymentTable = ({
     let transactionId = '';
     let description = '';
     
-    if (payment.application_id && payment.application_id.startsWith('APF-')) {
+    // Check payment_type first if available
+    const paymentType = (payment as any).payment_type;
+    
+    if (paymentType === 'donation') {
+      transactionId = payment.reference || payment.application_id || '-';
+      description = 'Donation';
+    } else if (paymentType === 'event') {
+      transactionId = payment.reference || '-';
+      description = 'Event Payment';
+    } else if (paymentType === 'membership_renewal' || (payment.invoice_number && payment.invoice_number.startsWith('INV-'))) {
+      transactionId = payment.invoice_number || payment.reference || '-';
+      description = 'Membership Renewal';
+    } else if (payment.application_id && payment.application_id.startsWith('APF-')) {
       transactionId = payment.application_id;
-      description = 'Application';
-    } else if (payment.invoice_number && payment.invoice_number.startsWith('INV-')) {
-      transactionId = payment.invoice_number;
-      description = 'Renewal';
+      description = 'Application Fee';
     } else if (payment.reference && payment.reference.startsWith('EVT-')) {
       transactionId = payment.reference;
       description = 'Event';
     } else {
-      transactionId = payment.application_id || payment.invoice_number || payment.reference || '-';
-      description = payment.description || 'Other';
+      transactionId = payment.reference || payment.application_id || payment.invoice_number || '-';
+      description = payment.description || 'Other Payment';
     }
     
     return { transactionId, description };
