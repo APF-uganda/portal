@@ -1,6 +1,6 @@
 /**
  * Payment service - handles payment history and receipt API calls
- * Connected to backend API: GET /api/v1/payments/history/
+ * Connected to backend API: GET /api/v1/payments/mobile/history/
  */
 
 import { Transaction, Receipt } from '../types/payment'
@@ -110,7 +110,7 @@ const sortTransactionsByDateDesc = (rows: Transaction[]) =>
   [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
 const fetchMobileTransactions = async (): Promise<Transaction[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/mobile/history/`, {
     method: 'GET',
     headers: getAuthHeaders(),
   })
@@ -187,7 +187,7 @@ export const getRecentTransactions = async (limit: number = 3): Promise<Transact
 export const getReceipts = async (): Promise<Receipt[]> => {
   try {
     // Derive receipts from completed payments
-    const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/?status=completed`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/payments/mobile/history/?status=completed`, {
       method: 'GET',
       headers: getAuthHeaders(),
     })
@@ -433,7 +433,7 @@ export const filterTransactions = async (
     params.append('status', status)
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/?${params.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/mobile/history/?${params.toString()}`, {
     method: 'GET',
     headers: getAuthHeaders(),
   })
