@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Edit3, Search, Plus, Trash2, Image as ImageIcon, CheckCircle2, 
   AlertCircle, ArrowLeft, Calendar, MapPin, Users, ExternalLink, Loader2 
@@ -28,10 +28,11 @@ const EventsList = () => {
     setTimeout(() => setNotification(null), 4000); 
   };
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/events?publicationState=preview&populate=*&sort=date:desc`);
+     
+      const res = await api.get(`/events?publicationState=preview&populate=*&sort=date:desc&_t=${Date.now()}`);
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
         const imageObj = data.image?.data?.attributes || data.image;
@@ -51,21 +52,30 @@ const EventsList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchEvents();
-  }, []); 
+
+    
+    window.addEventListener('focus', fetchEvents);
+    return () => window.removeEventListener('focus', fetchEvents);
+  }, [fetchEvents]); 
 
   const confirmDelete = async () => {
     if (!deleteModal.id) return;
     try {
+      
       await api.delete(`/events/${deleteModal.id}`);
       setDeleteModal({ isOpen: false, id: null });
-      fetchEvents();
-      showToast("Event removed", "success");
-    } catch (err) {
-      showToast("Delete failed", "error");
+      
+      // Refresh list 
+      await fetchEvents();
+      showToast("Event removed successfully", "success");
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      const errorMsg = err.response?.data?.error?.message || "Delete failed";
+      showToast(errorMsg, "error");
     }
   };
 
@@ -123,7 +133,7 @@ const EventsList = () => {
                   <p className="text-[#5F1C9F] text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em]">Manage Content</p>
                   <span className="hidden md:inline text-slate-300">|</span>
                   <button 
-                    onClick={() => navigate('/admin/registrations')} 
+                    onClick={() => navigate('/admineventMgt')} 
                     className="flex items-center gap-1.5 text-slate-500 hover:text-purple-600 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] transition-colors group"
                   >
                     <Users size={12} className="group-hover:scale-110 transition-transform"/> 
@@ -199,7 +209,7 @@ const EventsList = () => {
                             <td className="px-6 py-5">
                               <div className="flex justify-center gap-2">
                                 <button 
-                                  onClick={() => navigate(`/eventCreate`, { state: { editEvent: event } })} 
+                                  onClick={() => navigate(`/eventMgt`, { state: { editEvent: event } })} 
                                   className="p-2 rounded-lg border border-slate-100 text-slate-400 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
                                 >
                                   <Edit3 size={14} />
@@ -245,7 +255,10 @@ const EventsList = () => {
                           >
                             <Edit3 size={14} /> Edit
                           </button>
-                          <button onClick={() => setDeleteModal({ isOpen: true, id: event.documentId || event.id })} className="flex-[0.5] flex items-center justify-center py-3 bg-red-50 text-red-500 rounded-xl active:bg-red-100 transition-colors">
+                          <button 
+                            onClick={() => setDeleteModal({ isOpen: true, id: event.documentId || event.id })} 
+                            className="flex-[0.5] flex items-center justify-center py-3 bg-red-50 text-red-500 rounded-xl active:bg-red-100 transition-colors"
+                          >
                             <Trash2 size={16} />
                           </button>
                         </div>
