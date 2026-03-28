@@ -3,7 +3,7 @@ import { Plus, Wand2, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { analyticsApi } from '../../services/analyticsApi'; 
 
-type FilterCategory = 'Membership' | 'Applications' | 'System' | 'All';
+type FilterCategory = 'Membership' | 'Applications' ;
 type FilterPeriod = 'Last 7 Days' | 'Last 30 Days' | 'Last 90 Days' | 'Last 12 Months' | 'All Time';
 type FormatType = 'PDF' | 'Excel' | 'CSV' | 'JSON';
 
@@ -47,7 +47,7 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
   const [showAddFilter, setShowAddFilter] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-  const availableCategories: FilterCategory[] = ['All', 'Membership', 'Applications', 'System'];
+  const availableCategories: FilterCategory[] = [ 'Membership', 'Applications', ];
   const availablePeriods: FilterPeriod[] = ['All Time', 'Last 7 Days', 'Last 30 Days', 'Last 90 Days', 'Last 12 Months'];
 
   const getSelectedCategory = () => selectedFilters.find(f => f.type === 'category')?.label || 'All';
@@ -63,7 +63,7 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
     setGenerating(true);
     try {
       const categoryLabel = getSelectedCategory();
-      // Ensure backend keys match lowercase expectations: 'membership', 'applications', 'system'
+      
       const categoryKey = categoryLabel.toLowerCase() === 'all' ? 'membership' : categoryLabel.toLowerCase();
       
       const reportPayload = {
@@ -72,7 +72,7 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         report_type: categoryKey,
         output_format: selectedFormat.toLowerCase(),
         is_active: false,
-        // Critical: Align with backend ReportGenerator's 'filters_applied' field
+     
         filters_applied: {
           period: getSelectedPeriod(),
           category: categoryKey,
@@ -85,7 +85,7 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
       //Create the template
       const quickTemplate = await analyticsApi.createReportTemplate(reportPayload);
 
-      // Trigger actual generation using the template ID
+     
       await analyticsApi.generateReport(
         quickTemplate.id,
         `${categoryLabel} Analysis - ${new Date().toLocaleDateString()}`,
@@ -94,7 +94,7 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
 
       setToast({ message: 'Report processing started! Check history for status.', type: 'success' });
       
-      // Delay success trigger slightly to allow DB to propagate
+     
       if (onSuccess) {
         setTimeout(onSuccess, 1000);
       }
@@ -113,11 +113,11 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-slate-100 rounded-lg">
-            <Wand2 size={20} className="text-slate-700" />
+          
           </div>
-          <h2 className="text-xl font-semibold tracking-tight">Report Builder</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Generate Reports</h2>
         </div>
-        <p className="text-sm text-slate-500">Configure parameters to generate visual audits and system insights.</p>
+        <p className="text-sm text-slate-500">Configure parameters to generate reports.</p>
       </div>
 
       <div className="bg-slate-50 rounded-xl p-5 mb-8 border border-slate-100">
@@ -199,8 +199,8 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
               </>
           ) : (
               <>
-                  <Wand2 size={18} /> 
-                  <span>Compile Custom Report</span>
+                 
+                  <span>Generate Report</span>
               </>
           )}
         </button>

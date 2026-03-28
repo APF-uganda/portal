@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { History, FileText, Download, Loader2, AlertCircle, FileSpreadsheet, File, Info } from 'lucide-react';
+import { History, FileText, Download, Loader2, AlertCircle, FileSpreadsheet, File, Trash2 } from 'lucide-react';
 import { analyticsApi } from '../../services/analyticsApi';
 
 interface RecentReportsProps {
@@ -10,6 +10,7 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchReports = useCallback(async (isInitial = false) => {
@@ -30,7 +31,6 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
 
     const startPolling = () => {
       if (pollInterval.current) clearInterval(pollInterval.current);
-      
       
       const isProcessing = reports.some(r => r.status === 'processing');
       const intervalTime = isProcessing ? 3000 : 20000;
@@ -54,14 +54,6 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
     try {
       const blob = await analyticsApi.downloadReport(report.id);
       
-      // Ghost file protection: If the server returned an error page as a file
-      if (blob.size < 600) {
-        const text = await blob.text();
-        if (text.includes("<!DOCTYPE html>") || text.includes("Error")) {
-          throw new Error("The report file is invalid or empty.");
-        }
-      }
-
       const extension = report.file_format?.toLowerCase() || 'pdf';
       const filename = `${report.title.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
 
@@ -75,9 +67,24 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
       document.body.removeChild(a);
     } catch (error) {
       console.error('Download error:', error);
-      alert('File unavailable: The server may have encountered an error during generation or the file has expired.');
     } finally {
       setDownloading(null);
+    }
+  };
+
+  const handleDelete = async (reportId: string) => {
+    if (!window.confirm("Are you sure you want to delete this report? This will remove the file permanently.")) return;
+
+    setDeleting(reportId);
+    try {
+      await analyticsApi.deleteReport(reportId);
+      
+      setReports(prev => prev.filter(r => r.id !== reportId));
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete report. Please try again.');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -91,7 +98,7 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
   if (loading && reports.length === 0) return (
     <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 flex flex-col items-center">
       <Loader2 className="animate-spin text-slate-400 mb-2" size={24} />
-      <p className="text-sm text-slate-500 font-medium">Synchronizing reports...</p>
+      <p className="text-sm text-slate-500 font-medium">Updating reports...</p>
     </div>
   );
 
@@ -146,20 +153,32 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {report.status === 'completed' && (
                   <button
                     onClick={() => handleDownload(report)}
-                    disabled={downloading === report.id}
-                    className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 text-slate-700 font-bold rounded-lg hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all text-xs disabled:opacity-50 shadow-sm"
+                    disabled={downloading === report.id || deleting === report.id}
+                    className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-2 text-slate-700 font-bold rounded-lg hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all text-xs disabled:opacity-50 shadow-sm"
                   >
                     {downloading === report.id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                     <span className="hidden sm:inline">Download</span>
                   </button>
                 )}
+
+                {/* Delete Button  */}
+                {report.status !== 'processing' && (
+                  <button
+                    onClick={() => handleDelete(report.id)}
+                    disabled={deleting === report.id || downloading === report.id}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-30"
+                    title="Delete Report"
+                  >
+                    {deleting === report.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                  </button>
+                )}
                 
                 {report.status === 'processing' && (
-                  <div className="flex items-center gap-2 text-amber-500">
+                  <div className="flex items-center p-2 text-amber-500">
                     <Loader2 size={18} className="animate-spin" />
                   </div>
                 )}

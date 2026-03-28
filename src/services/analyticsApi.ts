@@ -2,7 +2,6 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import { getAccessToken } from '../utils/authStorage';
 
-
 export interface ChartData {
   labels: string[];
   data: number[];
@@ -46,7 +45,7 @@ export const analyticsApi = {
     return response.data;
   },
 
-  // --- Report Generation ---
+  // Report Generation
   generateReport: async (templateId: string, title: string, format: string) => {
     const response = await api.post('/api/v1/reports/generated-reports/', {
       template: templateId,
@@ -68,12 +67,15 @@ export const analyticsApi = {
     return response.data;
   },
 
-  // --- Dashboard Chart Data ---
-
   /**
-   * Fetches data for the Membership Growth line chart
-   * 
+   * Deletes a generated report and its physical file
    */
+  deleteReport: async (reportId: string): Promise<void> => {
+    await api.delete(`/api/v1/reports/generated-reports/${reportId}/delete/`);
+  },
+
+  //Dashboard Chart Data
+
   getMembershipGrowthChart: async (period: string = '30d'): Promise<ChartData> => {
     const response = await api.get(`/api/v1/reports/analytics/charts/`, {
       params: { type: 'membership_growth', period }
@@ -81,9 +83,6 @@ export const analyticsApi = {
     return response.data;
   },
 
-  /**
-   * Fetches the Daily Activity bar chart data
-   */
   getDailyActivityChart: async (period: string = '7d'): Promise<ChartData> => {
     const response = await api.get(`/api/v1/reports/analytics/charts/`, {
       params: { type: 'daily_activity', period }
@@ -91,9 +90,6 @@ export const analyticsApi = {
     return response.data;
   },
 
-  /**
-   * Fetches data for Application Status 
-   */
   getApplicationStatusChart: async (period: string = '30d'): Promise<ChartData> => {
     const response = await api.get('/api/v1/reports/analytics/charts/', {
       params: { type: 'application_status', period }
@@ -101,10 +97,6 @@ export const analyticsApi = {
     return response.data;
   },
 
-  /**
-   * Fetches the overall summary for dashboard cards
-   
-   */
   getDashboardSummary: async (period: string = '30d') => {
     const response = await api.get('/api/v1/reports/analytics/summary/', {
       params: { period }
@@ -112,9 +104,6 @@ export const analyticsApi = {
     return response.data;
   },
 
-  /**
-   * Fetches data for the Revenue Trends line chart
-   */
   getRevenueTrendsChart: async (period: string = '30d'): Promise<ChartData> => {
     const response = await api.get(`/api/v1/reports/analytics/charts/`, {
       params: { type: 'revenue_trends', period }
@@ -122,9 +111,6 @@ export const analyticsApi = {
     return response.data;
   },
 
-  /**
-   * Fetches data for Payment Status distribution chart
-   */
   getPaymentStatusChart: async (period: string = '30d'): Promise<ChartData> => {
     const response = await api.get('/api/v1/reports/analytics/charts/', {
       params: { type: 'payment_status', period }
@@ -132,9 +118,6 @@ export const analyticsApi = {
     return response.data;
   },
 
-  /**
-   * Fetches available charts metadata
-   */
   getAvailableCharts: async () => {
     const response = await api.get('/api/v1/reports/analytics/charts/available/');
     return response.data;
