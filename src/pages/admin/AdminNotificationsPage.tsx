@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, FileText, User, Clock, CheckCircle } from 'lucide-react';
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
@@ -22,6 +23,7 @@ interface AdminNotification {
 }
 
 const AdminNotificationsPage = () => {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
@@ -83,6 +85,18 @@ const AdminNotificationsPage = () => {
         return true;
     }
   });
+
+  const handleNotificationClick = async (notification: AdminNotification) => {
+    // Mark as read if unread
+    if (!notification.isRead) {
+      await handleMarkAsRead(notification.id);
+    }
+    
+    // Navigate to action URL if available
+    if (notification.metadata?.actionUrl) {
+      navigate(notification.metadata.actionUrl);
+    }
+  };
 
   const handleMarkAsRead = async (id: string) => {
     try {
@@ -233,7 +247,8 @@ const AdminNotificationsPage = () => {
                   {filteredNotifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-4 md:p-6 border-l-4 transition-colors hover:bg-gray-50 ${
+                      onClick={() => handleNotificationClick(notification)}
+                      className={`p-4 md:p-6 border-l-4 transition-colors hover:bg-gray-50 cursor-pointer ${
                         !notification.isRead ? getPriorityColor(notification.priority) : 'border-l-[#4A1D72] bg-white'
                       }`}
                     >
@@ -265,17 +280,12 @@ const AdminNotificationsPage = () => {
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              {notification.metadata?.actionUrl && (
-                                <button
-                                  onClick={() => window.location.href = notification.metadata!.actionUrl!}
-                                  className="text-xs px-2 md:px-3 py-1 bg-[#5E2590] text-white rounded hover:bg-[#4a1d72] transition-colors"
-                                >
-                                  View
-                                </button>
-                              )}
                               {!notification.isRead && (
                                 <button
-                                  onClick={() => handleMarkAsRead(notification.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsRead(notification.id);
+                                  }}
                                   className="text-xs px-2 md:px-3 py-1 bg-white text-black rounded hover:bg-gray-200 transition-colors border border-gray-300"
                                 >
                                   Mark Read
