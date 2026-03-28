@@ -26,17 +26,35 @@ export const getSpendingOverview = async (): Promise<SpendingOverview> => {
     const transactions = await getPaymentHistory()
     console.log('📊 Spending Overview - Total transactions:', transactions.length)
     
+    // Log all transactions for debugging
+    transactions.forEach((t, index) => {
+      console.log(`📋 Transaction ${index + 1}:`, {
+        type: t.type,
+        status: t.status,
+        method: t.method,
+        amount: t.amount,
+        reference: t.reference
+      })
+    })
+    
     // Filter only completed payment transactions (not invoices)
     // Payments have methods like "MTN Mobile Money", "Airtel Money", "Bank Transfer"
-    // Invoices have method "N/A"
+    // Invoices and fees have method "N/A"
     const completedPayments = transactions.filter(t => {
-      const isCompleted = t.status.toLowerCase() === 'completed'
+      const statusLower = t.status.toLowerCase()
+      const isCompleted = statusLower === 'completed' || statusLower === 'success'
       const isPayment = t.method && t.method !== 'N/A'
       const include = isCompleted && isPayment
       
-      if (!include && isCompleted) {
-        console.log('⚠️ Skipping non-payment transaction:', t.type, t.method)
-      }
+      console.log(`🔍 Filtering transaction:`, {
+        type: t.type,
+        status: t.status,
+        statusLower,
+        isCompleted,
+        method: t.method,
+        isPayment,
+        include
+      })
       
       return include
     })

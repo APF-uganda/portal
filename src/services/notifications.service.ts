@@ -67,6 +67,9 @@ const getAuthHeaders = () => {
   const token = getAccessToken();
   return {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
     ...(token && { Authorization: `Bearer ${token}` }),
   };
 };
@@ -96,9 +99,12 @@ function transformNotification(notification: UserNotificationResponse): Notifica
  */
 export const getNotifications = async (filter?: string): Promise<Notification[]> => {
   try {
-    const url = `${API_V1_BASE_URL}/notifications/user-notifications/`;
+    // Add timestamp to prevent caching
+    const timestamp = new Date().getTime();
+    const url = `${API_V1_BASE_URL}/notifications/user-notifications/?_t=${timestamp}`;
     const response = await fetch(url, {
       headers: getAuthHeaders(),
+      cache: 'no-store', // Prevent browser caching
     });
 
     if (!response.ok) {
@@ -129,9 +135,12 @@ export const getNotifications = async (filter?: string): Promise<Notification[]>
  */
 export const getUnreadCount = async (): Promise<number> => {
   try {
-    const url = `${API_V1_BASE_URL}/notifications/user-notifications/unread_count/`;
+    // Add timestamp to prevent caching
+    const timestamp = new Date().getTime();
+    const url = `${API_V1_BASE_URL}/notifications/user-notifications/unread_count/?_t=${timestamp}`;
     const response = await fetch(url, {
       headers: getAuthHeaders(),
+      cache: 'no-store', // Prevent browser caching
     });
 
     if (!response.ok) {

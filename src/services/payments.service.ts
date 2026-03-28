@@ -157,6 +157,15 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
     // Log first entry for debugging
     if (ledgerEntries.length > 0) {
       console.log('🔍 First ledger entry:', ledgerEntries[0])
+      console.log('🔍 Entry details:', {
+        hasCredit: ledgerEntries[0].credit !== null,
+        creditValue: ledgerEntries[0].credit,
+        hasDebit: ledgerEntries[0].debit !== null,
+        debitValue: ledgerEntries[0].debit,
+        status: ledgerEntries[0].status,
+        method: ledgerEntries[0].method,
+        description: ledgerEntries[0].description
+      })
     }
     
     // Parse the date format from ledger (e.g., "23-Mar-26" to a proper date string)
@@ -205,12 +214,22 @@ export const getPaymentHistory = async (): Promise<Transaction[]> => {
         const isPayment = entry.credit !== null && entry.credit > 0
         const amount = isPayment ? entry.credit : entry.debit
         
+        // For payments, use the method from the entry
+        // For fees/invoices, check if there's a method or default to appropriate label
+        let method = 'N/A'
+        if (isPayment && entry.method) {
+          method = entry.method
+        } else if (isPayment) {
+          // If it's a payment but no method specified, assume mobile money
+          method = 'Mobile Money'
+        }
+        
         return {
           date: parseDateFromLedger(entry.date),
           type: entry.description || (isPayment ? 'Payment' : 'Invoice'),
           reference: entry.transactionRef || entry.invoiceNumber,
           amount: `UGX ${Number(amount).toLocaleString()}`,
-          method: entry.method || (isPayment ? 'Mobile Money' : 'N/A'),
+          method: method,
           methodIcon: null,
           status: entry.status || 'completed',
           description: entry.description || (isPayment ? 'Payment received' : 'Invoice generated'),
