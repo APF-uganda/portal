@@ -304,7 +304,7 @@ export const submitManualRenewalPayment = async (
  */
 export const getPaymentLedger = async (): Promise<any[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/payments/history/`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/payments/mobile/history/`, {
       method: 'GET',
       headers: getAuthHeaders(),
     })
@@ -317,6 +317,7 @@ export const getPaymentLedger = async (): Promise<any[]> => {
     const data = await response.json()
     const payments: any[] = data.results || []
     const invoices: any[] = data.invoices || []
+    const applications: any[] = data.applications || []
 
     const fmt = (iso: string) =>
       new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }).replace(/ /g, '-')
@@ -345,6 +346,27 @@ export const getPaymentLedger = async (): Promise<any[]> => {
           hasInvoice: true,
           amount: Number(inv.amount),
           status: inv.status,
+        },
+      })
+    })
+
+    // 1b. One DEBIT row per application (the application fee charge)
+    applications.forEach((app: any) => {
+      rawEntries.push({
+        sortKey: app.submitted_at,
+        entry: {
+          id: `app-${app.application_id}`,
+          date: fmt(app.submitted_at),
+          invoiceNumber: app.application_id,
+          description: 'Application Fee',
+          debit: Number(app.amount),
+          credit: null,
+          balance: 0,
+          transactionRef: app.application_id,
+          hasReceipt: false,
+          hasInvoice: false,
+          amount: Number(app.amount),
+          status: app.status,
         },
       })
     })
