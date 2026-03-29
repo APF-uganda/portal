@@ -169,15 +169,7 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
                       {deleting === report.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                     </button>
                   )}
-                  {report.status === 'failed' && (
-                    <div className="group relative">
-                      <AlertCircle size={20} className="text-red-500 cursor-help" />
-                      <div className="absolute right-0 bottom-full mb-2 w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 z-50 pointer-events-none">
-                        <p className="font-bold border-b border-slate-700 pb-1 mb-1">Error Log</p>
-                        {report.error_message || "System error during generation."}
-                      </div>
-                    </div>
-                  )}
+                  
                 </div>
               </div>
             ))

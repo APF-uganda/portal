@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Wand2, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { analyticsApi } from '../../services/analyticsApi'; 
 
-type FilterCategory = 'Membership' | 'Applications' ;
+
+type FilterCategory = 'Membership' | 'Applications' | 'Revenue';
 type FilterPeriod = 'Last 7 Days' | 'Last 30 Days' | 'Last 90 Days' | 'Last 12 Months' | 'All Time';
 type FormatType = 'PDF' | 'Excel' | 'CSV' | 'JSON';
 
@@ -47,10 +48,11 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
   const [showAddFilter, setShowAddFilter] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-  const availableCategories: FilterCategory[] = [ 'Membership', 'Applications', ];
+  //  available categories list
+  const availableCategories: FilterCategory[] = [ 'Membership', 'Applications', 'Revenue' ];
   const availablePeriods: FilterPeriod[] = ['All Time', 'Last 7 Days', 'Last 30 Days', 'Last 90 Days', 'Last 12 Months'];
 
-  const getSelectedCategory = () => selectedFilters.find(f => f.type === 'category')?.label || 'All';
+  const getSelectedCategory = () => selectedFilters.find(f => f.type === 'category')?.label || 'Membership';
   const getSelectedPeriod = () => selectedFilters.find(f => f.type === 'period')?.label || 'Last 30 Days';
 
   const addFilter = (type: 'category' | 'period', label: string) => {
@@ -63,29 +65,32 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
     setGenerating(true);
     try {
       const categoryLabel = getSelectedCategory();
+      const categoryKey = categoryLabel.toLowerCase();
       
-      const categoryKey = categoryLabel.toLowerCase() === 'all' ? 'membership' : categoryLabel.toLowerCase();
-      
+     
+      const fields = categoryKey === 'revenue' 
+        ? ["date", "reference_id", "description", "amount_ugx", "payment"]
+        : ["all"];
+
       const reportPayload = {
         name: `Custom ${categoryLabel} Audit`,
         description: `User-generated ${categoryLabel} analysis for ${getSelectedPeriod()}`,
         report_type: categoryKey,
         output_format: selectedFormat.toLowerCase(),
         is_active: false,
-     
         filters_applied: {
           period: getSelectedPeriod(),
           category: categoryKey,
           include_visuals: true, 
           include_stats: true    
         },
-        fields_to_include: ["all"]
+        fields_to_include: fields
       };
 
-      //Create the template
+      // Create the template
       const quickTemplate = await analyticsApi.createReportTemplate(reportPayload);
 
-     
+      // Trigger generation
       await analyticsApi.generateReport(
         quickTemplate.id,
         `${categoryLabel} Analysis - ${new Date().toLocaleDateString()}`,
@@ -94,7 +99,6 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
 
       setToast({ message: 'Report processing started! Check history for status.', type: 'success' });
       
-     
       if (onSuccess) {
         setTimeout(onSuccess, 1000);
       }
@@ -112,9 +116,6 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
 
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-slate-100 rounded-lg">
-          
-          </div>
           <h2 className="text-xl font-semibold tracking-tight">Generate Reports</h2>
         </div>
         <p className="text-sm text-slate-500">Configure parameters to generate reports.</p>
@@ -199,7 +200,6 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
               </>
           ) : (
               <>
-                 
                   <span>Generate Report</span>
               </>
           )}
