@@ -1,11 +1,9 @@
-/**
- * Revenue Trends Chart Component 
- */
+
 
 import React, { useState, useEffect } from 'react';
 import ChartWrapper from './ChartWrapper';
 import { analyticsApi, ChartData } from '../../services/analyticsApi';
-import { TrendingUp, DollarSign, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface RevenueChartProps {
   className?: string;
@@ -27,7 +25,6 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
     try {
       setLoading(true);
       setError(null);
-      
       const data = await analyticsApi.getRevenueTrendsChart(period);
       
       if (!data || !data.labels || data.labels.length === 0) {
@@ -51,37 +48,22 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
     ? (() => {
         const lastDay = chartData.data[chartData.data.length - 1];
         const previousDay = chartData.data[chartData.data.length - 2];
-        if (previousDay > 0) {
-          return ((lastDay - previousDay) / previousDay * 100);
-        }
-        return 0;
+        return previousDay > 0 ? ((lastDay - previousDay) / previousDay * 100) : 0;
       })()
     : 0;
 
-  if (loading) {
+  if (loading || error) {
     return (
-      <div className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 h-80 flex flex-col ${className}`}>
+      <div className={`bg-white rounded-xl p-6 shadow-sm border border-gray-100 h-80 flex flex-col items-center justify-center ${className}`}>
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-[#5F2F8B]" />
+          <TrendingUp className={`w-5 h-5 ${error ? 'text-red-500' : 'text-[#5F2F8B]'}`} />
           <h3 className="text-lg font-semibold text-gray-800">Revenue Trends</h3>
         </div>
-        <div className="flex-1 flex items-center justify-center">
+        {loading ? (
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5F2F8B]"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 h-80 flex flex-col ${className}`}>
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-[#5F2F8B]" />
-          <h3 className="text-lg font-semibold text-gray-800">Revenue Trends</h3>
-        </div>
-        <div className="flex-1 flex items-center justify-center text-red-500">
-          <p className="text-sm font-medium">{error}</p>
-        </div>
+        ) : (
+          <p className="text-sm font-medium text-red-500">{error}</p>
+        )}
       </div>
     );
   }
@@ -116,10 +98,9 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
           label: (context: any) => ` Revenue: UGX ${context.parsed.y.toLocaleString()}`,
           title: (context: any) => {
             const label = context[0].label;
-            if (label && label.includes('/')) {
+            if (label?.includes('/')) {
               const [month, day] = label.split('/');
-              const currentYear = new Date().getFullYear();
-              const date = new Date(currentYear, parseInt(month) - 1, parseInt(day));
+              const date = new Date(new Date().getFullYear(), parseInt(month) - 1, parseInt(day));
               return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             }
             return label;
@@ -132,25 +113,37 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
         beginAtZero: true,
         ticks: {
           font: { size: 10 },
+          maxTicksLimit: 6,
           callback: (value: any) => {
-            if (value >= 1000000) return `UGX ${(value / 1000000).toFixed(1)}M`;
-            if (value >= 1000) return `UGX ${(value / 1000).toFixed(0)}K`;
-            return `UGX ${value.toLocaleString()}`;
+            if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+            if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
+            return value.toLocaleString();
           },
         },
         grid: { color: 'rgba(0, 0, 0, 0.03)' },
+        title: {
+          display: true,
+          text: 'Amount (UGX)',
+          font: { size: 9, weight: 'bold' as const },
+          color: '#94a3b8'
+        }
       },
       x: {
         grid: { display: false },
         ticks: {
           font: { size: 10 },
-          maxTicksLimit: period === '7d' ? 7 : 10,
-          
-          callback: (value: any, index: number) => {
+          autoSkip: true,
+          maxRotation: 0,
+          minTickGap: 10,
+          maxTicksLimit: window.innerWidth < 640 ? 5 : 10,
+          callback: function(value: any, index: number) {
             const label = chartData?.labels[index] || '';
-            if (period === '30d' && index % 3 !== 0) return '';
-            return String(label);
-          },
+            // Show only DD on very small screens to save space
+            if (window.innerWidth < 400 && label.includes('/')) {
+              return label.split('/')[1];
+            }
+            return label;
+          }
         },
       },
     },
@@ -169,32 +162,33 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
             </div>
             <div>
               <h3 className="text-base md:text-lg font-bold text-gray-800 leading-tight">Daily Revenue Trends</h3>
-              <p className="text-[11px] text-gray-500 mt-0.5">Performance metrics for the selected period</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">Performance metrics for selected period</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 md:gap-4">
-            <div className="flex items-center gap-4 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Stats Row - Responsive Wrap */}
+            <div className="flex items-center justify-between sm:justify-start gap-2 md:gap-4 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100 flex-1">
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-gray-400">Avg/Day</span>
-                <span className="text-xs md:text-sm font-bold text-gray-700">UGX {(averageDailyRevenue / 1000).toFixed(0)}K</span>
+                <span className="text-[9px] md:text-[10px] uppercase font-bold text-gray-400">Avg/Day</span>
+                <span className="text-xs md:text-sm font-bold text-gray-700">{(averageDailyRevenue / 1000).toFixed(0)}K</span>
               </div>
               <div className="w-px h-6 bg-gray-200"></div>
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-gray-400">Active</span>
-                <span className="text-xs md:text-sm font-bold text-gray-700">{daysWithRevenue} Days</span>
+                <span className="text-[9px] md:text-[10px] uppercase font-bold text-gray-400">Active</span>
+                <span className="text-xs md:text-sm font-bold text-gray-700">{daysWithRevenue}d</span>
               </div>
               <div className="w-px h-6 bg-gray-200"></div>
               <div className={`flex flex-col ${growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                <span className="text-[10px] uppercase font-bold text-gray-400">Trend</span>
+                <span className="text-[9px] md:text-[10px] uppercase font-bold text-gray-400">Trend</span>
                 <div className="flex items-center gap-0.5 text-xs md:text-sm font-bold">
                   {growth >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                  {Math.abs(growth).toFixed(1)}%
+                  {Math.abs(growth).toFixed(0)}%
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-white shadow-sm">
+            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-white shadow-sm self-end sm:self-auto">
               <Calendar className="w-3.5 h-3.5 text-gray-400" />
               <select
                 value={period}
@@ -211,12 +205,8 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
         </div>
       </div>
       
-      <div className="p-4 md:p-6 h-64 md:h-80 w-full">
-        <ChartWrapper
-          type="line"
-          data={data}
-          options={options}
-        />
+      <div className="p-2 md:p-6 h-64 md:h-80 w-full">
+        <ChartWrapper type="line" data={data} options={options} />
       </div>
     </div>
   );
