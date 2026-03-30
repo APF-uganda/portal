@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react" 
-import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { useEvents } from "../../hooks/useCMS"
 import { useNavigate } from 'react-router-dom'
 
@@ -33,13 +33,15 @@ const EventCalendar = () => {
   
   const DESCRIPTION_LIMIT = 150
 
-  // 1. Logic to find the "Next Upcoming Event" and auto-select it
+  /**
+   * EFFECT: Auto-select the next available future event.
+ 
+   */
   useEffect(() => {
     if (!loading && events.length > 0 && selectedDate === "") {
       const now = new Date();
       now.setHours(0, 0, 0, 0);
 
-     
       const futureEvents = events
         .filter(e => e.date && new Date(e.date) >= now)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -49,15 +51,16 @@ const EventCalendar = () => {
         const d = new Date(nextEvent.date);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         
-        // Update calendar view to the month of the next event
         setYear(d.getFullYear());
         setMonth(d.getMonth());
-        // Select the date
         setSelectedDate(key);
       }
     }
   }, [events, loading, selectedDate]);
   
+  /**
+   * MEMO: Maps dates to event objects for O(1) lookups during calendar rendering.
+   */
   const eventsMap = useMemo(() => {
     const map: Record<string, any> = {}
     events.forEach(event => {
@@ -93,7 +96,6 @@ const EventCalendar = () => {
   const handlePrev = () => {
     if (month === 0) { setMonth(11); setYear(year - 1) } 
     else { setMonth(month - 1) }
-    
     setIsDescriptionExpanded(false)
   }
 
@@ -208,7 +210,7 @@ const EventCalendar = () => {
               {selectedEvent ? (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col h-full">
                   <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full mb-3 self-start ${isExpired(selectedEvent.date) ? 'bg-slate-100 text-slate-600' : 'bg-purple-100 text-purple-700'}`}>
-                    {selectedEvent.date === selectedDate && !events.find(e => e.date === selectedDate) ? 'Next Event' : (isExpired(selectedEvent.date) ? 'Past Event' : 'Upcoming Event')}
+                    {isExpired(selectedEvent.date) ? 'Past Event' : 'Upcoming Event'}
                   </span>
                   
                   <h4 className="text-lg font-bold text-gray-900 mb-3 leading-tight line-clamp-2">

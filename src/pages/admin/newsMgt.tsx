@@ -34,10 +34,11 @@ const NewsManagement = () => {
   const fetchNews = async () => {
     setLoading(true);
     try {
-      // Fetching drafts and published posts
+     
       const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc`);
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
+        
         
         const imageData = data.featuredImage?.data?.attributes || data.featuredImage;
         const categoryData = data.news?.data?.attributes || data.news;
@@ -53,9 +54,7 @@ const NewsManagement = () => {
           ...data,
           displayCategory: categoryData?.name || 'General',
           featuredImage: imageUrl,
-          
           imageId: data.featuredImage?.data?.id || data.featuredImage?.id || null,
-         
           isActuallyPublished: !!data.publishedAt 
         };
       });
@@ -73,7 +72,6 @@ const NewsManagement = () => {
   }, []); 
 
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
-  
     if (status === 'published' && (!formData.title || !formData.description || !formData.featuredImage)) {
       showToast("Title, Summary, and Cover Image are required to publish", "error");
       return;
@@ -91,7 +89,6 @@ const NewsManagement = () => {
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
-        
           publishedAt: status === 'published' ? new Date().toISOString() : null,
           news: formData.news ? Number(formData.news) : undefined
         }
@@ -129,7 +126,6 @@ const NewsManagement = () => {
   };
 
   const filteredArticles = articles.filter(a => {
-
     const matchesState = publicationState === 'published' ? a.isActuallyPublished === true : a.isActuallyPublished === false;
     const matchesFilter = filter === 'All' || a.displayCategory === filter;
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase());
@@ -139,7 +135,6 @@ const NewsManagement = () => {
   return (
     <div className="flex min-h-screen bg-[#F4F7FE] font-montserrat text-gray-900 relative">
       
-      {/* CUSTOM DELETE MODAL */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/20">
           <div className="bg-white rounded-[2.5rem] p-6 md:p-10 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
@@ -156,7 +151,6 @@ const NewsManagement = () => {
         </div>
       )}
 
-      {/* CUSTOM TOAST NOTIFICATION */}
       {notification && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3 px-6 py-4 bg-white rounded-2xl shadow-2xl border border-slate-50 animate-in slide-in-from-top-full">
           {notification.type === 'success' ? <CheckCircle2 className="text-emerald-500" size={18}/> : <AlertCircle className="text-red-500" size={18}/>}
@@ -186,7 +180,7 @@ const NewsManagement = () => {
               {!isEditing && (
                 <button 
                   onClick={() => { setSelectedArticle(undefined); setIsEditing(true); }}
-                  className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-[#5F1C9F] rounded-2xl text-white hover:bg-[#4a1480] transition-all font-bold text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-purple-200 active:scale-95"
+                  className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-5 bg-[#5F1C9F] rounded-2xl text-white hover:bg-[#4a1480] transition-all font-bold text-[11px] uppercase tracking-[0.2em] shadow-xl active:scale-95"
                 >
                   <Plus size={18} strokeWidth={3} /> Create Article
                 </button>
@@ -202,7 +196,6 @@ const NewsManagement = () => {
               />
             ) : (
               <div className="space-y-6">
-                {/* Filters and Search Bar */}
                 <div className="bg-white p-4 md:p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col xl:flex-row gap-6">
                   <div className="flex bg-slate-100/50 p-1.5 rounded-[1.4rem] min-w-[300px]">
                     <button 
@@ -242,7 +235,6 @@ const NewsManagement = () => {
                   </div>
                 </div>
 
-                {/* Articles Table */}
                 <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden">
                   <div className="hidden md:block p-3 md:p-6">
                     <div className="overflow-x-auto">
@@ -260,7 +252,6 @@ const NewsManagement = () => {
                             <tr key={article.id} className="border-b last:border-none hover:bg-gray-50 transition-colors">
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-4">
-                                  {/* IMAGE  IN TABLE */}
                                   <div className="w-20 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
                                     {article.featuredImage ? (
                                       <img src={article.featuredImage} className="w-full h-full object-cover" alt={article.title}/>
@@ -305,7 +296,6 @@ const NewsManagement = () => {
                     </div>
                   </div>
 
-                  {/* Mobile List View */}
                   <div className="md:hidden divide-y divide-slate-50">
                     {filteredArticles.length > 0 ? filteredArticles.map((article) => (
                       <div key={article.id} className="p-6 space-y-4">

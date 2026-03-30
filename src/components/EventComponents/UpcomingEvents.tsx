@@ -28,7 +28,8 @@ const UpcomingEvents = () => {
     
     return events
       .filter(event => new Date(event.date) >= now)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 8); 
   }, [events]);
 
   useEffect(() => {

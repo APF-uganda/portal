@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { CMS_API_URL, CMS_BASE_URL } from '../config/api';
 
-
- 
 const ADMIN_TOKEN = (import.meta.env.VITE_CMS_ADMIN_TOKEN || '').trim();
 const defaultHeaders = ADMIN_TOKEN
   ? { Authorization: `Bearer ${ADMIN_TOKEN}` }
@@ -45,20 +43,18 @@ const api = axios.create({
   headers: defaultHeaders,
 });
 
-/**
- * UTILITY: Resolves image URLs based on environment
- */
+
 const getImageUrl = (url: string | undefined): string => {
   if (!url) {
-    return '/images/Hero.jpg'; // Use existing image as fallback
+    return '/images/Hero.jpg'; 
   }
   
-  // If the URL is already absolute (starts with http), return it
+ 
   if (url.startsWith('http')) {
     return url;
   }
   
-  // Otherwise, prepend the configured CMS base URL
+
   return `${CMS_BASE_URL}${url}`;
 };
 
@@ -145,7 +141,7 @@ const writeNewsCache = (data: NewsArticle[]) => {
   try {
     window.sessionStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(payload));
   } catch {
-    // Ignore storage quota or browser privacy-mode errors.
+    
   }
 };
 
@@ -182,7 +178,7 @@ const writeEventsCache = (data: Event[]) => {
   try {
     window.sessionStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(payload));
   } catch {
-    // Ignore storage quota or browser privacy-mode errors.
+
   }
 };
 
@@ -195,22 +191,22 @@ export const getCachedEventsSync = (): Event[] => {
 };
 
 const NEWS_QUERY_CANDIDATES = [
-  // Preferred lightweight query: only sort + featured image relation.
+
   'sort[0]=publishDate:desc&sort[1]=createdAt:desc&populate=featuredImage',
-  // Compatibility fallback for CMS schemas that differ.
+
   'sort[0]=createdAt:desc&populate=featuredImage',
-  // Last resort: broad query known to work in this project historically.
+
   'populate=deep&sort=createdAt:desc',
 ];
 
 const EVENTS_QUERY_CANDIDATES = [
-  // Preferred lightweight query: fetch only required fields and image URL.
-  'sort[0]=date:asc&fields[0]=title&fields[1]=description&fields[2]=date&fields[3]=time&fields[4]=location&fields[5]=registrationLink&fields[6]=cpdPoints&fields[7]=isFeatured&fields[8]=isPaid&fields[9]=memberPrice&fields[10]=nonMemberPrice&populate[image][fields][0]=url',
-  // Compatibility fallback for varying CMS schemas.
-  'sort[0]=date:asc&populate=image',
-  // Last-resort broad query.
-  'populate=deep&sort=date:asc',
-  'populate=deep',
+ 
+  'sort[0]=date:asc&pagination[pageSize]=100&fields[0]=title&fields[1]=description&fields[2]=date&fields[3]=time&fields[4]=location&fields[5]=registrationLink&fields[6]=cpdPoints&fields[7]=isFeatured&fields[8]=isPaid&fields[9]=memberPrice&fields[10]=nonMemberPrice&populate[image][fields][0]=url',
+  
+  'sort[0]=date:asc&pagination[pageSize]=100&populate=image',
+  
+  'populate=deep&pagination[pageSize]=100&sort=date:asc',
+  'populate=deep&pagination[pageSize]=100',
 ];
 
 const fetchNewsResponse = async () => {
@@ -325,7 +321,7 @@ export const getEvents = async (): Promise<Event[]> => {
       // Handle both direct and nested attribute structures
       const data = item.attributes || item;
 
-      // Better image URL extraction with fallback handling
+     
       let imageUrl = '';
       if (data.image?.data?.attributes?.url) {
         imageUrl = data.image.data.attributes.url;
