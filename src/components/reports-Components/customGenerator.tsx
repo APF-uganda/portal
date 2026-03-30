@@ -3,7 +3,6 @@ import { Plus, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { analyticsApi } from '../../services/analyticsApi'; 
 
-
 type FilterCategory = 'Membership' | 'Applications' | 'Revenue';
 type FilterPeriod = 'Last 7 Days' | 'Last 30 Days' | 'Last 90 Days' | 'Last 12 Months' | 'All Time';
 type FormatType = 'PDF' | 'Excel' | 'CSV' | 'JSON';
@@ -48,7 +47,6 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
   const [showAddFilter, setShowAddFilter] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-  //  available categories list
   const availableCategories: FilterCategory[] = [ 'Membership', 'Applications', 'Revenue' ];
   const availablePeriods: FilterPeriod[] = ['All Time', 'Last 7 Days', 'Last 30 Days', 'Last 90 Days', 'Last 12 Months'];
 
@@ -67,10 +65,16 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
       const categoryLabel = getSelectedCategory();
       const categoryKey = categoryLabel.toLowerCase();
       
-     
-      const fields = categoryKey === 'revenue' 
-        ? ["date", "reference_id", "description", "amount_ugx", "payment"]
-        : ["all"];
+      // Map fields based on category 
+      let fields = ["all"];
+      if (categoryKey === 'revenue') {
+        fields = ["date", "reference_id", "description", "amount_ugx", "payment"];
+      } else if (categoryKey === 'membership') {
+      
+        fields = ["joined_date", "first_name", "last_name", "email"];
+      } else if (categoryKey === 'applications') {
+        fields = ["date", "reference_id", "name", "organization", "amount_ugx", "status"];
+      }
 
       const reportPayload = {
         name: `Custom ${categoryLabel} Audit`,
@@ -87,10 +91,8 @@ const CustomGenerator: React.FC<CustomGeneratorProps> = ({ onSuccess }) => {
         fields_to_include: fields
       };
 
-      // Create the template
       const quickTemplate = await analyticsApi.createReportTemplate(reportPayload);
 
-      // Trigger generation
       await analyticsApi.generateReport(
         quickTemplate.id,
         `${categoryLabel} Analysis - ${new Date().toLocaleDateString()}`,
