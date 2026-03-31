@@ -248,7 +248,7 @@ export const getNews = async () => {
 
     if (!res.data || !res.data.data) return [];
 
-    const mappedNews: NewsArticle[] = res.data.data.map((item: any) => {
+    const mappedNews: NewsArticle[] = res.data.data.map((item: any, index: number) => {
       const data = item.attributes || item;
 
       const rawImg = data.featuredImage?.data || data.featuredImage || data.image?.data || data.image;
@@ -271,7 +271,7 @@ export const getNews = async () => {
         readTime: data.readTime || 5,
         date: data.publishDate || data.createdAt,
         isFeatured: !!(data.isFeatured || data.isTopic),
-        isTopPick: !!(data.isTopPick || data.isFeatured || data.isTopic)
+        isTopPick: index === 0 || !!(data.isTopPick || data.isFeatured || data.isTopic)
       };
     });
 
@@ -342,6 +342,7 @@ export const getEvents = async (): Promise<Event[]> => {
         isFeatured: data.isFeatured || false,
         isPaid: data.isPaid || false,
         memberPrice: data.memberPrice || 0,
+        
         nonMemberPrice: data.nonMemberPrice || 0,
         image: getImageUrl(imageUrl),
       };
