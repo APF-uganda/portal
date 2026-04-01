@@ -64,6 +64,7 @@ const HomePageEditor = React.lazy(() => import('./components/admincms/editLandin
 const LeadershipManager = React.lazy(() => import('./components/admincms/leadership/leadershipmanager'));
 const NewsDetail = React.lazy(() => import('./components/NewsComponents/NewsDetail'));
 const AdminInquiryDashboard = React.lazy(() => import('./pages/admin/inquiries'));
+const BulkRegisterMembers = React.lazy(() => import('./pages/admin/BulkRegisterMembers'));
 const PendingApprovalPage = React.lazy(() => import('./components/register-components/pendingApproval'));
 
 const EventsList = React.lazy(() => import("./components/adminEvents/eventlist"));
@@ -359,6 +360,15 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute role="admin">
                   <ManageUsers />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/bulk-register"
+              element={
+                <ProtectedRoute role="admin">
+                  <BulkRegisterMembers />
                 </ProtectedRoute>
               }
             />

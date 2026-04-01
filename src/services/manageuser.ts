@@ -25,6 +25,8 @@ export const userManagementApi = {
       hasDocuments: member.has_documents || false,
       documentCount: member.document_count || 0,
       lastDocumentUpload: member.last_document_upload || null,
+      emailVerified: member.email_verified || false,
+      mustChangePassword: member.must_change_password || false,
     }));
   },
 

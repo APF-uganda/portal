@@ -54,5 +54,5 @@ export const useUserManagement = () => {
     }
   };
 
-  return { users, loading, isPerformingAction, error, handleToggleStatus };
+  return { users, loading, isPerformingAction, error, handleToggleStatus, fetchUsers };
 };

@@ -8,6 +8,8 @@ export interface User {
     hasDocuments?: boolean;
     documentCount?: number;
     lastDocumentUpload?: string;
+    emailVerified?: boolean;
+    mustChangePassword?: boolean;
   }
   
   export interface DashboardStats {
