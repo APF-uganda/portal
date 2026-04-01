@@ -70,7 +70,7 @@ jobs:
             sleep 3
             docker inspect -f '{{.State.Running}}' apf_frontend | grep -qx "true"
             if ! curl -4 -sS --fail --retry 60 --retry-delay 2 --retry-all-errors \
-              http://127.0.0.1/ >/dev/null; then
+              http://127.0.0.1:8080/ >/dev/null; then
               echo "Frontend health check failed."
               dc ps frontend || true
               dc logs --no-color --since "${START_TS}" --tail=200 frontend || true
