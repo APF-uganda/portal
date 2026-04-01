@@ -14,7 +14,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { PaymentData, PaymentMethod, PaymentStatus } from '../../types/registration';
 import ProofOfPaymentUpload from './ProofOfPaymentUpload';
-import Input from './Input';
+import PhoneInput from './PhoneInput';
 
 interface PaymentFormsProps {
   selectedMethod: PaymentMethod | null;
@@ -69,8 +69,7 @@ export function PaymentForms({
   useEffect(() => {
     if (selectedMethod && prevMethodRef.current !== null && selectedMethod !== prevMethodRef.current) {
       // Clear all fields
-      setPhoneNumber('');
-      setProofOfPayment(null);
+      setPhoneNumber('');      setProofOfPayment(null);
       setPaymentStatus('idle');
       setErrorMessage(undefined);
       setTouched({});
@@ -87,9 +86,7 @@ export function PaymentForms({
       phoneNumber: phoneNumber || undefined,
       status: paymentStatus,
       errorMessage,
-      // Mark as validated when proof of payment is uploaded for all methods
       isValidated: proofOfPayment !== null,
-      // Include proof of payment file for submission
       proofOfPayment: proofOfPayment || undefined,
     };
 
@@ -136,10 +133,10 @@ export function PaymentForms({
     if (!touched[field]) return undefined;
 
     switch (field) {
-      case 'phoneNumber':
+      case 'phoneNumber': {
         if (!phoneNumber) return 'Phone number is required';
-        if (!/^256\d{9}$/.test(phoneNumber)) return 'Phone number must be in format 256XXXXXXXXX';
         break;
+      }
     }
 
     return undefined;
@@ -189,31 +186,13 @@ export function PaymentForms({
         </div>
       </div>
 
-      <Input
-        label="Your Phone Number"
-        type="tel"
-        placeholder="256XXXXXXXXX"
-        name="phoneNumber"
-        value={phoneNumber}
-        onChange={(e) => setPhoneNumber(e.target.value)}
-        onBlur={() => handleBlur('phoneNumber')}
-        error={getFieldError('phoneNumber')}
+      <PhoneInput
+        label="Transaction Phone Number"
         required
+        operator={selectedMethod === 'mtn' ? 'mtn' : 'airtel'}
+        onChange={(value) => setPhoneNumber(value)}
+        onBlur={() => handleBlur('phoneNumber')}
       />
-
-      {selectedMethod === 'mtn' &&
-          AIRTEL_PREFIXES.some(p => phoneNumber.startsWith(p)) && (
-           <p className="text-sm text-red-700 mt-1">
-             Please enter an MTN number
-          </p>
-         )}
-
-     {selectedMethod === 'airtel' &&
-         MTN_PREFIXES.some(p => phoneNumber.startsWith(p)) && (
-         <p className="text-sm text-red-700 mt-1">
-             Please enter an Airtel number
-        </p>
-     )}
 
       {/* Instructions */}
       <div className="text-sm text-black bg-white border border-l-4 border-[#9333EA] p-4 rounded-lg">

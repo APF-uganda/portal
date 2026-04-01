@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import Input from "../Input";
+import PhoneInput from "../PhoneInput";
 import { PersonalInfoData } from '../../../types/registration';
-import {
-  validatePhoneNumber,
-  
-} from '../../../lib/validators';
+import { validatePhoneNumber } from '../../../lib/validators';
 
 const AGE_RANGES = [
   '18 – 24',
@@ -164,16 +162,12 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
       </div>
 
 
-        <Input
+        <PhoneInput
           label="Phone Number"
-          type="text"
-          placeholder="256XXXXXXXXX"
-          name="phoneNumber"
-          value={data.phoneNumber}
-          onChange={(e) => handleFieldChange('phoneNumber', e.target.value)}
-          onBlur={() => handleBlur('phoneNumber')}
-          error={getFieldError('phoneNumber')}
           required
+          onChange={(value) => handleFieldChange('phoneNumber', value)}
+          onBlur={() => handleBlur('phoneNumber')}
+          error={touched.phoneNumber ? errors.phoneNumber : undefined}
         />
 
         <Input

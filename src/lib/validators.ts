@@ -101,13 +101,14 @@ export function validatePhoneNumber(phoneNumber: string): ValidationResult {
     };
   }
 
-  // Format: 256XXXXXXXXX (256 followed by 9 digits)
-  const phoneRegex = /^256\d{9}$/;
-  
-  if (!phoneRegex.test(phoneNumber)) {
+  // Strip leading + for comparison — accept both +256XXXXXXXXX and 256XXXXXXXXX
+  const normalised = phoneNumber.replace(/^\+/, '');
+  const phoneRegex = /^256(70|74|75|76|77|78|79)\d{7}$/;
+
+  if (!phoneRegex.test(normalised)) {
     return {
       isValid: false,
-      errorMessage: 'Phone number must be in format 256XXXXXXXXX'
+      errorMessage: 'Enter a valid Uganda mobile number (MTN or Airtel)'
     };
   }
 
