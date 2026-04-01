@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import logoBlue from '../../assets/logo_blue.png'
 import { Link } from 'react-router-dom'
+import TermsModal from './TermsModal'
+import PrivacyModal from './PrivacyModal'
 
 //  SVG Components ---
 const FacebookLogo = ({ size = 20 }: { size?: number }) => (
@@ -27,12 +30,14 @@ const XLogo = ({ size = 16 }: { size?: number }) => (
 )
 
 function Footer() {
+  const [showTerms, setShowTerms] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
+
   const quickLinks = [
     { label: 'Membership', to: '/membership' },
     { label: 'Governance', to: '/about#governance' },
     { label: 'Management', to: '/management' },
-    { label: 'Policy Documents', to: '/membership' },
-    { label: 'Annual Reports', to: '/membership' },
+    { label: 'Terms & Conditions', action: () => setShowTerms(true) },
     { label: 'FAQs', to: '/contact' },
   ]
 
@@ -40,10 +45,13 @@ function Footer() {
     { label: 'Member Directory', to: '/membership' },
     { label: 'Partners', to: '/about' },
     { label: 'Sponsorship', to: '/contact' },
+    { label: 'Privacy Policy', action: () => setShowPrivacy(true) },
   ]
 
   return (
     <footer className="bg-white border-t border-gray-100 pt-16 pb-8">
+      <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
+      <PrivacyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1.2fr_1fr] gap-12 lg:gap-24 mb-16">
           
@@ -84,9 +92,10 @@ function Footer() {
             <ul className="space-y-4">
               {quickLinks.map((link) => (
                 <li key={link.label}>
-                  <Link to={link.to} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">
-                    {link.label}
-                  </Link>
+                  {'action' in link
+                    ? <button onClick={link.action} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">{link.label}</button>
+                    : <Link to={link.to!} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">{link.label}</Link>
+                  }
                 </li>
               ))}
             </ul>
@@ -98,9 +107,10 @@ function Footer() {
             <ul className="space-y-4">
               {connectLinks.map((link) => (
                 <li key={link.label}>
-                  <Link to={link.to} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">
-                    {link.label}
-                  </Link>
+                  {'action' in link
+                    ? <button onClick={link.action} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">{link.label}</button>
+                    : <Link to={link.to!} className="text-gray-500 hover:text-[#5E2590] transition-colors text-[0.95rem] font-medium">{link.label}</Link>
+                  }
                 </li>
               ))}
             </ul>

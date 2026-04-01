@@ -5,6 +5,8 @@ import mtnLogo from "../../../assets/images/registerPage-images/mtn.png";
 import airtelLogo from "../../../assets/images/registerPage-images/airtel.png";
 import dfcuLogo from "../../../assets/images/registerPage-images/dfcu.jpg";
 import { PaymentData, PaymentMethod } from "../../../types/registration";
+import TermsModal from "../../common/TermsModal";
+import PrivacyModal from "../../common/PrivacyModal";
 
 interface PaymentStepsProps {
   data?: PaymentData | null;
@@ -15,6 +17,8 @@ interface PaymentStepsProps {
 
 function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }: PaymentStepsProps) {
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
     data?.method || null
   );
@@ -75,6 +79,9 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
 
   return (
     <div className="space-y-6">
+      <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
+      <PrivacyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
+
       {/* CONSENT & DECLARATION */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
         <h3 className="font-semibold text-gray-800 mb-4">
@@ -91,9 +98,21 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
             />
             <span>
               I agree to the{" "}
-              <a href="#" className="text-purple-600 hover:underline">Terms & Conditions</a>{" "}
+              <button
+                type="button"
+                onClick={() => setShowTerms(true)}
+                className="text-purple-600 hover:underline"
+              >
+                Terms &amp; Conditions
+              </button>{" "}
               and{" "}
-              <a href="#" className="text-purple-600 hover:underline">Privacy Policy</a>
+              <button
+                type="button"
+                onClick={() => setShowPrivacy(true)}
+                className="text-purple-600 hover:underline"
+              >
+                Privacy Policy
+              </button>
             </span>
           </label>
         </div>
