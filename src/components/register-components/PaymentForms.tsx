@@ -102,8 +102,8 @@ export function PaymentForms({
     const file = event.target.files?.[0];
     if (file) {
       // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMessage('File size must be less than 5MB');
+      if (file.size > 10 * 1024 * 1024) {
+        setErrorMessage('File size must be less than 10MB');
         return;
       }
       
@@ -173,18 +173,18 @@ export function PaymentForms({
   const renderMobileMoneyForm = () => (
     <div className="space-y-4">
       {/* Merchant Code Display */}
-      <div className="bg-white border border-[#5F1C9F] rounded-lg p-4">
-        <h4 className="font-medium text-[#5F1C9F] mb-2">Payment Details</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-black">Merchant Code:</span>
-            <span className="font-mono font-bold text-black">
+      <div className="bg-purple-50 border-2 border-[#5F1C9F] rounded-lg p-4">
+        <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Merchant Code:</span>
+            <span className="font-mono font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">
               {selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-black">Amount:</span>
-            <span className="font-bold text-black">UGX 50,000</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Amount:</span>
+            <span className="font-bold text-lg text-black">UGX 50,000</span>
           </div>
         </div>
       </div>

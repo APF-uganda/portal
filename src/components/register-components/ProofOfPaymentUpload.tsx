@@ -63,7 +63,7 @@ function ProofOfPaymentUpload({ proofOfPayment, onFileChange, onRemoveFile }: Pr
               <div className="mt-3">
                 <span className="text-purple-600 hover:text-purple-500 font-medium text-lg">Click anywhere to upload</span>
                 <p className="text-sm text-gray-600 mt-2">Drag and drop your file here, or click to browse</p>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 5MB</p>
+                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 10MB</p>
               </div>
             </div>
             <input

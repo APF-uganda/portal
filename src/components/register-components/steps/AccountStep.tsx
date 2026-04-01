@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, ShieldCheck, Loader2, X,AlertCircle, Mail } from 'lucide-react';
+import { Check, ShieldCheck, Loader2, X, AlertCircle, Mail, Eye, EyeOff } from 'lucide-react';
 import Input from '../Input';
 import { AccountDetailsData } from '../../../types/registration';
 import { validateEmail } from '../../../lib/validators';
@@ -16,6 +16,8 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [availabilityErrors, setAvailabilityErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // Verification States
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -276,15 +278,33 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <Input
-                  label="Password"
-                  type="password"
-                  name="password"
-                  value={data.password}
-                  onChange={(e) => onChange({ ...data, password: e.target.value })}
-                  error={touched.password ? errors.password : undefined}
-                  required
-                />
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Password <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={data.password}
+                      onChange={(e) => onChange({ ...data, password: e.target.value })}
+                      onBlur={() => setTouched(t => ({ ...t, password: true }))}
+                      className={`w-full rounded-md border px-3 py-3 pr-10 text-sm sm:py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 ${touched.password && errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                      style={{ fontSize: '16px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {touched.password && errors.password && (
+                    <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+                  )}
+                </div>
                 <div className="mt-3 grid grid-cols-2 gap-y-2">
                   <StrengthItem label="8+ Characters" met={strength.length} />
                   <StrengthItem label="Number" met={strength.hasNumber} />
@@ -293,15 +313,33 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
                 </div>
               </div>
 
-              <Input
-                label="Confirm Password"
-                type="password"
-                name="passwordConfirmation"
-                value={data.passwordConfirmation}
-                onChange={(e) => onChange({ ...data, passwordConfirmation: e.target.value })}
-                error={touched.passwordConfirmation ? errors.passwordConfirmation : undefined}
-                required
-              />
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">
+                  Confirm Password <span className="text-red-500 ml-1">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="passwordConfirmation"
+                    value={data.passwordConfirmation}
+                    onChange={(e) => onChange({ ...data, passwordConfirmation: e.target.value })}
+                    onBlur={() => setTouched(t => ({ ...t, passwordConfirmation: true }))}
+                    className={`w-full rounded-md border px-3 py-3 pr-10 text-sm sm:py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 ${touched.passwordConfirmation && errors.passwordConfirmation ? 'border-red-500' : 'border-gray-300'}`}
+                    style={{ fontSize: '16px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(v => !v)}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {touched.passwordConfirmation && errors.passwordConfirmation && (
+                  <p className="text-sm text-red-500 mt-1">{errors.passwordConfirmation}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

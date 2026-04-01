@@ -14,7 +14,6 @@ interface PaymentStepsProps {
 }
 
 function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }: PaymentStepsProps) {
-  const [consentEKYC, setConsentEKYC] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
     data?.method || null
@@ -34,11 +33,11 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
   // Update validation state based on consent and payment validation
   useEffect(() => {
     // Both consent checkboxes must be checked and payment must be valid
-    const isValid = consentEKYC && agreeTerms && isPaymentValid;
+    const isValid = agreeTerms && isPaymentValid;
     if (onValidationChange) {
       onValidationChange(isValid);
     }
-  }, [consentEKYC, agreeTerms, isPaymentValid, onValidationChange]);
+  }, [agreeTerms, isPaymentValid, onValidationChange]);
 
   // Handle payment method selection
   const handlePaymentMethodSelect = (method: string) => {
@@ -87,43 +86,21 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
             <input
               type="checkbox"
               className="mt-1 accent-purple-600"
-              checked={consentEKYC}
-              onChange={(e) => setConsentEKYC(e.target.checked)}
-            />
-            <span>
-              I consent to electronic identity verification (eKYC)
-            </span>
-          </label>
-
-          <label className="flex items-start gap-3 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              className="mt-1 accent-purple-600"
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
             />
             <span>
               I agree to the{" "}
-              <a
-                href="#"
-                className="text-purple-600 hover:underline"
-              >
-                Terms & Conditions
-              </a>{" "}
+              <a href="#" className="text-purple-600 hover:underline">Terms & Conditions</a>{" "}
               and{" "}
-              <a
-                href="#"
-                className="text-purple-600 hover:underline"
-              >
-                Privacy Policy
-              </a>
+              <a href="#" className="text-purple-600 hover:underline">Privacy Policy</a>
             </span>
           </label>
         </div>
       </div>
 
       {/* APPLICATION FEE - Only show if consent is given */}
-      {consentEKYC && agreeTerms && (
+      {agreeTerms && (
         <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
           <h3 className="font-semibold text-gray-800 mb-2">
             Application Fee

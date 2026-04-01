@@ -18,9 +18,9 @@ const STEPS = [
   "Payments",
 ];
 
-const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
 const FILE_SIZE_ERROR_MESSAGE =
-  "One or more files are too large. Maximum file size is 5MB.";
+  "One or more files are too large. Maximum file size is 10MB.";
 
 function ApplyForm() {
   const navigate = useNavigate(); 
