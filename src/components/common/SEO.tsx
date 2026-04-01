@@ -10,14 +10,14 @@ export interface SEOProps {
 }
 
 const SEO = ({
-  title = 'APF Service Portal',
+  title = 'Accountancy Practitioners Forum Uganda',
   description = 'Accountancy Practitioners Forum - Connecting accounting professionals across Uganda',
-  keywords = 'accountancy, accounting professionals, Uganda, APF, membership, CPD',
+  keywords = 'accountancy, accounting professionals, Uganda, APF, membership, CPD, accountant Uganda',
   ogImage = '/images/Hero.jpg',
   canonicalUrl,
   type = 'website',
 }: SEOProps) => {
-  const fullTitle = title === 'APF Service Portal' ? title : `${title} | APF Service Portal`;
+  const fullTitle = title === 'Accountancy Practitioners Forum Uganda' ? title : `${title} | APF Uganda`;
   const siteUrl = window.location.origin;
   const currentUrl = canonicalUrl || window.location.href;
   const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;

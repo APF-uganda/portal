@@ -13,9 +13,10 @@ function LandingPage() {
   return (
     <div className="overflow-x-hidden">
       <SEO 
-        title="Home"
+        title="Accountancy Practitioners Forum Uganda"
         description="Accountancy Practitioners Forum - Connecting accounting professionals across Uganda. Join our community for CPD events, networking, and professional development."
-        keywords="accountancy, accounting professionals, Uganda, APF, membership, CPD, accounting forum"
+        keywords="accountancy, accounting professionals, Uganda, APF, membership, CPD, accounting forum, accountant Uganda"
+        canonicalUrl="https://apfuganda.org/"
       />
       <Navbar />
       
