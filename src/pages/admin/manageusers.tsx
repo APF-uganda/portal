@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Filter, FileText, Clock, Download } from 'lucide-react';
+import { Filter, FileText, Clock, Download, RefreshCw } from 'lucide-react';
 import StatCard from '../../components/manageusers-components/stats';
 import MemberDocumentsModal from '../../components/manageusers-components/MemberDocumentsModal';
 
@@ -26,7 +26,7 @@ const ManageUsers = () => {
   const [isExporting, setIsExporting] = useState(false);
   
   // Use the hook to get data, loading state, and action handlers
-  const { users, loading, error, handleToggleStatus } = useUserManagement();
+  const { users, loading, error, handleToggleStatus, fetchUsers } = useUserManagement();
 
   // Export to CSV function
   const handleExportCSV = async () => {
@@ -217,15 +217,26 @@ const ManageUsers = () => {
                 {/* Export Button Row */}
                 <div className="flex justify-between items-center w-full">
                   <h3 className="text-base md:text-lg font-semibold text-gray-800">Filter & Search</h3>
-                  <button
-                    onClick={handleExportCSV}
-                    disabled={isExporting || loading}
-                    className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[#5E2590] text-white rounded-lg hover:bg-[#4a1d73] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export to CSV'}</span>
-                    <span className="sm:hidden">{isExporting ? '...' : 'Export'}</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={fetchUsers}
+                      disabled={loading}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm"
+                      title="Refresh member list"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">Refresh</span>
+                    </button>
+                    <button
+                      onClick={handleExportCSV}
+                      disabled={isExporting || loading}
+                      className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[#5E2590] text-white rounded-lg hover:bg-[#4a1d73] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export to CSV'}</span>
+                      <span className="sm:hidden">{isExporting ? '...' : 'Export'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-3 md:gap-4 w-full">
@@ -323,6 +334,15 @@ const ManageUsers = () => {
                             </td>
                             <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-gray-600">
                               <div className="truncate" title={user.email}>{user.email}</div>
+                              <div className="mt-0.5">
+                                {user.emailVerified ? (
+                                  <span className="text-[10px] font-semibold text-green-600">✓ Verified</span>
+                                ) : user.mustChangePassword ? (
+                                  <span className="text-[10px] font-semibold text-yellow-600">⏳ Pending login</span>
+                                ) : (
+                                  <span className="text-[10px] font-semibold text-gray-400">Not verified</span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-3 md:px-6 py-3 md:py-4 text-sm">
                               <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider whitespace-nowrap

@@ -103,6 +103,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, onToggle, isMobileOpen = false, 
             <NavItem icon={<FiInbox />} label="Manage CMS" to="/admin/cmsPage" collapsed={collapsed} onMobileClick={handleMobileLinkClick} />
             <NavItem icon={<FiUser />} label="Membership Applications" to="/admin/approval" collapsed={collapsed} onMobileClick={handleMobileLinkClick} />
             <NavItem icon={<FaFileAlt />} label="Manage Users" to="/admin/manageusers" collapsed={collapsed} onMobileClick={handleMobileLinkClick} />
+            <NavItem icon={<FiUser />} label="Register Members" to="/admin/bulk-register" collapsed={collapsed} onMobileClick={handleMobileLinkClick} />
             <NavItem icon={<FaMoneyBill />} label="Payments & Renewals" to="/admin/payments" collapsed={collapsed} onMobileClick={handleMobileLinkClick} />
             <NavItem icon={<MdInsights />} label="Reports & Analytics" to="/admin/reports" collapsed={collapsed} onMobileClick={handleMobileLinkClick} />
             <NavItem icon={<FaComments />} label="Community Forum" to="/admin/communityForum" collapsed={collapsed} onMobileClick={handleMobileLinkClick} />
