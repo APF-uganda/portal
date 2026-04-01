@@ -213,9 +213,6 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
         />
       </div>
 
-      <p className="text-xs text-gray-500 mt-2">
-        Phone number must be in format 256XXXXXXXXX.
-      </p>
     </>
   );
 }

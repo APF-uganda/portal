@@ -99,58 +99,39 @@ function CloudUpload({
           </svg>
         </div>
 
-        <div className="flex-1">
-    
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm font-medium text-gray-800">{title}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-800">{title}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{description}</p>
 
-            {file && (
-              <span className="flex items-center justify-between text-xs text-gray-700 mt-0.5 gap-2">
-                <span className="w-3 h-3 flex items-center justify-center bg-purple-100 rounded-full border border-black">
-                  <svg
-                    width="7"
-                    height="7"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="black"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+          {file && (
+            <div className="flex items-center justify-between mt-2 bg-white border border-purple-200 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-4 h-4 shrink-0 flex items-center justify-center bg-purple-100 rounded-full border border-purple-400">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </span>
-                <span>{file.name}</span>
-                <button
-                  onClick={handleRemoveFile}
-                  className="ml-2 text-red-600 hover:text-red-800 transition"
-                  title="Remove file"
-                  type="button"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </span>
-            )}
-          </div>
-
-          <p className="text-xs text-gray-500 mt-1">{description}</p>
+                <span className="text-xs text-gray-700 truncate">{file.name}</span>
+              </div>
+              <button
+                onClick={handleRemoveFile}
+                className="shrink-0 ml-3 flex items-center gap-1 px-2 py-1 rounded-md bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-800 transition text-xs font-medium"
+                title="Remove file"
+                type="button"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4h6v2" />
+                </svg>
+                Remove
+              </button>
+            </div>
+          )}
 
           {!file && !error && (
-            <p className="text-xs text-purple-600 font-medium mt-1">
-              Click to upload
-            </p>
+            <p className="text-xs text-purple-600 font-medium mt-1">Click to upload</p>
           )}
 
           {error && (

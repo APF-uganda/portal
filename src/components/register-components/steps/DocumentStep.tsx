@@ -21,7 +21,7 @@ const REQUIRED_DOCUMENT_IDS = [
   
 ] as const;
 
-const MAX_UPLOAD_SIZE_MB = 5;
+const MAX_UPLOAD_SIZE_MB = 10;
 const MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
 
 
@@ -117,9 +117,9 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
       <div className="space-y-6">
         <CloudUpload
           title="Upload ICPAU Certificate"
-          description="Max file size 5MB · JPG / PNG / PDF"
+          description="Max file size 10MB · JPG / PNG / PDF"
           accept=".jpg,.jpeg,.png,.pdf"
-          maxSizeMB={5}
+          maxSizeMB={10}
           onFileSelected={(file) => handleFileSelected(DOCUMENT_FIELDS.ICPAU_CERTIFICATE, file)}
           onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)}
           existingFile={getDocumentByField(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)?.file || null}
@@ -128,9 +128,9 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
 
         <CloudUpload
           title="Upload Firm/Organization License"
-          description="Max file size 5MB · JPG / PNG / PDF"
+          description="Max file size 10MB · JPG / PNG / PDF"
           accept=".jpg,.jpeg,.png,.pdf"
-          maxSizeMB={5}
+          maxSizeMB={10}
           onFileSelected={(file) => handleFileSelected(DOCUMENT_FIELDS.FIRM_LICENSE, file)}
           onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.FIRM_LICENSE)}
           existingFile={getDocumentByField(DOCUMENT_FIELDS.FIRM_LICENSE)?.file || null}
@@ -157,7 +157,7 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
       )}
       {(hasOversizedFile() || exceedsCombinedUploadSize()) && (
         <p className="text-xs text-red-600 mt-3">
-          One or more files are too large. Maximum file size is 5MB.
+          One or more files are too large. Maximum file size is 10MB.
         </p>
       )}
     </>
