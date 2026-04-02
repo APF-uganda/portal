@@ -9,7 +9,24 @@ export const useNews = () => {
     const fetchNews = async () => {
       try {
         const data = await getNews();
-        setNews(data || []);
+        
+        
+        const organizedNews = (data || []).sort((a: any, b: any) => {
+          //  sort ICPAU articles first
+          const aIsIcpau = a.author === 'ICPAU' ? 1 : 0;
+          const bIsIcpau = b.author === 'ICPAU' ? 1 : 0;
+
+          // sorting
+          if (aIsIcpau !== bIsIcpau) {
+            return bIsIcpau - aIsIcpau; 
+          }
+
+          const dateA = new Date(a.publishDate || 0).getTime();
+          const dateB = new Date(b.publishDate || 0).getTime();
+          return dateB - dateA;
+        });
+
+        setNews(organizedNews);
       } catch (err) {
         console.error("FAILED to fetch news:", err);
       } finally {
