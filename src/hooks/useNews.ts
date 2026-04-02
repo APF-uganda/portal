@@ -10,20 +10,31 @@ export const useNews = () => {
       try {
         const data = await getNews();
         
-        
         const organizedNews = (data || []).sort((a: any, b: any) => {
-          //  sort ICPAU articles first
-          const aIsIcpau = a.author === 'ICPAU' ? 1 : 0;
-          const bIsIcpau = b.author === 'ICPAU' ? 1 : 0;
+          //  Handles both nested attributes and direct properties
+          const getAuthor = (item: any) => {
+            const author = item.attributes?.author || item.author;
+            return typeof author === 'string' ? author.trim().toUpperCase() : '';
+          };
 
-          // sorting
+          const authorA = getAuthor(a);
+          const authorB = getAuthor(b);
+
+          const aIsIcpau = authorA === 'ICPAU' ? 1 : 0;
+          const bIsIcpau = authorB === 'ICPAU' ? 1 : 0;
+
+          // Primary Sort ICPAU  
           if (aIsIcpau !== bIsIcpau) {
             return bIsIcpau - aIsIcpau; 
           }
 
-          const dateA = new Date(a.publishDate || 0).getTime();
-          const dateB = new Date(b.publishDate || 0).getTime();
-          return dateB - dateA;
+          //  Date descending 
+          const getDate = (item: any) => {
+             const d = item.attributes?.publishDate || item.publishDate || 0;
+             return new Date(d).getTime();
+          };
+
+          return getDate(b) - getDate(a);
         });
 
         setNews(organizedNews);
