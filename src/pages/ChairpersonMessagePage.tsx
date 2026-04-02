@@ -13,11 +13,12 @@ function ChairpersonMessagePage() {
       <main className="px-6 py-14 sm:py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-sm text-slate-600 mb-5">
-            <Link to="/" className="text-slate-700 hover:underline">
-              Home
+            <Link to="/" className="inline-flex items-center gap-1 text-slate-700 hover:text-purple-600 transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+              Back to Home
             </Link>
-            <span className="mx-2">/</span>
-            <span>Chairperson Message</span>
           </div>
 
           <section className="border border-slate-200 bg-white rounded-sm p-5 sm:p-8">
