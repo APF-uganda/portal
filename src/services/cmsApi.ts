@@ -36,6 +36,7 @@ export interface NewsArticle {
   readTime?: number | string;
   isFeatured?: boolean;
   isTopPick?: boolean;
+  author?: string;
 }
 
 const api = axios.create({ 
@@ -264,6 +265,7 @@ export const getNews = async () => {
         id: item.id,
         documentId: item.documentId || item.id?.toString(),
         title: data.title || 'Untitled',
+        author: data.author || 'Custom',
         content: articleContent,
         description: data.description || '',
         image: getImageUrl(imageUrl),
