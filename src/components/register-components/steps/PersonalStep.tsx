@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Input from "../Input";
-import PhoneInput from "../PhoneInput";
+import PhoneInputField from "../PhoneInput";
 import { PersonalInfoData } from '../../../types/registration';
 import { validatePhoneNumber } from '../../../lib/validators';
 
@@ -162,11 +162,11 @@ function PersonalStep({ data, onChange, onValidationChange }: PersonalInfoStepPr
       </div>
 
 
-        <PhoneInput
+        <PhoneInputField
           label="Phone Number"
           required
-          onChange={(value) => handleFieldChange('phoneNumber', value)}
-          onBlur={() => handleBlur('phoneNumber')}
+          value={data.phoneNumber || undefined}
+          onChange={(val) => handleFieldChange('phoneNumber', val || '')}
           error={touched.phoneNumber ? errors.phoneNumber : undefined}
         />
 

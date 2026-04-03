@@ -14,7 +14,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { PaymentData, PaymentMethod, PaymentStatus } from '../../types/registration';
 import ProofOfPaymentUpload from './ProofOfPaymentUpload';
-import PhoneInput from './PhoneInput';
+import PhoneInputField from './PhoneInput';
 
 interface PaymentFormsProps {
   selectedMethod: PaymentMethod | null;
@@ -186,12 +186,12 @@ export function PaymentForms({
         </div>
       </div>
 
-      <PhoneInput
+      <PhoneInputField
         label="Transaction Phone Number"
         required
         operator={selectedMethod === 'mtn' ? 'mtn' : 'airtel'}
-        onChange={(value) => setPhoneNumber(value)}
-        onBlur={() => handleBlur('phoneNumber')}
+        value={phoneNumber || undefined}
+        onChange={(val) => setPhoneNumber(val || '')}
       />
 
       {/* Instructions */}
