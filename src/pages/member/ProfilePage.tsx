@@ -458,7 +458,7 @@ const ProfilePage = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Member ID
                       </label>
-                      <p className="text-gray-900 py-2 font-mono">{membershipId}</p>
+                      <p className="text-gray-900 py-2 ">{membershipId}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">

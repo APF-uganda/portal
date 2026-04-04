@@ -153,7 +153,7 @@ export const ProfessionalInfo: React.FC<ProfessionalInfoProps> = ({
           
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">ICPAU Registration Number</label>
-            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border font-mono">
+            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border">
               {profile?.icpau_registration_number || 'Not provided'}
             </p>
           </div>

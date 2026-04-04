@@ -196,7 +196,7 @@ function OtpPage() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
               disabled={isVerifying}
-              className="w-10 h-12 md:w-12 md:h-14 text-lg md:text-2xl font-mono text-center rounded-lg md:rounded-xl border-2 border-gray-200 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-200 bg-white shadow-sm hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-10 h-12 md:w-12 md:h-14 text-lg md:text-2xl text-center rounded-lg md:rounded-xl border-2 border-gray-200 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-200 bg-white shadow-sm hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           ))}
         </div>

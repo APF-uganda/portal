@@ -45,7 +45,7 @@ export const QuickReferenceCard = () => {
             <div className="bg-slate-50 rounded-lg p-3 text-xs space-y-2">
               <div>
                 <p className="font-semibold text-slate-700">1. Start Strapi</p>
-                <code className="block bg-slate-800 text-white p-2 rounded mt-1 font-mono">
+                <code className="block bg-slate-800 text-white p-2 rounded mt-1">
                   cd CMS && yarn develop
                 </code>
               </div>

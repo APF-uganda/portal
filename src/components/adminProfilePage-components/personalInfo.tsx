@@ -168,7 +168,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
           {profile?.icpau_registration_number && (
             <div className="md:col-span-2">
               <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">ICPAU Registration Number</label>
-              <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border font-mono text-sm md:text-base">
+              <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg border text-sm md:text-base">
                 {profile.icpau_registration_number}
               </p>
               <p className="text-[9px] md:text-[10px] text-gray-400 mt-2 flex items-center gap-1">
