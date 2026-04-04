@@ -259,7 +259,7 @@ const ManagePayments = () => {
                   </div>
                   <div>
                     <span className="text-[9px] uppercase text-gray-400 block mb-0.5">Reference</span>
-                    <span className="text-sm text-gray-700 font-mono">{selectedPayment.application_id || selectedPayment.invoice_number || selectedPayment.reference || '—'}</span>
+                    <span className="text-sm text-gray-700 ">{selectedPayment.application_id || selectedPayment.invoice_number || selectedPayment.reference || '—'}</span>
                   </div>
                   <div>
                     <span className="text-[9px] uppercase text-gray-400 block mb-0.5">Date</span>

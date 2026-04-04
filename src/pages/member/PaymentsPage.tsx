@@ -431,7 +431,7 @@ const PaymentsPage: React.FC = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-black">Merchant Code:</span>
-                        <span className="font-mono font-bold text-black">{MERCHANT_CODES.mtn}</span>
+                        <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{MERCHANT_CODES.mtn}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-black">Amount:</span>
@@ -447,7 +447,7 @@ const PaymentsPage: React.FC = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-black">Merchant Code:</span>
-                        <span className="font-mono font-bold text-black">{MERCHANT_CODES.airtel}</span>
+                        <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{MERCHANT_CODES.airtel}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-black">Amount:</span>
@@ -467,7 +467,7 @@ const PaymentsPage: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-black">Account Number:</span>
-                        <span className="font-mono font-bold text-black">{BANK_DETAILS.accountNumber}</span>
+                        <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{BANK_DETAILS.accountNumber}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-black">Bank:</span>
@@ -492,9 +492,9 @@ const PaymentsPage: React.FC = () => {
                     <ol className="list-decimal list-inside space-y-1">
                       <li>Dial *165# (MTN)</li>
                       <li>Select "Pay Bill"</li>
-                      <li>Enter Merchant Code: <span className="font-mono font-bold">{MERCHANT_CODES.mtn}</span></li>
+                      <li>Enter Merchant Code: <span className=" font-bold">{MERCHANT_CODES.mtn}</span></li>
                       <li>Enter Amount: <span className="font-bold">{paymentAmount}</span></li>
-                      <li>Enter your name as Reference: <span className="font-mono">Your Full Name</span></li>
+                      <li>Enter your name as Reference: <span className="">Your Full Name</span></li>
                       <li>Confirm payment</li>
                       <li>Upload proof of payment below</li>
                     </ol>
@@ -507,9 +507,9 @@ const PaymentsPage: React.FC = () => {
                     <ol className="list-decimal list-inside space-y-1">
                       <li>Dial *185# (Airtel)</li>
                       <li>Select "Pay Bill"</li>
-                      <li>Enter Merchant Code: <span className="font-mono font-bold">{MERCHANT_CODES.airtel}</span></li>
+                      <li>Enter Merchant Code: <span className=" font-bold">{MERCHANT_CODES.airtel}</span></li>
                       <li>Enter Amount: <span className="font-bold">{paymentAmount}</span></li>
-                      <li>Enter your name as Reference: <span className="font-mono">Your Full Name</span></li>
+                      <li>Enter your name as Reference: <span className="">Your Full Name</span></li>
                       <li>Confirm payment</li>
                       <li>Upload proof of payment below</li>
                     </ol>

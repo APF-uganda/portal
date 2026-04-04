@@ -256,7 +256,7 @@ const MembershipInvoices: React.FC = () => {
                   {filteredInvoices.map((invoice) => (
                     <tr key={invoice.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">
-                        <div className="font-mono text-sm">{invoice.invoice_number}</div>
+                        <div className=" text-sm">{invoice.invoice_number}</div>
                         <div className="text-xs text-gray-500">{invoice.invoice_date}</div>
                       </td>
                       <td className="py-3 px-4">
