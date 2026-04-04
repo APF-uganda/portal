@@ -475,12 +475,40 @@ export const getPaymentLedger = async (): Promise<any[]> => {
     // Sort chronologically
     rawEntries.sort((a, b) => new Date(a.sortKey).getTime() - new Date(b.sortKey).getTime())
 
-    // Calculate running balance
-    let balance = 0
-    return rawEntries.map(({ entry }) => {
-      if (entry.debit) balance += entry.debit
-      if (entry.credit) balance -= entry.credit
-      return { ...entry, balance }
+    // Two-pass approach:
+    // Pass 1: compute running balance per invoice chronologically (each row gets its own snapshot)
+    const invoiceRunning: Record<string, number> = {}
+    const entriesWithBalance = rawEntries.map(({ entry }) => {
+      const ref = entry.invoiceNumber || entry.id
+      if (!(ref in invoiceRunning)) invoiceRunning[ref] = 0
+      if (entry.debit) invoiceRunning[ref] += entry.debit
+      if (entry.credit) invoiceRunning[ref] = Math.max(0, invoiceRunning[ref] - entry.credit)
+      return { ...entry, balance: invoiceRunning[ref] }
+    })
+
+    // Pass 2: for the overall balance, sum only the LAST balance for each unique invoice
+    // (avoids double-counting debit + credit rows for the same invoice)
+    const lastBalancePerInvoice: Record<string, number> = {}
+    entriesWithBalance.forEach(entry => {
+      const ref = entry.invoiceNumber || entry.id
+      lastBalancePerInvoice[ref] = entry.balance
+    })
+
+    // Attach a flag so the footer can use it
+    // (the footer already sums entry.balance — we need to fix that)
+    // Instead, mark each entry with whether it's the last row for its invoice
+    const invoiceLastIndex: Record<string, number> = {}
+    entriesWithBalance.forEach((entry, i) => {
+      const ref = entry.invoiceNumber || entry.id
+      invoiceLastIndex[ref] = i
+    })
+
+    return entriesWithBalance.map((entry, i) => {
+      const ref = entry.invoiceNumber || entry.id
+      return {
+        ...entry,
+        isLastForInvoice: invoiceLastIndex[ref] === i,
+      }
     })
   } catch (error) {
     console.error('Error fetching payment ledger:', error)
