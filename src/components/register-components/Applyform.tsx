@@ -97,6 +97,9 @@ function ApplyForm() {
 
   // Handle form submission
   const handleSubmit = async () => {
+    // Guard against double submission
+    if (isSubmitting) return;
+
     // Note: Email and Password validation is now handled inside AccountStep
     if (!accountData || !personalData || documentsData.length === 0 || !paymentData) {
       console.log('[Applyform] Validation failed: missing data');
@@ -111,12 +114,8 @@ function ApplyForm() {
     const hasOversizedFile = uploadedDocuments.some(
       (doc) => doc.file.size > MAX_UPLOAD_SIZE_BYTES
     );
-    const totalUploadSize = uploadedDocuments.reduce(
-      (sum, doc) => sum + doc.file.size,
-      0
-    );
 
-    if (hasOversizedFile || totalUploadSize > MAX_UPLOAD_SIZE_BYTES) {
+    if (hasOversizedFile) {
       setSubmissionError(FILE_SIZE_ERROR_MESSAGE);
       return;
     }
@@ -294,7 +293,6 @@ function ApplyForm() {
               data={paymentData}
               onChange={setPayment}
               onValidationChange={setIsPaymentValid}
-              onPaymentComplete={handleSubmit}
             />
           )}
 

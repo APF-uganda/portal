@@ -8,6 +8,22 @@ interface ProofOfPaymentUploadProps {
 
 function ProofOfPaymentUpload({ proofOfPayment, onFileChange, onRemoveFile }: ProofOfPaymentUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [sizeError, setSizeError] = useState('');
+
+  const MAX_SIZE_BYTES = 10 * 1024 * 1024;
+
+  const validateAndDispatch = (file: File, fileInput: HTMLInputElement) => {
+    if (file.size > MAX_SIZE_BYTES) {
+      setSizeError('File exceeds the 10MB limit. Please upload a smaller file.');
+      return;
+    }
+    setSizeError('');
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    fileInput.files = dataTransfer.files;
+    const event = new Event('change', { bubbles: true });
+    fileInput.dispatchEvent(event);
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -22,22 +38,11 @@ function ProofOfPaymentUpload({ proofOfPayment, onFileChange, onRemoveFile }: Pr
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
-      // Create a proper file input element and trigger the change event
       const fileInput = document.getElementById('proofOfPayment') as HTMLInputElement;
-      if (fileInput) {
-        // Create a new FileList-like object
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-        
-        // Create and dispatch a change event
-        const event = new Event('change', { bubbles: true });
-        fileInput.dispatchEvent(event);
-      }
+      if (fileInput) validateAndDispatch(file, fileInput);
     }
   };
   return (
@@ -46,8 +51,8 @@ function ProofOfPaymentUpload({ proofOfPayment, onFileChange, onRemoveFile }: Pr
         Upload Proof of Payment <span className="text-red-500">*</span>
       </label>
       <div className={`border-2 border-dashed rounded-lg p-6 transition-all duration-200 ${
-        isDragOver 
-          ? 'border-purple-500 bg-purple-100' 
+        isDragOver
+          ? 'border-purple-500 bg-purple-100'
           : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
       }`}
       onDragOver={handleDragOver}
@@ -71,7 +76,16 @@ function ProofOfPaymentUpload({ proofOfPayment, onFileChange, onRemoveFile }: Pr
               type="file"
               className="sr-only"
               accept=".jpg,.jpeg,.png,.pdf"
-              onChange={onFileChange}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file && file.size > MAX_SIZE_BYTES) {
+                  setSizeError('File exceeds the 10MB limit. Please upload a smaller file.');
+                  e.target.value = '';
+                  return;
+                }
+                setSizeError('');
+                onFileChange(e);
+              }}
             />
           </label>
         ) : (
@@ -84,7 +98,7 @@ function ProofOfPaymentUpload({ proofOfPayment, onFileChange, onRemoveFile }: Pr
             </div>
             <button
               type="button"
-              onClick={onRemoveFile}
+              onClick={() => { setSizeError(''); onRemoveFile(); }}
               className="text-red-600 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
               title="Remove file"
             >
@@ -95,6 +109,9 @@ function ProofOfPaymentUpload({ proofOfPayment, onFileChange, onRemoveFile }: Pr
           </div>
         )}
       </div>
+      {sizeError && (
+        <p className="text-xs text-red-600 mt-1">{sizeError}</p>
+      )}
     </div>
   );
 }

@@ -57,18 +57,11 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
     return getUploadedFiles().some((doc) => doc.file.size > MAX_UPLOAD_SIZE_BYTES);
   };
 
-  const exceedsCombinedUploadSize = (): boolean => {
-    const totalSize = getUploadedFiles().reduce((sum, doc) => sum + doc.file.size, 0);
-    return totalSize > MAX_UPLOAD_SIZE_BYTES;
-  };
-
-
   // Update validation state whenever documents change
   useEffect(() => {
     const isValid =
       hasAllRequiredDocuments() &&
-      !hasOversizedFile() &&
-      !exceedsCombinedUploadSize();
+      !hasOversizedFile();
     onValidationChange(isValid);
   }, [documents, onValidationChange]);
 
@@ -155,9 +148,9 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
           Please upload all required documents to continue
         </p>
       )}
-      {(hasOversizedFile() || exceedsCombinedUploadSize()) && (
+      {(hasOversizedFile()) && (
         <p className="text-xs text-red-600 mt-3">
-          One or more files are too large. Maximum file size is 10MB.
+          One or more files exceed the 10MB limit. Please upload a smaller file.
         </p>
       )}
     </>

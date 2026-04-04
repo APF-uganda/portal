@@ -153,7 +153,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <p className="text-gray-500 text-xs md:text-sm">
             {profile.user_role === '1' ? 'Admin' : 'Member'} • 
             {profile.icpau_registration_number && (
-              <span className="font-mono ml-1 break-all">ICPAU Reg. No: {profile.icpau_registration_number}</span>
+              <span className="ml-1 break-all">ICPAU Reg. No: {profile.icpau_registration_number}</span>
             )}
           </p>
         </div>

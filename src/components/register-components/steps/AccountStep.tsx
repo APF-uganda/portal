@@ -25,6 +25,7 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
   const [otpValue, setOtpValue] = useState('');
   const [otpToken, setOtpToken] = useState<string>(''); 
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   // Password Strength Logic
@@ -66,6 +67,7 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
     }
 
     let cancelled = false;
+    setIsCheckingAvailability(true);
     const timeoutId = window.setTimeout(async () => {
       try {
         const availability = await checkApplicationAvailability({
@@ -73,9 +75,7 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
           username: shouldCheckUsername ? trimmedUsername : undefined,
         });
 
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
         const nextErrors: Record<string, string> = {};
         if (shouldCheckEmail && !availability.email_available) {
@@ -86,15 +86,16 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
         }
         setAvailabilityErrors(nextErrors);
       } catch {
-        if (!cancelled) {
-          setAvailabilityErrors({});
-        }
+        if (!cancelled) setAvailabilityErrors({});
+      } finally {
+        if (!cancelled) setIsCheckingAvailability(false);
       }
     }, 350);
 
     return () => {
       cancelled = true;
       window.clearTimeout(timeoutId);
+      setIsCheckingAvailability(false);
     };
   }, [data.email, data.username]);
 
@@ -205,7 +206,7 @@ function AccountDetailsStep({ data, onChange, onValidationChange }: AccountDetai
             <button 
               type="button"
               onClick={handleSendOTP}
-              disabled={isVerifying}
+              disabled={isVerifying || isCheckingAvailability}
               className="px-6 py-3 bg-[#5E2590] text-white rounded-lg font-semibold hover:bg-[#4a1d72] disabled:opacity-50 flex items-center gap-2 transition-colors"
             >
               {isVerifying ? (
