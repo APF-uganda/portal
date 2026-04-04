@@ -175,7 +175,7 @@ export function PaymentForms({
         <div className="space-y-3 text-sm">
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Merchant Code:</span>
-            <span className="font-mono font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">
+            <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">
               {selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}
             </span>
           </div>
@@ -200,9 +200,9 @@ export function PaymentForms({
         <ol className="list-decimal list-inside space-y-1">
           <li>Dial *165# (MTN) or *185# (Airtel)</li>
           <li>Select "Pay Bill"</li>
-          <li>Enter Merchant Code: <span className="font-mono font-bold">{selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}</span></li>
+          <li>Enter Merchant Code: <span className=" font-bold">{selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}</span></li>
           <li>Enter Amount: <span className="font-bold">50000</span></li>
-          <li>Enter your name as Reference: <span className="font-mono">Your Full Name</span></li>
+          <li>Enter your name as Reference: <span className="">Your Full Name</span></li>
           <li>Confirm payment</li>
           <li>Upload proof of payment below</li>
         </ol>
