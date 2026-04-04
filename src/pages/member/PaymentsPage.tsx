@@ -24,6 +24,7 @@ import { getCurrentDateFormatted } from "../../utils/dateUtils"
 import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/receiptGenerator"
 import { useRecentTransactions, useReceipts } from "../../hooks/usePaymentHistory"
 import ProofOfPaymentUpload from "../../components/register-components/ProofOfPaymentUpload"
+import PhoneInputField from "../../components/register-components/PhoneInput"
 import { submitManualRenewalPayment } from "../../services/payments.service"
 import mtnLogo from "../../assets/images/registerPage-images/mtn.png"
 import airtelLogo from "../../assets/images/registerPage-images/airtel.png"
@@ -327,7 +328,7 @@ const PaymentsPage: React.FC = () => {
         type: receipt.type as 'invoice' | 'receipt'
       }))
       
-      const pdf = await ReceiptGenerator.generateSummaryPDF(receiptDataList)
+      const pdf = await (ReceiptGenerator as any).generateSummaryPDF(receiptDataList)
       ReceiptGenerator.downloadPDF(pdf, 'APF_All_Receipts_Summary.pdf')
       
       showNotification('All receipts summary downloaded successfully', 'success')
@@ -426,32 +427,32 @@ const PaymentsPage: React.FC = () => {
               <div className="pt-4 border-t border-gray-200">
                 {/* Payment Details Display - Merchant Code or Bank Details */}
                 {selectedPaymentMethod === 'mtn' && (
-                  <div className="mb-4 bg-white border border-[#5F1C9F] rounded-lg p-4">
+                  <div className="mb-4 bg-purple-50 border-2 border-[#5F1C9F] rounded-lg p-4">
                     <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-black">Merchant Code:</span>
-                        <span className="font-mono font-bold text-black">{MERCHANT_CODES.mtn}</span>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Merchant Code:</span>
+                        <span className="font-mono font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{MERCHANT_CODES.mtn}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-black">Amount:</span>
-                        <span className="font-bold text-black">UGX {paymentAmount.toLocaleString()}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Amount:</span>
+                        <span className="font-bold text-lg text-black">UGX {paymentAmount.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {selectedPaymentMethod === 'airtel' && (
-                  <div className="mb-4 bg-white border border-[#5F1C9F] rounded-lg p-4">
+                  <div className="mb-4 bg-purple-50 border-2 border-[#5F1C9F] rounded-lg p-4">
                     <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-black">Merchant Code:</span>
-                        <span className="font-mono font-bold text-black">{MERCHANT_CODES.airtel}</span>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Merchant Code:</span>
+                        <span className="font-mono font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{MERCHANT_CODES.airtel}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-black">Amount:</span>
-                        <span className="font-bold text-black">UGX {paymentAmount.toLocaleString()}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Amount:</span>
+                        <span className="font-bold text-lg text-black">UGX {paymentAmount.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -605,15 +606,12 @@ const PaymentsPage: React.FC = () => {
 
                 {selectedPaymentMethod !== 'bank' && (
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="256XXXXXXXXX"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#5F1C9F]"
+                    <PhoneInputField
+                      label="Phone Number"
+                      required
+                      operator={selectedPaymentMethod === 'mtn' ? 'mtn' : 'airtel'}
+                      value={phoneNumber || undefined}
+                      onChange={(val) => setPhoneNumber(val || '')}
                     />
                   </div>
                 )}

@@ -383,17 +383,27 @@ const PaymentHistoryPage: React.FC = () => {
             {ledgerEntries.length > 0 && (
               <Card className="bg-gray-50 border border-gray-300">
                 <CardContent className="py-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap justify-between items-center gap-4">
                     <div className="text-sm text-gray-600">
                       Total Transactions: <span className="font-semibold text-gray-900">{ledgerEntries.length}</span>
                     </div>
                     <div className="text-sm text-gray-600">
-                      Current Balance: 
-                      <span className={`ml-2 font-bold text-lg ${
-                        ledgerEntries[ledgerEntries.length - 1].balance < 0 ? 'text-[#240046]' : 'text-[#240046]'
-                      }`}>
-                        UGX {formatBalance(ledgerEntries[ledgerEntries.length - 1].balance)}
-                      </span>
+                      Total Balance:{' '}
+                      {(() => {
+                        // Sum only the most recent balance per unique invoice number
+                        const lastBalancePerInvoice: Record<string, number> = {}
+                        ledgerEntries.forEach((e: any) => {
+                          const ref = e.invoiceNumber || e.id
+                          lastBalancePerInvoice[ref] = e.balance
+                        })
+                        const total = Object.values(lastBalancePerInvoice).reduce((s, b) => s + b, 0)
+                        return (
+                          <span className={`font-bold text-lg ${total > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            UGX {total.toLocaleString('en-US')}
+                            {total === 0 ? ' (Cleared)' : ''}
+                          </span>
+                        )
+                      })()}
                     </div>
                   </div>
                 </CardContent>
