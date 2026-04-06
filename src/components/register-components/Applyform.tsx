@@ -321,7 +321,7 @@ function ApplyForm() {
                   : "bg-gray-300 cursor-not-allowed"
                 }`}
             >
-              {isSubmitting ? "Submitting..." : isLastStep ? "Submit" : "Next"}
+              {isSubmitting ? "Submitting... Please wait" : isLastStep ? "Submit" : "Next"}
             </button>
           </div>
 
