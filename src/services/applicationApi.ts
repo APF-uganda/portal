@@ -342,10 +342,7 @@ export async function submitApplication(
       `${API_BASE_URL}/api/v1/applications/`,
       formData,
       {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        timeout: 30000, 
+        timeout: 120000,
       }
     );
     
