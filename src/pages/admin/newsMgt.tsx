@@ -242,9 +242,9 @@ const NewsManagement = () => {
                         <thead className="bg-[#F4F2FE] text-gray-700 uppercase text-xs">
                           <tr>
                             <th className="px-6 py-4 border-b min-w-[300px]">Article Details</th>
-                            <th className="px-4 py-4 border-b">Category</th>
-                            <th className="px-4 py-4 border-b">Status</th>
-                            <th className="px-4 py-4 border-b text-center">Actions</th>
+                            <th className="px-4 py-4 border-b whitespace-nowrap">Category</th>
+                            <th className="px-4 py-4 border-b whitespace-nowrap">Status</th>
+                            <th className="px-4 py-4 border-b text-center whitespace-nowrap">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -267,7 +267,7 @@ const NewsManagement = () => {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-4 py-4 font-bold text-gray-500 text-[10px] uppercase tracking-widest">{article.displayCategory}</td>
+                              <td className="px-4 py-4 font-bold text-gray-500 text-[10px] uppercase tracking-widest whitespace-nowrap">{article.displayCategory}</td>
                               <td className="px-4 py-4">
                                 {article.isFeatured ? (
                                   <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-600 flex items-center w-fit gap-1 border border-amber-100 uppercase tracking-widest">

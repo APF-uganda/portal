@@ -155,40 +155,41 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ className = '' }) => {
   return (
     <div className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${className}`}>
       <div className="p-4 md:p-6 border-b border-gray-50">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 rounded-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 bg-purple-50 rounded-lg flex-shrink-0">
               <TrendingUp className="w-5 h-5 text-[#5F2F8B]" />
             </div>
-            <div>
-              <h3 className="text-base md:text-lg font-bold text-gray-800 leading-tight">Daily Revenue Trends</h3>
+            <div className="min-w-0">
+              <h3 className="text-base font-bold text-gray-800 leading-tight">Daily Revenue Trends</h3>
               <p className="text-[11px] text-gray-500 mt-0.5">Performance metrics for selected period</p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* Stats Row - Responsive Wrap */}
-            <div className="flex items-center justify-between sm:justify-start gap-2 md:gap-4 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100 flex-1">
-              <div className="flex flex-col">
-                <span className="text-[9px] md:text-[10px] uppercase font-bold text-gray-400">Avg/Day</span>
-                <span className="text-xs md:text-sm font-bold text-gray-700">{(averageDailyRevenue / 1000).toFixed(0)}K</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Stats */}
+            <div className="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+              <div className="flex flex-col items-center">
+                <span className="text-[9px] uppercase font-bold text-gray-400">Avg/Day</span>
+                <span className="text-xs font-bold text-gray-700">{(averageDailyRevenue / 1000).toFixed(0)}K</span>
               </div>
               <div className="w-px h-6 bg-gray-200"></div>
-              <div className="flex flex-col">
-                <span className="text-[9px] md:text-[10px] uppercase font-bold text-gray-400">Active</span>
-                <span className="text-xs md:text-sm font-bold text-gray-700">{daysWithRevenue}d</span>
+              <div className="flex flex-col items-center">
+                <span className="text-[9px] uppercase font-bold text-gray-400">Active</span>
+                <span className="text-xs font-bold text-gray-700">{daysWithRevenue}d</span>
               </div>
               <div className="w-px h-6 bg-gray-200"></div>
-              <div className={`flex flex-col ${growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                <span className="text-[9px] md:text-[10px] uppercase font-bold text-gray-400">Trend</span>
-                <div className="flex items-center gap-0.5 text-xs md:text-sm font-bold">
-                  {growth >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              <div className={`flex flex-col items-center ${growth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <span className="text-[9px] uppercase font-bold text-gray-400">Trend</span>
+                <div className="flex items-center gap-0.5 text-xs font-bold">
+                  {growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                   {Math.abs(growth).toFixed(0)}%
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-white shadow-sm self-end sm:self-auto">
+            {/* Period selector */}
+            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-white shadow-sm">
               <Calendar className="w-3.5 h-3.5 text-gray-400" />
               <select
                 value={period}
