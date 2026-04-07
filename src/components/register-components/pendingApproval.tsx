@@ -10,38 +10,21 @@ function PendingApprovalPage() {
   const location = useLocation();
 
   useEffect(() => {
-    console.log('=== PendingApproval Debug ===');
-    console.log('Location state:', JSON.stringify(location.state, null, 2));
-    
-    // First try to get username from navigation state (most recent)
     const navigationState = location.state as { username?: string; firstName?: string } | null;
-    console.log('Navigation state parsed:', JSON.stringify(navigationState, null, 2));
-    
-    if (navigationState?.firstName && navigationState.firstName.trim() !== '') {
-      console.log('Using firstName from navigation:', navigationState.firstName);
-      setUserName(navigationState.firstName);
-      console.log('Final userName will be:', navigationState.firstName);
-      console.log('=== End Debug ===');
-      return;
-    }
-    
+
     if (navigationState?.username && navigationState.username.trim() !== '') {
-      console.log('Using username from navigation:', navigationState.username);
       setUserName(navigationState.username);
-      console.log('Final userName will be:', navigationState.username);
-      console.log('=== End Debug ===');
       return;
     }
 
-    console.log('No valid firstName or username in navigation state, using fallback...');
-    
-    // Since we're on the success page, use a generic greeting
+    if (navigationState?.firstName && navigationState.firstName.trim() !== '') {
+      setUserName(navigationState.firstName);
+      return;
+    }
+
     setUserName("New Member");
-    console.log('Final userName will be: New Member');
-    console.log('=== End Debug ===');
-    
-    // Clear any remaining sessionStorage data since we're on the success page
-    console.log('Clearing any remaining sessionStorage data...');
+
+    // Clear any remaining sessionStorage data
     sessionStorage.removeItem('registration_account_details');
     sessionStorage.removeItem('registration_personal_info');
     sessionStorage.removeItem('registration_documents');

@@ -88,7 +88,6 @@ export interface ApplicationDetail {
   age_range: string;
   phone_number: string;
   address: string;
-  national_id_number: string;
   icpau_certificate_number: string;
   payment_method: string;
   payment_phone?: string;
@@ -118,7 +117,7 @@ export interface ApplicationDetail {
 export async function fetchApplications(signal?: AbortSignal): Promise<Application[]> {
   try {
     const token = getAccessToken();
-    
+
     if (!token) {
       console.error('No access token found - user not logged in');
       return [];
@@ -144,12 +143,12 @@ export async function fetchApplications(signal?: AbortSignal): Promise<Applicati
     if (axios.isCancel(error) || (error as Error).name === 'AbortError') {
       return [];
     }
-    
+
     console.error('Failed to fetch applications', error);
     if (axios.isAxiosError(error)) {
       console.error('Response status:', error.response?.status);
       console.error('Response data:', error.response?.data);
-      
+
       if (error.response?.status === 401) {
         console.error('Authentication failed - token may be invalid or expired');
         // Clear invalid tokens
@@ -173,7 +172,7 @@ export async function fetchApplications(signal?: AbortSignal): Promise<Applicati
 export async function fetchApplicationDetail(applicationId: number): Promise<ApplicationDetail | null> {
   try {
     const token = getAccessToken();
-    
+
     if (!token) {
       console.error('No access token found - user not logged in');
       return null;
@@ -198,7 +197,7 @@ export async function fetchApplicationDetail(applicationId: number): Promise<App
     if (axios.isAxiosError(error)) {
       console.error('Response status:', error.response?.status);
       console.error('Response data:', error.response?.data);
-      
+
       if (error.response?.status === 401) {
         console.error('Authentication failed - token may be invalid or expired');
       }
@@ -273,32 +272,32 @@ export async function submitApplication(
   try {
     // Create FormData for multipart/form-data submission
     const formData = new FormData();
-    
+
     // Add account details
     formData.append('username', applicationData.username);
     formData.append('email', applicationData.email);
     formData.append('password_hash', applicationData.password); // Backend expects password_hash
-    
+
     // Add personal information
     formData.append('first_name', applicationData.firstName);
     formData.append('last_name', applicationData.lastName);
     formData.append('age_range', applicationData.age_range);
-    formData.append('phone_number', applicationData.phoneNumber);
+    formData.append('phone_number', applicationData.phoneNumber.replace(/^\+/, ''));
     formData.append('address', applicationData.address);
     formData.append('icpau_certificate_number', applicationData.icpauCertificateNumber);
-    
+
     // Add optional organization field
     if (applicationData.organization) {
       formData.append('organization', applicationData.organization);
     }
-    
+
     // Add payment information
     formData.append('payment_method', applicationData.paymentMethod);
-    
+
     // Add payment-specific fields based on method
     if (applicationData.paymentMethod === 'mtn' || applicationData.paymentMethod === 'airtel') {
       if (applicationData.paymentPhone) {
-        formData.append('payment_phone', applicationData.paymentPhone);
+        formData.append('payment_phone', applicationData.paymentPhone.replace(/^\+/, ''));
       }
     } else if (applicationData.paymentMethod === 'credit_card') {
       if (applicationData.paymentCardNumber) {
@@ -314,7 +313,7 @@ export async function submitApplication(
         formData.append('payment_cardholder_name', applicationData.paymentCardholderName);
       }
     }
-    
+
     // Add payment processing fields
     if (applicationData.paymentStatus) {
       formData.append('payment_status', applicationData.paymentStatus);
@@ -325,40 +324,37 @@ export async function submitApplication(
     if (applicationData.paymentErrorMessage) {
       formData.append('payment_error_message', applicationData.paymentErrorMessage);
     }
-    
+
     // Add payment amount
     if (applicationData.paymentAmount !== undefined) {
       formData.append('payment_amount', applicationData.paymentAmount.toString());
     }
-    
+
     // Add document files with types
     applicationData.documents.forEach((doc) => {
       formData.append('documents', doc.file);
       formData.append('document_types', doc.id);
     });
-    
+
     // Send POST request to backend
+    console.log('[submitApplication] Sending POST to', `${API_BASE_URL}/api/v1/applications/`);
     const response = await axios.post<ApplicationAPIResponse>(
       `${API_BASE_URL}/api/v1/applications/`,
       formData,
-      {
-        timeout: 120000,
-      }
+      { timeout: 120000 }
     );
-    
+    console.log('[submitApplication] Response:', response.status, response.data);
+
     // Return success result
     return {
       success: true,
       data: response.data,
     };
-    
+
   } catch (error) {
-    // Handle axios errors
     if (axios.isAxiosError(error)) {
       return handleAxiosError(error);
     }
-    
-    // Handle unexpected errors
     return {
       success: false,
       error: 'An unexpected error occurred. Please try again.',
@@ -383,16 +379,16 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
         error: 'Request timed out. Please check your connection and try again.',
       };
     }
-    
+
     return {
       success: false,
       error: 'Unable to connect to the server. Please check your internet connection and try again.',
     };
   }
-  
+
   // Server responded with error status
   const { status, data } = error.response;
-  
+
   switch (status) {
     case 400:
       // Bad Request - validation errors
@@ -405,7 +401,7 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
             validErrors[field] = nonEmptyErrors;
           }
         }
-        
+
         if (Object.keys(validErrors).length > 0) {
           return {
             success: false,
@@ -418,7 +414,7 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
         success: false,
         error: 'Invalid application data. Please check your information and try again.',
       };
-    
+
     case 409:
       // Conflict - duplicate email/username
       if (data && data.errors) {
@@ -430,7 +426,7 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
             validErrors[field] = nonEmptyErrors;
           }
         }
-        
+
         if (Object.keys(validErrors).length > 0) {
           return {
             success: false,
@@ -443,14 +439,14 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
         success: false,
         error: 'This email or username is already registered.',
       };
-    
+
     case 413:
       // Payload Too Large - file size exceeded
       return {
         success: false,
         error: 'One or more files are too large. Maximum file size is 5MB.',
       };
-    
+
     case 500:
     case 502:
     case 503:
@@ -463,7 +459,7 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
         success: false,
         error: backendErrorMessage || 'Something went wrong on our end. Please try again later.',
       };
-    
+
     default:
       return {
         success: false,
@@ -480,17 +476,17 @@ function handleAxiosError(error: AxiosError<ApplicationAPIError>): SubmissionRes
  */
 export function formatFieldErrors(fieldErrors: { [field: string]: string[] }): string {
   const messages: string[] = [];
-  
+
   for (const [field, errors] of Object.entries(fieldErrors)) {
     const fieldName = field
       .replace(/_/g, ' ')
       .replace(/\b\w/g, (char) => char.toUpperCase());
-    
+
     errors.forEach((error) => {
       messages.push(`${fieldName}: ${error}`);
     });
   }
-  
+
   return messages.join('\n');
 }
 
@@ -532,11 +528,11 @@ function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   return headers;
 }
 
@@ -700,35 +696,35 @@ function handleAdminActionError(error: unknown): AdminActionResult {
           error: 'Request timed out. Please check your connection and try again.',
         };
       }
-      
+
       return {
         success: false,
         error: 'Unable to connect to the server. Please check your internet connection and try again.',
       };
     }
-    
+
     // Server responded with error status
     const { status, data } = error.response;
-    
+
     switch (status) {
       case 401:
         return {
           success: false,
           error: 'You are not authorized to perform this action. Please log in again.',
         };
-      
+
       case 403:
         return {
           success: false,
           error: 'You do not have permission to perform this action.',
         };
-      
+
       case 404:
         return {
           success: false,
           error: 'Application not found.',
         };
-      
+
       case 500:
       case 502:
       case 503:
@@ -737,7 +733,7 @@ function handleAdminActionError(error: unknown): AdminActionResult {
           success: false,
           error: 'Something went wrong on our end. Please try again later.',
         };
-      
+
       default:
         return {
           success: false,
@@ -745,7 +741,7 @@ function handleAdminActionError(error: unknown): AdminActionResult {
         };
     }
   }
-  
+
   // Handle unexpected errors
   return {
     success: false,
