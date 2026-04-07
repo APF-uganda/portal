@@ -53,11 +53,11 @@ const ReportsAnalytics = () => {
             </div>
 
             {/* Charts Section  */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
-              <div className="w-full min-w-0 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-                <MembershipGrowthChart />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 items-stretch">
+              <div className="w-full min-w-0 flex flex-col">
+                <MembershipGrowthChart className="flex-1" />
               </div>
-              <div className="w-full min-w-0 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+              <div className="w-full min-w-0">
                 <RevenueChart />
               </div>
             </div>

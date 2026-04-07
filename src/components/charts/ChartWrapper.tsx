@@ -124,7 +124,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   };
 
   return (
-    <div className={`${className}`} style={{ height: `${height}px` }}>
+    <div className={`${className}`} style={className.includes('h-full') ? { height: '100%' } : { height: `${height}px` }}>
       {renderChart()}
     </div>
   );

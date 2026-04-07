@@ -3,7 +3,11 @@ import ChartWrapper from './ChartWrapper';
 import { analyticsApi, ChartData } from '../../services/analyticsApi';
 import { TrendingUp, Calendar } from 'lucide-react';
 
-const MembershipGrowthChart: React.FC = () => {
+interface MembershipGrowthChartProps {
+  className?: string;
+}
+
+const MembershipGrowthChart: React.FC<MembershipGrowthChartProps> = ({ className = '' }) => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ const MembershipGrowthChart: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div className={`bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col h-full ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-[#5F2F8B]" />
@@ -63,11 +67,13 @@ const MembershipGrowthChart: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="h-64 flex items-center justify-center">Loading...</div>
+        <div className="flex-1 flex items-center justify-center">Loading...</div>
       ) : error ? (
-        <div className="h-64 flex items-center justify-center text-gray-400">{error}</div>
+        <div className="flex-1 flex items-center justify-center text-gray-400">{error}</div>
       ) : (
-        <ChartWrapper type="line" data={data} height={280} />
+        <div className="flex-1 min-h-0">
+          <ChartWrapper type="line" data={data} className="h-full" />
+        </div>
       )}
     </div>
   );
