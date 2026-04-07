@@ -71,7 +71,7 @@ export const analyticsApi = {
    * Deletes a generated report and its physical file
    */
   deleteReport: async (reportId: string): Promise<void> => {
-    await api.delete(`/api/v1/reports/generated-reports/${reportId}/delete/`);
+    await api.delete(`/api/v1/reports/generated-reports/${reportId}/delete_report/`);
   },
 
   //Dashboard Chart Data

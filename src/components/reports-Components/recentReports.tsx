@@ -28,15 +28,10 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
 
   useEffect(() => {
     fetchReports(true);
-    const startPolling = () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
-      const isProcessing = reports.some(r => r.status === 'processing');
-      const intervalTime = isProcessing ? 3000 : 20000;
-      pollInterval.current = setInterval(() => fetchReports(), intervalTime);
-    };
-    startPolling();
+    if (pollInterval.current) clearInterval(pollInterval.current);
+    pollInterval.current = setInterval(() => fetchReports(), 20000);
     return () => { if (pollInterval.current) clearInterval(pollInterval.current); };
-  }, [refreshTrigger, reports.some(r => r.status === 'processing'), fetchReports]);
+  }, [refreshTrigger, fetchReports]);
 
   const handleDownload = async (report: any) => {
     if (report.status !== 'completed') return;
@@ -67,9 +62,12 @@ const RecentReports: React.FC<RecentReportsProps> = ({ refreshTrigger }) => {
     setReportToDelete(null);
     try {
       await analyticsApi.deleteReport(reportId);
-      setReports(prev => prev.filter(r => r.id !== reportId));
+      // Optimistically remove and then re-fetch to sync
+      setReports(prev => prev.filter(r => String(r.id) !== String(reportId)));
+      await fetchReports();
     } catch (error) {
       console.error('Delete error:', error);
+      await fetchReports();
     } finally {
       setDeleting(null);
     }
