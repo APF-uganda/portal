@@ -117,6 +117,13 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
           onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)}
           existingFile={getDocumentByField(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)?.file || null}
           existingError={getDocumentByField(DOCUMENT_FIELDS.ICPAU_CERTIFICATE)?.errorMessage || null}
+          onValidate={(file) => {
+            const other = documents.find(
+              (d) => d.id !== DOCUMENT_FIELDS.ICPAU_CERTIFICATE && d.file instanceof File &&
+                d.file.name === file.name && d.file.size === file.size
+            );
+            return other ? 'This file is already used for another document. Please upload a different file.' : null;
+          }}
         />
 
         <CloudUpload
@@ -128,6 +135,13 @@ function DocumentsStep({ documents, onChange, onValidationChange }: DocumentsSte
           onFileRemoved={() => handleFileRemoved(DOCUMENT_FIELDS.FIRM_LICENSE)}
           existingFile={getDocumentByField(DOCUMENT_FIELDS.FIRM_LICENSE)?.file || null}
           existingError={getDocumentByField(DOCUMENT_FIELDS.FIRM_LICENSE)?.errorMessage || null}
+          onValidate={(file) => {
+            const other = documents.find(
+              (d) => d.id !== DOCUMENT_FIELDS.FIRM_LICENSE && d.file instanceof File &&
+                d.file.name === file.name && d.file.size === file.size
+            );
+            return other ? 'This file is already used for another document. Please upload a different file.' : null;
+          }}
         />
 
         {/* <CloudUpload
