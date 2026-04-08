@@ -607,11 +607,11 @@ const PaymentsPage: React.FC = () => {
                 {selectedPaymentMethod !== 'bank' && (
                   <div className="mb-4">
                     <PhoneInputField
-                      label="Phone Number"
+                      label="Transaction Phone Number"
                       required
                       operator={selectedPaymentMethod === 'mtn' ? 'mtn' : 'airtel'}
-                      value={phoneNumber || undefined}
-                      onChange={(val) => setPhoneNumber(val || '')}
+                      value={phoneNumber ? `+${phoneNumber}` : undefined}
+                      onChange={(val) => setPhoneNumber(val ? val.replace(/^\+/, '') : '')}
                     />
                   </div>
                 )}
