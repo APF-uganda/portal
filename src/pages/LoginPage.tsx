@@ -196,7 +196,7 @@ function LoginPage() {
             <div className="flex items-center justify-end text-xs text-gray-600">
               <Link
                 to="/forgot-password"
-                className="text-purple-600 hover:underline"
+                className="text-red-500 hover:text-red-600 hover:underline font-medium"
               >
                 Forgot password?
               </Link>
@@ -229,7 +229,7 @@ function LoginPage() {
               Don't have an account?{' '}
               <Link
                 to="/register"
-                className="text-purple-600 font-semibold hover:underline"
+                className="text-green-600 font-semibold hover:text-green-700 hover:underline"
               >
                 Sign up
               </Link>
