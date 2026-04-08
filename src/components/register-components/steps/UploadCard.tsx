@@ -9,6 +9,8 @@ type CloudUploadProps = {
   onFileRemoved?: () => void;
   existingFile?: File | null;
   existingError?: string | null;
+  /** Optional extra validation. Return an error string to reject the file, or null to accept. */
+  onValidate?: (file: File) => string | null;
 };
 
 function CloudUpload({
@@ -20,6 +22,7 @@ function CloudUpload({
   onFileRemoved,
   existingFile,
   existingError,
+  onValidate,
 }: CloudUploadProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(existingFile || null);
@@ -43,6 +46,17 @@ function CloudUpload({
       setError(errorMsg);
       setFile(null);
       return;
+    }
+
+    // Run custom validation (e.g. duplicate check)
+    if (onValidate) {
+      const validationError = onValidate(file);
+      if (validationError) {
+        setError(validationError);
+        setFile(null);
+        if (inputRef.current) inputRef.current.value = '';
+        return;
+      }
     }
 
     setError(null);
@@ -135,7 +149,10 @@ function CloudUpload({
           )}
 
           {error && (
-            <p className="text-xs text-red-600 mt-1">{error}</p>
+            <div className="mt-1">
+              <p className="text-xs text-red-600">{error}</p>
+              <p className="text-xs text-purple-600 font-medium mt-1">Click to upload a different file</p>
+            </div>
           )}
         </div>
       </div>
