@@ -125,7 +125,7 @@ const EventsList = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-10 gap-6">
               <div className="w-full md:w-auto">
                 <button onClick={() => navigate('/admin/cmsPage')} className="flex items-center gap-2 text-slate-400 hover:text-purple-600 font-medium text-xs mb-2 transition-colors">
-                  <ArrowLeft size={14} /> Back to Control Center
+                  <ArrowLeft size={14} /> Back to Manage CMS
                 </button>
                 <h1 className="text-2xl md:text-5xl font-bold tracking-tight text-gray-900 uppercase">Events</h1>
                 

@@ -120,7 +120,7 @@ const EventEditor = () => {
       const res = await api.post('/events', payload);
       
       if (res.status === 200 || res.status === 201) {
-        showToast("🚀 Event is now LIVE!", "success");
+        showToast(" Event is now LIVE!", "success");
         setTimeout(() => navigate('/events'), 1500); 
       }
     } catch (err: any) {
