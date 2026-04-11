@@ -201,7 +201,7 @@ export const PaymentTable = ({
                 <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[160px]">Transaction ID</th>
                 <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 min-w-[140px]">Description</th>
                 <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 text-right min-w-[120px]">Amount</th>
-                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 text-center min-w-[120px]">Status</th>
+                <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 text-center min-w-[140px]">Status</th>
                 <th className="px-6 md:px-8 py-3 md:py-4 border-b border-slate-50 text-center min-w-[150px]">Actions</th>
               </tr>
             </thead>
@@ -234,10 +234,10 @@ export const PaymentTable = ({
                         {p.currency || 'UGX'} {Number(p.amount || 0).toLocaleString()}
                       </td>
                       <td className="px-6 md:px-8 py-4 md:py-6 text-center">
-                        <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-full text-sm md:text-[10px]  uppercase tracking-widest border ${getStatusColor(p.status)}`}>
-                          {getStatusLabel(p.status)}
-                        </span>
-                      </td>
+  <span className={`inline-block whitespace-nowrap px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs uppercase tracking-wider border ${getStatusColor(p.status)}`}>
+    {getStatusLabel(p.status)}
+  </span>
+</td>
                       
                       <td className="px-6 md:px-8 py-4 md:py-6 text-center">
                         <div className="flex justify-center items-center gap-1">

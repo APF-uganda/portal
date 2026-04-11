@@ -290,129 +290,130 @@ const ManageUsers = () => {
               </div>
             </div>
 
-            {/* Users Table Card */}
-            <div className="bg-white rounded-xl md:rounded-[20px] shadow-sm border border-gray-100 overflow-hidden">
-              <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
-                <div className="min-w-[800px]">
-                  <table className="w-full leading-normal">
-                    <thead>
-                      <tr className="bg-gray-50 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[150px]">Member Name</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[200px]">Email</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Status</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Documents</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px]">Last Upload</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 text-right min-w-[250px]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {loading ? (
-                         <tr>
-                           <td colSpan={6} className="text-center py-12">
-                             <div className="flex flex-col items-center space-y-2">
-                               <div className="w-6 h-6 border-2 border-[#5E2590] border-t-transparent rounded-full animate-spin"></div>
-                               <span className="text-gray-400 text-sm font-medium">Loading user data...</span>
-                             </div>
-                           </td>
-                         </tr>
-                      ) : filteredAndSortedUsers.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="text-center py-12 text-gray-400 font-medium">
-                            {searchTerm || filterType !== 'all' ? 'No users match your filters.' : 'No users found in the system.'}
-                          </td>
-                        </tr>
-                      ) : (
-                        paginatedUsers.map((user) => (
-                          <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-3 md:px-6 py-3 md:py-4 text-sm">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-gray-800 truncate">{user.name}</span>
-                                {user.hasDocuments && (
-                                  <FileText className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-gray-600">
-                              <div className="truncate" title={user.email}>{user.email}</div>
-                              <div className="mt-0.5">
-                                {user.emailVerified ? (
-                                  <span className="text-[10px] font-semibold text-green-600">✓ Verified</span>
-                                ) : user.mustChangePassword ? (
-                                  <span className="text-[10px] font-semibold text-yellow-600">⏳ Pending login</span>
-                                ) : (
-                                  <span className="text-[10px] font-semibold text-gray-400">Not verified</span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 text-sm">
-                              <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider whitespace-nowrap
-                                ${user.status === 'Active' ? 'bg-green-100 text-green-700' : 
-                                  user.status === 'Suspended' ? 'bg-orange-100 text-orange-700' : 
-                                  user.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-red-100 text-red-700'}`}>
-                                {user.status}
-                              </span>
-                            </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 text-sm">
-                              {user.hasDocuments ? (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-green-600 font-medium">{user.documentCount || 0}</span>
-                                  <span className="text-gray-500 hidden sm:inline">docs</span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400">
-                                  <span className="hidden sm:inline">No documents</span>
-                                  <span className="sm:hidden">None</span>
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-gray-600">
-                              {user.lastDocumentUpload ? (
-                                <div className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                                  <span className="truncate">{new Date(user.lastDocumentUpload).toLocaleDateString()}</span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400">Never</span>
-                              )}
-                            </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-right">
-                              <div className="flex items-center justify-end gap-1 md:gap-2">
-                                {/* View Documents Button */}
-                                <button 
-                                  onClick={() => setSelectedMember({ id: user.id, name: user.name })}
-                                  className="font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-purple-50 text-[#5E2590]"
-                                  title="View Documents"
-                                >
-                                  <span className="hidden lg:inline">Documents</span>
-                                  <FileText className="w-4 h-4 lg:hidden" />
-                                </button>
-                                
-                                {/* Logic to show Suspend or Reactivate based on backend data */}
-                                <button 
-                                  onClick={() => handleToggleStatus(user.id, user.status)}
-                                  className={`font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-gray-100 ${
-                                    user.status === 'Suspended' 
-                                    ? 'text-green-600' 
-                                    : 'text-[#5E2590] hover:text-red-600'
-                                  }`}
-                                >
-                                  <span className="hidden lg:inline">
-                                    {user.status === 'Suspended' ? 'Reactivate' : 'Suspend'}
-                                  </span>
-                                  <span className="lg:hidden text-xs">
-                                    {user.status === 'Suspended' ? 'Reactivate' : 'Suspend'}
-                                  </span>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+           {/* Users Table Card */}
+<div className="bg-white rounded-xl md:rounded-[20px] shadow-sm border border-gray-100 overflow-hidden">
+  <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
+    <div className="min-w-[800px]">
+      <table className="w-full leading-normal">
+        <thead>
+          <tr className="bg-gray-50 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[150px]">Member Name</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[200px]">Email</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Status</th>
+          
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[140px] whitespace-nowrap">Documents</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px]">Last Upload</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 text-right min-w-[250px]">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {loading ? (
+             <tr>
+               <td colSpan={6} className="text-center py-12">
+                 <div className="flex flex-col items-center space-y-2">
+                   <div className="w-6 h-6 border-2 border-[#5E2590] border-t-transparent rounded-full animate-spin"></div>
+                   <span className="text-gray-400 text-sm font-medium">Loading user data...</span>
+                 </div>
+               </td>
+             </tr>
+          ) : filteredAndSortedUsers.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="text-center py-12 text-gray-400 font-medium">
+                {searchTerm || filterType !== 'all' ? 'No users match your filters.' : 'No users found in the system.'}
+              </td>
+            </tr>
+          ) : (
+            paginatedUsers.map((user) => (
+              <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-800 truncate">{user.name}</span>
+                    {user.hasDocuments && (
+                      <FileText className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    )}
+                  </div>
+                </td>
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-gray-600">
+                  <div className="truncate" title={user.email}>{user.email}</div>
+                  <div className="mt-0.5">
+                    {user.emailVerified ? (
+                      <span className="text-[10px] font-semibold text-green-600">✓ Verified</span>
+                    ) : user.mustChangePassword ? (
+                      <span className="text-[10px] font-semibold text-yellow-600">⏳ Pending login</span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-gray-400">Not verified</span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm">
+                  <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider whitespace-nowrap
+                    ${user.status === 'Active' ? 'bg-green-100 text-green-700' : 
+                      user.status === 'Suspended' ? 'bg-orange-100 text-orange-700' : 
+                      user.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'}`}>
+                    {user.status}
+                  </span>
+                </td>
+                
+                {/* FIXED: whitespace-nowrap ensures "X docs" stays on one line */}
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm whitespace-nowrap">
+                  {user.hasDocuments ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-green-600 font-medium">{user.documentCount || 0}</span>
+                      <span className="text-gray-500 hidden sm:inline">docs</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">
+                      <span className="hidden sm:inline">No documents</span>
+                      <span className="sm:hidden">None</span>
+                    </span>
+                  )}
+                </td>
+                
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-gray-600">
+                  {user.lastDocumentUpload ? (
+                    <div className="flex items-center gap-1 whitespace-nowrap">
+                      <Clock className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                      <span>{new Date(user.lastDocumentUpload).toLocaleDateString()}</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">Never</span>
+                  )}
+                </td>
+                
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-right">
+                  <div className="flex items-center justify-end gap-1 md:gap-2">
+                    <button 
+                      onClick={() => setSelectedMember({ id: user.id, name: user.name })}
+                      className="font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-purple-50 text-[#5E2590]"
+                      title="View Documents"
+                    >
+                      <span className="hidden lg:inline">Documents</span>
+                      <FileText className="w-4 h-4 lg:hidden" />
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleToggleStatus(user.id, user.status)}
+                      className={`font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-gray-100 ${
+                        user.status === 'Suspended' 
+                        ? 'text-green-600' 
+                        : 'text-[#5E2590] hover:text-red-600'
+                      }`}
+                    >
+                      <span className="whitespace-nowrap">
+                        {user.status === 'Suspended' ? 'Reactivate' : 'Suspend'}
+                      </span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+ 
 
               {!loading && filteredAndSortedUsers.length > 0 && (
                 <div className="flex flex-col gap-3 border-t border-gray-100 px-3 md:px-6 py-3 md:py-4 sm:flex-row sm:items-center sm:justify-between">

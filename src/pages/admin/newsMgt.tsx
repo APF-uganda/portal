@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
-  Edit3, Search, Star, Plus, Trash2, Image as ImageIcon, CheckCircle2, AlertCircle, ArrowLeft 
+  Edit3, Search, Star, Plus, Trash2, Image as ImageIcon, CheckCircle2, AlertCircle, ArrowLeft, Loader2 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; 
 import api from '../../services/cmsApi';
@@ -31,29 +31,26 @@ const NewsManagement = () => {
     setTimeout(() => setNotification(null), 4000); 
   };
 
-  const fetchNews = async () => {
+  const fetchNews = useCallback(async () => {
     setLoading(true);
     try {
      
-      const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc`);
+      const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc&_t=${Date.now()}`);
+      
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
         
         
-        const imageData = data.featuredImage?.data?.attributes || data.featuredImage;
+        const imageObj = data.featuredImage?.data?.attributes || data.featuredImage;
         const categoryData = data.news?.data?.attributes || data.news;
         
-        let imageUrl = null;
-        if (imageData?.url) {
-          imageUrl = imageData.url.startsWith('http') ? imageData.url : `${CMS_BASE_URL}${imageData.url}`;
-        }
-
         return {
           id: item.id,
           documentId: item.documentId || item.id,
           ...data,
           displayCategory: categoryData?.name || 'General',
-          featuredImage: imageUrl,
+          //  URL mapping
+          featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null,
           imageId: data.featuredImage?.data?.id || data.featuredImage?.id || null,
           isActuallyPublished: !!data.publishedAt 
         };
@@ -65,11 +62,14 @@ const NewsManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchNews();
-  }, []); 
+    
+    window.addEventListener('focus', fetchNews);
+    return () => window.removeEventListener('focus', fetchNews);
+  }, [fetchNews]); 
 
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
     if (status === 'published' && (!formData.title || !formData.description || !formData.featuredImage)) {
@@ -85,10 +85,11 @@ const NewsManagement = () => {
           description: formData.description?.trim(), 
           content: formData.content, 
           featuredImage: formData.featuredImage ? Number(formData.featuredImage) : null,
-          author: "APF Admin",
+          author: formData.author || "APF Admin",
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
+          
           publishedAt: status === 'published' ? new Date().toISOString() : null,
           news: formData.news ? Number(formData.news) : undefined
         }
@@ -126,7 +127,11 @@ const NewsManagement = () => {
   };
 
   const filteredArticles = articles.filter(a => {
-    const matchesState = publicationState === 'published' ? a.isActuallyPublished === true : a.isActuallyPublished === false;
+    
+    const matchesState = publicationState === 'published' 
+      ? a.isActuallyPublished === true 
+      : a.isActuallyPublished === false;
+      
     const matchesFilter = filter === 'All' || a.displayCategory === filter;
     const matchesSearch = (a.title || "").toLowerCase().includes(search.toLowerCase());
     return matchesState && matchesFilter && matchesSearch;
@@ -235,6 +240,12 @@ const NewsManagement = () => {
                   </div>
                 </div>
 
+                {loading ? (
+                   <div className="h-64 flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-100 shadow-sm">
+                     <Loader2 className="animate-spin text-[#5F1C9F] mb-4" size={32} />
+                     <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Updating News Feed...</p>
+                   </div>
+                ) : (
                 <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden">
                   <div className="hidden md:block p-3 md:p-6">
                     <div className="overflow-x-auto">
@@ -318,6 +329,7 @@ const NewsManagement = () => {
                     )}
                   </div>
                 </div>
+                )}
               </div>
             )}
           </div>
