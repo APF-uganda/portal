@@ -34,23 +34,27 @@ const NewsManagement = () => {
   const fetchNews = useCallback(async () => {
     setLoading(true);
     try {
-     
       const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc&_t=${Date.now()}`);
       
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
-        
-        
         const imageObj = data.featuredImage?.data?.attributes || data.featuredImage;
         const categoryData = data.news?.data?.attributes || data.news;
+        
+        
+        let imageUrl = null;
+        if (imageObj?.url) {
+          imageUrl = imageObj.url.startsWith('http') 
+            ? imageObj.url 
+            : `${CMS_BASE_URL}${imageObj.url}`;
+        }
         
         return {
           id: item.id,
           documentId: item.documentId || item.id,
           ...data,
           displayCategory: categoryData?.name || 'General',
-          //  URL mapping
-          featuredImage: imageObj?.url ? `${CMS_BASE_URL}${imageObj.url}` : null,
+          featuredImage: imageUrl,
           imageId: data.featuredImage?.data?.id || data.featuredImage?.id || null,
           isActuallyPublished: !!data.publishedAt 
         };
@@ -66,7 +70,6 @@ const NewsManagement = () => {
 
   useEffect(() => {
     fetchNews();
-    
     window.addEventListener('focus', fetchNews);
     return () => window.removeEventListener('focus', fetchNews);
   }, [fetchNews]); 
@@ -84,12 +87,14 @@ const NewsManagement = () => {
           title: formData.title?.trim(),
           description: formData.description?.trim(), 
           content: formData.content, 
-          featuredImage: formData.featuredImage ? Number(formData.featuredImage) : null,
+        
+          featuredImage: formData.featuredImage ? Number(formData.featuredImage) : (selectedArticle?.imageId || null),
           author: formData.author || "APF Admin",
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
           
+          // FIX: Strictly set to null if saving as draft to prevent auto-publishing
           publishedAt: status === 'published' ? new Date().toISOString() : null,
           news: formData.news ? Number(formData.news) : undefined
         }
@@ -104,6 +109,7 @@ const NewsManagement = () => {
       }
       
       setIsEditing(false);
+      setSelectedArticle(undefined);
       await fetchNews(); 
       showToast(status === 'published' ? "Article Published!" : "Draft Saved!", "success");
     } catch (err: any) {
@@ -127,7 +133,6 @@ const NewsManagement = () => {
   };
 
   const filteredArticles = articles.filter(a => {
-    
     const matchesState = publicationState === 'published' 
       ? a.isActuallyPublished === true 
       : a.isActuallyPublished === false;
