@@ -34,13 +34,13 @@ const NewsManagement = () => {
   const fetchNews = useCallback(async () => {
     setLoading(true);
     try {
+     
       const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc&_t=${Date.now()}`);
       
       const formatted = res.data.data.map((item: any) => {
         const data = item.attributes || item;
         const imageObj = data.featuredImage?.data?.attributes || data.featuredImage;
         const categoryData = data.news?.data?.attributes || data.news;
-        
         
         let imageUrl = null;
         if (imageObj?.url) {
@@ -82,23 +82,26 @@ const NewsManagement = () => {
 
     setLoading(true);
     try {
-      const payload = {
+      const payload: any = {
         data: {
           title: formData.title?.trim(),
           description: formData.description?.trim(), 
           content: formData.content, 
-        
           featuredImage: formData.featuredImage ? Number(formData.featuredImage) : (selectedArticle?.imageId || null),
           author: formData.author || "APF Admin",
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
-          
-          // FIX: Strictly set to null if saving as draft to prevent auto-publishing
-          publishedAt: status === 'published' ? new Date().toISOString() : null,
           news: formData.news ? Number(formData.news) : undefined
         }
       };
+
+     
+      if (status === 'published') {
+        payload.data.publishedAt = new Date().toISOString();
+      } else {
+        payload.data.publishedAt = null; 
+      }
 
       const targetId = selectedArticle?.documentId || selectedArticle?.id;
       
@@ -206,8 +209,9 @@ const NewsManagement = () => {
               />
             ) : (
               <div className="space-y-6">
-                <div className="bg-white p-4 md:p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col xl:flex-row gap-6">
-                  <div className="flex bg-slate-100/50 p-1.5 rounded-[1.4rem] min-w-[300px]">
+                {/* TOP BAR  */}
+                <div className="bg-white p-4 md:p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col xl:flex-row items-center gap-6">
+                  <div className="flex bg-slate-100/50 p-1.5 rounded-[1.4rem] w-full xl:w-auto min-w-[300px]">
                     <button 
                       onClick={() => setPublicationState('published')} 
                       className={`flex-1 px-8 py-3 rounded-[1.1rem] text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 ${publicationState === 'published' ? 'bg-white text-[#5F1C9F] shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
@@ -222,7 +226,7 @@ const NewsManagement = () => {
                     </button>
                   </div>
                   
-                  <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar py-1">
+                  <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar py-1 w-full">
                     {['All', 'Policy Update', 'Thought Leadership', 'Announcements', 'SME Support'].map((t) => (
                       <button 
                         key={t} 
@@ -277,21 +281,24 @@ const NewsManagement = () => {
                                       </div>
                                     )}
                                   </div>
-                                  <div className="min-w-0">
-                                    <h4 className="text-gray-900 font-bold truncate uppercase text-[11px] tracking-tight">{article.title}</h4>
+                                  <div className="min-w-0 flex-1">
+                                    <h4 className="text-gray-900 font-bold uppercase text-[11px] tracking-tight line-clamp-1">{article.title}</h4>
                                     <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter mt-1">{article.publishDate || 'No Date'}</p>
                                   </div>
                                 </div>
                               </td>
                               <td className="px-4 py-4 font-bold text-gray-500 text-[10px] uppercase tracking-widest whitespace-nowrap">{article.displayCategory}</td>
                               <td className="px-4 py-4">
-                                {article.isFeatured ? (
-                                  <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-600 flex items-center w-fit gap-1 border border-amber-100 uppercase tracking-widest">
-                                    <Star size={10} className="fill-amber-600" /> Featured
-                                  </span>
-                                ) : (
-                                  <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-slate-50 text-slate-400 border border-slate-100 uppercase tracking-widest">Standard</span>
-                                )}
+                               
+                                <div className="max-w-[120px] whitespace-normal">
+                                  {article.isFeatured ? (
+                                    <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-600 flex items-center w-fit gap-1 border border-amber-100 uppercase tracking-widest">
+                                      <Star size={10} className="fill-amber-600" /> Featured
+                                    </span>
+                                  ) : (
+                                    <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-slate-50 text-slate-400 border border-slate-100 uppercase tracking-widest">Standard</span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-4 py-4">
                                 <div className="flex justify-center gap-3">
