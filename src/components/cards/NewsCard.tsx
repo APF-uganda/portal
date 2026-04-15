@@ -31,7 +31,7 @@ function NewsCard({
 
   return (
     <div 
-      className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group w-full flex flex-col h-full font-montserrat"
+      className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group w-full flex flex-col h-full "
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Image Container */}

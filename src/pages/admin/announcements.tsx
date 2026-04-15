@@ -172,7 +172,7 @@ export default function CommunicationsDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen overflow-hidden font-montserrat">
+    <div className="flex min-h-screen overflow-hidden ">
       {/* Modern Alert Component Instance */}
       <ModernAlert 
         {...alertConfig} 

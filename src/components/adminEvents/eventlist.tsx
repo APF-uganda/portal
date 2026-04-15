@@ -87,7 +87,7 @@ const EventsList = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-[#F4F7FE] font-montserrat text-gray-900 relative overflow-x-hidden">
+    <div className="flex min-h-screen bg-[#F4F7FE]  text-gray-900 relative overflow-x-hidden">
       
       {/* Delete Modal */}
       {deleteModal.isOpen && (

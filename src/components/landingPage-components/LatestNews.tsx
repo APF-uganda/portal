@@ -108,7 +108,7 @@ function LatestNews() {
   return (
     <ErrorBoundary fallback={<div className="p-10 text-center">News Unavailable</div>}>
      
-      <section className="bg-purple-300 py-16 font-montserrat">
+      <section className="bg-purple-300 py-16 ">
         <div className="max-w-6xl mx-auto px-6 relative">
           <h2 ref={elementRef} className={`text-center text-white text-2xl sm:text-3xl md:text-4xl font-bold mb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}>
             Latest News & Insights

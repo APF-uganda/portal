@@ -190,8 +190,8 @@ export function PaymentForms({
         label="Transaction Phone Number"
         required
         operator={selectedMethod === 'mtn' ? 'mtn' : 'airtel'}
-        value={phoneNumber ? `+${phoneNumber}` : undefined}
-        onChange={(val) => setPhoneNumber(val ? val.replace(/^\+/, '') : '')}
+        value={phoneNumber || undefined}
+        onChange={(val) => setPhoneNumber(val || '')}
       />
 
       {/* Instructions */}

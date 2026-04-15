@@ -175,7 +175,7 @@ export const PaymentTable = ({
   }; 
 
   return (
-    <div className="bg-white rounded-xl md:rounded-[24px] shadow-sm border border-slate-100 overflow-hidden w-full font-montserrat">
+    <div className="bg-white rounded-xl md:rounded-[24px] shadow-sm border border-slate-100 overflow-hidden w-full ">
       <div className="px-4 md:px-8 py-4 md:py-6 border-b border-slate-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white">
         <div>
           <h2 className="text-slate-800 text-lg md:text-xl tracking-tight flex items-center gap-2 md:gap-3">

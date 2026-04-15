@@ -94,7 +94,7 @@ const FeaturedEvents = () => {
 
   return (
     <ErrorBoundary fallback={<div className="py-16 text-center">Events unavailable.</div>}>
-      <section className="bg-white py-16 font-montserrat overflow-hidden">
+      <section className="bg-white py-16  overflow-hidden">
         <div className="max-w-6xl mx-auto px-6 relative">
           <h2 className="text-center text-gray-800 text-2xl sm:text-3xl md:text-4xl font-bold mb-12">
             Featured Events

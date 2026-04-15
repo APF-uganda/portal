@@ -373,8 +373,8 @@ export const ArticleForm = ({ initialData, onSave, onCancel, isLoading }: any) =
           <ArrowLeft size={16} strokeWidth={3} /> Exit Editor
         </button>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <button onClick={() => handleSubmit('draft')} disabled={isLoading} className="flex-1 md:flex-none px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all">Save Draft</button>
-          <button onClick={() => handleSubmit('published')} disabled={isLoading} className="flex-1 md:flex-none px-8 py-3.5 bg-slate-900 text-white rounded-2xl text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-xl hover:bg-purple-700 transition-all active:scale-95 disabled:opacity-50">
+          <button type="button" onClick={() => handleSubmit('draft')} disabled={isLoading} className="flex-1 md:flex-none px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] uppercase tracking-[0.2em] hover:bg-slate-50 transition-all">Save Draft</button>
+          <button type="button" onClick={() => handleSubmit('published')} disabled={isLoading} className="flex-1 md:flex-none px-8 py-3.5 bg-[#4A1480] text-white rounded-2xl text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-xl hover:bg-purple-700 transition-all active:scale-95 disabled:opacity-50">
             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <><Send size={16} strokeWidth={2.5} /> Publish</>}
           </button>
         </div>

@@ -1,6 +1,6 @@
 import { FC, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, User, LogOut, Menu, Bell } from "lucide-react";
+import { ChevronDown, User, LogOut, Menu, Bell, ArrowUpRight } from "lucide-react";
 import { useProfile } from "../../hooks/useProfile";
 import { getDisplayName } from "../../utils/displayName";
 import { getCurrentUser } from "../../utils/auth";
@@ -160,6 +160,14 @@ onMobileMenuToggle
               >
                 <User className="w-4 h-4" />
                 Profile Settings
+              </button>
+
+              <button
+                onClick={() => { setDropdownOpen(false); window.open('/', '_blank'); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <ArrowUpRight className="w-4 h-4" />
+                Back to Website
               </button>
               
               <div className="border-t border-gray-100 my-1"></div>

@@ -8,7 +8,7 @@ import Footer from "../../components/layout/Footer";
 
 import { 
   Newspaper, Calendar, 
-  Eye, Activity, ArrowUpRight, Loader2, ChevronRight, ClipboardList, ArrowLeft
+  Eye, Activity, ArrowUpRight, Loader2, ChevronRight, ClipboardList
 } from 'lucide-react';
 
 const StatHighlight = ({ title, value, icon: Icon, color, loading }: any) => (
@@ -85,14 +85,8 @@ const CmsContentPage = () => {
         <div className="flex-1 p-6 md:p-10 lg:p-12">
           <div className="max-w-6xl mx-auto space-y-10">
             
-            {/* Page Title & Back Nav */}
+            {/* Page Title */}
             <div>
-              <button 
-                onClick={() => navigate('/')} 
-                className="flex items-center gap-2 text-slate-400 hover:text-purple-600 font-semibold text-sm mb-4 transition-colors"
-              >
-                <ArrowLeft size={16} /> View Live Website
-              </button>
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Portal Management</h1>
               <p className="text-slate-500 mt-2">Manage your website content and track activity.</p>
             </div>
@@ -151,7 +145,7 @@ const CmsContentPage = () => {
             <hr className="border-gray-100" />
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               <StatHighlight 
                 title="Active Events" 
                 value={stats.eventCount} 
@@ -170,8 +164,8 @@ const CmsContentPage = () => {
             </div>
 
             {/* Recent Updates */}
-            <div className="max-w-2xl">
-              <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
+            <div className="w-full">
+              <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm w-full">
                 <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                   <Activity size={14} className="text-purple-600" /> Recent Content Updates
                 </h2>

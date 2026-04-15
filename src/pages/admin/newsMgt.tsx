@@ -23,6 +23,7 @@ const NewsManagement = () => {
   const [search, setSearch] = useState('');
   const [publicationState, setPublicationState] = useState<'published' | 'preview'>('published');
   
+  const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, id: string | number | null }>({ isOpen: false, id: null });
 
@@ -34,12 +35,17 @@ const NewsManagement = () => {
   const fetchNews = useCallback(async () => {
     setLoading(true);
     try {
-     
-      const res = await api.get(`/news-articles?publicationState=preview&populate=*&sort=createdAt:desc&_t=${Date.now()}`);
-      
-      const formatted = res.data.data.map((item: any) => {
+      // Strapi v5: fetch published and drafts separately then merge
+      const [publishedRes, draftRes] = await Promise.all([
+        api.get(`/news-articles?status=published&populate=*&sort=createdAt:desc&_t=${Date.now()}`),
+        api.get(`/news-articles?status=draft&populate=*&sort=createdAt:desc&_t=${Date.now()}`),
+      ]);
+
+      const mapItem = (item: any, isPublished: boolean) => {
         const data = item.attributes || item;
-        const imageObj = data.featuredImage?.data?.attributes || data.featuredImage;
+        const imageObj = data.featuredImage?.data?.attributes 
+          || data.featuredImage?.attributes
+          || (data.featuredImage && typeof data.featuredImage === 'object' && !Array.isArray(data.featuredImage) ? data.featuredImage : null);
         const categoryData = data.news?.data?.attributes || data.news;
         
         let imageUrl = null;
@@ -47,8 +53,10 @@ const NewsManagement = () => {
           imageUrl = imageObj.url.startsWith('http') 
             ? imageObj.url 
             : `${CMS_BASE_URL}${imageObj.url}`;
+        } else if (typeof data.featuredImage === 'string' && data.featuredImage.startsWith('http')) {
+          imageUrl = data.featuredImage;
         }
-        
+
         return {
           id: item.id,
           documentId: item.documentId || item.id,
@@ -56,10 +64,18 @@ const NewsManagement = () => {
           displayCategory: categoryData?.name || 'General',
           featuredImage: imageUrl,
           imageId: data.featuredImage?.data?.id || data.featuredImage?.id || null,
-          isActuallyPublished: !!data.publishedAt 
+          isActuallyPublished: isPublished,
         };
-      });
-      setArticles(formatted);
+      };
+
+      const published = (publishedRes.data.data || []).map((i: any) => mapItem(i, true));
+      const drafts = (draftRes.data.data || []).map((i: any) => mapItem(i, false));
+
+      // Merge, deduplicate by documentId (drafts of published articles appear in both)
+      const publishedIds = new Set(published.map((a: any) => a.documentId));
+      const uniqueDrafts = drafts.filter((a: any) => !publishedIds.has(a.documentId));
+
+      setArticles([...published, ...uniqueDrafts]);
     } catch (err) {
       console.error("Fetch failed:", err);
       showToast("Could not sync with CMS", "error");
@@ -70,8 +86,6 @@ const NewsManagement = () => {
 
   useEffect(() => {
     fetchNews();
-    window.addEventListener('focus', fetchNews);
-    return () => window.removeEventListener('focus', fetchNews);
   }, [fetchNews]); 
 
   const handleSave = async (formData: any, status: 'draft' | 'published' = 'published') => {
@@ -80,7 +94,7 @@ const NewsManagement = () => {
       return;
     }
 
-    setLoading(true);
+    setIsSaving(true);
     try {
       const payload: any = {
         data: {
@@ -92,23 +106,18 @@ const NewsManagement = () => {
           publishDate: formData.publishDate || new Date().toISOString().split('T')[0],
           readTime: Number(formData.readTime) || 5,
           isFeatured: !!formData.isFeatured,
-          news: formData.news ? Number(formData.news) : undefined
+          news: formData.news ? Number(formData.news) : undefined,
+          publishedAt: status === 'published' ? new Date().toISOString() : null,
         }
       };
 
-     
-      if (status === 'published') {
-        payload.data.publishedAt = new Date().toISOString();
-      } else {
-        payload.data.publishedAt = null; 
-      }
-
       const targetId = selectedArticle?.documentId || selectedArticle?.id;
-      
+      const statusParam = status === 'published' ? '' : '?status=draft';
+
       if (selectedArticle && targetId) {
-        await api.put(`/news-articles/${targetId}`, payload);
+        await api.put(`/news-articles/${targetId}${statusParam}`, payload);
       } else {
-        await api.post('/news-articles', payload);
+        await api.post(`/news-articles${statusParam}`, payload);
       }
       
       setIsEditing(false);
@@ -119,7 +128,7 @@ const NewsManagement = () => {
       console.error("Save Error:", err.response?.data || err);
       showToast(`Save Failed: ${err.response?.data?.error?.message || err.message}`, "error");
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -146,10 +155,10 @@ const NewsManagement = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-[#F4F7FE] font-montserrat text-gray-900 relative">
+    <div className="flex min-h-screen bg-[#F4F7FE]  text-gray-900 relative">
       
       {deleteModal.isOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/20">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 backdrop-blur-md bg-[#4A1480]">
           <div className="bg-white rounded-[2.5rem] p-6 md:p-10 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-6 mx-auto">
               <Trash2 className="text-red-500" size={32} />
@@ -205,47 +214,52 @@ const NewsManagement = () => {
                 initialData={selectedArticle} 
                 onSave={handleSave} 
                 onCancel={() => setIsEditing(false)} 
-                isLoading={loading} 
+                isLoading={isSaving} 
               />
             ) : (
               <div className="space-y-6">
                 {/* TOP BAR  */}
-                <div className="bg-white p-4 md:p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col xl:flex-row items-center gap-6">
-                  <div className="flex bg-slate-100/50 p-1.5 rounded-[1.4rem] w-full xl:w-auto min-w-[300px]">
-                    <button 
-                      onClick={() => setPublicationState('published')} 
-                      className={`flex-1 px-8 py-3 rounded-[1.1rem] text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 ${publicationState === 'published' ? 'bg-white text-[#5F1C9F] shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                     Published
-                    </button>
-                    <button 
-                      onClick={() => setPublicationState('preview')} 
-                      className={`flex-1 px-8 py-3 rounded-[1.1rem] text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                      Drafts
-                    </button>
+                <div className="bg-white p-4 md:p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    {/* Published / Drafts toggle */}
+                    <div className="flex bg-slate-100/50 p-1.5 rounded-[1.4rem] shrink-0">
+                      <button 
+                        onClick={() => setPublicationState('published')} 
+                        className={`flex-1 px-6 py-3 rounded-[1.1rem] text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 whitespace-nowrap ${publicationState === 'published' ? 'bg-white text-[#5F1C9F] shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Published
+                      </button>
+                      <button 
+                        onClick={() => setPublicationState('preview')} 
+                        className={`flex-1 px-6 py-3 rounded-[1.1rem] text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 whitespace-nowrap ${publicationState === 'preview' ? 'bg-white text-orange-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Drafts
+                      </button>
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-0">
+                      <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                      <input 
+                        placeholder="Search articles..." 
+                        value={search} 
+                        onChange={(e) => setSearch(e.target.value)} 
+                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-100 outline-none text-[10px] font-bold tracking-widest uppercase" 
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar py-1 w-full">
+
+                  {/* Category filters — scrollable row */}
+                  <div className="flex gap-2 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
                     {['All', 'Policy Update', 'Thought Leadership', 'Announcements', 'SME Support'].map((t) => (
                       <button 
                         key={t} 
                         onClick={() => setFilter(t)} 
-                        className={`px-6 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap ${filter === t ? 'bg-gray-900 text-white' : 'bg-slate-50 text-gray-500 hover:bg-slate-100'}`}
+                        className={`px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap shrink-0 ${filter === t ? 'bg-[#4A1480] text-white' : 'bg-slate-50 text-gray-500 hover:bg-slate-100'}`}
                       >
                         {t}
                       </button>
                     ))}
-                  </div>
-
-                  <div className="relative w-full xl:w-80">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                    <input 
-                      placeholder="SEARCH ARTICLES..." 
-                      value={search} 
-                      onChange={(e) => setSearch(e.target.value)} 
-                      className="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-100 outline-none text-[10px] font-bold tracking-widest uppercase" 
-                    />
                   </div>
                 </div>
 
@@ -288,17 +302,14 @@ const NewsManagement = () => {
                                 </div>
                               </td>
                               <td className="px-4 py-4 font-bold text-gray-500 text-[10px] uppercase tracking-widest whitespace-nowrap">{article.displayCategory}</td>
-                              <td className="px-4 py-4">
-                               
-                                <div className="max-w-[120px] whitespace-normal">
-                                  {article.isFeatured ? (
-                                    <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-600 flex items-center w-fit gap-1 border border-amber-100 uppercase tracking-widest">
-                                      <Star size={10} className="fill-amber-600" /> Featured
-                                    </span>
-                                  ) : (
-                                    <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-slate-50 text-slate-400 border border-slate-100 uppercase tracking-widest">Standard</span>
-                                  )}
-                                </div>
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                {article.isFeatured ? (
+                                  <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-600 flex items-center w-fit gap-1 border border-amber-100 uppercase tracking-widest whitespace-nowrap">
+                                    <Star size={10} className="fill-amber-600" /> Featured
+                                  </span>
+                                ) : (
+                                  <span className="px-3 py-1.5 rounded-full text-[9px] font-bold bg-slate-50 text-slate-400 border border-slate-100 uppercase tracking-widest whitespace-nowrap">Standard</span>
+                                )}
                               </td>
                               <td className="px-4 py-4">
                                 <div className="flex justify-center gap-3">

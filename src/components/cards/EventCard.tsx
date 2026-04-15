@@ -57,7 +57,7 @@ export default function EventCard({
 
   return (
     <div 
-      className={`bg-white rounded-[2.5rem] overflow-hidden shadow-sm group w-full h-full flex flex-col transition-all duration-500 border border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:-translate-y-2 font-montserrat ${isPast ? 'opacity-75 grayscale-[0.3]' : ''}`}
+      className={`bg-white rounded-[2.5rem] overflow-hidden shadow-sm group w-full h-full flex flex-col transition-all duration-500 border border-slate-100 hover:border-purple-200 hover:shadow-2xl hover:-translate-y-2  ${isPast ? 'opacity-75 grayscale-[0.3]' : ''}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="h-52 overflow-hidden relative flex-shrink-0 bg-slate-100">

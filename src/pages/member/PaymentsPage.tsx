@@ -187,15 +187,16 @@ const PaymentsPage: React.FC = () => {
 
   const validatePhoneForMethod = (): string | null => {
     if (selectedPaymentMethod === 'bank') return null
-    if (!/^256\d{9}$/.test(phoneNumber)) {
-      return 'Phone number must be in format 256XXXXXXXXX'
+    const normalized = phoneNumber.replace(/^\+/, '')
+    if (!/^256\d{9}$/.test(normalized)) {
+      return 'Phone number must be a valid Uganda number (e.g. 256771234567)'
     }
     const mtnPrefixes = ['25677', '25678', '25676', '25679']
     const airtelPrefixes = ['25670', '25675', '25674']
-    if (selectedPaymentMethod === 'mtn' && airtelPrefixes.some((p) => phoneNumber.startsWith(p))) {
+    if (selectedPaymentMethod === 'mtn' && airtelPrefixes.some((p) => normalized.startsWith(p))) {
       return 'Please enter an MTN number for MTN payment method'
     }
-    if (selectedPaymentMethod === 'airtel' && mtnPrefixes.some((p) => phoneNumber.startsWith(p))) {
+    if (selectedPaymentMethod === 'airtel' && mtnPrefixes.some((p) => normalized.startsWith(p))) {
       return 'Please enter an Airtel number for Airtel payment method'
     }
     return null
@@ -610,8 +611,8 @@ const PaymentsPage: React.FC = () => {
                       label="Transaction Phone Number"
                       required
                       operator={selectedPaymentMethod === 'mtn' ? 'mtn' : 'airtel'}
-                      value={phoneNumber ? `+${phoneNumber}` : undefined}
-                      onChange={(val) => setPhoneNumber(val ? val.replace(/^\+/, '') : '')}
+                      value={phoneNumber || undefined}
+                      onChange={(val) => setPhoneNumber(val || '')}
                     />
                   </div>
                 )}
