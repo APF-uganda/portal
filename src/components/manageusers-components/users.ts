@@ -5,6 +5,7 @@ export interface User {
     email: string;
     status: 'Active' | 'Pending' | 'Expired' | 'Suspended';
     renewalDate: string;
+    renewalStatus?: 'renewed' | 'overdue' | 'due_soon' | 'current' | 'unknown';
     hasDocuments?: boolean;
     documentCount?: number;
     lastDocumentUpload?: string;

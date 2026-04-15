@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense } from "react";
+import React, { useEffect, Suspense, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,7 +7,9 @@ import {
 } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "./components/ui/toaster";
-import { isAuthenticated, getUser, migrateFromLocalStorage } from "./utils/authStorage";
+import { isAuthenticated, getUser, getAccessToken, migrateFromLocalStorage } from "./utils/authStorage";
+import SuspendedPage from "./pages/SuspendedPage";
+import { API_V1_BASE_URL } from "./config/api";
 
 
 /* Lazy loaded public pages */
@@ -73,23 +75,51 @@ const EventForm = React.lazy(() => import("./components/adminEvents/eventCreate"
 const ProtectedRoute: React.FC<{
   children: JSX.Element;
   role?: "admin" | "member";
-}> = ({ children, role }) => {
-  // Check if authenticated and session is valid
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
+  allowSuspended?: boolean;
+}> = ({ children, role, allowSuspended = false }) => {
+  const [suspensionInfo, setSuspensionInfo] = useState<any>(null);
+  const [checked, setChecked] = useState(false);
 
-  // Check role if specified
+  useEffect(() => {
+    const checkSuspension = async () => {
+      const token = getAccessToken();
+      if (!token) { setChecked(true); return; }
+      try {
+        const res = await fetch(`${API_V1_BASE_URL}/auth/profile/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.suspension?.is_suspended) {
+            setSuspensionInfo(data.suspension);
+          }
+        }
+      } catch { /* ignore */ }
+      setChecked(true);
+    };
+    checkSuspension();
+  }, []);
+
+  if (!isAuthenticated()) return <Navigate to="/login" replace />;
+
   if (role) {
     const user = getUser();
-    if (!user) {
-      return <Navigate to="/login" replace />;
-    }
-
+    if (!user) return <Navigate to="/login" replace />;
     const userRole = user.role === "1" || user.role === 1 ? "admin" : "member";
-    if (userRole !== role) {
-      return <Navigate to="/" replace />;
-    }
+    if (userRole !== role) return <Navigate to="/" replace />;
+  }
+
+  if (!checked) return null;
+
+  // Show suspended page unless this route explicitly allows suspended users
+  if (suspensionInfo && !allowSuspended) {
+    return (
+      <SuspendedPage
+        suspensionType={suspensionInfo.suspension_type}
+        reason={suspensionInfo.reason}
+        suspendedAt={suspensionInfo.suspended_at}
+      />
+    );
   }
 
   return children;
@@ -170,7 +200,7 @@ const App: React.FC = () => {
             <Route
               path="/payments"
               element={
-                <ProtectedRoute role="member">
+                <ProtectedRoute role="member" allowSuspended={true}>
                   <PaymentsPage />
                 </ProtectedRoute>
               }

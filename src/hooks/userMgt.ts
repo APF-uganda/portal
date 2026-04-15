@@ -33,20 +33,16 @@ export const useUserManagement = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
+  const handleToggleStatus = async (id: string, currentStatus: string, reason?: string, suspensionType?: string) => {
     if (isPerformingAction) return;
-
     try {
       setIsPerformingAction(true);
       if (currentStatus === 'Suspended') {
         await userManagementApi.reactivateMember(id);
       } else {
-        await userManagementApi.suspendMember(id);
+        await userManagementApi.suspendMember(id, reason || 'Administrative suspension', suspensionType || 'non_payment');
       }
-      
-     
       await fetchUsers();
-      
     } catch (err: any) {
       alert("Status update failed. Please try again.");
     } finally {

@@ -22,6 +22,7 @@ export const userManagementApi = {
       email: member.email,
       status: member.membership_status === 'SUSPENDED' ? 'Suspended' : 'Active',
       renewalDate: member.subscription_due_date || 'N/A',
+      renewalStatus: member.renewal_status || 'unknown',
       hasDocuments: member.has_documents || false,
       documentCount: member.document_count || 0,
       lastDocumentUpload: member.last_document_upload || null,
@@ -30,10 +31,10 @@ export const userManagementApi = {
     }));
   },
 
-  suspendMember: async (id: string) => {
+  suspendMember: async (id: string, reason: string = "Administrative suspension", suspensionType: string = "non_payment") => {
     return axios.patch(
       `${API_BASE_URL}/api/v1/admin-management/members/${id}/suspend/`, 
-      { reason: "Administrative suspension" }, 
+      { reason, suspension_type: suspensionType }, 
       { headers: getHeaders() }
     );
   },

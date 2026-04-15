@@ -11,13 +11,16 @@ import { useUserManagement } from '../../hooks/userMgt';
 import { API_V1_BASE_URL } from '../../config/api';
 import { getAuth } from '../../utils/authStorage';
 
-type FilterType = 'all' | 'with-documents' | 'without-documents' | 'recent-uploads';
+type FilterType = 'all' | 'with-documents' | 'without-documents' | 'recent-uploads' | 'renewed' | 'due-soon' | 'overdue';
 type SortType = 'documents-first' | 'name' | 'status' | 'recent-activity';
 
 const ManageUsers = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null);
+  const [suspendTarget, setSuspendTarget] = useState<{ id: string; name: string } | null>(null);
+  const [suspendReason, setSuspendReason] = useState('');
+  const [suspendType, setSuspendType] = useState<'non_payment' | 'policy_violation'>('non_payment');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -115,6 +118,15 @@ const ManageUsers = () => {
           return uploadDate > weekAgo;
         });
         break;
+      case 'renewed':
+        filtered = filtered.filter(user => user.renewalStatus === 'renewed');
+        break;
+      case 'due-soon':
+        filtered = filtered.filter(user => user.renewalStatus === 'due_soon');
+        break;
+      case 'overdue':
+        filtered = filtered.filter(user => user.renewalStatus === 'overdue');
+        break;
     }
 
     // Apply sorting
@@ -200,15 +212,9 @@ const ManageUsers = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
               <StatCard title="Total Users" value={users.length} color="border-blue-500" />
-              <StatCard title="With Documents" value={users.filter(u => u.hasDocuments).length} color="border-green-500" />
-              <StatCard title="Pending Renewals" value={users.filter(u => u.status === 'Pending').length} color="border-yellow-500" />
-              <StatCard title="Recent Uploads" value={users.filter(u => {
-                if (!u.lastDocumentUpload) return false;
-                const uploadDate = new Date(u.lastDocumentUpload);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                return uploadDate > weekAgo;
-              }).length} color="border-purple-500" />
+              <StatCard title="Renewed" value={users.filter(u => u.renewalStatus === 'renewed').length} color="border-green-500" />
+              <StatCard title="Overdue" value={users.filter(u => u.renewalStatus === 'overdue').length} color="border-red-500" />
+              <StatCard title="Due Soon" value={users.filter(u => u.renewalStatus === 'due_soon').length} color="border-amber-500" />
             </div>
 
             {/* Filter and Search Controls */}
@@ -263,6 +269,10 @@ const ManageUsers = () => {
                         <option value="with-documents">With Documents</option>
                         <option value="without-documents">Without Documents</option>
                         <option value="recent-uploads">Recent Uploads (7 days)</option>
+                        <option disabled>── Renewal Status ──</option>
+                        <option value="renewed">Renewed</option>
+                        <option value="due-soon">Due Soon</option>
+                        <option value="overdue">Overdue</option>
                       </select>
                       <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
@@ -300,6 +310,7 @@ const ManageUsers = () => {
             <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[150px]">Member Name</th>
             <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[200px]">Email</th>
             <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Status</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px] whitespace-nowrap">Renewal</th>
           
             <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[140px] whitespace-nowrap">Documents</th>
             <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px]">Last Upload</th>
@@ -309,7 +320,7 @@ const ManageUsers = () => {
         <tbody className="divide-y divide-gray-50">
           {loading ? (
              <tr>
-               <td colSpan={6} className="text-center py-12">
+               <td colSpan={7} className="text-center py-12">
                  <div className="flex flex-col items-center space-y-2">
                    <div className="w-6 h-6 border-2 border-[#5E2590] border-t-transparent rounded-full animate-spin"></div>
                    <span className="text-gray-400 text-sm font-medium">Loading user data...</span>
@@ -318,7 +329,7 @@ const ManageUsers = () => {
              </tr>
           ) : filteredAndSortedUsers.length === 0 ? (
             <tr>
-              <td colSpan={6} className="text-center py-12 text-gray-400 font-medium">
+              <td colSpan={7} className="text-center py-12 text-gray-400 font-medium">
                 {searchTerm || filterType !== 'all' ? 'No users match your filters.' : 'No users found in the system.'}
               </td>
             </tr>
@@ -353,6 +364,23 @@ const ManageUsers = () => {
                       'bg-red-100 text-red-700'}`}>
                     {user.status}
                   </span>
+                </td>
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm whitespace-nowrap">
+                  {user.renewalStatus === 'renewed' && (
+                    <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700 whitespace-nowrap">✓ Renewed</span>
+                  )}
+                  {user.renewalStatus === 'overdue' && (
+                    <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700 whitespace-nowrap">Overdue</span>
+                  )}
+                  {user.renewalStatus === 'due_soon' && (
+                    <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 whitespace-nowrap">Due Soon</span>
+                  )}
+                  {(!user.renewalStatus || user.renewalStatus === 'unknown') && (
+                    <span className="text-gray-400 text-[10px]">—</span>
+                  )}
+                  {user.renewalDate !== 'N/A' && (
+                    <div className="text-[9px] text-gray-400 mt-0.5">{user.renewalDate}</div>
+                  )}
                 </td>
                 
                 {/* FIXED: whitespace-nowrap ensures "X docs" stays on one line */}
@@ -393,7 +421,15 @@ const ManageUsers = () => {
                     </button>
                     
                     <button 
-                      onClick={() => handleToggleStatus(user.id, user.status)}
+                      onClick={() => {
+                        if (user.status === 'Suspended') {
+                          handleToggleStatus(user.id, user.status);
+                        } else {
+                          setSuspendReason('');
+                          setSuspendType('non_payment');
+                          setSuspendTarget({ id: user.id, name: user.name });
+                        }
+                      }}
                       className={`font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-gray-100 ${
                         user.status === 'Suspended' 
                         ? 'text-green-600' 
@@ -484,6 +520,62 @@ const ManageUsers = () => {
           userId={selectedMember.id}
           userName={selectedMember.name}
         />
+      )}
+
+      {/* Suspension Reason Modal */}
+      {suspendTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <h3 className="text-lg font-bold text-gray-900">Suspend Member</h3>
+            <p className="text-sm text-gray-600">
+              You are about to suspend <strong>{suspendTarget.name}</strong>. Please select the suspension type and provide a reason — this will be included in the email sent to the member.
+            </p>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Suspension Type</label>
+              <select
+                value={suspendType}
+                onChange={(e) => setSuspendType(e.target.value as 'non_payment' | 'policy_violation')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="non_payment">Non-Payment of Subscription</option>
+                <option value="policy_violation">Policy Violation</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+              <textarea
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                placeholder={suspendType === 'non_payment'
+                  ? "e.g. Annual subscription fee for 2025/2026 not paid..."
+                  : "e.g. Repeated violation of community guidelines..."}
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setSuspendTarget(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!suspendReason.trim()}
+                onClick={async () => {
+                  await handleToggleStatus(suspendTarget.id, 'Active', suspendReason.trim(), suspendType);
+                  setSuspendTarget(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirm Suspension
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
