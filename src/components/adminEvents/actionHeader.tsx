@@ -11,7 +11,7 @@ export const ActionHeader = ({ onPublish, onBack, loading }: any) => {
       <button 
         type="button"
       
-        onClick={() => navigate('/admin/events')} 
+        onClick={() => navigate('/eventlist')} 
         className="flex items-center gap-2 text-slate-400 font-bold text-xs md:text-sm uppercase tracking-widest hover:text-purple-700 transition"
       >
         <ArrowLeft size={14} className="md:w-4 md:h-4" /> 
