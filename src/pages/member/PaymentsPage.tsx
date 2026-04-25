@@ -14,6 +14,7 @@ import {
   FileArchive,
   ExternalLink,
   Loader2,
+  Copy,
 } from "lucide-react"
 
 import { DashboardLayout } from "../../components/layout/DashboardLayout"
@@ -25,7 +26,7 @@ import { ReceiptGenerator, ReceiptData, showNotification } from "../../services/
 import { useRecentTransactions, useReceipts } from "../../hooks/usePaymentHistory"
 import ProofOfPaymentUpload from "../../components/register-components/ProofOfPaymentUpload"
 import PhoneInputField from "../../components/register-components/PhoneInput"
-import { submitManualRenewalPayment } from "../../services/payments.service"
+import { submitManualRenewalPayment, getMemberInvoices, MemberInvoice } from "../../services/payments.service"
 import mtnLogo from "../../assets/images/registerPage-images/mtn.png"
 import airtelLogo from "../../assets/images/registerPage-images/airtel.png"
 import dfcuLogo from "../../assets/images/registerPage-images/dfcu.jpg"
@@ -34,10 +35,7 @@ import { getEvents, Event } from "../../services/cmsApi"
 const RENEWAL_AMOUNT = 150000
 
 // Payment details constants
-const MERCHANT_CODES = {
-  mtn: '123456',
-  airtel: '789012',
-}
+const PAYMENT_PHONE_NUMBER = '0767618767'
 
 const BANK_DETAILS = {
   accountName: 'Accountancy Practitioners Forum',
@@ -52,7 +50,7 @@ const PaymentsPage: React.FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mtn')
   const [isProcessing, setIsProcessing] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [reference, setReference] = useState('')
+  const [transactionId, setTransactionId] = useState('') // ID from mobile money receipt
   const [proofOfPayment, setProofOfPayment] = useState<File | null>(null)
   const [paymentType, setPaymentType] = useState<PaymentType>('membership_renewal')
   const [customAmount, setCustomAmount] = useState('')
@@ -60,6 +58,37 @@ const PaymentsPage: React.FC = () => {
   const [paymentDescription, setPaymentDescription] = useState('')
   const [paidEvents, setPaidEvents] = useState<Event[]>([])
   const [loadingEvents, setLoadingEvents] = useState(false)
+
+  // Member invoices (pre-generated for membership renewal)
+  const [memberInvoices, setMemberInvoices] = useState<MemberInvoice[]>([])
+  const [loadingInvoices, setLoadingInvoices] = useState(true)
+
+  // The active invoice for the current payment type
+  const activeInvoice = paymentType === 'membership_renewal'
+    ? memberInvoices.find(inv => inv.status === 'pending' || inv.status === 'overdue' || inv.status === 'partial') ?? memberInvoices[0] ?? null
+    : null
+
+  // Generate a stable session-scoped payment reference for types without a pre-existing invoice.
+  // Stored in sessionStorage so it survives re-renders but resets on new sessions.
+  const getOrCreateSessionRef = (key: string, prefix: string): string => {
+    const stored = sessionStorage.getItem(key)
+    if (stored) return stored
+    const year = new Date().getFullYear()
+    const rand = Math.floor(Math.random() * 900000) + 100000
+    const ref = `${prefix}-${year}-${rand}`
+    sessionStorage.setItem(key, ref)
+    return ref
+  }
+
+  // The Payment ID to display — invoice number if available, otherwise a generated reference
+  const paymentId = (() => {
+    if (paymentType === 'membership_renewal') {
+      return activeInvoice?.invoice_number ?? getOrCreateSessionRef('pay_ref_renewal', 'RNW')
+    }
+    if (paymentType === 'donation') return getOrCreateSessionRef('pay_ref_donation', 'DON')
+    if (paymentType === 'event') return getOrCreateSessionRef('pay_ref_event', 'EVT')
+    return getOrCreateSessionRef('pay_ref_other', 'OTH')
+  })()
   
   const paymentAmount = paymentType === 'membership_renewal' 
     ? RENEWAL_AMOUNT 
@@ -97,6 +126,14 @@ const PaymentsPage: React.FC = () => {
     }
     fetchPaidEvents()
   }, [paymentType])
+
+  // Fetch member invoices on mount
+  useEffect(() => {
+    getMemberInvoices()
+      .then(setMemberInvoices)
+      .catch(() => setMemberInvoices([]))
+      .finally(() => setLoadingInvoices(false))
+  }, [])
 
   // Show loading state while initial data is being fetched
   if (!recentTransactionsResult || !receiptsResult) {
@@ -149,6 +186,7 @@ const PaymentsPage: React.FC = () => {
 
   const handlePaymentTypeChange = (type: PaymentType) => {
     setPaymentType(type)
+    setTransactionId('')
     if (type === 'membership_renewal') {
       setCustomAmount('')
       setSelectedEvent('')
@@ -208,6 +246,11 @@ const PaymentsPage: React.FC = () => {
       return
     }
 
+    if (!transactionId.trim()) {
+      showNotification('Please enter the Transaction ID from your payment receipt', 'error')
+      return
+    }
+
     if (paymentType === 'event' && !selectedEvent) {
       showNotification('Please select an event', 'error')
       return
@@ -242,18 +285,24 @@ const PaymentsPage: React.FC = () => {
         amount: paymentAmount,
         paymentMethod: selectedPaymentMethod as 'mtn' | 'airtel' | 'bank',
         phoneNumber: selectedPaymentMethod === 'bank' ? undefined : phoneNumber.trim(),
-        reference: reference.trim() || undefined,
-        description: paymentDescriptions[paymentType],
+        reference: paymentId,                  // our Payment ID is the reference
+        invoiceNumber: activeInvoice?.invoice_number,
+        description: `${paymentDescriptions[paymentType]} | TxnID: ${transactionId.trim()}`,
         proofOfPayment,
         paymentType: paymentType,
       })
       showNotification(`Receipt submitted successfully. Ref: ${result.reference}`, 'success')
       setPhoneNumber('')
-      setReference('')
+      setTransactionId('')
       setProofOfPayment(null)
       setCustomAmount('')
       setSelectedEvent('')
       setPaymentDescription('')
+      // Clear session refs so fresh IDs are generated for the next payment
+      sessionStorage.removeItem('pay_ref_renewal')
+      sessionStorage.removeItem('pay_ref_donation')
+      sessionStorage.removeItem('pay_ref_event')
+      sessionStorage.removeItem('pay_ref_other')
       refetchTransactions()
     } catch (error: any) {
       showNotification(error?.message || 'Failed to submit payment', 'error')
@@ -382,6 +431,41 @@ const PaymentsPage: React.FC = () => {
                 </select>
               </div>
 
+              {/* Payment ID Banner */}
+              <div className="rounded-lg border-2 border-[#5F1C9F] bg-purple-50 p-4">
+                <p className="text-xs font-semibold text-[#5F1C9F] uppercase tracking-wide mb-1">Your Payment ID</p>
+                {loadingInvoices && paymentType === 'membership_renewal' ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <Loader2 className="w-4 h-4 text-[#5F1C9F] animate-spin" />
+                    <span className="text-sm text-gray-500">Loading your invoice...</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between gap-2 mt-1">
+                      <span className="font-extrabold text-lg tracking-widest text-[#5F1C9F] select-all break-all">
+                        {paymentId}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(paymentId)
+                          showNotification('Payment ID copied!', 'success')
+                        }}
+                        className="flex-shrink-0 p-1.5 rounded hover:bg-purple-100 text-[#5F1C9F] transition-colors"
+                        title="Copy Payment ID"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {activeInvoice
+                        ? 'This is your invoice number — use it as your payment reference'
+                        : 'Use this as your reference when making the payment'}
+                    </p>
+                  </>
+                )}
+              </div>
+
               <div className="space-y-3">
                 {paymentMethods.map((method) => {
                   const Icon = method.icon
@@ -431,9 +515,9 @@ const PaymentsPage: React.FC = () => {
                   <div className="mb-4 bg-purple-50 border-2 border-[#5F1C9F] rounded-lg p-4">
                     <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-black">Merchant Code:</span>
-                        <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{MERCHANT_CODES.mtn}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-black">Send Money To:</span>
+                        <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{PAYMENT_PHONE_NUMBER}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Amount:</span>
@@ -447,9 +531,9 @@ const PaymentsPage: React.FC = () => {
                   <div className="mb-4 bg-purple-50 border-2 border-[#5F1C9F] rounded-lg p-4">
                     <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-black">Merchant Code:</span>
-                        <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{MERCHANT_CODES.airtel}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-black">Send Money To:</span>
+                        <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">{PAYMENT_PHONE_NUMBER}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Amount:</span>
@@ -493,12 +577,12 @@ const PaymentsPage: React.FC = () => {
                     <p className="font-medium mb-2">Payment Instructions:</p>
                     <ol className="list-decimal list-inside space-y-1">
                       <li>Dial *165# (MTN)</li>
-                      <li>Select "Pay Bill"</li>
-                      <li>Enter Merchant Code: <span className=" font-bold">{MERCHANT_CODES.mtn}</span></li>
-                      <li>Enter Amount: <span className="font-bold">{paymentAmount}</span></li>
-                      <li>Enter your name as Reference: <span className="">Your Full Name</span></li>
+                      <li>Select "Send Money"</li>
+                      <li>Enter Phone Number: <span className="font-bold">{PAYMENT_PHONE_NUMBER}</span></li>
+                      <li>Enter Amount: <span className="font-bold">{paymentAmount.toLocaleString()}</span></li>
+                      <li>Enter your Payment ID as the reason/reference</li>
                       <li>Confirm payment</li>
-                      <li>Upload proof of payment below</li>
+                      <li>Enter the transaction ID below and upload proof of payment</li>
                     </ol>
                   </div>
                 )}
@@ -508,12 +592,12 @@ const PaymentsPage: React.FC = () => {
                     <p className="font-medium mb-2">Payment Instructions:</p>
                     <ol className="list-decimal list-inside space-y-1">
                       <li>Dial *185# (Airtel)</li>
-                      <li>Select "Pay Bill"</li>
-                      <li>Enter Merchant Code: <span className=" font-bold">{MERCHANT_CODES.airtel}</span></li>
-                      <li>Enter Amount: <span className="font-bold">{paymentAmount}</span></li>
-                      <li>Enter your name as Reference: <span className="">Your Full Name</span></li>
+                      <li>Select "Send Money"</li>
+                      <li>Enter Phone Number: <span className="font-bold">{PAYMENT_PHONE_NUMBER}</span></li>
+                      <li>Enter Amount: <span className="font-bold">{paymentAmount.toLocaleString()}</span></li>
+                      <li>Enter your Payment ID as the reason/reference</li>
                       <li>Confirm payment</li>
-                      <li>Upload proof of payment below</li>
+                      <li>Enter the transaction ID below and upload proof of payment</li>
                     </ol>
                   </div>
                 )}
@@ -523,9 +607,9 @@ const PaymentsPage: React.FC = () => {
                     <p className="font-medium mb-2">Payment Instructions:</p>
                     <ol className="list-decimal list-inside space-y-1">
                       <li>Transfer UGX {paymentAmount.toLocaleString()} to the account details above</li>
-                      <li>Use "APF - {paymentTypeOptions.find(opt => opt.value === paymentType)?.label}" as the reference</li>
+                      <li>Use your Payment ID as the transfer reference</li>
                       <li>Take a screenshot or photo of the transaction receipt</li>
-                      <li>Upload the proof of payment below</li>
+                      <li>Enter the transaction ID below and upload the proof of payment</li>
                     </ol>
                   </div>
                 )}
@@ -618,15 +702,16 @@ const PaymentsPage: React.FC = () => {
                 )}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Payment Reference (optional)
+                    Transaction ID <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    value={reference}
-                    onChange={(e) => setReference(e.target.value)}
-                    placeholder="Transaction ID / Receipt No."
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#5F1C9F]"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder="e.g. 1234567890 (from your mobile money receipt)"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-[#5F1C9F] focus:ring-2 focus:ring-purple-200 transition-all"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Enter the transaction ID shown on your payment receipt</p>
                 </div>
                 <div className="mb-4">
                   <ProofOfPaymentUpload
@@ -640,7 +725,8 @@ const PaymentsPage: React.FC = () => {
                   disabled={
                     isProcessing || 
                     !selectedPaymentMethod || 
-                    !proofOfPayment || 
+                    !proofOfPayment ||
+                    !transactionId.trim() ||
                     (paymentType === 'event' && !selectedEvent) ||
                     (paymentType === 'other' && !paymentDescription.trim()) ||
                     ((paymentType === 'donation' || paymentType === 'other') && (!customAmount || parseInt(customAmount) <= 0))

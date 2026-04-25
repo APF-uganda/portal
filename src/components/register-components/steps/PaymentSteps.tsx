@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import PaymentOption from "./PaymentOption";
 import { PaymentForms } from "../PaymentForms";
 import mtnLogo from "../../../assets/images/registerPage-images/mtn.png";
@@ -7,6 +7,19 @@ import dfcuLogo from "../../../assets/images/registerPage-images/dfcu.jpg";
 import { PaymentData, PaymentMethod } from "../../../types/registration";
 import TermsModal from "../../common/TermsModal";
 import PrivacyModal from "../../common/PrivacyModal";
+
+const REFERENCE_STORAGE_KEY = 'registration_application_reference';
+
+/**
+ * Generate a temporary application reference ID in format APF-YYYY-XXXXXX.
+ * This mirrors the backend's generate_application_id logic so the user has
+ * a consistent reference before the application is submitted.
+ */
+function generateApplicationReference(): string {
+  const year = new Date().getFullYear();
+  const random = Math.floor(Math.random() * 900000) + 100000; // 6-digit number
+  return `APF-${year}-${String(random).padStart(6, '0')}`;
+}
 
 interface PaymentStepsProps {
   data?: PaymentData | null;
@@ -24,6 +37,20 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
   );
   const [, setPaymentData] = useState<PaymentData | null>(data || null);
   const [isPaymentValid, setIsPaymentValid] = useState(false);
+
+  // Generate or restore a stable application reference ID for this session.
+  // Computed once on first render and stored in a ref so it never changes.
+  const applicationReference = useRef<string>('');
+  if (!applicationReference.current) {
+    const stored = sessionStorage.getItem(REFERENCE_STORAGE_KEY);
+    if (stored) {
+      applicationReference.current = stored;
+    } else {
+      const ref = generateApplicationReference();
+      sessionStorage.setItem(REFERENCE_STORAGE_KEY, ref);
+      applicationReference.current = ref;
+    }
+  }
 
   // Restore consent state from data if available
   useEffect(() => {
@@ -53,6 +80,7 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
       method: paymentMethodValue,
       status: 'idle',
       isValidated: false,
+      applicationReference: applicationReference.current,
     };
     setPaymentData(newPaymentData);
     setIsPaymentValid(false);
@@ -64,11 +92,13 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
 
   // Handle payment data change from PaymentForms
   const handlePaymentDataChange = useCallback((data: PaymentData) => {
-    setPaymentData(data);
+    // Always carry the reference ID forward
+    const enriched = { ...data, applicationReference: applicationReference.current };
+    setPaymentData(enriched);
     if (onChange) {
-      onChange(data);
+      onChange(enriched);
     }
-  }, [onChange]);
+  }, [onChange, applicationReference]);
 
   // Handle payment validation result from PaymentForms
   const handlePaymentValidated = useCallback((isValid: boolean) => {
@@ -174,6 +204,7 @@ function PaymentsStep({ data, onChange, onValidationChange, onPaymentComplete }:
               onPaymentDataChange={handlePaymentDataChange}
               onPaymentValidated={handlePaymentValidated}
               onPaymentComplete={onPaymentComplete}
+              applicationReference={applicationReference.current}
             />
           )}
         </div>

@@ -21,6 +21,7 @@ interface PaymentFormsProps {
   onPaymentDataChange: (paymentData: PaymentData) => void;
   onPaymentValidated: (isValid: boolean) => void;
   onPaymentComplete?: () => void; // Callback when payment is successfully completed
+  applicationReference?: string; // Pre-generated application reference ID
 }
 
 /**
@@ -31,6 +32,7 @@ export function PaymentForms({
   onPaymentDataChange,
   onPaymentValidated,
   onPaymentComplete,
+  applicationReference,
 }: PaymentFormsProps) {
   // Track previous method to detect changes
   const prevMethodRef = useRef<PaymentMethod | null>(null);
@@ -49,12 +51,8 @@ export function PaymentForms({
   const MTN_PREFIXES = ['25677', '25678', '25676', '25679'];
   const AIRTEL_PREFIXES = ['25670', '25675', '25674'];
 
-  // Dummy merchant codes
-  const MERCHANT_CODES = {
-    mtn: '123456',
-    airtel: '789012',
-    bank: 'DFCU-APF-2024'
-  };
+  // Payment phone number
+  const PAYMENT_PHONE_NUMBER = '0767618767';
 
   // Bank account details
   const BANK_DETAILS = {
@@ -169,20 +167,28 @@ export function PaymentForms({
   // Render mobile money form (MTN/Airtel)
   const renderMobileMoneyForm = () => (
     <div className="space-y-4">
-      {/* Merchant Code Display */}
+      {/* Payment Phone Number Display */}
       <div className="bg-purple-50 border-2 border-[#5F1C9F] rounded-lg p-4">
         <h4 className="font-medium text-[#5F1C9F] mb-3">Payment Details</h4>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Merchant Code:</span>
+            <span className="text-gray-600">Send Money To:</span>
             <span className="font-extrabold text-2xl tracking-widest text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1">
-              {selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}
+              {PAYMENT_PHONE_NUMBER}
             </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Amount:</span>
             <span className="font-bold text-lg text-black">UGX 50,000</span>
           </div>
+          {applicationReference && (
+            <div className="flex justify-between items-center border-t border-purple-200 pt-3 mt-1">
+              <span className="text-gray-600">Your Reference ID:</span>
+              <span className="font-bold text-base tracking-wide text-[#5F1C9F] bg-white border border-purple-300 rounded px-3 py-1 select-all">
+                {applicationReference}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -199,10 +205,10 @@ export function PaymentForms({
         <p className="font-medium mb-2">Payment Instructions:</p>
         <ol className="list-decimal list-inside space-y-1">
           <li>Dial *165# (MTN) or *185# (Airtel)</li>
-          <li>Select "Pay Bill"</li>
-          <li>Enter Merchant Code: <span className=" font-bold">{selectedMethod === 'mtn' ? MERCHANT_CODES.mtn : MERCHANT_CODES.airtel}</span></li>
+          <li>Select "Send Money"</li>
+          <li>Enter Phone Number: <span className="font-bold">{PAYMENT_PHONE_NUMBER}</span></li>
           <li>Enter Amount: <span className="font-bold">50000</span></li>
-          <li>Enter your name as Reference: <span className="">Your Full Name</span></li>
+          <li>Enter your Reference ID as the reason: <span className="font-bold">{applicationReference ?? 'Your Reference ID'}</span></li>
           <li>Confirm payment</li>
           <li>Upload proof of payment below</li>
         </ol>
@@ -244,6 +250,12 @@ export function PaymentForms({
             <span className="text-black">Amount:</span>
             <span className="font-bold text-black">UGX 50,000</span>
           </div>
+          {applicationReference && (
+            <div className="flex justify-between border-t border-[#5F1C9F] pt-2 mt-1">
+              <span className="text-black">Your Reference ID:</span>
+              <span className="font-bold text-[#5F1C9F] select-all">{applicationReference}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -252,7 +264,7 @@ export function PaymentForms({
         <p className="font-medium mb-2">Payment Instructions:</p>
         <ol className="list-decimal list-inside space-y-1">
           <li>Transfer UGX 50,000 to the account details above</li>
-          <li>Use "APF Membership - [Your Name]" as the reference</li>
+          <li>Use <span className="font-bold">{applicationReference ?? 'Your Reference ID'}</span> as the payment reference</li>
           <li>Take a screenshot or photo of the transaction receipt</li>
           <li>Upload the proof of payment below</li>
         </ol>

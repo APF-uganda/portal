@@ -330,6 +330,11 @@ export async function submitApplication(
       formData.append('payment_amount', applicationData.paymentAmount.toString());
     }
 
+    // Pass the pre-generated application reference so the backend can use it as the application_id
+    if (applicationData.applicationReference) {
+      formData.append('application_id', applicationData.applicationReference);
+    }
+
     // Add document files with types
     applicationData.documents.forEach((doc) => {
       formData.append('documents', doc.file);

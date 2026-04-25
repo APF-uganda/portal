@@ -68,6 +68,8 @@ export interface PaymentData {
   isValidated: boolean;
   // Proof of payment file
   proofOfPayment?: File;
+  // Pre-generated application reference ID shown to user for payment reference
+  applicationReference?: string;
 }
 
 /**
@@ -94,6 +96,7 @@ export interface ApplicationSubmissionData {
   paymentTransactionReference?: string;
   paymentErrorMessage?: string;
   paymentAmount?: number;
+  applicationReference?: string; // Pre-generated reference ID for payment
   documents: DocumentData[];
 }
 

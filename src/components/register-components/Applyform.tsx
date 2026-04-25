@@ -113,6 +113,7 @@ function ApplyForm() {
         paymentTransactionReference: payment.transactionReference,
         paymentErrorMessage: payment.errorMessage,
         paymentAmount: 50000,
+        applicationReference: payment.applicationReference,
         documents: uploadedDocuments,
       };
 

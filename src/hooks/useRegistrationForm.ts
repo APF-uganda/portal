@@ -98,6 +98,7 @@ export function useRegistrationForm(): UseRegistrationFormReturn {
       sessionStorage.removeItem(STORAGE_KEYS.DOCUMENTS);
       sessionStorage.removeItem(STORAGE_KEYS.PAYMENT);
       sessionStorage.removeItem(STORAGE_KEYS.LAST_UPDATED);
+      sessionStorage.removeItem('registration_application_reference');
 
       // Reset state
       setCurrentStepState(0);
