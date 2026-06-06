@@ -284,8 +284,8 @@ const EventRegistrationPage: React.FC = () => {
               </div>
 
               <div className="bg-slate-900 rounded-2xl p-6 mb-8 shadow-inner">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Merchant Code</span>
-                <span className="text-3xl font-bold text-white tracking-widest uppercase">345678</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Payment Contact</span>
+                <span className="text-3xl font-bold text-white tracking-widest uppercase">0767618767</span>
               </div>
 
               <div className="space-y-4 text-left">
