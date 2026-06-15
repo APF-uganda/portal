@@ -11,6 +11,7 @@ export interface User {
     lastDocumentUpload?: string;
     emailVerified?: boolean;
     mustChangePassword?: boolean;
+    apfMembershipNumber?: string | null;
   }
   
   export interface DashboardStats {

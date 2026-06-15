@@ -28,6 +28,7 @@ export const userManagementApi = {
       lastDocumentUpload: member.last_document_upload || null,
       emailVerified: member.email_verified || false,
       mustChangePassword: member.must_change_password || false,
+      apfMembershipNumber: member.apf_membership_number || null,
     }));
   },
 
@@ -43,6 +44,28 @@ export const userManagementApi = {
     return axios.patch(
       `${API_BASE_URL}/api/v1/admin-management/members/${id}/reactivate/`, 
       {}, 
+      { headers: getHeaders() }
+    );
+  },
+
+  assignApfNumber: async (id: string, apfNumber: string) => {
+    return axios.patch(
+      `${API_BASE_URL}/api/v1/admin-management/members/${id}/apf-number/`,
+      { apf_membership_number: apfNumber },
+      { headers: getHeaders() }
+    );
+  },
+
+  deleteMember: async (id: string) => {
+    return axios.delete(
+      `${API_BASE_URL}/api/v1/admin-management/members/${id}/delete/`,
+      { headers: getHeaders() }
+    );
+  },
+
+  deletePayment: async (paymentId: number) => {
+    return axios.delete(
+      `${API_BASE_URL}/api/v1/admin-management/payments/${paymentId}/delete/`,
       { headers: getHeaders() }
     );
   },

@@ -172,6 +172,12 @@ const handleView = (applicationId: number) => {
     setIsDetailModalOpen(true);
 };
 
+const handleDeleteFromTable = (applicationId: number) => {
+    // Open the modal and immediately show the delete confirmation
+    setSelectedApplicationId(applicationId);
+    setIsDetailModalOpen(true);
+};
+
 const handleCloseDetailModal = () => {
     setIsDetailModalOpen(false);
     setSelectedApplicationId(null);
@@ -275,6 +281,7 @@ return (
                     onReject={handleReject}
                     onRetry={handleRetry}
                     onView={handleView}
+                    onDelete={handleDeleteFromTable}
                     actionLoading={actionLoadingId}
                 />
             </div>
@@ -295,6 +302,11 @@ return (
         onApprove={handleApprove}
         onReject={handleReject}
         onRetry={handleRetry}
+        onDeleted={async () => {
+            setIsDetailModalOpen(false);
+            setSelectedApplicationId(null);
+            await Promise.all([refetch(), refetchStats()]);
+        }}
     /> 
 )}
     </div>

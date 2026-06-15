@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileDown, RefreshCw, X, FileText, Loader2, Download } from 'lucide-react';
+import { FileDown, RefreshCw, X, FileText, Loader2, Download, Trash2 } from 'lucide-react';
 import Sidebar from "../../components/common/adminSideNav";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
@@ -9,6 +9,7 @@ import { PaymentTable } from '../../components/adminpayments-components/paymentT
 import { Payment } from '../../components/payment-components/types';
 import { getAccessToken } from '../../utils/authStorage';
 import { API_BASE_URL } from '../../config/api';
+import { userManagementApi } from '../../services/manageuser';
 
 // Document Preview Component (same as ApplicationDetailModal)
 const DocumentPreview: React.FC<{ documentUrl: string; fileName?: string }> = ({ documentUrl, fileName = 'Proof of Payment' }) => {
@@ -97,6 +98,8 @@ const ManagePayments = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { payments, stats, loading, error, refresh, verifyPayment, rejectPayment } = usePayments();
 
   // Updated signature to use number and union type
@@ -113,6 +116,21 @@ const ManagePayments = () => {
       console.error('Payment action failed:', err.message);
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleDeletePayment = async () => {
+    if (!selectedPayment) return;
+    setDeleting(true);
+    try {
+      await userManagementApi.deletePayment(Number(selectedPayment.id));
+      setSelectedPayment(null);
+      setShowDeleteConfirm(false);
+      refresh();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete payment record.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -294,17 +312,49 @@ const ManagePayments = () => {
 
             <div className="p-4 bg-gray-50 border-t flex justify-between">
               <button
-                onClick={() => setSelectedPayment(null)}
+                onClick={() => { setSelectedPayment(null); setShowDeleteConfirm(false); }}
                 className="px-5 py-2 text-sm font-medium text-gray-600"
-                disabled={actionLoading}
+                disabled={actionLoading || deleting}
               >
                 Cancel
               </button>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                {/* Delete payment record */}
+                {!showDeleteConfirm ? (
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={actionLoading || deleting}
+                    className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                    title="Delete this payment record permanently"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Record
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                    <span className="text-xs text-red-700 font-medium">Delete permanently?</span>
+                    <button
+                      onClick={handleDeletePayment}
+                      disabled={deleting}
+                      className="px-3 py-1 bg-red-600 text-white rounded text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {deleting ? 'Deleting…' : 'Yes, Delete'}
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={deleting}
+                      className="px-3 py-1 border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-100"
+                    >
+                      No
+                    </button>
+                  </div>
+                )}
+
+                {/* Approve / Reject — only for pending */}
                 {selectedPayment.status?.toLowerCase() === 'pending' && (
                   <>
                     <button
-                      disabled={actionLoading}
+                      disabled={actionLoading || deleting}
                       onClick={async () => {
                         await handleStatusUpdate(Number(selectedPayment.id), 'rejected');
                         setSelectedPayment(null);
@@ -314,7 +364,7 @@ const ManagePayments = () => {
                       {actionLoading ? 'Processing...' : 'Reject'}
                     </button>
                     <button
-                      disabled={actionLoading}
+                      disabled={actionLoading || deleting}
                       onClick={async () => {
                         await handleStatusUpdate(Number(selectedPayment.id), 'verified');
                         setSelectedPayment(null);

@@ -88,7 +88,24 @@ const mapPaymentToTransaction = (payment: any): Transaction => {
 }
 
 const mapManualPaymentToTransaction = (payment: MemberManualPayment): Transaction => {
-  const statusText = payment.status.toLowerCase()
+  // Normalise all possible status values from backend
+  const rawStatus = (payment.status || '').toLowerCase()
+  const statusMap: Record<string, string> = {
+    verified: 'verified',
+    approved: 'verified',       // RenewalProofOfPayment uses 'approved'
+    completed: 'verified',
+    pending: 'pending',
+    pending_verification: 'pending',  // RenewalProofOfPayment pending state
+    rejected: 'rejected',
+  }
+  const normalisedStatus = statusMap[rawStatus] ?? rawStatus
+
+  const statusLabels: Record<string, string> = {
+    verified: 'Receipt verified by admin',
+    rejected: 'Receipt rejected by admin',
+    pending: 'Receipt submitted, awaiting admin verification',
+  }
+
   return {
     date: formatDate(payment.created_at),
     type: payment.description || 'Membership Renewal Fee',
@@ -96,13 +113,8 @@ const mapManualPaymentToTransaction = (payment: MemberManualPayment): Transactio
     amount: `UGX ${Number(payment.amount || 0).toLocaleString()}`,
     method: 'Manual Receipt Upload',
     methodIcon: null,
-    status: statusText,
-    description:
-      statusText === 'verified'
-        ? 'Receipt verified by admin'
-        : statusText === 'rejected'
-        ? 'Receipt rejected by admin'
-        : 'Receipt submitted, awaiting admin verification',
+    status: normalisedStatus,
+    description: statusLabels[normalisedStatus] ?? `Payment ${normalisedStatus}`,
   }
 }
 

@@ -3,6 +3,7 @@ import {
     FiEye,
     FiDownload,
     FiLoader,
+    FiTrash2,
 } from "react-icons/fi";
 import { Application } from "../../types/Application";
 
@@ -13,6 +14,7 @@ interface ApplicationsTableProps {
     onReject?: (applicationId: number) => Promise<void>;
     onRetry?: (applicationId: number) => Promise<void>;
     onView?: (applicationId: number) => void;
+    onDelete?: (applicationId: number) => void;
     actionLoading?: number | null;
 }
 
@@ -20,6 +22,7 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
     applicants,
     loading,
     onView,
+    onDelete,
 }) => {
     const [isExporting, setIsExporting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -175,7 +178,7 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
                                     </td>
                                     <td className="px-3 md:px-4 py-2 font-medium">{app.submissionDate}</td>
                                     <td className="px-3 md:px-4 py-2">
-                                        <div className="flex justify-center">
+                                        <div className="flex justify-center gap-1.5">
                                             <button
                                                 onClick={() => handleView(app.id)}
                                                 className="bg-transparent border-2 border-gray-200 hover:bg-[#5F2F8B] hover:border-[#5F2F8B] hover:text-white text-gray-900 p-2 rounded-lg text-base transition-colors"
@@ -183,6 +186,15 @@ const ApplicationsTable: FC<ApplicationsTableProps> = ({
                                             >
                                                 <FiEye />
                                             </button>
+                                            {onDelete && (
+                                                <button
+                                                    onClick={() => onDelete(app.id)}
+                                                    className="bg-transparent border-2 border-gray-200 hover:bg-red-600 hover:border-red-600 hover:text-white text-red-500 p-2 rounded-lg text-base transition-colors"
+                                                    title="Delete Application"
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

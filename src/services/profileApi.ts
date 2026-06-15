@@ -47,6 +47,7 @@ export interface UserProfile {
   organization: string;
   department: string;
   icpau_registration_number: string;
+  apf_membership_number: string | null;
   years_of_experience: number | null;
   specializations: string;
   

@@ -753,3 +753,19 @@ function handleAdminActionError(error: unknown): AdminActionResult {
     error: 'An unexpected error occurred. Please try again.',
   };
 }
+
+/**
+ * Permanently delete an application (and its linked member account if present).
+ * Admin only.
+ */
+export async function deleteApplication(applicationId: number): Promise<AdminActionResult> {
+  try {
+    await axios.delete(
+      `${API_BASE_URL}/api/v1/admin-management/applications/${applicationId}/delete/`,
+      { headers: getAuthHeaders(), timeout: 30000 }
+    );
+    return { success: true };
+  } catch (error) {
+    return handleAdminActionError(error);
+  }
+}

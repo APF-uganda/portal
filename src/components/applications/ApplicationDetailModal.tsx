@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { X, FileText, Loader2, Download } from 'lucide-react';
+import { X, FileText, Loader2, Download, Trash2, Hash } from 'lucide-react';
 import { getAccessToken } from '../../utils/authStorage';
 import { API_BASE_URL } from '../../config/api';
-import { fetchApplicationDetail } from '../../services/applicationApi';
+import { fetchApplicationDetail, deleteApplication } from '../../services/applicationApi';
+import axios from 'axios';
 
 interface Application {
   id: number;
@@ -37,6 +38,7 @@ interface ApplicationDetailModalProps {
   onApprove?: (id: number) => Promise<void>;
   onReject?: (id: number) => Promise<void>;
   onRetry?: (id: number) => Promise<void>;
+  onDeleted?: () => void;
 }
 
 const DocumentPreview: React.FC<{ doc: any }> = ({ doc }) => {
@@ -132,14 +134,20 @@ const formatDocumentType = (type: string) => {
 };
 
 const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
-  applicationId, isOpen, onClose, onApprove, onReject, onRetry
+  applicationId, isOpen, onClose, onApprove, onReject, onRetry, onDeleted
 }) => {
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [confirmApprove, setConfirmApprove] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // APF number assignment on approval
+  const [showApfModal, setShowApfModal] = useState(false);
+  const [apfInput, setApfInput] = useState('');
+  const [apfError, setApfError] = useState('');
 
   useEffect(() => {
     if (isOpen) fetchDetails();
@@ -149,7 +157,7 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
     setLoading(true);
     setActionError(null);
     setActionSuccess(null);
-    setConfirmApprove(false);
+    setShowApfModal(false);
     try {
       const detail = await fetchApplicationDetail(applicationId);
       if (detail) {
@@ -168,21 +176,65 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
 
   const handleApprove = async () => {
     if (!onApprove) return;
-    if (!confirmApprove) {
-      setConfirmApprove(true);
+    // Step 1 — show APF number modal
+    if (!showApfModal) {
+      setApfInput('');
+      setApfError('');
+      setShowApfModal(true);
       return;
     }
+    // Should not reach here — submission is handled by handleApfSubmit
+  };
 
+  const handleApfSubmit = async () => {
+    if (!onApprove) return;
+    const value = apfInput.trim().toUpperCase();
+
+    // APF number is optional but if provided must be valid format
+    if (value && !/^APF\/M\/\d+$/.test(value)) {
+      setApfError('Format must be APF/M/*** (e.g. APF/M/001). Leave blank to skip.');
+      return;
+    }
+    setApfError('');
     setSubmitting(true);
     setActionError(null);
     setActionSuccess(null);
     try {
+      // 1. Approve the application first
       await onApprove(applicationId);
-      setActionSuccess("Application approved successfully.");
-      setApplication((prev) => (prev ? { ...prev, status: "approved" } : prev));
-      setConfirmApprove(false);
+
+      // 2. If an APF number was entered, assign it to the newly created user
+      if (value) {
+        try {
+          // Find the linked user via the application detail (re-fetch to get user id)
+          const detail = await fetchApplicationDetail(applicationId);
+          const userId = (detail as any)?.user;
+          if (userId) {
+            await axios.patch(
+              `${API_BASE_URL}/api/v1/admin-management/members/${userId}/apf-number/`,
+              { apf_membership_number: value },
+              { headers: { Authorization: `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json' } }
+            );
+          }
+        } catch (apfErr) {
+          // Non-fatal — approval succeeded, APF assignment failed
+          console.warn('APF number assignment failed after approval:', apfErr);
+          setActionSuccess(`Application approved. APF number could not be assigned automatically — please assign it manually from the Members page.`);
+          setShowApfModal(false);
+          setApplication((prev) => (prev ? { ...prev, status: 'approved' } : prev));
+          return;
+        }
+      }
+
+      setActionSuccess(value
+        ? `Application approved and APF number ${value} assigned. Approval email sent.`
+        : 'Application approved successfully. Approval email sent.'
+      );
+      setApplication((prev) => (prev ? { ...prev, status: 'approved' } : prev));
+      setShowApfModal(false);
     } catch (error: any) {
-      setActionError(error?.message || "Failed to approve application.");
+      setActionError(error?.message || 'Failed to approve application.');
+      setShowApfModal(false);
     } finally {
       setSubmitting(false);
     }
@@ -193,7 +245,6 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
     setSubmitting(true);
     setActionError(null);
     setActionSuccess(null);
-    setConfirmApprove(false);
     try {
       await onReject(applicationId);
       setActionSuccess("Application rejected successfully.");
@@ -202,6 +253,26 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
       setActionError(error?.message || "Failed to reject application.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setActionError(null);
+    try {
+      const result = await deleteApplication(applicationId);
+      if (result.success) {
+        onDeleted?.();
+        onClose();
+      } else {
+        setActionError(result.error || 'Failed to delete application.');
+        setShowDeleteConfirm(false);
+      }
+    } catch {
+      setActionError('Failed to delete application.');
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -266,25 +337,102 @@ const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
         </div>
 
         <div className="p-4 bg-gray-50 border-t flex justify-between">
-          <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-600" disabled={submitting}>Cancel</button>
+          <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-600" disabled={submitting || deleting}>Cancel</button>
           <div className="flex gap-2">
+            {/* Delete */}
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={submitting || deleting}
+                className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                <span className="text-xs text-red-700 font-medium">Delete permanently?</span>
+                <button onClick={handleDelete} disabled={deleting}
+                  className="px-3 py-1 bg-red-600 text-white rounded text-xs font-semibold hover:bg-red-700 disabled:opacity-50">
+                  {deleting ? 'Deleting…' : 'Yes, Delete'}
+                </button>
+                <button onClick={() => setShowDeleteConfirm(false)} disabled={deleting}
+                  className="px-3 py-1 border border-gray-300 rounded text-xs font-medium text-gray-600 hover:bg-gray-100">
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* Reject */}
             <button
               onClick={handleReject}
-              disabled={submitting || applicantStatus === "approved" || applicantStatus === "rejected"}
+              disabled={submitting || deleting || applicantStatus === 'approved' || applicantStatus === 'rejected'}
               className="px-6 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium disabled:opacity-50"
             >
-              {submitting ? "Processing..." : "Reject"}
+              {submitting ? 'Processing...' : 'Reject'}
             </button>
+
+            {/* Approve — opens APF modal */}
             <button
               onClick={handleApprove}
-              disabled={submitting || applicantStatus === "approved" || applicantStatus === "rejected"}
-              className={`px-6 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 ${confirmApprove ? "bg-green-600 hover:bg-green-700" : "bg-[#5C32A3] hover:bg-[#4A2783]"}`}
+              disabled={submitting || deleting || applicantStatus === 'approved' || applicantStatus === 'rejected'}
+              className="px-6 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 bg-[#5C32A3] hover:bg-[#4A2783]"
             >
-              {submitting ? "Processing..." : confirmApprove ? "Confirm Approve" : "Approve Application"}
+              {submitting ? 'Processing...' : 'Approve'}
             </button>
           </div>
         </div>
       </div>
+
+      {/* APF Number Modal — shown when admin clicks Approve */}
+      {showApfModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Hash className="w-5 h-5 text-[#5E2590]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Assign APF Number</h3>
+                <p className="text-xs text-gray-500">This will be included in the approval email</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                APF Membership Number <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={apfInput}
+                onChange={(e) => { setApfInput(e.target.value.toUpperCase()); setApfError(''); }}
+                placeholder="APF/M/001"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-purple-500 focus:border-transparent uppercase"
+                autoFocus
+              />
+              <p className="text-xs text-gray-400 mt-1">Format: APF/M/*** — leave blank to approve without a number</p>
+              {apfError && <p className="text-xs text-red-600 mt-1">{apfError}</p>}
+            </div>
+
+            <div className="flex gap-3 justify-end pt-1">
+              <button
+                onClick={() => { setShowApfModal(false); setApfError(''); }}
+                disabled={submitting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleApfSubmit}
+                disabled={submitting}
+                className="px-5 py-2 text-sm font-semibold text-white bg-[#5C32A3] rounded-lg hover:bg-[#4A2783] disabled:opacity-50"
+              >
+                {submitting ? 'Approving…' : 'Confirm Approval'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

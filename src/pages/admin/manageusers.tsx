@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Filter, FileText, Clock, Download, RefreshCw } from 'lucide-react';
+import { Filter, FileText, Clock, Download, RefreshCw, Hash, UserCheck, UserMinus, Trash2 } from 'lucide-react';
 import StatCard from '../../components/manageusers-components/stats';
 import MemberDocumentsModal from '../../components/manageusers-components/MemberDocumentsModal';
 
@@ -10,6 +10,7 @@ import Footer from "../../components/layout/Footer";
 import { useUserManagement } from '../../hooks/userMgt';
 import { API_V1_BASE_URL } from '../../config/api';
 import { getAuth } from '../../utils/authStorage';
+import { userManagementApi } from '../../services/manageuser';
 
 type FilterType = 'all' | 'with-documents' | 'without-documents' | 'recent-uploads' | 'renewed' | 'due-soon' | 'overdue';
 type SortType = 'documents-first' | 'name' | 'status' | 'recent-activity';
@@ -27,6 +28,16 @@ const ManageUsers = () => {
   const [sortType, setSortType] = useState<SortType>('documents-first');
   const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  
+  // APF number assignment state
+  const [apfTarget, setApfTarget] = useState<{ id: string; name: string; current: string | null } | null>(null);
+  const [apfInput, setApfInput] = useState('');
+  const [apfError, setApfError] = useState('');
+  const [apfSaving, setApfSaving] = useState(false);
+
+  // Delete member state
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   
   // Use the hook to get data, loading state, and action handlers
   const { users, loading, error, handleToggleStatus, fetchUsers } = useUserManagement();
@@ -86,6 +97,41 @@ const ManageUsers = () => {
       alert('Failed to export data. Please try again.');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleAssignApfNumber = async () => {
+    const value = apfInput.trim().toUpperCase();
+    if (!value) { setApfError('Please enter an APF number.'); return; }
+    if (!/^APF\/M\/\d+$/.test(value)) { setApfError('Format must be APF/M/*** (e.g. APF/M/001)'); return; }
+    setApfError('');
+    setApfSaving(true);
+    try {
+      await userManagementApi.assignApfNumber(apfTarget!.id, value);
+      await fetchUsers();
+      setApfTarget(null);
+      setApfInput('');
+    } catch (err: any) {
+      const msg = err.response?.data?.error?.apf_membership_number?.[0]
+        || err.response?.data?.error
+        || 'Failed to assign APF number. Please try again.';
+      setApfError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+    } finally {
+      setApfSaving(false);
+    }
+  };
+
+  const handleDeleteMember = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await userManagementApi.deleteMember(deleteTarget.id);
+      await fetchUsers();
+      setDeleteTarget(null);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete member. Please try again.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -308,19 +354,19 @@ const ManageUsers = () => {
         <thead>
           <tr className="bg-gray-50 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
             <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[150px]">Member Name</th>
-            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[200px]">Email</th>
-            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Status</th>
-            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px] whitespace-nowrap">Renewal</th>
-          
-            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[140px] whitespace-nowrap">Documents</th>
-            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px]">Last Upload</th>
-            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 text-right min-w-[250px]">Actions</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[180px]">Email</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[120px] whitespace-nowrap">APF No.</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[90px]">Status</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px] whitespace-nowrap">Renewal</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[80px] whitespace-nowrap">Docs</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 min-w-[100px]">Last Upload</th>
+            <th className="px-3 md:px-6 py-3 md:py-4 border-b border-gray-100 text-center min-w-[160px]">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-50">
           {loading ? (
              <tr>
-               <td colSpan={7} className="text-center py-12">
+               <td colSpan={8} className="text-center py-12">
                  <div className="flex flex-col items-center space-y-2">
                    <div className="w-6 h-6 border-2 border-[#5E2590] border-t-transparent rounded-full animate-spin"></div>
                    <span className="text-gray-400 text-sm font-medium">Loading user data...</span>
@@ -329,7 +375,7 @@ const ManageUsers = () => {
              </tr>
           ) : filteredAndSortedUsers.length === 0 ? (
             <tr>
-              <td colSpan={7} className="text-center py-12 text-gray-400 font-medium">
+              <td colSpan={8} className="text-center py-12 text-gray-400 font-medium">
                 {searchTerm || filterType !== 'all' ? 'No users match your filters.' : 'No users found in the system.'}
               </td>
             </tr>
@@ -355,6 +401,14 @@ const ManageUsers = () => {
                       <span className="text-[10px] font-semibold text-gray-400">Not verified</span>
                     )}
                   </div>
+                </td>
+                {/* APF Membership Number */}
+                <td className="px-3 md:px-6 py-3 md:py-4 text-sm whitespace-nowrap">
+                  {user.apfMembershipNumber ? (
+                    <span className="font-mono font-semibold text-[#5E2590]">{user.apfMembershipNumber}</span>
+                  ) : (
+                    <span className="text-gray-400 text-xs italic">Not assigned</span>
+                  )}
                 </td>
                 <td className="px-3 md:px-6 py-3 md:py-4 text-sm">
                   <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider whitespace-nowrap
@@ -410,35 +464,59 @@ const ManageUsers = () => {
                 </td>
                 
                 <td className="px-3 md:px-6 py-3 md:py-4 text-sm text-right">
-                  <div className="flex items-center justify-end gap-1 md:gap-2">
-                    <button 
+                  <div className="flex items-center justify-center gap-1">
+                    {/* APF number */}
+                    <button
+                      onClick={() => {
+                        setApfInput(user.apfMembershipNumber || '');
+                        setApfError('');
+                        setApfTarget({ id: user.id, name: user.name, current: user.apfMembershipNumber || null });
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-purple-50 text-[#5E2590] transition-colors"
+                      title="Assign APF Number"
+                    >
+                      <Hash className="w-4 h-4" />
+                    </button>
+
+                    {/* Documents */}
+                    <button
                       onClick={() => setSelectedMember({ id: user.id, name: user.name })}
-                      className="font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-purple-50 text-[#5E2590]"
+                      className="p-1.5 rounded-lg hover:bg-purple-50 text-[#5E2590] transition-colors"
                       title="View Documents"
                     >
-                      <span className="hidden lg:inline">Documents</span>
-                      <FileText className="w-4 h-4 lg:hidden" />
+                      <FileText className="w-4 h-4" />
                     </button>
-                    
-                    <button 
-                      onClick={() => {
-                        if (user.status === 'Suspended') {
-                          handleToggleStatus(user.id, user.status);
-                        } else {
+
+                    {/* Suspend / Reactivate */}
+                    {user.status === 'Suspended' ? (
+                      <button
+                        onClick={() => handleToggleStatus(user.id, user.status)}
+                        className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                        title="Reactivate Member"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
                           setSuspendReason('');
                           setSuspendType('non_payment');
                           setSuspendTarget({ id: user.id, name: user.name });
-                        }
-                      }}
-                      className={`font-bold transition-colors whitespace-nowrap text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:bg-gray-100 ${
-                        user.status === 'Suspended' 
-                        ? 'text-green-600' 
-                        : 'text-[#5E2590] hover:text-red-600'
-                      }`}
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-orange-50 text-orange-500 transition-colors"
+                        title="Suspend Member"
+                      >
+                        <UserMinus className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    {/* Delete */}
+                    <button
+                      onClick={() => setDeleteTarget({ id: user.id, name: user.name })}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                      title="Delete Member"
                     >
-                      <span className="whitespace-nowrap">
-                        {user.status === 'Suspended' ? 'Reactivate' : 'Suspend'}
-                      </span>
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
@@ -511,6 +589,101 @@ const ManageUsers = () => {
         {/* Footer Component */}
         <Footer />
       </main>
+
+      {/* Delete Member Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Delete Member</h3>
+                <p className="text-sm text-gray-500">This cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">
+              You are about to permanently delete <strong>{deleteTarget.name}</strong> and all their
+              associated data — payments, documents, applications, and notifications.
+            </p>
+            <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-xs text-red-700">
+              ⚠️ This action is irreversible. The member will lose all access and their data will be gone.
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteMember}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? 'Deleting...' : 'Delete Permanently'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* APF Number Assignment Modal */}
+      {apfTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <Hash className="w-5 h-5 text-[#5E2590]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Assign APF Membership Number</h3>
+                <p className="text-sm text-gray-500">{apfTarget.name}</p>
+              </div>
+            </div>
+
+            {apfTarget.current && (
+              <div className="bg-purple-50 border border-purple-100 rounded-lg px-3 py-2 text-sm">
+                Current number: <span className="font-mono font-semibold text-[#5E2590]">{apfTarget.current}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                APF Membership Number
+              </label>
+              <input
+                type="text"
+                value={apfInput}
+                onChange={(e) => { setApfInput(e.target.value.toUpperCase()); setApfError(''); }}
+                placeholder="APF/M/001"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-purple-500 focus:border-transparent uppercase"
+              />
+              <p className="text-xs text-gray-400 mt-1">Format: APF/M/*** (e.g. APF/M/001, APF/M/042)</p>
+              {apfError && <p className="text-xs text-red-600 mt-1">{apfError}</p>}
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setApfTarget(null); setApfInput(''); setApfError(''); }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                disabled={apfSaving}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAssignApfNumber}
+                disabled={apfSaving || !apfInput.trim()}
+                className="px-4 py-2 text-sm font-medium text-white bg-[#5E2590] rounded-lg hover:bg-[#4a1d73] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {apfSaving ? 'Saving...' : 'Assign Number'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Member Documents Modal */}
       {selectedMember && (

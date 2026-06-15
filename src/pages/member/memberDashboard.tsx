@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import {
   User,
@@ -30,18 +30,86 @@ import { useSpendingOverview } from "../../hooks/useSpending"
 import { useMemberDashboard } from "../../hooks/useMemberDashboard"
 import { dashboardEvents } from "../../utils/dashboardEvents"
 import SpendingChart from "../../components/charts/SpendingChart"
+import RenewalReminderModal from "../../components/dashboard/RenewalReminderModal"
+
+const RENEWAL_DISMISS_KEY = 'apf_renewal_reminder_dismissed'
+
+// ── Payment status badge ──────────────────────────────────────────────────────
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+  verified:             { label: 'Verified',          className: 'bg-green-100 text-green-700' },
+  approved:             { label: 'Approved',           className: 'bg-green-100 text-green-700' },
+  completed:            { label: 'Completed',          className: 'bg-green-100 text-green-700' },
+  pending:              { label: 'Pending Review',     className: 'bg-amber-100 text-amber-700' },
+  pending_verification: { label: 'Pending Review',     className: 'bg-amber-100 text-amber-700' },
+  processing:           { label: 'Processing',         className: 'bg-blue-100 text-blue-700' },
+  rejected:             { label: 'Rejected',           className: 'bg-red-100 text-red-700' },
+  failed:               { label: 'Failed',             className: 'bg-red-100 text-red-700' },
+  cancelled:            { label: 'Cancelled',          className: 'bg-gray-100 text-gray-600' },
+}
+
+const PaymentStatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const config = STATUS_CONFIG[status?.toLowerCase()] ?? { label: status || 'Unknown', className: 'bg-gray-100 text-gray-600' }
+  return (
+    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${config.className}`}>
+      {config.label}
+    </span>
+  )
+}
 
 const MemberDashboard: React.FC = () => {
   const { data: dashboardData, loading: dashboardLoading, refetch: refetchDashboard } = useMemberDashboard();
   
+  // Renewal reminder modal state
+  const [showRenewalModal, setShowRenewalModal] = useState(false);
+  const [renewalExpiredDate, setRenewalExpiredDate] = useState('');
+  const [renewalDaysOverdue, setRenewalDaysOverdue] = useState(0);
+
   // Subscribe to dashboard refresh events
   useEffect(() => {
     const unsubscribe = dashboardEvents.subscribe(() => {
       refetchDashboard();
     });
-    
     return unsubscribe;
   }, [refetchDashboard]);
+
+  // Check renewal status once dashboard data loads
+  useEffect(() => {
+    if (!dashboardData?.profile) return;
+
+    const dueDateStr =
+      dashboardData.profile.subscription_due_date ||
+      dashboardData.profile.next_renewal_date;
+
+    if (!dueDateStr) return;
+
+    const dueDate = new Date(dueDateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+
+    if (today <= dueDate) return; // not expired
+
+    // Already dismissed this session?
+    if (sessionStorage.getItem(RENEWAL_DISMISS_KEY) === 'true') return;
+
+    const diffMs = today.getTime() - dueDate.getTime();
+    const daysOverdue = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    const formatted = dueDate.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    setRenewalExpiredDate(formatted);
+    setRenewalDaysOverdue(daysOverdue);
+    setShowRenewalModal(true);
+  }, [dashboardData]);
+
+  const handleDismissRenewal = () => {
+    sessionStorage.setItem(RENEWAL_DISMISS_KEY, 'true');
+    setShowRenewalModal(false);
+  };
   
   // Get recent transactions from payment history
   const { transactions: recentTransactions, loading: transactionsLoading } = useRecentTransactions(5);
@@ -174,6 +242,14 @@ const MemberDashboard: React.FC = () => {
 
   return (
     <DashboardLayout>
+      {/* Renewal reminder modal — shown once per session for overdue members */}
+      {showRenewalModal && (
+        <RenewalReminderModal
+          expiredDate={renewalExpiredDate}
+          daysOverdue={renewalDaysOverdue}
+          onDismiss={handleDismissRenewal}
+        />
+      )}
       <div className="space-y-8">
         {/* Welcome Header */}
         <div className="mb-6 md:mb-8">
@@ -396,6 +472,7 @@ const MemberDashboard: React.FC = () => {
                         <th className="text-left py-4 px-4 font-semibold text-gray-600">Date</th>
                         <th className="text-left py-4 px-4 font-semibold text-gray-600">Description</th>
                         <th className="text-left py-4 px-4 font-semibold text-gray-600">Amount</th>
+                        <th className="text-left py-4 px-4 font-semibold text-gray-600">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -404,6 +481,9 @@ const MemberDashboard: React.FC = () => {
                           <td className="py-4 px-4 text-sm">{transaction.date}</td>
                           <td className="py-4 px-4 text-sm">{transaction.type}</td>
                           <td className="py-4 px-4 text-sm font-semibold text-purple-600">{transaction.amount}</td>
+                          <td className="py-4 px-4 text-sm">
+                            <PaymentStatusBadge status={transaction.status} />
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -421,6 +501,7 @@ const MemberDashboard: React.FC = () => {
                         </div>
                         <p className="text-sm font-semibold text-purple-600">{transaction.amount}</p>
                       </div>
+                      <PaymentStatusBadge status={transaction.status} />
                     </div>
                   ))}
                 </div>

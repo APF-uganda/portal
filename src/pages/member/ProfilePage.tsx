@@ -456,9 +456,21 @@ const ProfilePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Member ID
+                        APF Membership Number
                       </label>
-                      <p className="text-gray-900 py-2 ">{membershipId}</p>
+                      {profile?.apf_membership_number ? (
+                        <p className="text-gray-900 py-2 font-semibold tracking-wide">
+                          {profile.apf_membership_number}
+                        </p>
+                      ) : (
+                        <p className="text-gray-400 py-2 text-sm italic">Not yet assigned</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        ICPAU Registration No.
+                      </label>
+                      <p className="text-gray-900 py-2">{membershipId}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
